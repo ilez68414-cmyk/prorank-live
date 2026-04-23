@@ -119,6 +119,10 @@
                 <h1>Управление рейтингом</h1>
                 <button class="logout-btn" onclick="logout()">Выйти</button>
             </div>
+            <div style="margin-bottom: 20px;">
+                <input type="text" id="searchFighter" placeholder="🔍 Поиск по имени или email..." 
+                       style="width: 300px; padding: 10px; background: #2a2a2a; border: 1px solid #333; color: white; border-radius: 8px;">
+            </div>
             <div class="fighters-list">
                 <table>
                     <thead>
@@ -165,7 +169,9 @@
         const db = getFirestore(app);
         const auth = getAuth(app);
 
-        const ADMIN_EMAIL = "ilez68414@gmail.com"; // ← ЗАМЕНИ НА СВОЙ EMAIL
+        const ADMIN_EMAIL = "ilez68414@gmail.com";
+
+        let allFighters = [];
 
         window.login = async function() {
             const email = document.getElementById('adminEmail').value;
@@ -178,8 +184,6 @@
             }
             
             try {
-                // Пытаемся войти с временным паролем (пользователь уже существует в Auth)
-                // Если пользователь не существует, создаём его
                 await signInWithEmailAndPassword(auth, email, "Admin123456");
                 message.innerText = "Вход выполнен!";
                 message.className = "success";
@@ -190,10 +194,6 @@
                 }, 500);
             } catch (error) {
                 if (error.code === 'auth/user-not-found') {
-                    // Если пользователя нет, создаём его
-                    message.innerText = "Создаём администратора...";
-                    message.className = "success";
-                    // Здесь нужно создать пользователя через Auth UI или вручную в консоли Firebase
                     message.innerText = "Ошибка: Сначала зарегистрируйтесь на сайте";
                     message.className = "error";
                 } else {
@@ -212,38 +212,57 @@
 
         async function loadFighters() {
             const tbody = document.getElementById('adminTableBody');
-            tbody.innerHTML = '<tr><td colspan="5">Загрузка...</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="5">Загрузка...<tr></tr>';
             
             try {
                 const fightersRef = collection(db, "fighters");
                 const q = query(fightersRef, orderBy("points", "desc"));
                 const querySnapshot = await getDocs(q);
                 
-                tbody.innerHTML = '';
+                allFighters = [];
                 querySnapshot.forEach((doc) => {
-                    const fighter = doc.data();
-                    const row = document.createElement('tr');
-                    row.innerHTML = `
-                        <td><strong>${fighter.name || 'Без имени'}</strong><br><small>${fighter.email || ''}</small></td>
-                        <td>${fighter.sport || '—'}</td>
-                        <td>${fighter.city || '—'}</td>
-                        <td id="points-${doc.id}">${fighter.points || 0}</td>
-                        <td class="points-control">
-                         <button onclick="changePoints('${doc.id}', 100)">+100</button>
-                         <button onclick="changePoints('${doc.id}', 10)">+10</button>
-                         <button onclick="changePoints('${doc.id}', 1)">+1</button>
-                         <button class="danger" onclick="changePoints('${doc.id}', -1)">-1</button>
-                         <button class="danger" onclick="changePoints('${doc.id}', -10)">-10</button>
-                         <button class="danger" onclick="changePoints('${doc.id}', -100)">-100</button>
-                         <button class="danger" onclick="deleteFighter('${doc.id}')" style="background:#dc2626; margin-left:10px;">🗑 Удалить</button>
-                        </td>
-                    `;
-                    tbody.appendChild(row);
+                    allFighters.push({
+                        id: doc.id,
+                        ...doc.data()
+                    });
                 });
+                
+                renderFighters(allFighters);
+                
             } catch (error) {
                 console.error("Ошибка загрузки:", error);
                 tbody.innerHTML = '<tr><td colspan="5">Ошибка загрузки</td></tr>';
             }
+        }
+
+        function renderFighters(fighters) {
+            const tbody = document.getElementById('adminTableBody');
+            tbody.innerHTML = '';
+            
+            if (fighters.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">Бойцы не найдены</td></tr>';
+                return;
+            }
+            
+            fighters.forEach((fighter) => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td><strong>${fighter.name || 'Без имени'}</strong><br><small>${fighter.email || ''}</small></td>
+                    <td>${fighter.sport || '—'}</td>
+                    <td>${fighter.city || '—'}</td>
+                    <td id="points-${fighter.id}">${fighter.points || 0}</td>
+                    <td class="points-control">
+                        <button onclick="changePoints('${fighter.id}', 100)">+100</button>
+                        <button onclick="changePoints('${fighter.id}', 10)">+10</button>
+                        <button onclick="changePoints('${fighter.id}', 1)">+1</button>
+                        <button class="danger" onclick="changePoints('${fighter.id}', -1)">-1</button>
+                        <button class="danger" onclick="changePoints('${fighter.id}', -10)">-10</button>
+                        <button class="danger" onclick="changePoints('${fighter.id}', -100)">-100</button>
+                        <button class="danger" onclick="deleteFighter('${fighter.id}')" style="background:#8b0000; margin-left:10px;">🗑 Удалить</button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
         }
 
         window.changePoints = async function(uid, delta) {
@@ -262,39 +281,39 @@
             }
         };
 
+        window.deleteFighter = async function(uid) {
+            const confirmDelete = confirm("Точно удалить этого бойца? Данные восстановить будет нельзя.");
+            if (!confirmDelete) return;
+            
+            try {
+                const fighterRef = doc(db, "fighters", uid);
+                await deleteDoc(fighterRef);
+                alert("Боец удалён");
+                loadFighters();
+            } catch (error) {
+                console.error("Ошибка удаления:", error);
+                alert("Ошибка: " + error.message);
+            }
+        };
+
+        document.getElementById('searchFighter').addEventListener('input', function(e) {
+            const searchTerm = e.target.value.toLowerCase();
+            const filtered = allFighters.filter(fighter => 
+                (fighter.name && fighter.name.toLowerCase().includes(searchTerm)) ||
+                (fighter.email && fighter.email.toLowerCase().includes(searchTerm))
+            );
+            renderFighters(filtered);
+        });
+
         onAuthStateChanged(auth, (user) => {
             if (user && user.email === ADMIN_EMAIL) {
                 document.getElementById('loginSection').classList.add('hidden');
                 document.getElementById('adminPanel').classList.remove('hidden');
                 loadFighters();
-            } else if (user) {
+            } else if (user && user.email !== ADMIN_EMAIL) {
                 signOut(auth);
             }
         });
-        window.deleteFighter = async function(uid) {
-    const confirmDelete = confirm("Точно удалить этого бойца? Данные восстановить будет нельзя.");
-    if (!confirmDelete) return;
-    
-    try {
-        // Ссылка на документ в коллекции fighters
-        const fighterRef = doc(db, "fighters", uid);
-        
-        // Удаляем документ
-        await deleteDoc(fighterRef);
-        
-        // Показываем сообщение
-        alert("Боец удалён");
-        
-        // Обновляем список бойцов в админке
-        loadFighters();
-        
-        // Дополнительно: если хочешь удалить и пользователя из Authentication,
-        // нужно добавить отдельный вызов (но это сложнее, пока пропустим)
-    } catch (error) {
-        console.error("Ошибка удаления:", error);
-        alert("Ошибка: " + error.message);
-    }
-};
     </script>
 </body>
 </html>
