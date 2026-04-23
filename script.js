@@ -103,7 +103,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     city: city,
                     sport: sport,
                     weight: weight,
-                    points: 0,
+                    points: 50,
                     bio: ""
                 };
                 
