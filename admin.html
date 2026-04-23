@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Админка | PRORANK</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .admin-container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 1rem;
+        }
+        .admin-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+        .logout-btn {
+            background: #dc2626;
+            color: white;
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        .fighters-list {
+            background: #1f1f1f;
+            border-radius: 12px;
+            overflow-x: auto;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid #333;
+        }
+        th {
+            background: #2a2a2a;
+            color: #fbbf24;
+        }
+        .points-control {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+        }
+        .points-control button {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 0.25rem 0.75rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+        .points-control button.danger {
+            background: #dc2626;
+        }
+        .login-form {
+            background: #1f1f1f;
+            padding: 2rem;
+            border-radius: 12px;
+            max-width: 400px;
+            margin: 3rem auto;
+            text-align: center;
+        }
+        .login-form input {
+            width: 100%;
+            padding: 0.75rem;
+            margin: 0.5rem 0;
+            background: #2a2a2a;
+            border: 1px solid #333;
+            color: white;
+            border-radius: 8px;
+        }
+        .login-form button {
+            background: #fbbf24;
+            color: black;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            margin-top: 1rem;
+        }
+        .hidden {
+            display: none;
+        }
+        .success {
+            color: #10b981;
+        }
+        .error {
+            color: #ef4444;
+        }
+    </style>
+</head>
+<body>
+    <header class="navbar">
+        <div class="logo" onclick="window.location='index.html'" style="cursor:pointer">PRO<span>RANK</span></div>
+        <nav class="nav-links">
+            <a href="index.html">Рейтинг</a>
+        </nav>
+    </header>
+
+    <div class="admin-container">
+        <div id="loginSection" class="login-form">
+            <h2>Вход в админку</h2>
+            <input type="email" id="adminEmail" placeholder="Email">
+            <button onclick="login()">Войти</button>
+            <p id="loginMessage"></p>
+        </div>
+
+        <div id="adminPanel" class="hidden">
+            <div class="admin-header">
+                <h1>Управление рейтингом</h1>
+                <button class="logout-btn" onclick="logout()">Выйти</button>
+            </div>
+            <div class="fighters-list">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Имя</th>
+                            <th>Вид спорта</th>
+                            <th>Город</th>
+                            <th>Очки</th>
+                            <th>Управление</th>
+                        </tr>
+                    </thead>
+                    <tbody id="adminTableBody">
+                        <tr><td colspan="5">Загрузка...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script type="importmap">
+        {
+            "imports": {
+                "firebase/app": "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js",
+                "firebase/firestore": "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js",
+                "firebase/auth": "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js"
+            }
+        }
+    </script>
+    <script type="module">
+        import { initializeApp } from "firebase/app";
+        import { getFirestore, collection, getDocs, doc, updateDoc, query, orderBy, deleteDoc } from "firebase/firestore";
+        import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "firebase/auth";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDUGYJY7pX7q02MS5SACMIIQXpjpQ97mPw",
+            authDomain: "proranklive.firebaseapp.com",
+            projectId: "proranklive",
+            storageBucket: "proranklive.firebasestorage.app",
+            messagingSenderId: "716836144015",
+            appId: "1:716836144015:web:f1575147750608d0f881fa"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+
+        const ADMIN_EMAIL = "ilez68414@gmail.com"; // ← ЗАМЕНИ НА СВОЙ EMAIL
+
+        window.login = async function() {
+            const email = document.getElementById('adminEmail').value;
+            const message = document.getElementById('loginMessage');
+            
+            if (email !== ADMIN_EMAIL) {
+                message.innerText = "Неверный email";
+                message.className = "error";
+                return;
+            }
+            
+            try {
+                // Пытаемся войти с временным паролем (пользователь уже существует в Auth)
+                // Если пользователь не существует, создаём его
+                await signInWithEmailAndPassword(auth, email, "Admin123456");
+                message.innerText = "Вход выполнен!";
+                message.className = "success";
+                setTimeout(() => {
+                    document.getElementById('loginSection').classList.add('hidden');
+                    document.getElementById('adminPanel').classList.remove('hidden');
+                    loadFighters();
+                }, 500);
+            } catch (error) {
+                if (error.code === 'auth/user-not-found') {
+                    // Если пользователя нет, создаём его
+                    message.innerText = "Создаём администратора...";
+                    message.className = "success";
+                    // Здесь нужно создать пользователя через Auth UI или вручную в консоли Firebase
+                    message.innerText = "Ошибка: Сначала зарегистрируйтесь на сайте";
+                    message.className = "error";
+                } else {
+                    message.innerText = "Ошибка: " + error.message;
+                    message.className = "error";
+                }
+            }
+        };
+
+        window.logout = async function() {
+            await signOut(auth);
+            document.getElementById('loginSection').classList.remove('hidden');
+            document.getElementById('adminPanel').classList.add('hidden');
+            document.getElementById('adminEmail').value = '';
+        };
+
+        async function loadFighters() {
+            const tbody = document.getElementById('adminTableBody');
+            tbody.innerHTML = '<tr><td colspan="5">Загрузка...</td></tr>';
+            
+            try {
+                const fightersRef = collection(db, "fighters");
+                const q = query(fightersRef, orderBy("points", "desc"));
+                const querySnapshot = await getDocs(q);
+                
+                tbody.innerHTML = '';
+                querySnapshot.forEach((doc) => {
+                    const fighter = doc.data();
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td><strong>${fighter.name || 'Без имени'}</strong><br><small>${fighter.email || ''}</small></td>
+                        <td>${fighter.sport || '—'}</td>
+                        <td>${fighter.city || '—'}</td>
+                        <td id="points-${doc.id}">${fighter.points || 0}</td>
+                        <td class="points-control">
+                         <button onclick="changePoints('${doc.id}', 100)">+100</button>
+                         <button onclick="changePoints('${doc.id}', 10)">+10</button>
+                         <button onclick="changePoints('${doc.id}', 1)">+1</button>
+                         <button class="danger" onclick="changePoints('${doc.id}', -1)">-1</button>
+                         <button class="danger" onclick="changePoints('${doc.id}', -10)">-10</button>
+                         <button class="danger" onclick="changePoints('${doc.id}', -100)">-100</button>
+                         <button class="danger" onclick="deleteFighter('${doc.id}')" style="background:#dc2626; margin-left:10px;">🗑 Удалить</button>
+                        </td>
+                    `;
+                    tbody.appendChild(row);
+                });
+            } catch (error) {
+                console.error("Ошибка загрузки:", error);
+                tbody.innerHTML = '<tr><td colspan="5">Ошибка загрузки</td></tr>';
+            }
+        }
+
+        window.changePoints = async function(uid, delta) {
+            try {
+                const fighterRef = doc(db, "fighters", uid);
+                const currentPointsSpan = document.getElementById(`points-${uid}`);
+                if (currentPointsSpan) {
+                    const currentPoints = parseInt(currentPointsSpan.innerText) || 0;
+                    const newPoints = currentPoints + delta;
+                    await updateDoc(fighterRef, { points: newPoints });
+                    currentPointsSpan.innerText = newPoints;
+                }
+            } catch (error) {
+                console.error("Ошибка изменения очков:", error);
+                alert("Ошибка: " + error.message);
+            }
+        };
+
+        onAuthStateChanged(auth, (user) => {
+            if (user && user.email === ADMIN_EMAIL) {
+                document.getElementById('loginSection').classList.add('hidden');
+                document.getElementById('adminPanel').classList.remove('hidden');
+                loadFighters();
+            } else if (user) {
+                signOut(auth);
+            }
+        });
+        window.deleteFighter = async function(uid) {
+    const confirmDelete = confirm("Точно удалить этого бойца? Данные восстановить будет нельзя.");
+    if (!confirmDelete) return;
+    
+    try {
+        // Ссылка на документ в коллекции fighters
+        const fighterRef = doc(db, "fighters", uid);
+        
+        // Удаляем документ
+        await deleteDoc(fighterRef);
+        
+        // Показываем сообщение
+        alert("Боец удалён");
+        
+        // Обновляем список бойцов в админке
+        loadFighters();
+        
+        // Дополнительно: если хочешь удалить и пользователя из Authentication,
+        // нужно добавить отдельный вызов (но это сложнее, пока пропустим)
+    } catch (error) {
+        console.error("Ошибка удаления:", error);
+        alert("Ошибка: " + error.message);
+    }
+};
+    </script>
+</body>
+</html>

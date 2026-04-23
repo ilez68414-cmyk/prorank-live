@@ -1,0 +1,498 @@
+html {
+    scroll-behavior: smooth;
+}
+
+/* Обнуление и база */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #0f0f0f;
+    color: #fff;
+    line-height: 1.6;
+}
+
+.container { max-width: 1100px; margin: 0 auto; padding: 0 20px; }
+
+/* Flexbox Навигация */
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 5%;
+    background: #1a1a1a;
+    border-bottom: 2px solid #ffcc00;
+}
+.logo { font-size: 1.5rem; font-weight: bold; }
+.logo span { color: #ffcc00; }
+.nav-links { display: flex; gap: 25px; align-items: center; }
+.nav-links a { color: white; text-decoration: none; font-weight: 500; }
+
+/* Главный заголовок */
+.hero { text-align: center; padding: 60px 0; }
+.hero h1 { font-size: 3rem; text-transform: uppercase; }
+.hero h1 span { color: #ffcc00; }
+
+/* Сетка (Grid) для десктопа */
+.main-grid {
+    display: flex; /* Используем флекс для разделения таблицы и формы */
+    gap: 40px;
+    align-items: flex-start;
+}
+
+/* Таблица */
+.rating-section { flex: 2; }
+.rating-table { width: 100%; border-collapse: collapse; background: #1a1a1a; border-radius: 10px; overflow: hidden; }
+.rating-table th { background: #ffcc00; color: black; padding: 15px; text-align: left; }
+.rating-table td { padding: 15px; border-bottom: 1px solid #333; }
+.points { color: #ffcc00; font-weight: bold; }
+
+/* Форма */
+.form-section { flex: 1; }
+.form-card { background: #222; padding: 30px; border-radius: 15px; border-top: 4px solid #ffcc00; }
+.input-group { margin-bottom: 15px; }
+.input-group label { display: block; margin-bottom: 5px; font-size: 0.9rem; color: #aaa; }
+.input-group input { width: 100%; padding: 12px; background: #333; border: 1px solid #444; color: white; border-radius: 5px; }
+.submit-btn { width: 100%; padding: 15px; background: #ffcc00; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; transition: 0.3s; }
+.submit-btn:hover { background: #e6b800; }
+
+/* АДАПТИВ (Для телефонов) */
+@media (max-width: 850px) {
+    .main-grid { flex-direction: column; } /* Складываем таблицу и форму в колонку */
+    .hero h1 { font-size: 2rem; }
+    .navbar { padding: 15px; }
+    .nav-links { display: none; } /* Прячем меню на мобилках для простоты */
+}
+/* 1. Сначала общие настройки ссылок */
+.nav-links {
+    display: flex;
+    gap: 25px;
+    align-items: center;
+}
+
+.nav-links a {
+    color: #aaaaaa;
+    text-decoration: none;
+    font-weight: 500;
+    position: relative;    /* Чтобы полоска не улетала */
+    padding-bottom: 5px;
+    transition: 0.3s;      /* Плавная смена цвета текста */
+}
+
+/* 2. Сама полоска (пока скрыта) */
+.nav-links a::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 0;              /* Ширина 0 — полоски не видно */
+    height: 2px;
+    background-color: #ffcc00;
+    transition: 0.3s;      /* Плавное выезжание полоски */
+}
+
+/* 3. Что происходит ПРИ НАВЕДЕНИИ */
+.nav-links a:hover {
+    color: #ffffff;        /* Текст становится белым */
+}
+
+.nav-links a:hover::after {
+    width: 100%;           /* Полоска растягивается на всю длину */
+}
+/* Стили для подвала */
+.main-footer {
+    background-color: #1a1a1a;
+    padding: 60px 0 20px 0;
+    margin-top: 80px; /* Отступ от контента */
+    border-top: 1px solid #333;
+}
+
+.footer-content {
+    display: flex;         /* Снова Flexbox! */
+    justify-content: space-between;
+    flex-wrap: wrap;       /* Чтобы на телефонах блоки переносились */
+    gap: 40px;
+}
+
+.footer-logo p {
+    color: #888;
+    margin-top: 10px;
+    font-size: 0.9rem;
+}
+
+.footer-links h4, .footer-social h4 {
+    color: #ffcc00;
+    margin-bottom: 20px;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+}
+
+.footer-links {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.footer-links a, .social-link {
+    color: #ccc;
+    text-decoration: none;
+    transition: 0.3s;
+}
+
+.footer-links a:hover, .social-link:hover {
+    color: #fff;
+    padding-left: 5px; /* Небольшой эффект при наведении */
+}
+
+.social-icons {
+    display: flex;
+    gap: 15px;
+}
+
+.footer-bottom {
+    text-align: center;
+    margin-top: 50px;
+    padding-top: 20px;
+    border-top: 1px solid #252525;
+    color: #555;
+    font-size: 0.8rem;
+}
+
+/* Адаптив для подвала */
+@media (max-width: 600px) {
+    .footer-content {
+        flex-direction: column;
+        text-align: center;
+    }
+    .social-icons {
+        justify-content: center;
+    }
+}
+/* Настраиваем ссылки в подвале под анимацию */
+.footer-links a, .social-link {
+    color: #ccc;
+    text-decoration: none;
+    position: relative;    /* База для полоски */
+    display: inline-block; /* Чтобы полоска была шириной только с текст */
+    padding-bottom: 2px;
+    transition: 0.3s;
+}
+
+/* Создаем саму полоску для футера */
+.footer-links a::after, .social-link::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 0;              /* Сначала полоски нет */
+    height: 2px;
+    background-color: #ffcc00;
+    transition: width 0.3s; /* Плавное появление */
+}
+
+/* Эффект при наведении на ссылки в подвале */
+.footer-links a:hover, .social-link:hover {
+    color: #fff;
+}
+
+/* Полоска выезжает на 100% при наведении */
+.footer-links a:hover::after, .social-link:hover::after {
+    width: 100%;
+}
+/* Выделение ТОП-3 мест в рейтинге */
+.rating-table tbody tr:nth-child(1) {
+    background: linear-gradient(90deg, rgba(255, 215, 0, 0.15) 0%, transparent 100%);
+    box-shadow: inset 4px 0 0 #ffd700;
+}
+.rating-table tbody tr:nth-child(1) td:first-child {
+    color: #ffd700;
+    font-size: 1.4rem;
+    text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+}
+
+.rating-table tbody tr:nth-child(2) {
+    background: linear-gradient(90deg, rgba(192, 192, 192, 0.1) 0%, transparent 100%);
+    box-shadow: inset 4px 0 0 #c0c0c0;
+}
+.rating-table tbody tr:nth-child(2) td:first-child {
+    color: #c0c0c0;
+    font-size: 1.2rem;
+}
+
+.rating-table tbody tr:nth-child(3) {
+    background: linear-gradient(90deg, rgba(205, 127, 50, 0.1) 0%, transparent 100%);
+    box-shadow: inset 4px 0 0 #cd7f32;
+}
+.rating-table tbody tr:nth-child(3) td:first-child {
+    color: #cd7f32;
+    font-size: 1.1rem;
+}
+/* Стили профиля */
+.profile-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #1a1a1a;
+    padding: 40px;
+    border-radius: 20px;
+    margin-top: 40px;
+    border: 1px solid #333;
+}
+
+.profile-info {
+    display: flex;
+    gap: 30px;
+    align-items: center;
+}
+
+.profile-avatar {
+    position: relative;
+}
+
+.profile-avatar img {
+    width: 150px; /* или тот размер, который у тебя в верстке */
+    height: 150px;
+    border-radius: 50%; /* чтобы была круглой */
+    object-fit: cover;
+}
+
+
+.rank-badge {
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    background: #ffcc00;
+    color: #000;
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-weight: bold;
+}
+
+.profile-text h1 { font-size: 2.5rem; margin-bottom: 5px; }
+.specialization { color: #ffcc00; font-weight: bold; margin-bottom: 5px; }
+.location { color: #888; margin-bottom: 20px; }
+
+.action-buttons { display: flex; gap: 10px; }
+
+.btn-challenge {
+    background: #ffcc00;
+    border: none;
+    padding: 12px 25px;
+    border-radius: 5px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.btn-message {
+    background: transparent;
+    border: 1px solid #fff;
+    color: #fff;
+    padding: 12px 25px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.btn-challenge:hover { background: #fff; }
+.btn-message:hover { background: #fff; color: #000; }
+
+/* Статистика */
+.profile-stats {
+    display: flex;
+    gap: 40px;
+    text-align: center;
+}
+
+.stat-value { display: block; font-size: 2rem; font-weight: bold; color: #ffcc00; }
+.stat-label { color: #888; text-transform: uppercase; font-size: 0.8rem; }
+
+.profile-bio {
+    margin-top: 40px;
+    background: #1a1a1a;
+    padding: 30px;
+    border-radius: 20px;
+}
+
+/* Адаптив для профиля */
+@media (max-width: 900px) {
+    .profile-header { flex-direction: column; text-align: center; gap: 30px; }
+    .profile-info { flex-direction: column; }
+    .profile-stats { gap: 20px; }
+}
+.rating-filters {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+.filter-btn {
+    background: #222;
+    border: 1px solid #444;
+    color: #888;
+    padding: 8px 20px;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: 0.3s;
+    font-size: 0.9rem;
+}
+
+.filter-btn:hover {
+    color: #fff;
+    border-color: #ffcc00;
+}
+
+.filter-btn.active {
+    background: #ffcc00;
+    color: #000;
+    border-color: #ffcc00;
+    font-weight: bold;
+}
+.search-container {
+    margin-bottom: 15px;
+}
+#rankSearch {
+    width: 100%;
+    padding: 12px 20px;
+    background: #1a1a1a;
+    border: 1px solid #333;
+    border-radius: 10px;
+    color: white;
+    font-size: 1rem;
+    outline: none;
+    transition: 0.3s;
+}
+#rankSearch:focus {
+    border-color: #ffcc00;
+    box-shadow: 0 0 10px rgba(255, 204, 0, 0.2);
+}
+.footer-about {
+    flex: 1;
+    min-width: 250px;
+    margin-right: 20px;
+}
+
+.footer-about h4 {
+    color: #ffcc00;
+    margin-bottom: 15px;
+    text-transform: uppercase;
+    font-size: 0.9rem;
+}
+
+.footer-about p {
+    color: #888;
+    font-size: 0.9rem;
+    line-height: 1.6;
+}
+
+/* На мобилках блоки будут друг под другом */
+@media (max-width: 768px) {
+    .footer-content {
+        flex-direction: column;
+        gap: 30px;
+    }
+}
+/* Стили для выпадающего списка (select) */
+#userSport {
+    width: 100%;
+    padding: 12px;
+    background-color: #2a2a2a; /* Цвет как у твоих инпутов */
+    border: 1px solid #444;
+    border-radius: 5px;
+    color: #fff;
+    font-size: 16px;
+    appearance: none; /* Убираем стандартную стрелочку браузера */
+    cursor: pointer;
+    outline: none;
+    transition: border-color 0.3s ease;
+}
+
+#userSport:focus {
+    border-color: #d4af37; /* Золотое свечение при клике (под твой стиль) */
+}
+
+/* Добавляем кастомную стрелочку, так как мы скрыли стандартную */
+.input-group {
+    position: relative;
+}
+
+#userSport {
+    background-image: url('data:image/svg+xml;charset=US-ASCII,<svg%20xmlns%3D"http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg"%20width%3D"24"%20height%3D"24"%20viewBox%3D"0%200%2024%2024" fill="none" stroke="%23ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline%20points%3D"6%209%2012%2015%2018%209"><%2Fpolyline><%2Fsvg>');
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    background-size: 18px;
+}
+
+/* Стиль для текста внутри списка (чтобы в Chrome не был белым на белом) */
+#userSport option {
+    background-color: #2a2a2a;
+    color: #fff;
+}
+/* Находим нашу картинку по ID и возвращаем ей стиль PRORANK */
+#profAvatar {
+    width: 150px;           /* Подставь свой размер, если он другой */
+    height: 150px;
+    border-radius: 50%;     /* Делаем круглой */
+    object-fit: cover;
+    
+    /* Тот самый золотой/желтый ободок */
+    border: 3px solid #d4af37; /* Золотой цвет под стиль сайта */
+    padding: 5px;              /* Небольшой отступ между фото и рамкой */
+    background-color: #2a2a2a; /* Фон внутри ободка */
+}
+/* Состояния видимости */
+.hidden {
+    display: none !important;
+}
+
+/* Стилизация аватара и загрузки */
+.profile-avatar {
+    position: relative;
+    cursor: pointer;
+    overflow: hidden;
+}
+
+/* Этот эффект сработает только если у аватара есть класс is-owner */
+.profile-avatar.is-owner:hover::after {
+    content: "ИЗМЕНИТЬ";
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    color: #d4af37;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    font-weight: bold;
+}
+
+
+#fileInput {
+    display: none;
+}
+
+/* Поле ввода био */
+#bioInput {
+    width: 100%;
+    background: #1a1a1a;
+    color: #fff;
+    border: 1px solid #d4af37;
+    padding: 15px;
+    border-radius: 8px;
+    font-family: inherit;
+    resize: none;
+    margin-top: 10px;
+}
+
+/* Кнопка сохранить (золотая) */
+.btn-save {
+    background: #d4af37;
+    color: #000;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    font-weight: bold;
+    cursor: pointer;
+}
+.hidden { display: none !important; }
+

@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PRO-Рейтинг | Любительский Спорт</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- Навигация (Flexbox) -->
+    <header class="navbar">
+        <div class="logo">PRO<span>RANK</span></div>
+        <nav class="nav-links">
+            <a href="index.html">Рейтинг</a>
+            <a href="#about">О проекте</a>
+            <a href="#join" class="btn-primary">Войти</a>
+            
+
+        </nav>
+    </header>
+
+
+    <main class="container">
+        <!-- Блок главного героя (Hero) -->
+        <section class="hero">
+            <h1>Стань номером один в <br><span>своем городе</span></h1>
+            <p>Первая соцсеть для спортсменов-любителей. Спарринги, достижения и честный рейтинг.</p>
+        </section>
+
+        <!-- Основной контент: Рейтинг и Форма -->
+        <div class="main-grid">
+            
+            <!-- Таблица рейтинга -->
+            <section class="rating-section">
+                <h2>Топ Атлетов: Бокс</h2>
+                <div class="search-container">
+    <input type="text" id="rankSearch" placeholder="Поиск бойца по имени...">
+</div>
+
+                <div class="rating-filters">
+    <button class="filter-btn" onclick="window.location='index.html'">Все виды</button>
+    <button class="filter-btn active" onclick="window.location='boxing.html'">Бокс</button>
+    <button class="filter-btn" onclick="window.location='wrestling.html'">Борьба</button>
+    <button class="filter-btn" onclick="window.location='mma.html'">ММА</button>
+</div>
+
+                <table class="rating-table">
+                    <thead>
+                        <tr>
+                            <th>№</th>
+                            <th>Спортсмен</th>
+                            <th>Город</th>
+                            <th>Баллы</th>
+                        </tr>
+                    </thead>
+                    <tbody id="ratingTableBody">
+                        
+                    </tbody>
+                </table>
+            </section>
+
+           <!-- Обновленная форма регистрации для работы JS -->
+<aside id="join" class="form-section">
+    <div class="form-card">
+        <h3>Попасть в рейтинг</h3>
+        <form id="registrationForm">
+            <div class="input-group">
+                <label>Имя Фамилия</label>
+                <input type="text" id="userName" placeholder="Иван Иванов" required>
+            </div>
+            <div class="input-group">
+                <label>Email</label>
+                <input type="email" id="userEmail" placeholder="example@mail.ru" required>
+            </div>
+            <div class="input-group">
+                 <label>Город</label>
+                 <input type="text" id="userCity" placeholder="Назрань" required>
+             </div>
+             <div class="input-group">
+                 <label>Вес (кг)</label>
+                 <input type="number" id="userWeight" placeholder="70" required>
+             </div>
+             <div class="input-group">
+                 <label>Пароль</label>
+                 <input type="password" id="userPassword" placeholder="Придумайте пароль" required>
+             </div>
+            <div class="input-group">
+                <label>Вид спорта</label>
+                <select id="userSport" required>
+                    <option value="">Выберите спорт</option>
+                    <option value="Бокс">Бокс</option>
+                    <option value="Борьба">Борьба</option>
+                    <option value="ММА">ММА</option>
+                </select>
+            </div>
+            <button type="submit" class="submit-btn">Отправить заявку</button>
+        </form>
+    </div>
+</aside>
+        </div>
+    </main>
+<footer id="about" class="main-footer">
+    <div class="container footer-content">
+        <!-- Логотип и краткое инфо -->
+        <div class="footer-logo">
+            <div class="logo">PRO<span>RANK</span></div>
+            <p>Рейтинг любительского спорта России</p>
+        </div>
+
+        <!-- НОВЫЙ БЛОК: Описание проекта -->
+        <div class="footer-about">
+            <h4>О проекте</h4>
+            <p>Мы создаем платформу, где каждый спортсмен-любитель может отслеживать свой прогресс, находить достойных соперников и занимать заслуженное место в рейтинге. Наша миссия — развивать культуру спорта и честной конкуренции.</p>
+        </div>
+        
+        <div class="footer-links">
+            <h4>Навигация</h4>
+            <a href="#about">О нас</a>
+            <a href="#">Правила рейтинга</a>
+            <a href="#">Поддержать проект</a>
+        </div>
+
+        <div class="footer-social">
+            <h4>Мы в сети</h4>
+            <div class="social-icons">
+                <a href="#" class="social-link">Telegram</a>
+                <a href="#" class="social-link">VK</a>
+                <a href="#" class="social-link">YouTube</a>
+            </div>
+        </div>
+    </div>
+    <div class="footer-bottom">
+        <p>&copy; 2026 PRORANK. Сделано для тех, кто в зале.</p>
+    </div>
+</footer>
+
+<script>
+document.getElementById('rankSearch').addEventListener('keyup', function() {
+    let filter = this.value.toLowerCase();
+    let rows = document.querySelectorAll('.rating-table tbody tr');
+
+    rows.forEach(row => {
+        let name = row.querySelector('td:nth-child(2)').textContent.toLowerCase();
+        if (name.includes(filter)) {
+            row.style.display = '';
+        } else {
+            row.style.display = 'none';
+        }
+    });
+});
+</script>
+<!-- Firebase SDK через CDN -->
+<script type="importmap">
+  {
+    "imports": {
+      "firebase/app": "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js",
+      "firebase/firestore": "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js",
+      "firebase/auth": "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js"
+    }
+  }
+</script>
+
+<script type="module" src="script.js"></script>
+</body>
+
+</html>
