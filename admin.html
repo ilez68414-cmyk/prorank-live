@@ -16,6 +16,8 @@
             justify-content: space-between;
             align-items: center;
             margin-bottom: 2rem;
+            flex-wrap: wrap;
+            gap: 1rem;
         }
         .logout-btn {
             background: #dc2626;
@@ -47,6 +49,7 @@
             display: flex;
             gap: 0.5rem;
             align-items: center;
+            flex-wrap: wrap;
         }
         .points-control button {
             background: #3b82f6;
@@ -59,6 +62,10 @@
         }
         .points-control button.danger {
             background: #dc2626;
+        }
+        .points-control button.edit {
+            background: #fbbf24;
+            color: black;
         }
         .login-form {
             background: #1f1f1f;
@@ -96,6 +103,27 @@
         .error {
             color: #ef4444;
         }
+        dialog {
+            background: #1f1f1f;
+            border: 1px solid #333;
+            border-radius: 12px;
+            padding: 1.5rem;
+            color: white;
+        }
+        dialog input, dialog select {
+            width: 100%;
+            padding: 0.5rem;
+            margin: 0.5rem 0;
+            background: #2a2a2a;
+            border: 1px solid #333;
+            color: white;
+            border-radius: 6px;
+        }
+        dialog button {
+            margin-top: 1rem;
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
@@ -117,11 +145,9 @@
         <div id="adminPanel" class="hidden">
             <div class="admin-header">
                 <h1>Управление рейтингом</h1>
-                <button class="logout-btn" onclick="logout()">Выйти</button>
-            </div>
-            <div style="margin-bottom: 20px;">
                 <input type="text" id="searchFighter" placeholder="🔍 Поиск по имени или email..." 
                        style="width: 300px; padding: 10px; background: #2a2a2a; border: 1px solid #333; color: white; border-radius: 8px;">
+                <button class="logout-btn" onclick="logout()">Выйти</button>
             </div>
             <div class="fighters-list">
                 <table>
@@ -141,6 +167,22 @@
             </div>
         </div>
     </div>
+
+    <dialog id="editDialog">
+        <h3>Редактировать бойца</h3>
+        <input type="text" id="editName" placeholder="Имя">
+        <input type="text" id="editCity" placeholder="Город">
+        <input type="number" id="editWeight" placeholder="Вес">
+        <select id="editSport">
+            <option value="Бокс">Бокс</option>
+            <option value="Борьба">Борьба</option>
+            <option value="ММА">ММА</option>
+        </select>
+        <div style="display: flex; gap: 1rem; margin-top: 1rem;">
+            <button id="saveEditBtn">Сохранить</button>
+            <button id="cancelEditBtn">Отмена</button>
+        </div>
+    </dialog>
 
     <script type="importmap">
         {
@@ -170,8 +212,8 @@
         const auth = getAuth(app);
 
         const ADMIN_EMAIL = "ilez68414@gmail.com";
-
         let allFighters = [];
+        let currentEditId = null;
 
         window.login = async function() {
             const email = document.getElementById('adminEmail').value;
@@ -212,7 +254,7 @@
 
         async function loadFighters() {
             const tbody = document.getElementById('adminTableBody');
-            tbody.innerHTML = '<tr><td colspan="5">Загрузка...<tr></tr>';
+            tbody.innerHTML = '<tr><td colspan="5">Загрузка...</td></tr>';
             
             try {
                 const fightersRef = collection(db, "fighters");
@@ -228,7 +270,6 @@
                 });
                 
                 renderFighters(allFighters);
-                
             } catch (error) {
                 console.error("Ошибка загрузки:", error);
                 tbody.innerHTML = '<tr><td colspan="5">Ошибка загрузки</td></tr>';
@@ -258,12 +299,46 @@
                         <button class="danger" onclick="changePoints('${fighter.id}', -1)">-1</button>
                         <button class="danger" onclick="changePoints('${fighter.id}', -10)">-10</button>
                         <button class="danger" onclick="changePoints('${fighter.id}', -100)">-100</button>
-                        <button class="danger" onclick="deleteFighter('${fighter.id}')" style="background:#8b0000; margin-left:10px;">🗑 Удалить</button>
+                        <button class="edit" onclick="openEditDialog('${fighter.id}')">✏️ Ред.</button>
+                        <button class="danger" onclick="deleteFighter('${fighter.id}')" style="background:#8b0000;">🗑 Удалить</button>
                     </td>
                 `;
                 tbody.appendChild(row);
             });
         }
+
+        window.openEditDialog = function(uid) {
+            const fighter = allFighters.find(f => f.id === uid);
+            if (!fighter) return;
+            currentEditId = uid;
+            document.getElementById('editName').value = fighter.name || '';
+            document.getElementById('editCity').value = fighter.city || '';
+            document.getElementById('editWeight').value = fighter.weight || '';
+            document.getElementById('editSport').value = fighter.sport || 'Бокс';
+            document.getElementById('editDialog').showModal();
+        };
+
+        document.getElementById('saveEditBtn').onclick = async () => {
+            const updatedData = {
+                name: document.getElementById('editName').value,
+                city: document.getElementById('editCity').value,
+                weight: parseInt(document.getElementById('editWeight').value) || 0,
+                sport: document.getElementById('editSport').value
+            };
+            try {
+                const fighterRef = doc(db, "fighters", currentEditId);
+                await updateDoc(fighterRef, updatedData);
+                alert("Данные обновлены");
+                document.getElementById('editDialog').close();
+                loadFighters();
+            } catch (error) {
+                alert("Ошибка: " + error.message);
+            }
+        };
+
+        document.getElementById('cancelEditBtn').onclick = () => {
+            document.getElementById('editDialog').close();
+        };
 
         window.changePoints = async function(uid, delta) {
             try {
@@ -284,14 +359,11 @@
         window.deleteFighter = async function(uid) {
             const confirmDelete = confirm("Точно удалить этого бойца? Данные восстановить будет нельзя.");
             if (!confirmDelete) return;
-            
             try {
-                const fighterRef = doc(db, "fighters", uid);
-                await deleteDoc(fighterRef);
+                await deleteDoc(doc(db, "fighters", uid));
                 alert("Боец удалён");
                 loadFighters();
             } catch (error) {
-                console.error("Ошибка удаления:", error);
                 alert("Ошибка: " + error.message);
             }
         };
