@@ -6,7 +6,6 @@
     <title>PRORANK | Рейтинг бойцов-любителей</title>
     <link rel="stylesheet" href="style.css">
     <style>
-        /* Базовые стили для главной */
         .top-fighters {
             background: #0f0f0f;
             border-radius: 2rem;
@@ -25,7 +24,6 @@
             gap: 1rem;
             margin-top: 1.5rem;
         }
-        /* КАРТОЧКА БОЙЦА — плавное увеличение, обводка, тень */
         .top-item {
             display: flex;
             align-items: center;
@@ -37,7 +35,6 @@
             cursor: pointer;
             border: 1px solid #2a2a2a;
         }
-        /* Эффект при наведении (hover) */
         .top-item:hover {
             background: #2a2a2a;
             transform: translateY(-3px) scale(1.01);
@@ -52,6 +49,14 @@
             text-align: center;
             text-shadow: 0 0 4px rgba(251,191,36,0.3);
         }
+        .top-avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            object-fit: cover;
+            background: #2a2a2a;
+            border: 2px solid #fbbf24;
+        }
         .top-name {
             font-weight: 600;
             flex: 1;
@@ -65,7 +70,6 @@
             border-radius: 40px;
             font-size: 0.9rem;
         }
-        /* Кнопка «Весь рейтинг» */
         .cta-button-outline {
             display: inline-block;
             background: transparent;
@@ -84,7 +88,6 @@
             transform: scale(1.02);
             box-shadow: 0 0 12px rgba(251,191,36,0.5);
         }
-        /* Обычная кнопка (Начать путь) */
         .cta-button {
             display: inline-block;
             background: #fbbf24;
@@ -134,16 +137,6 @@
             -webkit-background-clip: text;
             color: transparent;
         }
-        .rating-link {
-            color: #fbbf24;
-            font-weight: 500;
-            text-decoration: none;
-            transition: 0.2s;
-        }
-        .rating-link:hover {
-            text-decoration: underline;
-            opacity: 0.8;
-        }
         @media (max-width: 768px) {
             .two-columns {
                 grid-template-columns: 1fr;
@@ -151,6 +144,10 @@
             .top-rank {
                 width: 45px;
                 font-size: 1.3rem;
+            }
+            .top-avatar {
+                width: 40px;
+                height: 40px;
             }
         }
     </style>
@@ -267,6 +264,7 @@
         const db = getFirestore(app);
         const auth = getAuth(app);
 
+        // Загрузка топа по очкам (с аватарками)
         async function loadTopPoints() {
             const container = document.getElementById('topPointsList');
             try {
@@ -281,9 +279,11 @@
                 let rank = 1;
                 for (const docSnap of snapshot.docs) {
                     const fighter = docSnap.data();
+                    const avatarUrl = fighter.avatar || 'Avatar.png';
                     html += `
                         <div class="top-item" onclick="window.location.href='profile.html?id=${docSnap.id}'">
                             <div class="top-rank">${rank}</div>
+                            <img src="${avatarUrl}" class="top-avatar" alt="avatar" onerror="this.src='Avatar.png'">
                             <div class="top-name">${fighter.name || 'Боец'}</div>
                             <div class="top-points">${fighter.points || 0} очков</div>
                         </div>
@@ -292,11 +292,12 @@
                 }
                 container.innerHTML = html;
             } catch (error) {
-                console.error(error);
+                console.error("Ошибка загрузки топа по очкам:", error);
                 container.innerHTML = '<div>Ошибка загрузки</div>';
             }
         }
 
+        // Загрузка топа по лайкам (с аватарками)
         async function loadTopLikes() {
             const container = document.getElementById('topLikesList');
             try {
@@ -321,9 +322,11 @@
                     const fighterDoc = await getDoc(doc(db, "fighters", item.id));
                     if (fighterDoc.exists()) {
                         const fighter = fighterDoc.data();
+                        const avatarUrl = fighter.avatar || 'Avatar.png';
                         html += `
                             <div class="top-item" onclick="window.location.href='profile.html?id=${item.id}'">
                                 <div class="top-rank">${rank}</div>
+                                <img src="${avatarUrl}" class="top-avatar" alt="avatar" onerror="this.src='Avatar.png'">
                                 <div class="top-name">${fighter.name || 'Боец'}</div>
                                 <div class="top-points">❤️ ${item.count}</div>
                             </div>
@@ -333,7 +336,7 @@
                 }
                 container.innerHTML = html;
             } catch (error) {
-                console.error(error);
+                console.error("Ошибка загрузки топа по лайкам:", error);
                 container.innerHTML = '<div>Ошибка загрузки</div>';
             }
         }
