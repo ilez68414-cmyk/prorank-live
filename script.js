@@ -20,6 +20,10 @@ async function displayFighters() {
     const tableBody = document.getElementById('ratingTableBody');
     if (!tableBody) return;
 
+    // Удаляем строку загрузки, если есть
+    const loadingRow = document.getElementById('loadingRow');
+    if (loadingRow) loadingRow.remove();
+
     const fileName = window.location.pathname.split("/").pop() || 'index.html';
     let sportFilter = null;
     if (fileName.includes('boxing')) sportFilter = 'Бокс';
@@ -59,6 +63,7 @@ async function displayFighters() {
         }
     } catch (error) {
         console.error("Ошибка загрузки рейтинга:", error);
+        tableBody.innerHTML = `<tr><td colspan="4" style="text-align:center">Ошибка загрузки</td></tr>`;
     }
 }
 
@@ -92,7 +97,7 @@ async function loginUser(email, password) {
     }
 }
 
-// ========== ПЕРЕКЛЮЧЕНИЕ ТАБОВ (ВХОД / РЕГИСТРАЦИЯ) ==========
+// ========== ПЕРЕКЛЮЧЕНИЕ ТАБОВ ==========
 function initTabs() {
     const loginTab = document.getElementById('loginTabBtn');
     const registerTab = document.getElementById('registerTabBtn');
@@ -116,7 +121,7 @@ function initTabs() {
     }
 }
 
-// ========== НАВИГАЦИЯ (КНОПКА "МОЙ ПРОФИЛЬ") ==========
+// ========== НАВИГАЦИЯ ==========
 window.goToMyProfile = function() {
     if (auth.currentUser) {
         window.location.href = `profile.html?id=${auth.currentUser.uid}`;
@@ -140,15 +145,11 @@ function updateNavbar() {
 function hideAuthSectionOnLogin(user) {
     const authSection = document.getElementById('authSection');
     if (authSection) {
-        if (user) {
-            authSection.style.display = 'none';
-        } else {
-            authSection.style.display = 'block';
-        }
+        authSection.style.display = user ? 'none' : 'block';
     }
 }
 
-// ========== ОБРАБОТЧИКИ ФОРМ ==========
+// ========== ИНИЦИАЛИЗАЦИЯ ==========
 document.addEventListener('DOMContentLoaded', function() {
     // Форма регистрации
     const regForm = document.getElementById('registrationForm');
@@ -185,14 +186,11 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Вкладки
     initTabs();
-    
-    // Рейтинг
     displayFighters();
 });
 
-// ========== СЛЕЖЕНИЕ ЗА СОСТОЯНИЕМ АВТОРИЗАЦИИ ==========
+// ========== СЛЕЖЕНИЕ ЗА АВТОРИЗАЦИЕЙ ==========
 onAuthStateChanged(auth, (user) => {
     updateNavbar();
     hideAuthSectionOnLogin(user);
