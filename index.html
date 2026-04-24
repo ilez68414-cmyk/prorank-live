@@ -6,11 +6,18 @@
     <title>PRORANK | Рейтинг бойцов-любителей</title>
     <link rel="stylesheet" href="style.css">
     <style>
+        /* Базовые стили для главной */
         .top-fighters {
-            background: #1a1a1a;
+            background: #0f0f0f;
             border-radius: 2rem;
             padding: 2rem;
             margin: 3rem 0;
+            box-shadow: 0 10px 25px -5px rgba(0,0,0,0.3);
+        }
+        .two-columns {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
         }
         .top-list {
             display: flex;
@@ -18,72 +25,133 @@
             gap: 1rem;
             margin-top: 1.5rem;
         }
+        /* КАРТОЧКА БОЙЦА — плавное увеличение, обводка, тень */
         .top-item {
             display: flex;
             align-items: center;
             gap: 1rem;
-            padding: 0.75rem 1rem;
-            background: #252525;
-            border-radius: 1rem;
-            transition: 0.2s;
+            padding: 0.85rem 1rem;
+            background: #1e1e1e;
+            border-radius: 1.2rem;
+            transition: all 0.25s ease-in-out;
             cursor: pointer;
+            border: 1px solid #2a2a2a;
         }
+        /* Эффект при наведении (hover) */
         .top-item:hover {
-            background: #333;
-            transform: translateX(5px);
+            background: #2a2a2a;
+            transform: translateY(-3px) scale(1.01);
+            border-color: #fbbf24;
+            box-shadow: 0 10px 20px -5px rgba(251, 191, 36, 0.2);
         }
         .top-rank {
-            font-size: 1.5rem;
+            font-size: 1.6rem;
             font-weight: bold;
             color: #fbbf24;
-            width: 50px;
+            width: 55px;
             text-align: center;
+            text-shadow: 0 0 4px rgba(251,191,36,0.3);
         }
         .top-name {
-            font-weight: bold;
+            font-weight: 600;
             flex: 1;
+            font-size: 1.05rem;
+            letter-spacing: 0.3px;
         }
         .top-points {
-            color: #fbbf24;
             font-weight: bold;
+            background: #2c2c2c;
+            padding: 4px 12px;
+            border-radius: 40px;
+            font-size: 0.9rem;
+        }
+        /* Кнопка «Весь рейтинг» */
+        .cta-button-outline {
+            display: inline-block;
+            background: transparent;
+            border: 2px solid #fbbf24;
+            color: #fbbf24;
+            padding: 0.7rem 2rem;
+            border-radius: 2rem;
+            font-weight: bold;
+            text-decoration: none;
+            transition: all 0.2s ease;
+            margin-top: 0.5rem;
+        }
+        .cta-button-outline:hover {
+            background: #fbbf24;
+            color: #0f0f0f;
+            transform: scale(1.02);
+            box-shadow: 0 0 12px rgba(251,191,36,0.5);
+        }
+        /* Обычная кнопка (Начать путь) */
+        .cta-button {
+            display: inline-block;
+            background: #fbbf24;
+            color: #0f0f0f;
+            padding: 0.75rem 2rem;
+            border-radius: 2rem;
+            font-weight: bold;
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+        .cta-button:hover {
+            background: #e5a500;
+            transform: scale(1.02);
+            box-shadow: 0 6px 14px rgba(251,191,36,0.4);
         }
         .features {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
             gap: 2rem;
             margin: 3rem 0;
         }
         .feature-card {
-            background: #1a1a1a;
-            padding: 1.5rem;
-            border-radius: 1.5rem;
+            background: #121212;
+            padding: 1.8rem 1.2rem;
+            border-radius: 1.8rem;
             text-align: center;
+            transition: 0.25s;
+            border: 1px solid #252525;
+        }
+        .feature-card:hover {
+            border-color: #fbbf24;
+            transform: translateY(-5px);
+            box-shadow: 0 15px 25px -10px rgba(0,0,0,0.5);
         }
         .feature-icon {
             font-size: 3rem;
             margin-bottom: 1rem;
         }
-        .cta-button {
-            display: inline-block;
-            background: #fbbf24;
-            color: black;
-            padding: 0.75rem 2rem;
-            border-radius: 2rem;
-            font-weight: bold;
-            text-decoration: none;
-            margin-top: 1rem;
-            transition: 0.2s;
-        }
-        .cta-button:hover {
-            background: #e5a500;
-            transform: scale(1.02);
-        }
         .hero {
             text-align: center;
-            padding: 3rem 1rem;
+            padding: 3rem 1rem 2rem;
         }
         .hero h1 {
             font-size: 2.5rem;
+            background: linear-gradient(135deg, #fff 30%, #fbbf24 80%);
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+        }
+        .rating-link {
+            color: #fbbf24;
+            font-weight: 500;
+            text-decoration: none;
+            transition: 0.2s;
+        }
+        .rating-link:hover {
+            text-decoration: underline;
+            opacity: 0.8;
+        }
+        @media (max-width: 768px) {
+            .two-columns {
+                grid-template-columns: 1fr;
+            }
+            .top-rank {
+                width: 45px;
+                font-size: 1.3rem;
+            }
         }
     </style>
 </head>
@@ -102,16 +170,24 @@
 
     <main class="container">
         <section class="hero">
-            <h1>Стань номером один в <span>своем городе</span></h1>
+            <h1>Стань номером один в <span style="color:#fbbf24;">своем городе</span></h1>
             <p>Честный рейтинг для любителей ММА, бокса и борьбы. Вызовы, лайки, признание.</p>
             <a href="login.html" class="cta-button">🔥 Начать путь</a>
         </section>
 
         <section class="top-fighters">
-            <h2>⭐ Топ‑5 лучших бойцов</h2>
-            <div id="topList" class="top-list">Загрузка...</div>
-            <div style="text-align:center; margin-top: 1rem;">
-                <a href="rating.html" class="cta-button" style="background:#333; color:white;">📋 Весь рейтинг</a>
+            <div class="two-columns">
+                <div>
+                    <h2>🥇 Лидеры рейтинга</h2>
+                    <div id="topPointsList" class="top-list">Загрузка...</div>
+                </div>
+                <div>
+                    <h2>🔥 Хайп-лист</h2>
+                    <div id="topLikesList" class="top-list">Загрузка...</div>
+                </div>
+            </div>
+            <div style="text-align:center; margin-top: 2rem;">
+                <a href="rating.html" class="cta-button-outline">📋 Весь рейтинг →</a>
             </div>
         </section>
 
@@ -146,8 +222,17 @@
             </div>
             <div class="footer-links">
                 <h4>Навигация</h4>
-                <a href="rating.html">Рейтинг</a>
-                <a href="login.html">Вход</a>
+                <a href="index.html">Главная</a>
+                <a href="rating.html">Полный рейтинг</a>
+                <a href="login.html">Вход / Регистрация</a>
+            </div>
+            <div class="footer-social">
+                <h4>Мы в сети</h4>
+                <div class="social-icons">
+                    <a href="#" class="social-link">Telegram</a>
+                    <a href="#" class="social-link">VK</a>
+                    <a href="#" class="social-link">YouTube</a>
+                </div>
             </div>
         </div>
         <div class="footer-bottom">
@@ -166,7 +251,7 @@
     </script>
     <script type="module">
         import { initializeApp } from "firebase/app";
-        import { getFirestore, collection, getDocs, query, orderBy, limit } from "firebase/firestore";
+        import { getFirestore, collection, getDocs, query, orderBy, limit, doc, getDoc } from "firebase/firestore";
         import { getAuth, onAuthStateChanged } from "firebase/auth";
 
         const firebaseConfig = {
@@ -182,33 +267,74 @@
         const db = getFirestore(app);
         const auth = getAuth(app);
 
-        async function loadTopFighters() {
-            const container = document.getElementById('topList');
+        async function loadTopPoints() {
+            const container = document.getElementById('topPointsList');
             try {
                 const fightersRef = collection(db, "fighters");
                 const q = query(fightersRef, orderBy("points", "desc"), limit(5));
                 const snapshot = await getDocs(q);
                 if (snapshot.empty) {
-                    container.innerHTML = '<div style="text-align:center;">Пока нет бойцов. Будь первым!</div>';
+                    container.innerHTML = '<div>Пока нет бойцов</div>';
                     return;
                 }
                 let html = '';
                 let rank = 1;
-                snapshot.forEach(doc => {
-                    const fighter = doc.data();
+                for (const docSnap of snapshot.docs) {
+                    const fighter = docSnap.data();
                     html += `
-                        <div class="top-item" onclick="window.location.href='profile.html?id=${doc.id}'">
+                        <div class="top-item" onclick="window.location.href='profile.html?id=${docSnap.id}'">
                             <div class="top-rank">${rank}</div>
                             <div class="top-name">${fighter.name || 'Боец'}</div>
                             <div class="top-points">${fighter.points || 0} очков</div>
                         </div>
                     `;
                     rank++;
-                });
+                }
                 container.innerHTML = html;
             } catch (error) {
-                console.error("Ошибка загрузки топа:", error);
-                container.innerHTML = '<div>Не удалось загрузить рейтинг</div>';
+                console.error(error);
+                container.innerHTML = '<div>Ошибка загрузки</div>';
+            }
+        }
+
+        async function loadTopLikes() {
+            const container = document.getElementById('topLikesList');
+            try {
+                const likesRef = collection(db, "likes");
+                const likesSnapshot = await getDocs(likesRef);
+                const likesCount = {};
+                likesSnapshot.forEach(doc => {
+                    const fighterId = doc.data().fighterId;
+                    likesCount[fighterId] = (likesCount[fighterId] || 0) + 1;
+                });
+                const sortedFighters = Object.entries(likesCount)
+                    .map(([id, count]) => ({ id, count }))
+                    .sort((a, b) => b.count - a.count)
+                    .slice(0, 5);
+                if (sortedFighters.length === 0) {
+                    container.innerHTML = '<div>Пока нет лайков</div>';
+                    return;
+                }
+                let html = '';
+                let rank = 1;
+                for (const item of sortedFighters) {
+                    const fighterDoc = await getDoc(doc(db, "fighters", item.id));
+                    if (fighterDoc.exists()) {
+                        const fighter = fighterDoc.data();
+                        html += `
+                            <div class="top-item" onclick="window.location.href='profile.html?id=${item.id}'">
+                                <div class="top-rank">${rank}</div>
+                                <div class="top-name">${fighter.name || 'Боец'}</div>
+                                <div class="top-points">❤️ ${item.count}</div>
+                            </div>
+                        `;
+                        rank++;
+                    }
+                }
+                container.innerHTML = html;
+            } catch (error) {
+                console.error(error);
+                container.innerHTML = '<div>Ошибка загрузки</div>';
             }
         }
 
@@ -220,7 +346,8 @@
             }
         });
 
-        loadTopFighters();
+        loadTopPoints();
+        loadTopLikes();
     </script>
 </body>
 </html>

@@ -225,28 +225,16 @@
                 return;
             }
             
-            try {
-                await signInWithEmailAndPassword(auth, email, "Admin123456");
-                message.innerText = "Вход выполнен!";
-                message.className = "success";
-                setTimeout(() => {
-                    document.getElementById('loginSection').classList.add('hidden');
-                    document.getElementById('adminPanel').classList.remove('hidden');
-                    loadFighters();
-                }, 500);
-            } catch (error) {
-                if (error.code === 'auth/user-not-found') {
-                    message.innerText = "Ошибка: Сначала зарегистрируйтесь на сайте";
-                    message.className = "error";
-                } else {
-                    message.innerText = "Ошибка: " + error.message;
-                    message.className = "error";
-                }
-            }
+            // Сохраняем в sessionStorage, что админ вошёл
+            sessionStorage.setItem('adminLoggedIn', 'true');
+            
+            document.getElementById('loginSection').classList.add('hidden');
+            document.getElementById('adminPanel').classList.remove('hidden');
+            loadFighters();
         };
 
-        window.logout = async function() {
-            await signOut(auth);
+        window.logout = function() {
+            sessionStorage.removeItem('adminLoggedIn');
             document.getElementById('loginSection').classList.remove('hidden');
             document.getElementById('adminPanel').classList.add('hidden');
             document.getElementById('adminEmail').value = '';
@@ -288,7 +276,7 @@
             fighters.forEach((fighter) => {
                 const row = document.createElement('tr');
                 row.innerHTML = `
-                    <td><strong>${fighter.name || 'Без имени'}</strong><br><small>${fighter.email || ''}</small></td>
+                    <td><strong>${fighter.name || 'Без имени'}</strong><br><small>${fighter.email || ''}</small></tr>
                     <td>${fighter.sport || '—'}</td>
                     <td>${fighter.city || '—'}</td>
                     <td id="points-${fighter.id}">${fighter.points || 0}</td>
@@ -300,7 +288,7 @@
                         <button class="danger" onclick="changePoints('${fighter.id}', -10)">-10</button>
                         <button class="danger" onclick="changePoints('${fighter.id}', -100)">-100</button>
                         <button class="edit" onclick="openEditDialog('${fighter.id}')">✏️ Ред.</button>
-                        <button class="danger" onclick="deleteFighter('${fighter.id}')" style="background:#8b0000;">🗑 Удалить</button>
+                        <button class="danger" onclick="deleteFighter('${fighter.id}')">🗑 Удалить</button>
                     </td>
                 `;
                 tbody.appendChild(row);
@@ -377,15 +365,12 @@
             renderFighters(filtered);
         });
 
-        onAuthStateChanged(auth, (user) => {
-            if (user && user.email === ADMIN_EMAIL) {
-                document.getElementById('loginSection').classList.add('hidden');
-                document.getElementById('adminPanel').classList.remove('hidden');
-                loadFighters();
-            } else if (user && user.email !== ADMIN_EMAIL) {
-                signOut(auth);
-            }
-        });
+        // Если уже были залогинены в сессии — показываем панель
+        if (sessionStorage.getItem('adminLoggedIn') === 'true') {
+            document.getElementById('loginSection').classList.add('hidden');
+            document.getElementById('adminPanel').classList.remove('hidden');
+            loadFighters();
+        }
     </script>
 </body>
 </html>
