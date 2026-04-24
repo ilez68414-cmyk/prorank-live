@@ -2,6 +2,7 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Вход и регистрация | PRORANK</title>
     <link rel="stylesheet" href="style.css">
     <style>
@@ -67,23 +68,73 @@
             color: #ef4444;
             text-align: center;
         }
+        .forgot-link {
+            text-align: center;
+            margin-top: 1rem;
+        }
+        .forgot-link a {
+            color: #fbbf24;
+            text-decoration: none;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        .modal-content {
+            background: #1f1f1f;
+            padding: 2rem;
+            border-radius: 1rem;
+            width: 90%;
+            max-width: 400px;
+        }
+        .modal-content input {
+            width: 100%;
+            padding: 0.75rem;
+            margin: 1rem 0;
+            background: #2a2a2a;
+            border: 1px solid #333;
+            color: white;
+            border-radius: 8px;
+        }
+        .modal-content button {
+            width: 100%;
+            background: #fbbf24;
+            color: black;
+            padding: 0.75rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-bottom: 0.5rem;
+        }
+        .modal-content button:last-child {
+            background: #333;
+        }
     </style>
 </head>
 <body>
     <header class="navbar">
         <div class="logo" onclick="window.location='index.html'" style="cursor:pointer">PRO<span>RANK</span></div>
         <nav class="nav-links">
-            <a href="rating.html">Рейтинг</a>
             <a href="index.html">Главная</a>
+            <a href="rating.html">Рейтинг</a>
         </nav>
     </header>
 
     <div class="auth-container">
         <div class="auth-tabs">
-            <button id="loginTabBtn" class="tab-btn active">Вход в аккаунт</button>
+            <button id="loginTabBtn" class="tab-btn active">Вход</button>
             <button id="registerTabBtn" class="tab-btn">Регистрация</button>
         </div>
 
+        <!-- Форма входа -->
         <div id="loginFormContainer" class="auth-form">
             <form id="loginForm">
                 <div class="input-group">
@@ -95,10 +146,14 @@
                     <input type="password" id="loginPassword" required>
                 </div>
                 <button type="submit" class="submit-btn">Войти</button>
+                <div class="forgot-link">
+                    <a href="#" id="forgotPasswordLink">Забыли пароль?</a>
+                </div>
             </form>
             <div id="loginMessage" class="message"></div>
         </div>
 
+        <!-- Форма регистрации -->
         <div id="registerFormContainer" class="auth-form hidden">
             <form id="registrationForm">
                 <div class="input-group">
@@ -135,6 +190,16 @@
         </div>
     </div>
 
+    <!-- Модальное окно восстановления пароля -->
+    <div id="resetModal" class="modal">
+        <div class="modal-content">
+            <h3>Сброс пароля</h3>
+            <input type="email" id="resetEmail" placeholder="Ваш email">
+            <button id="sendResetBtn">Отправить письмо</button>
+            <button id="closeResetBtn">Отмена</button>
+        </div>
+    </div>
+
     <script type="importmap">
         {
             "imports": {
@@ -147,7 +212,7 @@
     <script type="module">
         import { initializeApp } from "firebase/app";
         import { getFirestore, doc, setDoc } from "firebase/firestore";
-        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendPasswordResetEmail } from "firebase/auth";
 
         const firebaseConfig = {
             apiKey: "AIzaSyDUGYJY7pX7q02MS5SACMIIQXpjpQ97mPw",
@@ -217,6 +282,37 @@
                 window.location.href = `profile.html?id=${userCred.user.uid}`;
             } catch (err) {
                 document.getElementById('loginMessage').innerText = "Неверный email или пароль";
+            }
+        });
+
+        // Восстановление пароля
+        const forgotLink = document.getElementById('forgotPasswordLink');
+        const resetModal = document.getElementById('resetModal');
+        const sendResetBtn = document.getElementById('sendResetBtn');
+        const closeResetBtn = document.getElementById('closeResetBtn');
+        const resetEmail = document.getElementById('resetEmail');
+
+        forgotLink?.addEventListener('click', (e) => {
+            e.preventDefault();
+            resetModal.style.display = 'flex';
+        });
+
+        closeResetBtn?.addEventListener('click', () => {
+            resetModal.style.display = 'none';
+        });
+
+        sendResetBtn?.addEventListener('click', async () => {
+            const email = resetEmail.value;
+            if (!email) {
+                alert("Введите email");
+                return;
+            }
+            try {
+                await sendPasswordResetEmail(auth, email);
+                alert("Письмо для сброса пароля отправлено. Проверьте почту.");
+                resetModal.style.display = 'none';
+            } catch (error) {
+                alert("Ошибка: " + error.message);
             }
         });
     </script>
