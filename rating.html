@@ -119,7 +119,7 @@
         <div class="logo" onclick="window.location='index.html'" style="cursor:pointer">PRO<span>RANK</span></div>
         <nav class="nav-links">
             <a href="index.html">Главная</a>
-            <a href="rating.html">Рейтинг</a>
+            <a href="rules.html">Правила</a>
             <a href="login.html" id="ratingLoginBtn" class="btn-primary">Войти</a>
         </nav>
     </header>
@@ -215,12 +215,12 @@
             const tbody = document.getElementById('ratingTableBody');
             tbody.innerHTML = '<tr id="loadingRow"><td colspan="5">⏳ Загрузка...</td></tr>';
             try {
-                let q;
-                if (currentSport !== 'all') {
-                    q = query(collection(db, "fighters"), where("sport", "==", currentSport), orderBy("points", "desc"));
-                } else {
-                    q = query(collection(db, "fighters"), orderBy("points", "desc"));
-                }
+              let q;
+              if (currentSport !== 'all') {
+              q = query(collection(db, "fighters"), where("sport", "==", currentSport));
+              } else {
+                q = collection(db, "fighters");
+               }
                 const snapshot = await getDocs(q);
                 allFighters = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                 

@@ -6,27 +6,138 @@
     <title>Админка | PRORANK</title>
     <link rel="stylesheet" href="style.css">
     <style>
-        /* Твои стили (такие же как были, просто оставь как есть) */
-        .admin-container { max-width: 1200px; margin: 2rem auto; padding: 1rem; }
-        .admin-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem; }
-        .logout-btn { background: #dc2626; color: white; padding: 0.5rem 1rem; border: none; border-radius: 8px; cursor: pointer; }
-        .fighters-list { background: #1f1f1f; border-radius: 12px; overflow-x: auto; }
-        table { width: 100%; border-collapse: collapse; }
-        th, td { padding: 0.75rem; text-align: left; border-bottom: 1px solid #333; }
-        th { background: #2a2a2a; color: #fbbf24; }
-        .points-control { display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap; }
-        .points-control button { background: #3b82f6; color: white; border: none; padding: 0.25rem 0.75rem; border-radius: 6px; cursor: pointer; }
-        .points-control button.danger { background: #dc2626; }
-        .points-control button.edit { background: #fbbf24; color: black; }
-        .login-form { background: #1f1f1f; padding: 2rem; border-radius: 12px; max-width: 400px; margin: 3rem auto; text-align: center; }
-        .login-form input { width: 100%; padding: 0.75rem; margin: 0.5rem 0; background: #2a2a2a; border: 1px solid #333; color: white; border-radius: 8px; }
-        .login-form button { background: #fbbf24; color: black; padding: 0.75rem 1.5rem; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; margin-top: 1rem; }
-        .hidden { display: none; }
-        .success { color: #10b981; }
-        .error { color: #ef4444; }
-        dialog { background: #1f1f1f; border: 1px solid #333; border-radius: 12px; padding: 1.5rem; color: white; }
-        dialog input, dialog select { width: 100%; padding: 0.5rem; margin: 0.5rem 0; background: #2a2a2a; border: 1px solid #333; color: white; border-radius: 6px; }
-        dialog button { margin-top: 1rem; padding: 0.5rem 1rem; cursor: pointer; }
+        .admin-container {
+            max-width: 1400px;
+            margin: 2rem auto;
+            padding: 1rem;
+        }
+        .admin-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        .logout-btn {
+            background: #dc2626;
+            color: white;
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        .fighters-list {
+            background: #1f1f1f;
+            border-radius: 12px;
+            overflow-x: auto;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid #333;
+        }
+        th {
+            background: #2a2a2a;
+            color: #fbbf24;
+        }
+        .points-control {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .points-control button {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 0.25rem 0.75rem;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+        .points-control button.danger {
+            background: #dc2626;
+        }
+        .points-control button.edit {
+            background: #fbbf24;
+            color: black;
+        }
+        .login-form {
+            background: #1f1f1f;
+            padding: 2rem;
+            border-radius: 12px;
+            max-width: 400px;
+            margin: 3rem auto;
+            text-align: center;
+        }
+        .login-form input {
+            width: 100%;
+            padding: 0.75rem;
+            margin: 0.5rem 0;
+            background: #2a2a2a;
+            border: 1px solid #333;
+            color: white;
+            border-radius: 8px;
+        }
+        .login-form button {
+            background: #fbbf24;
+            color: black;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            margin-top: 1rem;
+        }
+        .hidden {
+            display: none;
+        }
+        .success {
+            color: #10b981;
+        }
+        .error {
+            color: #ef4444;
+        }
+        dialog {
+            background: #1f1f1f;
+            border: 1px solid #333;
+            border-radius: 12px;
+            padding: 1.5rem;
+            color: white;
+            width: 90%;
+            max-width: 500px;
+        }
+        dialog input, dialog select {
+            width: 100%;
+            padding: 0.5rem;
+            margin: 0.5rem 0;
+            background: #2a2a2a;
+            border: 1px solid #333;
+            color: white;
+            border-radius: 6px;
+        }
+        dialog button {
+            margin-top: 1rem;
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+        }
+        .admin-form {
+            background: #1f1f1f;
+            padding: 1.5rem;
+            border-radius: 1rem;
+            margin-bottom: 2rem;
+        }
+        .stats-preview {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+            font-size: 0.9rem;
+        }
     </style>
 </head>
 <body>
@@ -50,12 +161,41 @@
             <div class="admin-header">
                 <h1>Управление рейтингом</h1>
                 <input type="text" id="searchFighter" placeholder="🔍 Поиск..." style="width: 300px; padding: 10px; background: #2a2a2a; border: 1px solid #333; color: white; border-radius: 8px;">
-                <button class="logout-btn" onclick="logout()">Выйти</button>
+                <div>
+                    <button id="recalculateFRSBtn" style="background: #fbbf24; color: black; padding: 0.5rem 1rem; border: none; border-radius: 8px; cursor: pointer; margin-right: 10px;">🔄 Пересчитать FRS</button>
+                    <button class="logout-btn" onclick="logout()">Выйти</button>
+                </div>
             </div>
+
+            <div id="addFightSection" class="admin-form" style="display: none;">
+                <h3>➕ Добавить бой</h3>
+                <select id="fighterSelect1" style="background: #2a2a2a; color: white; padding: 0.5rem; border-radius: 8px; margin-right: 10px;">
+                    <option value="">Выбери победителя</option>
+                </select>
+                <select id="fighterSelect2" style="background: #2a2a2a; color: white; padding: 0.5rem; border-radius: 8px; margin-right: 10px;">
+                    <option value="">Выбери проигравшего</option>
+                </select>
+                <label style="margin-right: 10px;">
+                    <input type="checkbox" id="finishCheckbox"> Финиш (нокаут/сабмишен)
+                </label>
+                <button id="addFightBtn" class="submit-btn" style="background: #fbbf24; color: black;">Сохранить бой</button>
+                <div id="fightMessage" style="margin-top: 10px; color: #fbbf24;"></div>
+            </div>
+
             <div class="fighters-list">
                 <table>
-                    <thead><tr><th>Имя</th><th>Спорт</th><th>Город</th><th>Очки</th><th>Управление</th></tr></thead>
-                    <tbody id="adminTableBody"><tr><td colspan="5">Загрузка...</td></tr></tbody>
+                    <thead>
+                        <tr>
+                            <th>Имя</th>
+                            <th>Спорт</th>
+                            <th>Город</th>
+                            <th>⭐ FRS</th>
+                            <th>🏆</th>
+                            <th>💥</th>
+                            <th>Управление</th>
+                        </tr>
+                    </thead>
+                    <tbody id="adminTableBody"><tr><td colspan="7">Загрузка...</td></tr></tbody>
                 </table>
             </div>
         </div>
@@ -66,9 +206,28 @@
         <input id="editName" placeholder="Имя">
         <input id="editCity" placeholder="Город">
         <input id="editWeight" placeholder="Вес">
-        <select id="editSport"><option>Бокс</option><option>Борьба</option><option>ММА</option></select>
-        <button id="saveEditBtn">Сохранить</button>
-        <button id="cancelEditBtn">Отмена</button>
+        <select id="editSport">
+            <option>Бокс</option>
+            <option>Борьба</option>
+            <option>ММА</option>
+        </select>
+        
+        <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #333;">
+            <h4>📊 Статистика (только для просмотра)</h4>
+            <div class="stats-preview">
+                <div>🏆 Побед: <span id="editWins">0</span></div>
+                <div>💥 Финишей: <span id="editFinishes">0</span></div>
+                <div>⭐ FRS: <span id="editFRS">0</span></div>
+                <div>👥 Подписчиков: <span id="editSubscribers">0</span></div>
+                <div>👀 Просмотров: <span id="editViews">0</span></div>
+                <div>💎 Премиум: <span id="editPremium">Нет</span></div>
+            </div>
+        </div>
+        
+        <div style="display: flex; gap: 1rem; margin-top: 1rem;">
+            <button id="saveEditBtn">Сохранить</button>
+            <button id="cancelEditBtn">Отмена</button>
+        </div>
     </dialog>
 
     <script type="importmap">
@@ -82,7 +241,7 @@
     </script>
     <script type="module">
         import { initializeApp } from "firebase/app";
-        import { getFirestore, collection, getDocs, doc, updateDoc, query, orderBy, deleteDoc } from "firebase/firestore";
+        import { getFirestore, collection, getDocs, doc, updateDoc, query, orderBy, deleteDoc, increment } from "firebase/firestore";
         import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "firebase/auth";
 
         const firebaseConfig = {
@@ -112,7 +271,9 @@
                 setTimeout(() => {
                     document.getElementById('loginSection').classList.add('hidden');
                     document.getElementById('adminPanel').classList.remove('hidden');
+                    document.getElementById('addFightSection').style.display = 'block';
                     loadFighters();
+                    loadFightersForSelect();
                 }, 500);
             } catch (error) {
                 message.innerText = "Ошибка: " + error.message;
@@ -124,18 +285,20 @@
             await signOut(auth);
             document.getElementById('loginSection').classList.remove('hidden');
             document.getElementById('adminPanel').classList.add('hidden');
+            document.getElementById('addFightSection').style.display = 'none';
         };
 
         async function loadFighters() {
             const tbody = document.getElementById('adminTableBody');
-            tbody.innerHTML = '<tr><td colspan="5">Загрузка...</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="7">Загрузка...</td></tr>';
             try {
-                const q = query(collection(db, "fighters"), orderBy("points", "desc"));
+                const q = query(collection(db, "fighters"), orderBy("frs", "desc"));
                 const snapshot = await getDocs(q);
                 allFighters = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                 renderFighters(allFighters);
             } catch (err) {
-                tbody.innerHTML = '<tr><td colspan="5">Ошибка загрузки</td></tr>';
+                console.error(err);
+                tbody.innerHTML = '<tr><td colspan="7">Ошибка загрузки</td></tr>';
             }
         }
 
@@ -148,7 +311,9 @@
                     <td><strong>${f.name || 'Боец'}</strong><br><small>${f.email || ''}</small></td>
                     <td>${f.sport || '—'}</td>
                     <td>${f.city || '—'}</td>
-                    <td id="points-${f.id}">${f.points || 0}</td>
+                    <td>${f.frs || 0}</td>
+                    <td>${f.wins || 0}</td>
+                    <td>${f.finishes || 0}</td>
                     <td class="points-control">
                         <button onclick="changePoints('${f.id}', 100)">+100</button>
                         <button onclick="changePoints('${f.id}', 10)">+10</button>
@@ -164,18 +329,18 @@
         }
 
         window.changePoints = async (uid, delta) => {
-            const oldSpan = document.getElementById(`points-${uid}`);
-            if (!oldSpan) return;
-            const old = parseInt(oldSpan.innerText);
-            const newPoints = old + delta;
-            await updateDoc(doc(db, "fighters", uid), { points: newPoints });
-            oldSpan.innerText = newPoints;
+            const fighter = allFighters.find(f => f.id === uid);
+            if (!fighter) return;
+            const newFRS = (fighter.frs || 0) + delta;
+            await updateDoc(doc(db, "fighters", uid), { frs: newFRS });
+            loadFighters();
         };
 
         window.deleteFighter = async (uid) => {
             if (!confirm("Удалить бойца?")) return;
             await deleteDoc(doc(db, "fighters", uid));
             loadFighters();
+            loadFightersForSelect();
         };
 
         window.openEditDialog = (uid) => {
@@ -186,6 +351,15 @@
             document.getElementById('editCity').value = f.city || '';
             document.getElementById('editWeight').value = f.weight || '';
             document.getElementById('editSport').value = f.sport || 'Бокс';
+            
+            // Статистика
+            document.getElementById('editWins').innerText = f.wins || 0;
+            document.getElementById('editFinishes').innerText = f.finishes || 0;
+            document.getElementById('editFRS').innerText = f.frs || 0;
+            document.getElementById('editSubscribers').innerText = f.subscribers || 0;
+            document.getElementById('editViews').innerText = f.viewsLast30Days || 0;
+            document.getElementById('editPremium').innerText = f.premium ? 'Да' : 'Нет';
+            
             document.getElementById('editDialog').showModal();
         };
 
@@ -208,11 +382,108 @@
             renderFighters(filtered);
         });
 
+        async function loadFightersForSelect() {
+            const snapshot = await getDocs(collection(db, "fighters"));
+            const select1 = document.getElementById('fighterSelect1');
+            const select2 = document.getElementById('fighterSelect2');
+            select1.innerHTML = '<option value="">Выбери победителя</option>';
+            select2.innerHTML = '<option value="">Выбери проигравшего</option>';
+            snapshot.forEach(doc => {
+                const fighter = doc.data();
+                const option1 = document.createElement('option');
+                option1.value = doc.id;
+                option1.textContent = fighter.name || 'Боец';
+                const option2 = option1.cloneNode(true);
+                select1.appendChild(option1);
+                select2.appendChild(option2);
+            });
+        }
+
+        document.getElementById('addFightBtn')?.addEventListener('click', async () => {
+            const winnerId = document.getElementById('fighterSelect1').value;
+            const loserId = document.getElementById('fighterSelect2').value;
+            const isFinish = document.getElementById('finishCheckbox').checked;
+            const messageDiv = document.getElementById('fightMessage');
+
+            if (!winnerId || !loserId) {
+                messageDiv.innerText = 'Выберите обоих бойцов';
+                return;
+            }
+            if (winnerId === loserId) {
+                messageDiv.innerText = 'Нельзя выбрать одного бойца дважды';
+                return;
+            }
+
+            try {
+                const winnerRef = doc(db, "fighters", winnerId);
+                const loserRef = doc(db, "fighters", loserId);
+                
+                await updateDoc(winnerRef, {
+                    wins: increment(1),
+                    finishes: increment(isFinish ? 1 : 0),
+                    lastFightDate: new Date()
+                });
+                await updateDoc(loserRef, {
+                    lastFightDate: new Date()
+                });
+                
+                messageDiv.innerText = '✅ Бой добавлен! Нажмите "Пересчитать FRS" для обновления рейтинга.';
+                setTimeout(() => messageDiv.innerText = '', 4000);
+                loadFighters();
+                loadFightersForSelect();
+            } catch (error) {
+                messageDiv.innerText = 'Ошибка: ' + error.message;
+            }
+        });
+
+        // Кнопка пересчёта FRS
+        document.getElementById('recalculateFRSBtn')?.addEventListener('click', async () => {
+            if (!confirm("Пересчитать FRS для всех бойцов? Это может занять несколько секунд.")) return;
+            
+            const btn = document.getElementById('recalculateFRSBtn');
+            const originalText = btn.innerText;
+            btn.innerText = "⏳ Пересчёт...";
+            btn.disabled = true;
+            
+            try {
+                const fightersSnapshot = await getDocs(collection(db, "fighters"));
+                const now = Date.now();
+                const monthMs = 30 * 24 * 60 * 60 * 1000;
+                
+                for (const docSnap of fightersSnapshot.docs) {
+                    const f = docSnap.data();
+                    const W = (f.wins || 0) * 100;
+                    const B = (f.finishes || 0) * 50;
+                    const views = f.viewsLast30Days || 0;
+                    const subs = f.subscribers || 0;
+                    const H = (views / 100) + (subs / 10);
+                    let I = 0;
+                    if (f.lastFightDate) {
+                        const months = Math.floor((now - f.lastFightDate.toDate()) / monthMs);
+                        I = months * 25;
+                    }
+                    const S = f.premium ? 5 : 0;
+                    const frs = W + B + H - I + S;
+                    await updateDoc(doc(db, "fighters", docSnap.id), { frs });
+                }
+                
+                alert("✅ FRS пересчитан для всех бойцов!");
+                loadFighters();
+            } catch (error) {
+                alert("Ошибка: " + error.message);
+            } finally {
+                btn.innerText = originalText;
+                btn.disabled = false;
+            }
+        });
+
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 document.getElementById('loginSection').classList.add('hidden');
                 document.getElementById('adminPanel').classList.remove('hidden');
+                document.getElementById('addFightSection').style.display = 'block';
                 loadFighters();
+                loadFightersForSelect();
             }
         });
     </script>
