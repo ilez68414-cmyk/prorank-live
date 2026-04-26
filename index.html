@@ -216,7 +216,7 @@
         async function loadTopPoints() {
             const container = document.getElementById('topPointsList');
             try {
-                const q = query(collection(db, "fighters"), orderBy("points", "desc"), limit(5));
+                const q = query(collection(db, "fighters"), orderBy("frs", "desc"), limit(5));
                 const snapshot = await getDocs(q);
                 if (snapshot.empty) { container.innerHTML = '<div>Пока нет бойцов</div>'; return; }
                 let html = '', rank = 1;
@@ -226,7 +226,7 @@
                         <div class="top-rank">${rank}</div>
                         <img src="${fighter.avatar || 'Avatar.png'}" class="top-avatar" onerror="this.src='Avatar.png'">
                         <div class="top-name">${fighter.name || 'Боец'}</div>
-                        <div class="top-points">${fighter.points || 0} очков</div>
+                        <div class="top-points">⭐ ${fighter.frs || 0} FRS</div>
                     </div>`;
                     rank++;
                 }

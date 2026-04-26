@@ -6,112 +6,31 @@
     <title>Рейтинг | PRORANK</title>
     <link rel="stylesheet" href="style.css">
     <style>
-        .rating-table thead tr {
-            background: #1a1a1a !important;
-            border-bottom: 2px solid #fbbf24;
-            cursor: default;
-            transform: none !important;
-        }
-        .rating-table thead tr:hover {
-            background: #1a1a1a !important;
-            transform: none !important;
-        }
-        .rating-table thead th {
-            color: #fbbf24;
-            font-weight: bold;
-            font-size: 1rem;
-        }
-        .rating-table tbody tr {
-            transition: all 0.2s ease;
-            cursor: pointer;
-        }
-        .rating-table tbody tr:hover {
-            background: #2a2a2a !important;
-            transform: scale(1.01);
-        }
-        .rating-table tbody tr.gold {
-            background: linear-gradient(90deg, #2a2410, #1f1a0a);
-            border-left: 4px solid #FFD700;
-        }
-        .rating-table tbody tr.silver {
-            background: linear-gradient(90deg, #242424, #1a1a1a);
-            border-left: 4px solid #C0C0C0;
-        }
-        .rating-table tbody tr.bronze {
-            background: linear-gradient(90deg, #241e15, #1a1510);
-            border-left: 4px solid #CD7F32;
-        }
-        .rank-number {
-            font-weight: bold;
-            font-size: 1.2rem;
-        }
+        .rating-table thead tr { background: #1a1a1a !important; border-bottom: 2px solid #fbbf24; cursor: default; transform: none !important; }
+        .rating-table thead tr:hover { background: #1a1a1a !important; transform: none !important; }
+        .rating-table thead th { color: #fbbf24; font-weight: bold; }
+        .rating-table tbody tr { transition: 0.2s; cursor: pointer; }
+        .rating-table tbody tr:hover { background: #2a2a2a !important; transform: scale(1.01); }
+        .rating-table tbody tr.gold { background: linear-gradient(90deg, #2a2410, #1f1a0a); border-left: 4px solid #FFD700; }
+        .rating-table tbody tr.silver { background: linear-gradient(90deg, #242424, #1a1a1a); border-left: 4px solid #C0C0C0; }
+        .rating-table tbody tr.bronze { background: linear-gradient(90deg, #241e15, #1a1510); border-left: 4px solid #CD7F32; }
+        .rank-number { font-weight: bold; font-size: 1.2rem; }
         .gold .rank-number { color: #FFD700; text-shadow: 0 0 2px #FFD700; }
         .silver .rank-number { color: #C0C0C0; }
         .bronze .rank-number { color: #CD7F32; }
-        .avatar-thumb {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            object-fit: cover;
-            background: #2a2a2a;
-            border: 1px solid #fbbf24;
-        }
-        .search-container, .city-filter {
-            margin-bottom: 1rem;
-        }
-        .city-filter {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            flex-wrap: wrap;
-        }
-        #rankSearch, #citySelect {
-            padding: 0.7rem;
-            background: #1e1e1e;
-            border: 1px solid #333;
-            color: white;
-            border-radius: 2rem;
-        }
+        .avatar-thumb { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; background: #2a2a2a; border: 1px solid #fbbf24; }
+        .search-container, .city-filter, .weight-filter { margin-bottom: 1rem; }
+        .city-filter, .weight-filter { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; }
+        #rankSearch, #citySelect, #weightClassSelect { padding: 0.7rem; background: #1e1e1e; border: 1px solid #333; color: white; border-radius: 2rem; }
         #rankSearch { width: 100%; }
-        #citySelect { min-width: 150px; }
-        .rating-filters {
-            display: flex;
-            gap: 0.5rem;
-            margin-bottom: 2rem;
-            flex-wrap: wrap;
-        }
-        .filter-btn {
-            background: #1e1e1e;
-            border: 1px solid #333;
-            color: #ccc;
-            padding: 0.5rem 1rem;
-            border-radius: 2rem;
-            cursor: pointer;
-            transition: 0.2s;
-        }
-        .filter-btn.active {
-            background: #fbbf24;
-            color: black;
-            border-color: #fbbf24;
-        }
-        .rating-table {
-            width: 100%;
-            border-collapse: collapse;
-            background: #0f0f0f;
-            border-radius: 1rem;
-            overflow: hidden;
-        }
-        .rating-table th, .rating-table td {
-            padding: 0.8rem 0.5rem;
-            text-align: left;
-            border-bottom: 1px solid #222;
-            vertical-align: middle;
-        }
+        #citySelect, #weightClassSelect { min-width: 180px; }
+        .rating-filters { display: flex; gap: 0.5rem; margin-bottom: 2rem; flex-wrap: wrap; }
+        .filter-btn { background: #1e1e1e; border: 1px solid #333; color: #ccc; padding: 0.5rem 1rem; border-radius: 2rem; cursor: pointer; transition: 0.2s; }
+        .filter-btn.active { background: #fbbf24; color: black; border-color: #fbbf24; }
+        .rating-table { width: 100%; border-collapse: collapse; background: #0f0f0f; border-radius: 1rem; overflow: hidden; }
+        .rating-table th, .rating-table td { padding: 0.8rem 0.5rem; text-align: left; border-bottom: 1px solid #222; vertical-align: middle; }
         .rating-table th { background: #1a1a1a; }
-        .rating-table td:first-child, .rating-table th:first-child { padding-left: 1rem; }
-        @media (max-width: 768px) {
-            .avatar-thumb { width: 32px; height: 32px; }
-        }
+        @media (max-width: 768px) { .avatar-thumb { width: 32px; height: 32px; } }
     </style>
 </head>
 <body>
@@ -119,24 +38,25 @@
         <div class="logo" onclick="window.location='index.html'" style="cursor:pointer">PRO<span>RANK</span></div>
         <nav class="nav-links">
             <a href="index.html">Главная</a>
+            <a href="rating.html">Рейтинг</a>
             <a href="rules.html">Правила</a>
             <a href="login.html" id="ratingLoginBtn" class="btn-primary">Войти</a>
         </nav>
     </header>
 
     <main class="container">
-        <section class="hero">
-            <h1 id="dynamicTitle">🏆 Рейтинг спортсменов</h1>
-        </section>
-
+        <section class="hero"><h1>🏆 Рейтинг спортсменов</h1></section>
         <div class="rating-section">
-            <div class="search-container">
-                <input type="text" id="rankSearch" placeholder="🔍 Поиск по имени...">
-            </div>
-            <div class="city-filter">
-                <label style="color:#fbbf24;">🏙️ Город:</label>
-                <select id="citySelect">
-                    <option value="all">Все города</option>
+            <div class="search-container"><input type="text" id="rankSearch" placeholder="🔍 Поиск по имени..."></div>
+            <div class="city-filter"><label style="color:#fbbf24;">🏙️ Город:</label><select id="citySelect"><option value="all">Все города</option></select></div>
+            <div class="weight-filter"><label style="color:#fbbf24;">⚖️ Весовая категория:</label>
+                <select id="weightClassSelect">
+                    <option value="all">Все категории</option>
+                    <option value="Наилегчайшая (45–50 кг)">Наилегчайшая (45–50 кг)</option><option value="Легчайшая (51–56 кг)">Легчайшая (51–56 кг)</option>
+                    <option value="Полулёгкая (57–61 кг)">Полулёгкая (57–61 кг)</option><option value="Лёгкая (62–66 кг)">Лёгкая (62–66 кг)</option>
+                    <option value="1-я полусредняя (67–71 кг)">1-я полусредняя (67–71 кг)</option><option value="Полусредняя (72–77 кг)">Полусредняя (72–77 кг)</option>
+                    <option value="1-я средняя (78–83 кг)">1-я средняя (78–83 кг)</option><option value="Средняя (84–89 кг)">Средняя (84–89 кг)</option>
+                    <option value="Полутяжёлая (90–99 кг)">Полутяжёлая (90–99 кг)</option><option value="Тяжёлая (100+ кг)">Тяжёлая (100+ кг)</option>
                 </select>
             </div>
             <div class="rating-filters" id="ratingFilters">
@@ -145,36 +65,20 @@
                 <button class="filter-btn" data-sport="Борьба">Борьба</button>
                 <button class="filter-btn" data-sport="ММА">ММА</button>
             </div>
-
-            <table class="rating-table">
-                <thead>
-                    <tr><th>№</th><th>Аватар</th><th>Спортсмен</th><th>Город</th><th>Баллы</th></tr>
-                </thead>
-                <tbody id="ratingTableBody">
-                    <tr id="loadingRow"><td colspan="5">⏳ Загрузка...</td></tr>
-                </tbody>
-            </table>
+            <table class="rating-table"><thead><tr><th>№</th><th>Аватар</th><th>Спортсмен</th><th>Город</th><th>⭐ FRS</th></tr></thead>
+            <tbody id="ratingTableBody"><tr id="loadingRow"><td colspan="5">⏳ Загрузка...</td></tr></tbody></table>
         </div>
     </main>
 
     <footer class="main-footer">
-        <div class="container footer-content">
-            <div class="footer-logo"><div class="logo">PRO<span>RANK</span></div><p>Рейтинг любительского спорта России</p></div>
-            <div class="footer-about"><h4>О проекте</h4><p>Платформа для спортсменов-любителей, где каждый может найти своё место в рейтинге и достойных соперников.</p></div>
-            <div class="footer-links"><h4>Навигация</h4><a href="index.html">Главная</a><a href="rating.html">Рейтинг</a><a href="login.html">Вход / Регистрация</a></div>
-            <div class="footer-social"><h4>Мы в сети</h4><div class="social-icons"><a href="#" class="social-link">Telegram</a><a href="#" class="social-link">VK</a><a href="#" class="social-link">YouTube</a></div></div>
-        </div>
-        <div class="footer-bottom"><p>&copy; 2026 PRORANK. Сделано для тех, кто в зале.</p></div>
+        <div class="container footer-content"><div class="footer-logo"><div class="logo">PRO<span>RANK</span></div><p>Рейтинг любительского спорта</p></div>
+        <div class="footer-about"><h4>О проекте</h4><p>Платформа для спортсменов-любителей.</p></div>
+        <div class="footer-links"><h4>Навигация</h4><a href="index.html">Главная</a><a href="rating.html">Рейтинг</a><a href="login.html">Вход</a></div></div>
+        <div class="footer-bottom"><p>&copy; 2026 PRORANK</p></div>
     </footer>
 
     <script type="importmap">
-        {
-            "imports": {
-                "firebase/app": "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js",
-                "firebase/firestore": "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js",
-                "firebase/auth": "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js"
-            }
-        }
+        {"imports":{"firebase/app":"https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js","firebase/firestore":"https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js","firebase/auth":"https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js"}}
     </script>
     <script type="module">
         import { initializeApp } from "firebase/app";
@@ -189,7 +93,6 @@
             messagingSenderId: "716836144015",
             appId: "1:716836144015:web:f1575147750608d0f881fa"
         };
-
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
         const auth = getAuth(app);
@@ -197,57 +100,30 @@
         let allFighters = [];
         let currentSport = 'all';
         let currentCity = 'all';
-
-        // Получить параметр sport из URL (rating.html?sport=ММА)
-        const urlParams = new URLSearchParams(window.location.search);
-        const sportFromUrl = urlParams.get('sport');
-        if (sportFromUrl && ['Бокс', 'Борьба', 'ММА'].includes(sportFromUrl)) {
-            currentSport = sportFromUrl;
-        }
-
-        // Установить заголовок
-        const heroTitle = document.getElementById('dynamicTitle');
-        if (heroTitle && currentSport !== 'all') {
-            heroTitle.innerHTML = `🏆 Рейтинг ${currentSport}`;
-        }
+        let currentWeightClass = 'all';
 
         async function loadFighters() {
             const tbody = document.getElementById('ratingTableBody');
-            tbody.innerHTML = '<tr id="loadingRow"><td colspan="5">⏳ Загрузка...</td></tr>';
+            tbody.innerHTML = '<tr id="loadingRow"><td colspan="5">⏳ Загрузка...</tr>';
             try {
-              let q;
-              if (currentSport !== 'all') {
-              q = query(collection(db, "fighters"), where("sport", "==", currentSport));
-              } else {
-                q = collection(db, "fighters");
-               }
+                let q;
+                if (currentSport !== 'all') q = query(collection(db, "fighters"), where("sport", "==", currentSport), orderBy("frs", "desc"));
+                else q = query(collection(db, "fighters"), orderBy("frs", "desc"));
                 const snapshot = await getDocs(q);
                 allFighters = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                
-                // Обновить список городов
                 const cities = [...new Set(allFighters.map(f => f.city).filter(c => c))];
                 const citySelect = document.getElementById('citySelect');
                 citySelect.innerHTML = '<option value="all">Все города</option>';
-                cities.forEach(city => {
-                    const option = document.createElement('option');
-                    option.value = city;
-                    option.textContent = city;
-                    citySelect.appendChild(option);
-                });
-                
+                cities.forEach(city => { const option = document.createElement('option'); option.value = city; option.textContent = city; citySelect.appendChild(option); });
                 applyFilters();
                 setActiveSportButton(currentSport);
-            } catch (error) {
-                console.error(error);
-                tbody.innerHTML = '<tr><td colspan="5">Ошибка загрузки</td></tr>';
-            }
+            } catch (error) { console.error(error); tbody.innerHTML = '<tr><td colspan="5">Ошибка загрузки</tr>'; }
         }
 
         function applyFilters() {
             let filtered = [...allFighters];
-            if (currentCity !== 'all') {
-                filtered = filtered.filter(f => f.city === currentCity);
-            }
+            if (currentCity !== 'all') filtered = filtered.filter(f => f.city === currentCity);
+            if (currentWeightClass !== 'all') filtered = filtered.filter(f => f.weightClass === currentWeightClass);
             renderTable(filtered);
         }
 
@@ -255,79 +131,52 @@
             const tbody = document.getElementById('ratingTableBody');
             tbody.innerHTML = '';
             let rank = 1;
-            fighters.forEach(fighter => {
+            fighters.forEach(f => {
                 const row = tbody.insertRow();
                 let medalClass = '';
                 if (rank === 1) medalClass = 'gold';
                 else if (rank === 2) medalClass = 'silver';
                 else if (rank === 3) medalClass = 'bronze';
                 row.className = medalClass;
-                
                 row.insertCell(0).innerHTML = `<span class="rank-number">${rank}</span>`;
-                row.insertCell(1).innerHTML = `<img src="${fighter.avatar || 'Avatar.png'}" class="avatar-thumb" onerror="this.src='Avatar.png'">`;
-                row.insertCell(2).innerHTML = `<strong>${fighter.name || 'Боец'}</strong>`;
-                row.insertCell(3).innerText = fighter.city || '—';
-                row.insertCell(4).innerText = fighter.points || 0;
-                row.onclick = () => window.location.href = `profile.html?id=${fighter.id}`;
+                row.insertCell(1).innerHTML = `<img src="${f.avatar || 'Avatar.png'}" class="avatar-thumb" onerror="this.src='Avatar.png'">`;
+                row.insertCell(2).innerHTML = `<strong>${f.name || 'Боец'}</strong>`;
+                row.insertCell(3).innerText = f.city || '—';
+                row.insertCell(4).innerText = f.frs || 0;
+                row.onclick = () => window.location.href = `profile.html?id=${f.id}`;
                 rank++;
             });
-            if (fighters.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="5">Нет бойцов по выбранным фильтрам</td></tr>';
-            }
+            if (fighters.length === 0) tbody.innerHTML = '<tr><td colspan="5">Нет бойцов по выбранным фильтрам</tr>';
         }
 
         function setActiveSportButton(sport) {
             document.querySelectorAll('.filter-btn').forEach(btn => {
-                if (btn.getAttribute('data-sport') === sport) {
-                    btn.classList.add('active');
-                } else {
-                    btn.classList.remove('active');
-                }
+                if (btn.getAttribute('data-sport') === sport) btn.classList.add('active');
+                else btn.classList.remove('active');
             });
         }
 
-        // Обработчики UI
-        document.getElementById('citySelect').addEventListener('change', (e) => {
-            currentCity = e.target.value;
-            applyFilters();
-        });
-
+        document.getElementById('citySelect').addEventListener('change', (e) => { currentCity = e.target.value; applyFilters(); });
+        document.getElementById('weightClassSelect').addEventListener('change', (e) => { currentWeightClass = e.target.value; applyFilters(); });
         document.querySelectorAll('.filter-btn').forEach(btn => {
             btn.addEventListener('click', () => {
                 currentSport = btn.getAttribute('data-sport');
                 setActiveSportButton(currentSport);
-                // Обновить заголовок
-                if (heroTitle && currentSport !== 'all') {
-                    heroTitle.innerHTML = `🏆 Рейтинг ${currentSport}`;
-                } else if (heroTitle) {
-                    heroTitle.innerHTML = `🏆 Рейтинг спортсменов`;
-                }
-                loadFighters(); // перезагружаем данные по новому спорту
+                loadFighters();
             });
         });
-
         document.getElementById('rankSearch').addEventListener('keyup', function() {
             const term = this.value.toLowerCase();
-            const rows = document.querySelectorAll('#ratingTableBody tr');
-            rows.forEach(row => {
+            document.querySelectorAll('#ratingTableBody tr').forEach(row => {
                 const nameCell = row.cells[2];
-                if (nameCell) {
-                    const name = nameCell.innerText.toLowerCase();
-                    row.style.display = name.includes(term) ? '' : 'none';
-                }
+                if (nameCell) row.style.display = nameCell.innerText.toLowerCase().includes(term) ? '' : 'none';
             });
         });
 
-        // Навигация (кнопка "Мой профиль")
         const loginBtn = document.getElementById('ratingLoginBtn');
         onAuthStateChanged(auth, (user) => {
-            if (user && loginBtn) {
-                loginBtn.innerText = 'Мой профиль';
-                loginBtn.href = `profile.html?id=${user.uid}`;
-            }
+            if (user && loginBtn) { loginBtn.innerText = 'Мой профиль'; loginBtn.href = `profile.html?id=${user.uid}`; }
         });
-
-        // Загружаем данные
         loadFighters();
     </script>
 </body>

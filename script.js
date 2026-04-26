@@ -15,14 +15,24 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const auth = getAuth(app);
 
+// ========== ФУНКЦИЯ ВЕСОВОЙ КАТЕГОРИИ ==========
+function getWeightClass(weight) {
+    if (weight <= 50) return 'Наилегчайшая (45–50 кг)';
+    if (weight <= 56) return 'Легчайшая (51–56 кг)';
+    if (weight <= 61) return 'Полулёгкая (57–61 кг)';
+    if (weight <= 66) return 'Лёгкая (62–66 кг)';
+    if (weight <= 71) return '1-я полусредняя (67–71 кг)';
+    if (weight <= 77) return 'Полусредняя (72–77 кг)';
+    if (weight <= 83) return '1-я средняя (78–83 кг)';
+    if (weight <= 89) return 'Средняя (84–89 кг)';
+    if (weight <= 99) return 'Полутяжёлая (90–99 кг)';
+    return 'Тяжёлая (100+ кг)';
+}
+
 // ========== РЕЙТИНГ ==========
 async function displayFighters() {
     const tableBody = document.getElementById('ratingTableBody');
     if (!tableBody) return;
-
-    // Удаляем строку загрузки, если есть
-    const loadingRow = document.getElementById('loadingRow');
-    if (loadingRow) loadingRow.remove();
 
     const fileName = window.location.pathname.split("/").pop() || 'index.html';
     let sportFilter = null;
@@ -32,14 +42,10 @@ async function displayFighters() {
 
     try {
         const fightersRef = collection(db, "fighters");
-        let q = sportFilter 
-            ? query(fightersRef, where("sport", "==", sportFilter), orderBy("points", "desc")) 
-            : query(fightersRef, orderBy("points", "desc"));
-        
+        let q = sportFilter ? query(fightersRef, where("sport", "==", sportFilter), orderBy("frs", "desc")) : query(fightersRef, orderBy("frs", "desc"));
         const querySnapshot = await getDocs(q);
         const oldRows = tableBody.querySelectorAll('.js-added-row');
         oldRows.forEach(row => row.remove());
-        
         let index = 1;
         querySnapshot.forEach((doc) => {
             const fighter = doc.data();
@@ -47,15 +53,9 @@ async function displayFighters() {
             row.classList.add('js-added-row');
             row.style.cursor = 'pointer';
             row.onclick = () => window.location.href = `profile.html?id=${doc.id}`;
-            row.innerHTML = `
-                <td>${index++}</td>
-                <td><strong>${fighter.name || 'Без имени'}</strong></td>
-                <td>${fighter.city || '—'}</td>
-                <td class="points">${fighter.points || 0}</td>
-            `;
+            row.innerHTML = `<td>${index++}</td><td><strong>${fighter.name || 'Без имени'}</strong></td><td>${fighter.city || '—'}</td><td class="points">${fighter.frs || 0} ⭐</td>`;
             tableBody.appendChild(row);
         });
-        
         if (querySnapshot.size === 0) {
             const row = document.createElement('tr');
             row.innerHTML = `<td colspan="4" style="text-align:center">Нет бойцов в этой категории</td>`;
@@ -63,7 +63,6 @@ async function displayFighters() {
         }
     } catch (error) {
         console.error("Ошибка загрузки рейтинга:", error);
-        tableBody.innerHTML = `<tr><td colspan="4" style="text-align:center">Ошибка загрузки</td></tr>`;
     }
 }
 
@@ -72,17 +71,17 @@ async function registerUser(name, email, password, weight, city, sport) {
     try {
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         const uid = userCredential.user.uid;
+        const weightNum = parseInt(weight);
+        const weightClass = getWeightClass(weightNum);
+        
         await setDoc(doc(db, "fighters", uid), {
-            name, email, city, sport, weight, points: 50, bio: ""
+            name, email, city, sport, weight: weightNum, weightClass,
+            frs: 50, wins: 0, finishes: 0, bio: "", avatar: "Avatar.png"
         });
         alert("Регистрация успешна!");
         window.location.href = `profile.html?id=${uid}`;
     } catch (error) {
-        if (error.code === 'auth/email-already-in-use') {
-            alert("Этот email уже зарегистрирован!");
-        } else {
-            alert("Ошибка: " + error.message);
-        }
+        alert(error.code === 'auth/email-already-in-use' ? "Этот email уже зарегистрирован!" : "Ошибка: " + error.message);
     }
 }
 
@@ -97,7 +96,7 @@ async function loginUser(email, password) {
     }
 }
 
-// ========== ПЕРЕКЛЮЧЕНИЕ ТАБОВ ==========
+// ========== ТАБЫ (ВХОД / РЕГИСТРАЦИЯ) ==========
 function initTabs() {
     const loginTab = document.getElementById('loginTabBtn');
     const registerTab = document.getElementById('registerTabBtn');
@@ -111,7 +110,6 @@ function initTabs() {
             loginForm.classList.remove('hidden');
             registerForm.classList.add('hidden');
         });
-        
         registerTab.addEventListener('click', () => {
             registerTab.classList.add('active');
             loginTab.classList.remove('active');
@@ -132,26 +130,20 @@ window.goToMyProfile = function() {
 
 function updateNavbar() {
     const authBtn = document.querySelector('.nav-links .btn-primary');
-    if (authBtn && auth.currentUser && auth.currentUser.email) {
+    if (authBtn && auth.currentUser) {
         authBtn.innerText = 'Мой профиль';
         authBtn.setAttribute('onclick', `window.location.href='profile.html?id=${auth.currentUser.uid}'`);
-    } else if (authBtn) {
-        authBtn.innerText = 'Войти';
-        authBtn.setAttribute('onclick', `window.location.href='index.html#authSection'`);
     }
 }
 
 // ========== СКРЫТИЕ ФОРМ ПОСЛЕ ВХОДА ==========
 function hideAuthSectionOnLogin(user) {
     const authSection = document.getElementById('authSection');
-    if (authSection) {
-        authSection.style.display = user ? 'none' : 'block';
-    }
+    if (authSection) authSection.style.display = user ? 'none' : 'block';
 }
 
 // ========== ИНИЦИАЛИЗАЦИЯ ==========
 document.addEventListener('DOMContentLoaded', function() {
-    // Форма регистрации
     const regForm = document.getElementById('registrationForm');
     if (regForm) {
         regForm.addEventListener('submit', async (e) => {
@@ -163,19 +155,12 @@ document.addEventListener('DOMContentLoaded', function() {
             const city = document.getElementById('userCity').value;
             const sport = document.getElementById('userSport').value;
             
-            if (name.split(' ').length < 2) {
-                alert("Введите имя и фамилию через пробел");
-                return;
-            }
-            if (password.length < 6) {
-                alert("Пароль должен быть не менее 6 символов");
-                return;
-            }
+            if (name.split(' ').length < 2) return alert("Введите имя и фамилию");
+            if (password.length < 6) return alert("Пароль минимум 6 символов");
             await registerUser(name, email, password, weight, city, sport);
         });
     }
 
-    // Форма входа
     const loginForm = document.getElementById('loginForm');
     if (loginForm) {
         loginForm.addEventListener('submit', async (e) => {
@@ -185,12 +170,10 @@ document.addEventListener('DOMContentLoaded', function() {
             await loginUser(email, password);
         });
     }
-
     initTabs();
     displayFighters();
 });
 
-// ========== СЛЕЖЕНИЕ ЗА АВТОРИЗАЦИЕЙ ==========
 onAuthStateChanged(auth, (user) => {
     updateNavbar();
     hideAuthSectionOnLogin(user);
