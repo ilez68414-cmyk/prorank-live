@@ -60,7 +60,7 @@
                 </select>
             </div>
             <div class="rating-filters" id="ratingFilters">
-                <button class="filter-btn" data-sport="all">Все виды</button>
+                <button class="filter-btn active" data-sport="all">Все виды</button>
                 <button class="filter-btn" data-sport="Бокс">Бокс</button>
                 <button class="filter-btn" data-sport="Борьба">Борьба</button>
                 <button class="filter-btn" data-sport="ММА">ММА</button>
@@ -104,32 +104,62 @@
 
         async function loadFighters() {
             const tbody = document.getElementById('ratingTableBody');
-            tbody.innerHTML = '<tr id="loadingRow"><td colspan="5">⏳ Загрузка...</tr>';
+            tbody.innerHTML = '<tr><td colspan="5">⏳ Загрузка...</td></tr>';
             try {
-                let q;
-                if (currentSport !== 'all') q = query(collection(db, "fighters"), where("sport", "==", currentSport), orderBy("frs", "desc"));
-                else q = query(collection(db, "fighters"), orderBy("frs", "desc"));
+                // Загружаем ВСЕХ бойцов без фильтрации в запросе
+                const q = query(collection(db, "fighters"), orderBy("frs", "desc"));
                 const snapshot = await getDocs(q);
                 allFighters = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                const cities = [...new Set(allFighters.map(f => f.city).filter(c => c))];
+                
+                // Заполняем список городов
+                const cities = [...new Set(allFighters.map(f => f.city).filter(c => c && c !== 'all'))];
                 const citySelect = document.getElementById('citySelect');
                 citySelect.innerHTML = '<option value="all">Все города</option>';
-                cities.forEach(city => { const option = document.createElement('option'); option.value = city; option.textContent = city; citySelect.appendChild(option); });
+                cities.forEach(city => { 
+                    const option = document.createElement('option'); 
+                    option.value = city; 
+                    option.textContent = city; 
+                    citySelect.appendChild(option); 
+                });
+                
+                // Применяем фильтры
                 applyFilters();
-                setActiveSportButton(currentSport);
-            } catch (error) { console.error(error); tbody.innerHTML = '<tr><td colspan="5">Ошибка загрузки</tr>'; }
+            } catch (error) { 
+                console.error("Ошибка загрузки:", error); 
+                tbody.innerHTML = '<tr><td colspan="5">❌ Ошибка загрузки. Проверьте интернет.</td></tr>';
+            }
         }
 
         function applyFilters() {
             let filtered = [...allFighters];
-            if (currentCity !== 'all') filtered = filtered.filter(f => f.city === currentCity);
-            if (currentWeightClass !== 'all') filtered = filtered.filter(f => f.weightClass === currentWeightClass);
+            
+            // Фильтр по городу
+            if (currentCity !== 'all') {
+                filtered = filtered.filter(f => f.city === currentCity);
+            }
+            
+            // Фильтр по весовой категории
+            if (currentWeightClass !== 'all') {
+                filtered = filtered.filter(f => f.weightClass === currentWeightClass);
+            }
+            
+            // Фильтр по виду спорта
+            if (currentSport !== 'all') {
+                filtered = filtered.filter(f => f.sport === currentSport);
+            }
+            
             renderTable(filtered);
         }
 
         function renderTable(fighters) {
             const tbody = document.getElementById('ratingTableBody');
             tbody.innerHTML = '';
+            
+            if (fighters.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5">❌ Нет бойцов по выбранным фильтрам</td></tr>';
+                return;
+            }
+            
             let rank = 1;
             fighters.forEach(f => {
                 const row = tbody.insertRow();
@@ -138,15 +168,15 @@
                 else if (rank === 2) medalClass = 'silver';
                 else if (rank === 3) medalClass = 'bronze';
                 row.className = medalClass;
+                
                 row.insertCell(0).innerHTML = `<span class="rank-number">${rank}</span>`;
                 row.insertCell(1).innerHTML = `<img src="${f.avatar || 'Avatar.png'}" class="avatar-thumb" onerror="this.src='Avatar.png'">`;
-                row.insertCell(2).innerHTML = `<strong>${f.name || 'Боец'}</strong>`;
+                row.insertCell(2).innerHTML = `<strong>${f.name || 'Боец'}</strong><br><small style="color:#888">${f.sport || ''}</small>`;
                 row.insertCell(3).innerText = f.city || '—';
-                row.insertCell(4).innerText = f.frs || 0;
+                row.insertCell(4).innerHTML = `<span style="color:#fbbf24; font-weight:bold;">${f.frs || 0}</span> ⭐`;
                 row.onclick = () => window.location.href = `profile.html?id=${f.id}`;
                 rank++;
             });
-            if (fighters.length === 0) tbody.innerHTML = '<tr><td colspan="5">Нет бойцов по выбранным фильтрам</tr>';
         }
 
         function setActiveSportButton(sport) {
@@ -156,27 +186,46 @@
             });
         }
 
-        document.getElementById('citySelect').addEventListener('change', (e) => { currentCity = e.target.value; applyFilters(); });
-        document.getElementById('weightClassSelect').addEventListener('change', (e) => { currentWeightClass = e.target.value; applyFilters(); });
+        // Слушатели фильтров
+        document.getElementById('citySelect').addEventListener('change', (e) => { 
+            currentCity = e.target.value; 
+            applyFilters(); 
+        });
+        
+        document.getElementById('weightClassSelect').addEventListener('change', (e) => { 
+            currentWeightClass = e.target.value; 
+            applyFilters(); 
+        });
+        
         document.querySelectorAll('.filter-btn').forEach(btn => {
             btn.addEventListener('click', () => {
                 currentSport = btn.getAttribute('data-sport');
                 setActiveSportButton(currentSport);
-                loadFighters();
+                applyFilters(); // Не перезагружаем, а фильтруем existing allFighters
             });
         });
+        
         document.getElementById('rankSearch').addEventListener('keyup', function() {
-            const term = this.value.toLowerCase();
-            document.querySelectorAll('#ratingTableBody tr').forEach(row => {
+            const term = this.value.toLowerCase().trim();
+            const rows = document.querySelectorAll('#ratingTableBody tr');
+            rows.forEach(row => {
                 const nameCell = row.cells[2];
-                if (nameCell) row.style.display = nameCell.innerText.toLowerCase().includes(term) ? '' : 'none';
+                if (nameCell) {
+                    const name = nameCell.innerText.toLowerCase();
+                    row.style.display = name.includes(term) ? '' : 'none';
+                }
             });
         });
 
         const loginBtn = document.getElementById('ratingLoginBtn');
         onAuthStateChanged(auth, (user) => {
-            if (user && loginBtn) { loginBtn.innerText = 'Мой профиль'; loginBtn.href = `profile.html?id=${user.uid}`; }
+            if (user && loginBtn) { 
+                loginBtn.innerText = 'Мой профиль'; 
+                loginBtn.href = `profile.html?id=${user.uid}`; 
+            }
         });
+        
+        // Загружаем бойцов
         loadFighters();
     </script>
 </body>
