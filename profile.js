@@ -17,31 +17,93 @@ const auth = getAuth(app);
 
 const BOT_TOKEN = '8527160088:AAGc2311QFkp6F7-Jx5k8MJfqlpvbueSl5E';
 
+// ========== НАСТРОЙКИ CLOUDINARY ==========
+const CLOUD_NAME = 'dbv7bfkgy';
+const UPLOAD_PRESET = 'prorank_avatars';  // создадим ниже
+
 let currentFighterRef = null;
 let currentFighterId = null;
 
-// Аватарки временно отключены
+// ========== ЗАГРУЗКА АВАТАРКИ ЧЕРЕЗ CLOUDINARY ==========
+
 async function uploadAvatar(file, userId) {
-    alert('📸 Загрузка аватарок временно отключена. Скоро заработает!');
-    throw new Error('Загрузка аватарок временно недоступна');
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('upload_preset', UPLOAD_PRESET);
+    
+    const response = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, {
+        method: 'POST',
+        body: formData
+    });
+    
+    const data = await response.json();
+    
+    if (data.secure_url) {
+        return data.secure_url;
+    } else {
+        throw new Error(data.error?.message || 'Ошибка загрузки');
+    }
 }
 
 function setupAvatarUpload() {
     const avatarImg = document.getElementById('profAvatar');
     if (!avatarImg) return;
+    
+    const fileInput = document.createElement('input');
+    fileInput.type = 'file';
+    fileInput.accept = 'image/jpeg,image/png,image/webp';
+    fileInput.style.display = 'none';
+    document.body.appendChild(fileInput);
+    
+    const params = new URLSearchParams(window.location.search);
+    const profileId = params.get('id');
+    
     avatarImg.style.cursor = 'pointer';
-    avatarImg.addEventListener('click', async (e) => {
+    
+    avatarImg.addEventListener('click', (e) => {
         e.preventDefault();
         const user = auth.currentUser;
-        const params = new URLSearchParams(window.location.search);
-        const profileId = params.get('id');
         if (!user || user.uid !== profileId) {
             alert('Только владелец профиля может изменить аватар');
             return;
         }
-        alert('📸 Загрузка аватарок временно отключена. Функция появится в следующем обновлении!');
+        fileInput.click();
+    });
+    
+    fileInput.addEventListener('change', async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        
+        if (file.size > 2 * 1024 * 1024) {
+            alert('❌ Файл больше 2MB. Сожмите фото.');
+            return;
+        }
+        
+        if (!file.type.startsWith('image/')) {
+            alert('❌ Можно загружать только изображения');
+            return;
+        }
+        
+        const originalSrc = avatarImg.src;
+        avatarImg.style.opacity = '0.5';
+        
+        try {
+            const url = await uploadAvatar(file, profileId);
+            await updateDoc(doc(db, "fighters", profileId), { avatar: url });
+            avatarImg.src = url;
+            alert('✅ Аватар обновлён!');
+        } catch (err) {
+            console.error(err);
+            avatarImg.src = originalSrc;
+            alert('❌ Ошибка: ' + err.message);
+        }
+        
+        avatarImg.style.opacity = '1';
+        fileInput.value = '';
     });
 }
+
+// ========== ОСТАЛЬНЫЕ ФУНКЦИИ ПРОФИЛЯ ==========
 
 async function loadProfileData() {
     const loadingDiv = document.getElementById('profileLoading');
