@@ -16,11 +16,16 @@ const db = getFirestore(app);
 const auth = getAuth(app);
 
 const BOT_TOKEN = '8527160088:AAGc2311QFkp6F7-Jx5k8MJfqlpvbueSl5E';
+const BOT_USERNAME = 'PRORANK_bot';
+
+// ========== НАСТРОЙКИ CLOUDINARY ==========
 const CLOUD_NAME = 'dbv7bfkgy';
 const UPLOAD_PRESET = 'prorank_avatars';
 
 let currentFighterRef = null;
 let currentFighterId = null;
+
+// ========== ЗАГРУЗКА АВАТАРКИ ЧЕРЕЗ CLOUDINARY ==========
 
 async function uploadAvatar(file, userId) {
     const formData = new FormData();
@@ -48,7 +53,7 @@ function setupAvatarUpload() {
     
     const fileInput = document.createElement('input');
     fileInput.type = 'file';
-    fileInput.accept = 'image/jpeg,image/png,image/webp';
+    fileInput.accept = 'image/jpeg,image/png,image/webp,image/heic';
     fileInput.style.display = 'none';
     document.body.appendChild(fileInput);
     
@@ -72,7 +77,12 @@ function setupAvatarUpload() {
         if (!file) return;
         
         if (file.size > 20 * 1024 * 1024) {
-            alert('❌ Файл больше 20MB');
+            alert('❌ Файл больше 20MB. Слишком тяжело для загрузки.');
+            return;
+        }
+        
+        if (!file.type.startsWith('image/')) {
+            alert('❌ Можно загружать только изображения');
             return;
         }
         
@@ -85,6 +95,7 @@ function setupAvatarUpload() {
             avatarImg.src = url;
             alert('✅ Аватар обновлён!');
         } catch (err) {
+            console.error(err);
             avatarImg.src = originalSrc;
             alert('❌ Ошибка: ' + err.message);
         }
@@ -93,6 +104,8 @@ function setupAvatarUpload() {
         fileInput.value = '';
     });
 }
+
+// ========== ОСТАЛЬНЫЕ ФУНКЦИИ ПРОФИЛЯ ==========
 
 async function loadProfileData() {
     const loadingDiv = document.getElementById('profileLoading');
@@ -129,6 +142,18 @@ async function loadProfileData() {
             avatarImg.onerror = () => { avatarImg.src = 'Avatar.png'; };
         }
         
+        // Отображаем статус верификации, если есть
+        const verificationStatus = document.getElementById('verificationStatus');
+        if (verificationStatus && fighter.verificationStatus) {
+            const statuses = {
+                'pending': '⏳ На рассмотрении',
+                'approved': '✅ Подтверждён',
+                'rejected': '❌ Отклонён'
+            };
+            verificationStatus.innerText = statuses[fighter.verificationStatus] || '';
+            verificationStatus.style.display = 'block';
+        }
+        
         document.getElementById('statWins').innerText = fighter.wins || 0;
         document.getElementById('statFinishes').innerText = fighter.finishes || 0;
         document.getElementById('statViews').innerText = fighter.viewsLast30Days || 0;
@@ -153,9 +178,13 @@ async function loadProfileData() {
                 if (editBioBtn) editBioBtn.classList.remove('hidden');
                 document.getElementById('btnChallenge')?.classList.add('hidden');
                 document.getElementById('btnMessage')?.classList.add('hidden');
+                const verifyBtn = document.getElementById('verifyRecordBtn');
+                if (verifyBtn) verifyBtn.classList.remove('hidden');
             } else {
                 if (editProfileBtn) editProfileBtn.classList.add('hidden');
                 if (editBioBtn) editBioBtn.classList.add('hidden');
+                const verifyBtn = document.getElementById('verifyRecordBtn');
+                if (verifyBtn) verifyBtn.classList.add('hidden');
             }
             
             if (user && !isOwner) {
@@ -218,6 +247,21 @@ async function loadProfileData() {
             if (event.target === modal) modal.style.display = 'none';
         };
         
+        // ========== КНОПКА ПОДТВЕРДИТЬ РЕКОРД ==========
+        const verifyRecordBtn = document.getElementById('verifyRecordBtn');
+        if (verifyRecordBtn) {
+            verifyRecordBtn.onclick = () => {
+                const user = auth.currentUser;
+                if (!user) {
+                    alert('Войдите в аккаунт');
+                    return;
+                }
+                // Открываем Telegram бота
+                window.open(`https://t.me/${BOT_USERNAME}?start=verify_${user.uid}`, '_blank');
+            };
+        }
+        
+        // ========== КНОПКА ВЫЗОВА ==========
         const challengeBtn = document.getElementById('btnChallenge');
         const messageBtn = document.getElementById('btnMessage');
         
@@ -301,7 +345,7 @@ async function loadProfileData() {
                     alert('⚠️ У соперника нет Telegram, но вызов сохранён.');
                 }
                 
-                alert('✅ Вызов отправлен!');
+                alert('✅ Вызов отправлен! Соперник увидит его в разделе "Мои вызовы"');
             };
         }
         
