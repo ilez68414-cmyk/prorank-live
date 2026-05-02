@@ -19,17 +19,19 @@ const BOT_TOKEN = '8527160088:AAGc2311QFkp6F7-Jx5k8MJfqlpvbueSl5E';
 
 // ========== НАСТРОЙКИ CLOUDINARY ==========
 const CLOUD_NAME = 'dbv7bfkgy';
-const UPLOAD_PRESET = 'prorank_avatars';  // создадим ниже
+const UPLOAD_PRESET = 'prorank_avatars';
 
 let currentFighterRef = null;
 let currentFighterId = null;
 
-// ========== ЗАГРУЗКА АВАТАРКИ ЧЕРЕЗ CLOUDINARY ==========
+// ========== ЗАГРУЗКА АВАТАРКИ ЧЕРЕЗ CLOUDINARY С АВТОСЖАТИЕМ ==========
 
 async function uploadAvatar(file, userId) {
     const formData = new FormData();
     formData.append('file', file);
     formData.append('upload_preset', UPLOAD_PRESET);
+    // Автоматическое сжатие, обрезка под квадрат 400x400, оптимизация качества
+    formData.append('transformation', 'w_400,h_400,c_fill,f_auto,q_auto');
     
     const response = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, {
         method: 'POST',
@@ -51,7 +53,7 @@ function setupAvatarUpload() {
     
     const fileInput = document.createElement('input');
     fileInput.type = 'file';
-    fileInput.accept = 'image/jpeg,image/png,image/webp';
+    fileInput.accept = 'image/jpeg,image/png,image/webp,image/heic';
     fileInput.style.display = 'none';
     document.body.appendChild(fileInput);
     
@@ -74,8 +76,9 @@ function setupAvatarUpload() {
         const file = e.target.files[0];
         if (!file) return;
         
-        if (file.size > 2 * 1024 * 1024) {
-            alert('❌ Файл больше 2MB. Сожмите фото.');
+        // Cloudinary сам сожмёт, но очень большие файлы отсекаем
+        if (file.size > 20 * 1024 * 1024) {
+            alert('❌ Файл больше 20MB. Слишком тяжело для загрузки.');
             return;
         }
         
