@@ -16,7 +16,7 @@ const db = getFirestore(app);
 const auth = getAuth(app);
 
 const BOT_TOKEN = '8527160088:AAGc2311QFkp6F7-Jx5k8MJfqlpvbueSl5E';
-const BOT_USERNAME = 'PRORANK_bot';
+const BOT_USERNAME = 'ProRankBot';
 
 // ========== НАСТРОЙКИ CLOUDINARY ==========
 const CLOUD_NAME = 'dbv7bfkgy';
@@ -40,7 +40,6 @@ async function uploadAvatar(file, userId) {
     const data = await response.json();
     
     if (data.secure_url) {
-        // Добавляем сжатие и обрезку в URL после загрузки
         return data.secure_url.replace('/upload/', '/upload/w_400,h_400,c_fill,f_auto,q_auto/');
     } else {
         throw new Error(data.error?.message || 'Ошибка загрузки');
@@ -142,7 +141,6 @@ async function loadProfileData() {
             avatarImg.onerror = () => { avatarImg.src = 'Avatar.png'; };
         }
         
-        // Отображаем статус верификации, если есть
         const verificationStatus = document.getElementById('verificationStatus');
         if (verificationStatus && fighter.verificationStatus) {
             const statuses = {
@@ -256,7 +254,6 @@ async function loadProfileData() {
                     alert('Войдите в аккаунт');
                     return;
                 }
-                // Открываем Telegram бота
                 window.open(`https://t.me/${BOT_USERNAME}?start=verify_${user.uid}`, '_blank');
             };
         }
