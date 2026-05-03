@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Мои вызовы | PRORANK</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .challenges-container {
+            max-width: 900px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+        .challenges-section {
+            background: #1a1a1a;
+            border-radius: 1.5rem;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        .challenges-section h2 {
+            margin-bottom: 1rem;
+            color: #fbbf24;
+        }
+        .challenge-card {
+            background: #0f0f0f;
+            border-radius: 1rem;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border-left: 4px solid #fbbf24;
+        }
+        .challenge-card.incoming {
+            border-left-color: #fbbf24;
+        }
+        .challenge-card.outgoing {
+            border-left-color: #8b5cf6;
+        }
+        .challenge-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            margin-bottom: 0.5rem;
+        }
+        .challenge-name {
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+        .challenge-status {
+            padding: 0.2rem 0.8rem;
+            border-radius: 2rem;
+            font-size: 0.8rem;
+        }
+        .status-pending {
+            background: #fbbf24;
+            color: #000;
+        }
+        .status-accepted {
+            background: #16a34a;
+            color: #fff;
+        }
+        .status-rejected {
+            background: #dc2626;
+            color: #fff;
+        }
+        .challenge-details {
+            color: #aaa;
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+        }
+        .challenge-message {
+            background: #1a1a1a;
+            padding: 0.5rem;
+            border-radius: 0.5rem;
+            margin: 0.5rem 0;
+            font-style: italic;
+        }
+        .challenge-actions {
+            display: flex;
+            gap: 1rem;
+            margin-top: 0.5rem;
+        }
+        .btn-accept, .btn-reject {
+            padding: 0.4rem 1rem;
+            border-radius: 1.5rem;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .btn-accept {
+            background: #16a34a;
+            color: white;
+        }
+        .btn-reject {
+            background: #dc2626;
+            color: white;
+        }
+        .empty-state {
+            text-align: center;
+            color: #888;
+            padding: 2rem;
+        }
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            color: #888;
+        }
+        @media (max-width: 600px) {
+            .challenge-header { flex-direction: column; align-items: flex-start; gap: 0.5rem; }
+        }
+    </style>
+</head>
+<body>
+    <header class="navbar">
+        <div class="logo" onclick="window.location='index.html'" style="cursor:pointer">PRO<span>RANK</span></div>
+        <nav class="nav-links">
+            <a href="index.html">Главная</a>
+            <a href="rating.html">Рейтинг</a>
+            <a href="rules.html">Правила</a>
+            <a href="login.html" id="challengesLoginBtn" class="btn-primary">Войти</a>
+        </nav>
+    </header>
+
+    <div class="challenges-container">
+        <h1>⚔️ Мои вызовы</h1>
+        
+        <div id="incomingSection" class="challenges-section">
+            <h2>📥 Входящие вызовы</h2>
+            <div id="incomingList" class="loading">Загрузка...</div>
+        </div>
+
+        <div id="outgoingSection" class="challenges-section">
+            <h2>📤 Исходящие вызовы</h2>
+            <div id="outgoingList" class="loading">Загрузка...</div>
+        </div>
+    </div>
+
+    <footer class="main-footer">
+        <div class="container footer-content">
+            <div class="footer-logo"><div class="logo">PRO<span>RANK</span></div><p>Рейтинг любительского спорта</p></div>
+            <div class="footer-about"><h4>О проекте</h4><p>Платформа для спортсменов-любителей</p></div>
+            <div class="footer-links"><h4>Навигация</h4><a href="index.html">Главная</a><a href="rating.html">Рейтинг</a><a href="login.html">Вход</a></div>
+        </div>
+        <div class="footer-bottom"><p>&copy; 2026 PRORANK</p></div>
+    </footer>
+
+    <script type="importmap">
+        {
+            "imports": {
+                "firebase/app": "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js",
+                "firebase/firestore": "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js",
+                "firebase/auth": "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js"
+            }
+        }
+    </script>
+    <script type="module">
+        import { initializeApp } from "firebase/app";
+        import { getFirestore, collection, query, where, getDocs, updateDoc, doc, orderBy } from "firebase/firestore";
+        import { getAuth, onAuthStateChanged } from "firebase/auth";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDUGYJY7pX7q02MS5SACMIIQXpjpQ97mPw",
+            authDomain: "proranklive.firebaseapp.com",
+            projectId: "proranklive",
+            storageBucket: "proranklive.firebasestorage.app",
+            messagingSenderId: "716836144015",
+            appId: "1:716836144015:web:f1575147750608d0f881fa"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+
+        const BOT_TOKEN = '8527160088:AAGc2311QFkp6F7-Jx5k8MJfqlpvbueSl5E';
+
+        let currentUser = null;
+
+        async function loadChallenges() {
+            if (!currentUser) return;
+
+            // Входящие вызовы (кто вызвал меня)
+            const incomingQuery = query(
+                collection(db, "challenges"),
+                where("toUserId", "==", currentUser.uid),
+                orderBy("createdAt", "desc")
+            );
+            
+            // Исходящие вызовы (кого вызвал я)
+            const outgoingQuery = query(
+                collection(db, "challenges"),
+                where("fromUserId", "==", currentUser.uid),
+                orderBy("createdAt", "desc")
+            );
+
+            const [incomingSnap, outgoingSnap] = await Promise.all([
+                getDocs(incomingQuery),
+                getDocs(outgoingQuery)
+            ]);
+
+            renderIncoming(incomingSnap.docs);
+            renderOutgoing(outgoingSnap.docs);
+        }
+
+        function renderIncoming(docs) {
+            const container = document.getElementById('incomingList');
+            if (docs.length === 0) {
+                container.innerHTML = '<div class="empty-state">📭 Нет входящих вызовов</div>';
+                return;
+            }
+
+            container.innerHTML = '';
+            for (const docSnap of docs) {
+                const challenge = docSnap.data();
+                const challengeId = docSnap.id;
+                
+                const card = document.createElement('div');
+                card.className = 'challenge-card incoming';
+                card.innerHTML = `
+                    <div class="challenge-header">
+                        <span class="challenge-name">🥊 ${challenge.fromName || 'Боец'}</span>
+                        <span class="challenge-status status-${challenge.status}">${getStatusText(challenge.status)}</span>
+                    </div>
+                    <div class="challenge-details">
+                        📍 Вес: ${challenge.fromWeight || '—'} кг
+                    </div>
+                    ${challenge.message ? `<div class="challenge-message">💬 ${escapeHtml(challenge.message)}</div>` : ''}
+                    ${challenge.status === 'pending' ? `
+                        <div class="challenge-actions">
+                            <button class="btn-accept" data-id="${challengeId}">✅ Принять</button>
+                            <button class="btn-reject" data-id="${challengeId}">❌ Отклонить</button>
+                        </div>
+                    ` : ''}
+                `;
+                container.appendChild(card);
+            }
+
+            // Добавляем обработчики
+            document.querySelectorAll('.btn-accept').forEach(btn => {
+                btn.addEventListener('click', () => updateChallengeStatus(btn.dataset.id, 'accepted'));
+            });
+            document.querySelectorAll('.btn-reject').forEach(btn => {
+                btn.addEventListener('click', () => updateChallengeStatus(btn.dataset.id, 'rejected'));
+            });
+        }
+
+        function renderOutgoing(docs) {
+            const container = document.getElementById('outgoingList');
+            if (docs.length === 0) {
+                container.innerHTML = '<div class="empty-state">📭 Нет исходящих вызовов</div>';
+                return;
+            }
+
+            container.innerHTML = '';
+            for (const docSnap of docs) {
+                const challenge = docSnap.data();
+                
+                const card = document.createElement('div');
+                card.className = 'challenge-card outgoing';
+                card.innerHTML = `
+                    <div class="challenge-header">
+                        <span class="challenge-name">🎯 ${challenge.toName || 'Соперник'}</span>
+                        <span class="challenge-status status-${challenge.status}">${getStatusText(challenge.status)}</span>
+                    </div>
+                    <div class="challenge-details">
+                        📍 Вес: ${challenge.toWeight || '—'} кг
+                    </div>
+                    ${challenge.message ? `<div class="challenge-message">💬 ${escapeHtml(challenge.message)}</div>` : ''}
+                    ${challenge.status === 'accepted' ? '<div class="challenge-details">✅ Соперник принял вызов! Свяжитесь с ним в Telegram.</div>' : ''}
+                    ${challenge.status === 'rejected' ? '<div class="challenge-details">❌ Соперник отклонил вызов</div>' : ''}
+                `;
+                container.appendChild(card);
+            }
+        }
+
+        async function updateChallengeStatus(challengeId, newStatus) {
+            try {
+                const challengeRef = doc(db, "challenges", challengeId);
+                await updateDoc(challengeRef, {
+                    status: newStatus,
+                    updatedAt: new Date()
+                });
+                
+                // Отправляем уведомление в Telegram
+                const challengeSnap = await getDocs(query(collection(db, "challenges"), where("__name__", "==", challengeId)));
+                const challenge = challengeSnap.docs[0]?.data();
+                
+                if (challenge && newStatus === 'accepted') {
+                    const fromUser = challenge.fromUserId;
+                    const fromTelegram = challenge.fromTelegramId;
+                    const toName = challenge.toName;
+                    const fromName = challenge.fromName;
+                    
+                    if (fromTelegram) {
+                        await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                chat_id: fromTelegram,
+                                text: `✅ *ВЫЗОВ ПРИНЯТ!*\n\nБоец *${toName}* принял твой вызов на спарринг.\n\n👉 Свяжитесь друг с другом и договоритесь о времени!`,
+                                parse_mode: 'Markdown'
+                            })
+                        });
+                    }
+                }
+                
+                alert(`✅ Вызов ${newStatus === 'accepted' ? 'принят' : 'отклонён'}`);
+                loadChallenges();
+            } catch (err) {
+                console.error('Ошибка:', err);
+                alert('❌ Ошибка при обновлении статуса');
+            }
+        }
+
+        function getStatusText(status) {
+            const statuses = {
+                'pending': '⏳ Ожидает ответа',
+                'accepted': '✅ Принят',
+                'rejected': '❌ Отклонён'
+            };
+            return statuses[status] || status;
+        }
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/[&<>]/g, function(m) {
+                if (m === '&') return '&amp;';
+                if (m === '<') return '&lt;';
+                if (m === '>') return '&gt;';
+                return m;
+            });
+        }
+
+        // Управление кнопкой входа
+        const loginBtn = document.getElementById('challengesLoginBtn');
+        
+        onAuthStateChanged(auth, (user) => {
+            currentUser = user;
+            
+            if (user && loginBtn) {
+                loginBtn.innerText = 'Мой профиль';
+                loginBtn.href = `profile.html?id=${user.uid}`;
+                loadChallenges();
+            } else if (loginBtn) {
+                loginBtn.innerText = 'Войти';
+                loginBtn.href = 'login.html';
+                document.getElementById('incomingList').innerHTML = '<div class="empty-state">🔒 Войдите, чтобы видеть вызовы</div>';
+                document.getElementById('outgoingList').innerHTML = '<div class="empty-state">🔒 Войдите, чтобы видеть вызовы</div>';
+            }
+        });
+    </script>
+</body>
+</html>
