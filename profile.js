@@ -282,43 +282,96 @@ function setupVerifyRecord() {
 async function setupChallengeButton(targetId) {
     const btn = document.getElementById('btnChallenge');
     if (!btn) return;
+    
     btn.onclick = async () => {
         const user = auth.currentUser;
-        if (!user) return alert('Войдите');
-        const targetDoc = await getDoc(doc(db, "fighters", targetId));
-        const target = targetDoc.data();
-        const currentDoc = await getDoc(doc(db, "fighters", user.uid));
-        const current = currentDoc.data();
-        const targetWeight = parseInt(target?.weightClass) || 0;
-        const currentWeight = parseInt(current?.weightClass) || 0;
-        if (Math.abs(currentWeight - targetWeight) > 15) return alert('⚠️ Большая разница в весе');
-        const existing = await getDocs(query(collection(db, "challenges"), where("fromUserId", "==", user.uid), where("toUserId", "==", targetId), where("status", "==", "pending")));
-        if (!existing.empty) return alert('Вы уже вызывали');
-        const msg = prompt('Сообщение:', 'Хочешь спарринг?') || '';
-        await addDoc(collection(db, "challenges"), {
-            fromUserId: user.uid,
-            fromName: current.name,
-            fromWeight: currentWeight,
-            fromTelegramId: current.telegramId,
-            toUserId: targetId,
-            toName: target.name,
-            toWeight: targetWeight,
-            toTelegramId: target.telegramId,
-            status: "pending",
-            message: msg,
-            createdAt: new Date()
-        });
-        if (target.telegramId) {
-            await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ chat_id: target.telegramId, text: `🥊 ВЫЗОВ! ${current.name} вызывает тебя на спарринг.\nСообщение: ${msg}`, parse_mode: 'Markdown' })
-            });
+        if (!user) {
+            alert('Вы не авторизованы');
+            return;
         }
-        alert('✅ Вызов отправлен');
+        
+        try {
+            const targetDoc = await getDoc(doc(db, "fighters", targetId));
+            const target = targetDoc.data();
+            const currentDoc = await getDoc(doc(db, "fighters", user.uid));
+            const current = currentDoc.data();
+            
+            if (!target || !current) {
+                alert('❌ Данные бойца не найдены');
+                return;
+            }
+            
+            const targetWeight = target.weightClass ? parseInt(target.weightClass) : 0;
+            const currentWeight = current.weightClass ? parseInt(current.weightClass) : 0;
+            
+            const weightDiff = Math.abs(currentWeight - targetWeight);
+            
+            if (weightDiff > 15) {
+                alert(`⚠️ Слишком большая разница в весе (${weightDiff} кг). Спарринг небезопасен.`);
+                return;
+            }
+            
+            // Проверяем существующий вызов
+            const existingQuery = await getDocs(query(
+                collection(db, "challenges"),
+                where("fromUserId", "==", user.uid),
+                where("toUserId", "==", targetId),
+                where("status", "in", ["pending", "accepted"])
+            ));
+            
+            if (!existingQuery.empty) {
+                alert('Вы уже вызывали этого бойца');
+                return;
+            }
+            
+            const message = prompt('💬 Сообщение сопернику:', 'Хочешь спарринг?') || '';
+            
+            // Создаём вызов с правильными полями (без undefined)
+            const challengeData = {
+                fromUserId: user.uid,
+                fromName: current.name || 'Боец',
+                fromWeight: currentWeight,
+                fromTelegramId: current.telegramId ? String(current.telegramId) : null,
+                toUserId: targetId,
+                toName: target.name || 'Соперник',
+                toWeight: targetWeight,
+                toTelegramId: target.telegramId ? String(target.telegramId) : null,
+                status: "pending",
+                message: message || '',
+                createdAt: new Date(),
+                updatedAt: new Date()
+            };
+            
+            console.log('Отправляем вызов:', challengeData);
+            
+            const docRef = await addDoc(collection(db, "challenges"), challengeData);
+            console.log('Вызов создан с ID:', docRef.id);
+            
+            // Отправляем уведомление в Telegram (если есть Telegram ID)
+            if (target.telegramId) {
+                try {
+                    await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            chat_id: target.telegramId,
+                            text: `🥊 *ВЫЗОВ НА СПАРРИНГ!*\n\nБоец *${current.name}* вызывает тебя на бой.\n📝 Сообщение: ${message || '—'}\n\n👉 Зайди на сайт, чтобы ответить.`,
+                            parse_mode: 'Markdown'
+                        })
+                    });
+                } catch (tgErr) {
+                    console.error('TG ошибка:', tgErr);
+                }
+            }
+            
+            alert('✅ Вызов отправлен! Соперник получит уведомление.');
+            
+        } catch (err) {
+            console.error('Ошибка при отправке вызова:', err);
+            alert(`❌ Ошибка: ${err.message || 'Неизвестная ошибка'}\n\nПроверьте консоль (F12) для деталей.`);
+        }
     };
 }
-
 function setupMessageButton(targetId) {
     const btn = document.getElementById('btnMessage');
     if (!btn) return;
