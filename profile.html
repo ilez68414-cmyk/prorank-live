@@ -2,97 +2,408 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>Профиль | PRORANK</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Профиль бойца | PRORANK</title>
     <link rel="stylesheet" href="style.css">
     <style>
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); justify-content: center; align-items: center; z-index: 1000; }
-        .modal-content { background: #1f1f1f; padding: 1.5rem; border-radius: 12px; width: 90%; max-width: 400px; color: white; }
-        .modal-content input, .modal-content select { width: 100%; padding: 0.5rem; margin: 0.5rem 0; background: #2a2a2a; border: 1px solid #333; color: white; border-radius: 6px; }
-        .modal-content button { margin-top: 1rem; padding: 0.5rem 1rem; background: #fbbf24; color: black; border: none; border-radius: 6px; cursor: pointer; }
-        .hidden { display: none; }
-        .likes-block { display: flex; align-items: center; gap: 10px; margin: 10px 0; }
-        .like-btn { background: #3b82f6; color: white; border: none; padding: 5px 15px; border-radius: 20px; cursor: pointer; }
-        .like-btn.liked { background: #ef4444; }
-        .stats-block { background: #1a1a1a; padding: 1rem; border-radius: 1rem; margin: 1rem 0; }
-        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; margin: 0.5rem 0; }
-        .stat-link { color: #fbbf24; font-size: 0.9rem; text-decoration: none; }
+        .profile-container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+        .profile-card {
+            background: #1a1a1a;
+            border-radius: 2rem;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            border: 1px solid #2a2a2a;
+        }
+        .profile-top {
+            display: flex;
+            gap: 2rem;
+            flex-wrap: wrap;
+        }
+        .avatar-section {
+            flex-shrink: 0;
+            position: relative;
+        }
+        .avatar-section img {
+            width: 140px;
+            height: 140px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid #fbbf24;
+            background: #2a2a2a;
+            cursor: pointer;
+        }
+        .rank-badge {
+            position: absolute;
+            bottom: 8px;
+            right: 8px;
+            background: #fbbf24;
+            color: #000;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 0.75rem;
+        }
+        .info-section {
+            flex: 1;
+        }
+        .info-section h1 {
+            font-size: 1.8rem;
+            margin: 0 0 0.25rem 0;
+        }
+        .fighter-details {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            color: #aaa;
+            font-size: 0.9rem;
+        }
+        .fighter-details span {
+            background: #0f0f0f;
+            padding: 0.2rem 0.8rem;
+            border-radius: 2rem;
+        }
+        .stats-row {
+            display: flex;
+            gap: 1.5rem;
+            align-items: center;
+            flex-wrap: wrap;
+            margin-bottom: 1rem;
+        }
+        .stat-badge {
+            background: #0f0f0f;
+            padding: 0.3rem 1rem;
+            border-radius: 2rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .stat-badge .value {
+            font-weight: bold;
+            color: #fbbf24;
+            font-size: 1.1rem;
+        }
+        .action-buttons {
+            display: flex;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+            margin-top: 0.5rem;
+        }
+        .btn-challenge, .btn-message, .btn-subscribe, .btn-like, .btn-edit, .btn-primary {
+            padding: 0.5rem 1.2rem;
+            border-radius: 2rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.2s;
+            border: none;
+            font-size: 0.9rem;
+        }
+        .btn-challenge {
+            background: #fbbf24;
+            color: #000;
+        }
+        .btn-message {
+            background: transparent;
+            border: 1px solid #fbbf24;
+            color: #fbbf24;
+        }
+        .btn-subscribe {
+            background: #8b5cf6;
+            color: white;
+        }
+        .btn-subscribe.subscribed {
+            background: #16a34a;
+        }
+        .btn-like {
+            background: #dc2626;
+            color: white;
+        }
+        .btn-like.liked {
+            background: #16a34a;
+        }
+        .btn-edit {
+            background: #3b82f6;
+            color: white;
+        }
+        .btn-primary {
+            background: #fbbf24;
+            color: #000;
+        }
+        .profile-bio {
+            background: #1a1a1a;
+            padding: 1.5rem;
+            border-radius: 1.5rem;
+            margin-top: 1rem;
+        }
+        .bio-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            margin-bottom: 1rem;
+        }
+        .frs-onboarding {
+            background: linear-gradient(135deg, #1e2a1a, #0f1a0f);
+            border: 1px solid #fbbf24;
+            border-radius: 1.5rem;
+            padding: 1.5rem;
+            margin: 1rem 0;
+            display: flex;
+            gap: 1.2rem;
+            align-items: flex-start;
+            position: relative;
+        }
+        .onboarding-icon {
+            font-size: 3rem;
+            background: #fbbf24;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #000;
+            flex-shrink: 0;
+        }
+        .onboarding-content {
+            flex: 1;
+        }
+        .onboarding-content h4 {
+            margin: 0 0 0.5rem 0;
+            color: #fbbf24;
+        }
+        .onboarding-content ul {
+            margin: 0.5rem 0;
+            padding-left: 1.5rem;
+            color: #aaa;
+        }
+        .onboarding-btn {
+            background: #fbbf24;
+            color: #000;
+            border: none;
+            padding: 0.5rem 1.5rem;
+            border-radius: 2rem;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 0.5rem;
+        }
+        .onboarding-close {
+            background: none;
+            border: none;
+            color: #888;
+            cursor: pointer;
+            font-size: 1.2rem;
+        }
+        .hidden {
+            display: none !important;
+        }
+        #bioInput {
+            width: 100%;
+            background: #2a2a2a;
+            color: white;
+            border: 1px solid #fbbf24;
+            padding: 1rem;
+            border-radius: 1rem;
+            resize: vertical;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        .modal-content {
+            background: #1a1a1a;
+            padding: 2rem;
+            border-radius: 1.5rem;
+            width: 90%;
+            max-width: 500px;
+        }
+        .modal-content input, .modal-content select {
+            width: 100%;
+            padding: 0.75rem;
+            margin: 0.5rem 0;
+            background: #2a2a2a;
+            border: 1px solid #333;
+            color: white;
+            border-radius: 0.5rem;
+        }
+        .modal-buttons {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        .modal-buttons button {
+            flex: 1;
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            cursor: pointer;
+        }
+        #saveProfileBtn {
+            background: #fbbf24;
+            color: #000;
+        }
+        #cancelProfileBtn {
+            background: #333;
+            color: #fff;
+        }
+        .loading {
+            text-align: center;
+            padding: 3rem;
+            color: #888;
+        }
+        @media (max-width: 768px) {
+            .profile-top { flex-direction: column; align-items: center; text-align: center; }
+            .stats-row { justify-content: center; }
+            .action-buttons { justify-content: center; }
+            .frs-onboarding { flex-direction: column; align-items: center; text-align: center; }
+        }
     </style>
 </head>
 <body>
     <header class="navbar">
         <div class="logo" onclick="window.location='index.html'" style="cursor:pointer">PRO<span>RANK</span></div>
         <nav class="nav-links">
-            <a href="javascript:history.back()">Назад</a>
+            <a href="index.html">Главная</a>
+            <a href="rating.html">Рейтинг</a>
             <a href="rules.html">Правила</a>
-            <a href="#" onclick="goToMyProfile()" class="btn-primary">Мой профиль</a>
+            <a href="login.html" id="profileLoginBtn" class="btn-primary">Войти</a>
         </nav>
     </header>
 
-    <main class="container">
-        <div id="profileLoading" style="text-align:center; padding: 2rem;">⏳ Загрузка профиля...</div>
-        <section class="profile-header">
-            <div class="profile-info">
-                <div class="profile-avatar"><img id="profAvatar" src="Avatar.png" alt="Аватар" style="cursor: pointer; transition: opacity 0.3s;"></div>
-                <div class="profile-text">
-                    <h1 id="profName">Имя...</h1>
-                    <p class="specialization"><span id="profSport">Спорт</span> • <span id="profWeight">Вес</span></p>
-                    <p class="location">📍 <span id="profCity">Город</span></p>
-                    <div class="likes-block"><button id="likeBtn" class="like-btn">👍 Лайк</button><span id="likesCount">0</span></div>
-                    <div class="stats-block">
-                        <h3>📊 Статистика</h3>
-                        <div class="stats-grid">
-                            <div>🏆 Побед: <strong id="statWins">0</strong></div>
-                            <div>💥 Финишей: <strong id="statFinishes">0</strong></div>
-                            <div>👀 Просмотров: <strong id="statViews">0</strong></div>
-                            <div>👥 Подписчиков: <strong id="statSubs">0</strong></div>
-                            <div>📅 Последний бой: <strong id="statLastFight">—</strong></div>
-                            <div>⭐ FRS: <strong id="statFRS">0</strong></div>
-                            <div>⚖️ Категория: <strong id="statWeightClass">—</strong></div>
-                        </div>
-                        <a href="rules.html" class="stat-link">📖 Как поднять рейтинг?</a>
+    <div class="profile-container">
+        <div id="profileLoading" class="loading">⏳ Загрузка профиля...</div>
+        
+        <div id="profileContent" style="display: none;">
+            <div class="profile-card">
+                <div class="profile-top">
+                    <div class="avatar-section">
+                        <img id="profAvatar" src="Avatar.png" alt="Аватар">
+                        <div id="rankBadge" class="rank-badge">#0</div>
                     </div>
-                    <div class="action-buttons">
-                   <div style="display: flex; flex-wrap: wrap; gap: 10px; justify-content: center;">
-                        <button id="btnChallenge" class="btn-challenge">Вызвать на спарринг</button>
-                        <button id="btnMessage" class="btn-message">Написать</button>
-                        <button id="editProfileBtn" class="btn-challenge hidden">✏️ Редактировать профиль</button>
-                        <button id="editBtn" class="btn-challenge hidden">Редактировать био</button>
-                        <button id="saveBtn" class="btn-save hidden">Сохранить</button>
-                        <button id="verifyRecordBtn" class="btn-primary hidden">🏆 Подтвердить рекорд</button>
-                    <div id="verificationStatus" style="display: none; margin-top: 10px; padding: 8px; background: #1e1e1e; border-radius: 8px;"></div>
-                  </div>
-                 </div>
+                    <div class="info-section">
+                        <h1 id="profName">Боец</h1>
+                        <div class="fighter-details">
+                            <span id="profSport">—</span>
+                            <span id="profWeight">—</span>
+                            <span id="profCity">—</span>
+                        </div>
+                        <div class="stats-row">
+                            <div class="stat-badge">
+                                <span>🏆</span>
+                                <span class="value" id="statWinsHeader">0</span>
+                                <span>побед</span>
+                            </div>
+                            <div class="stat-badge">
+                                <span>⭐</span>
+                                <span class="value" id="statFRSHeader">0</span>
+                                <span>FRS</span>
+                            </div>
+                            <div class="stat-badge" id="likeButtonContainer">
+                                <button id="likeBtn" class="btn-like" style="background:#dc2626; color:white;">👍 0</button>
+                            </div>
+                            <div class="stat-badge" id="subscribeButtonContainer">
+                                <button id="btnSubscribe" class="btn-subscribe" style="background:#8b5cf6;">🔔 0</button>
+                            </div>
+                        </div>
+                        <div class="action-buttons" id="ownerButtons">
+                            <button id="editProfileBtn" class="btn-edit">✏️ Редактировать</button>
+                            <button id="editBtn" class="btn-edit">✏️ Био</button>
+                            <button id="verifyRecordBtn" class="btn-primary">🏆 Подтвердить рекорд</button>
+                        </div>
+                        <div class="action-buttons hidden" id="visitorButtons">
+                            <button id="btnChallenge" class="btn-challenge">🥊 Вызвать</button>
+                            <button id="btnMessage" class="btn-message">💬 Написать</button>
+                        </div>
+                    </div>
                 </div>
             </div>
-        </section>
-        <section class="profile-bio"><h3>О себе</h3><p id="bioText">Тут пока пусто...</p><textarea id="bioInput" class="hidden"></textarea></section>
-    </main>
 
-    <div id="editProfileModal" class="modal">
-        <div class="modal-content">
-            <h3>Редактировать профиль</h3>
-            <input type="text" id="editName" placeholder="Имя и фамилия">
-            <input type="text" id="editCity" placeholder="Город">
-            <input type="number" id="editWeight" placeholder="Вес (кг)">
-            <select id="editSport"><option value="Бокс">Бокс</option><option value="Борьба">Борьба</option><option value="ММА">ММА</option></select>
-            <button id="saveProfileBtn">Сохранить</button>
-            <button id="cancelProfileBtn">Отмена</button>
+            <div id="frsOnboarding" class="frs-onboarding hidden">
+                <div class="onboarding-icon">⭐</div>
+                <div class="onboarding-content">
+                    <h4>Твой рейтинг FRS: <span id="onboardingFrs">0</span></h4>
+                    <p>⭐ FRS — это главный рейтинг бойца. Он растёт, когда ты:</p>
+                    <ul>
+                        <li>🏆 <strong>Побеждаешь в боях</strong> (админ добавляет)</li>
+                        <li>💥 <strong>Заканчиваешь бой досрочно</strong></li>
+                        <li>❤️ <strong>Получаешь лайки</strong> от других бойцов</li>
+                        <li>🔔 <strong>Набираешь подписчиков</strong></li>
+                    </ul>
+                    <p>📖 <a href="rules.html" target="_blank">Полные правила →</a></p>
+                    <button id="closeOnboarding" class="onboarding-btn">Понятно, начать 💪</button>
+                </div>
+                <button id="closeOnboardingX" class="onboarding-close">✖</button>
+            </div>
+
+            <div class="profile-bio">
+                <div class="bio-header">
+                    <h3>📝 О себе</h3>
+                    <button id="saveBtn" class="btn-save hidden">💾 Сохранить</button>
+                </div>
+                <div id="bioText">Тут пока пусто...</div>
+                <textarea id="bioInput" rows="4" class="hidden" placeholder="Расскажи о себе..."></textarea>
+            </div>
         </div>
     </div>
 
+    <div id="editProfileModal" class="modal">
+        <div class="modal-content">
+            <h3>✏️ Редактировать профиль</h3>
+            <input type="text" id="editName" placeholder="Имя и фамилия">
+            <input type="text" id="editCity" placeholder="Город">
+            <select id="editWeightClass">
+                <option value="47">Наилегчайшая (до 50 кг)</option>
+                <option value="53">Легчайшая (51–56 кг)</option>
+                <option value="59">Полулёгкая (57–61 кг)</option>
+                <option value="64">Лёгкая (62–66 кг)</option>
+                <option value="69">1-я полусредняя (67–71 кг)</option>
+                <option value="74">Полусредняя (72–77 кг)</option>
+                <option value="80">1-я средняя (78–83 кг)</option>
+                <option value="86">Средняя (84–89 кг)</option>
+                <option value="94">Полутяжёлая (90–99 кг)</option>
+                <option value="110">Тяжёлая (100+ кг)</option>
+            </select>
+            <select id="editSport">
+                <option value="Бокс">Бокс</option>
+                <option value="Борьба">Борьба</option>
+                <option value="ММА">ММА</option>
+            </select>
+            <div class="modal-buttons">
+                <button id="saveProfileBtn">Сохранить</button>
+                <button id="cancelProfileBtn">Отмена</button>
+            </div>
+        </div>
+    </div>
+
+    <footer class="main-footer">
+        <div class="container footer-content">
+            <div class="footer-logo"><div class="logo">PRO<span>RANK</span></div><p>Рейтинг любительского спорта</p></div>
+            <div class="footer-about"><h4>О проекте</h4><p>Платформа для спортсменов-любителей</p></div>
+            <div class="footer-links"><h4>Навигация</h4><a href="index.html">Главная</a><a href="rating.html">Рейтинг</a><a href="login.html">Вход</a></div>
+        </div>
+        <div class="footer-bottom"><p>&copy; 2026 PRORANK</p></div>
+    </footer>
+
     <script type="importmap">
-        {"imports":{"firebase/app":"https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js","firebase/firestore":"https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js","firebase/auth":"https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js"}}
+        {
+            "imports": {
+                "firebase/app": "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js",
+                "firebase/firestore": "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js",
+                "firebase/auth": "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js"
+            }
+        }
     </script>
     <script type="module" src="profile.js"></script>
-    <script type="module">
-        import { getAuth } from "firebase/auth";
-        window.goToMyProfile = async function() {
-            const auth = getAuth();
-            if (auth.currentUser) window.location.href = `profile.html?id=${auth.currentUser.uid}`;
-            else alert("Войдите!");
-        };
-        document.getElementById('statWeightClass').innerText = fighter.weightClass || '—';
-    </script>
 </body>
 </html>
