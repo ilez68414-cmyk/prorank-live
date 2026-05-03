@@ -104,7 +104,66 @@
             padding: 2rem;
             color: #888;
         }
-        @media (max-width: 600px) {
+        /* Адаптивная навигация */
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px;
+            background: #1a1a1a;
+            border-bottom: 2px solid #fbbf24;
+        }
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .logo span {
+            color: #fbbf24;
+        }
+        .nav-links {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+        .nav-links a {
+            color: #fff;
+            text-decoration: none;
+            font-size: 1rem;
+            transition: 0.3s;
+        }
+        .nav-links a:hover {
+            color: #fbbf24;
+        }
+        .menu-toggle {
+            display: none;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.8rem;
+            cursor: pointer;
+            padding: 5px 10px;
+        }
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+                flex-direction: column;
+                position: absolute;
+                top: 70px;
+                left: 0;
+                width: 100%;
+                background: #1a1a1a;
+                padding: 20px;
+                gap: 15px;
+                z-index: 100;
+                border-top: 1px solid #333;
+            }
+            .nav-links.show {
+                display: flex;
+            }
+            .menu-toggle {
+                display: block;
+            }
             .challenge-header { flex-direction: column; align-items: flex-start; gap: 0.5rem; }
         }
     </style>
@@ -112,11 +171,12 @@
 <body>
     <header class="navbar">
         <div class="logo" onclick="window.location='index.html'" style="cursor:pointer">PRO<span>RANK</span></div>
-        <nav class="nav-links">
+        <button class="menu-toggle" id="menuToggle">☰</button>
+        <nav class="nav-links" id="navLinks">
             <a href="index.html">Главная</a>
             <a href="rating.html">Рейтинг</a>
             <a href="rules.html">Правила</a>
-            <a href="login.html" id="challengesLoginBtn" class="btn-primary">Войти</a>
+            <a href="login.html" id="profileLoginBtn" class="btn-primary">Войти</a>
         </nav>
     </header>
 
@@ -154,7 +214,7 @@
     </script>
     <script type="module">
         import { initializeApp } from "firebase/app";
-        import { getFirestore, collection, query, where, getDocs, updateDoc, doc, orderBy } from "firebase/firestore";
+        import { getFirestore, collection, query, where, getDocs, updateDoc, doc } from "firebase/firestore";
         import { getAuth, onAuthStateChanged } from "firebase/auth";
 
         const firebaseConfig = {
@@ -175,29 +235,37 @@
         let currentUser = null;
 
         async function loadChallenges() {
-            if (!currentUser) return;
+            if (!currentUser) {
+                document.getElementById('incomingList').innerHTML = '<div class="empty-state">🔒 Войдите, чтобы видеть вызовы</div>';
+                document.getElementById('outgoingList').innerHTML = '<div class="empty-state">🔒 Войдите, чтобы видеть вызовы</div>';
+                return;
+            }
 
-            // Входящие вызовы (кто вызвал меня)
-            const incomingQuery = query(
-                collection(db, "challenges"),
-                where("toUserId", "==", currentUser.uid),
-                orderBy("createdAt", "desc")
-            );
-            
-            // Исходящие вызовы (кого вызвал я)
-            const outgoingQuery = query(
-                collection(db, "challenges"),
-                where("fromUserId", "==", currentUser.uid),
-                orderBy("createdAt", "desc")
-            );
+            try {
+                // Входящие вызовы (без orderBy, чтобы не требовать индекс)
+                const incomingQuery = query(
+                    collection(db, "challenges"),
+                    where("toUserId", "==", currentUser.uid)
+                );
+                
+                // Исходящие вызовы (без orderBy)
+                const outgoingQuery = query(
+                    collection(db, "challenges"),
+                    where("fromUserId", "==", currentUser.uid)
+                );
 
-            const [incomingSnap, outgoingSnap] = await Promise.all([
-                getDocs(incomingQuery),
-                getDocs(outgoingQuery)
-            ]);
+                const [incomingSnap, outgoingSnap] = await Promise.all([
+                    getDocs(incomingQuery),
+                    getDocs(outgoingQuery)
+                ]);
 
-            renderIncoming(incomingSnap.docs);
-            renderOutgoing(outgoingSnap.docs);
+                renderIncoming(incomingSnap.docs);
+                renderOutgoing(outgoingSnap.docs);
+            } catch (err) {
+                console.error('Ошибка:', err);
+                document.getElementById('incomingList').innerHTML = '<div class="empty-state">❌ Ошибка загрузки</div>';
+                document.getElementById('outgoingList').innerHTML = '<div class="empty-state">❌ Ошибка загрузки</div>';
+            }
         }
 
         function renderIncoming(docs) {
@@ -233,7 +301,6 @@
                 container.appendChild(card);
             }
 
-            // Добавляем обработчики
             document.querySelectorAll('.btn-accept').forEach(btn => {
                 btn.addEventListener('click', () => updateChallengeStatus(btn.dataset.id, 'accepted'));
             });
@@ -284,10 +351,8 @@
                 const challenge = challengeSnap.docs[0]?.data();
                 
                 if (challenge && newStatus === 'accepted') {
-                    const fromUser = challenge.fromUserId;
                     const fromTelegram = challenge.fromTelegramId;
                     const toName = challenge.toName;
-                    const fromName = challenge.fromName;
                     
                     if (fromTelegram) {
                         await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
@@ -329,8 +394,8 @@
             });
         }
 
-        // Управление кнопкой входа
-        const loginBtn = document.getElementById('challengesLoginBtn');
+        // Обновление кнопки входа
+        const loginBtn = document.getElementById('profileLoginBtn');
         
         onAuthStateChanged(auth, (user) => {
             currentUser = user;
@@ -346,6 +411,17 @@
                 document.getElementById('outgoingList').innerHTML = '<div class="empty-state">🔒 Войдите, чтобы видеть вызовы</div>';
             }
         });
+    </script>
+    <script>
+        // Бургер-меню
+        const menuToggle = document.getElementById('menuToggle');
+        const navLinks = document.getElementById('navLinks');
+        
+        if (menuToggle && navLinks) {
+            menuToggle.addEventListener('click', () => {
+                navLinks.classList.toggle('show');
+            });
+        }
     </script>
 </body>
 </html>

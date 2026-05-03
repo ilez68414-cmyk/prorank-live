@@ -1,6 +1,6 @@
 import { initializeApp } from "firebase/app";
 import { getFirestore, collection, getDocs, query, where, doc, setDoc, orderBy } from "firebase/firestore";
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged } from "firebase/auth";
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "firebase/auth";
 
 const firebaseConfig = {
     apiKey: "AIzaSyDUGYJY7pX7q02MS5SACMIIQXpjpQ97mPw",
@@ -53,12 +53,12 @@ async function displayFighters() {
             row.classList.add('js-added-row');
             row.style.cursor = 'pointer';
             row.onclick = () => window.location.href = `profile.html?id=${doc.id}`;
-            row.innerHTML = `<td>${index++}</td><td><strong>${fighter.name || 'Без имени'}</strong></td><td>${fighter.city || '—'}</td><td class="points">${fighter.frs || 0} ⭐</td>`;
+            row.innerHTML = `<td>${index++}</td><td><strong>${fighter.name || 'Без имени'}</strong></td><td>${fighter.city || '—'}</td><td class="points">${fighter.frs || 0} ⭐<\/td>`;
             tableBody.appendChild(row);
         });
         if (querySnapshot.size === 0) {
             const row = document.createElement('tr');
-            row.innerHTML = `<td colspan="4" style="text-align:center">Нет бойцов в этой категории</td>`;
+            row.innerHTML = `<td colspan="4" style="text-align:center">Нет бойцов в этой категории<\/td>`;
             tableBody.appendChild(row);
         }
     } catch (error) {
@@ -128,18 +128,25 @@ window.goToMyProfile = function() {
     }
 };
 
-function updateNavbar() {
-    const authBtn = document.querySelector('.nav-links .btn-primary');
-    if (authBtn && auth.currentUser) {
-        authBtn.innerText = 'Мой профиль';
-        authBtn.setAttribute('onclick', `window.location.href='profile.html?id=${auth.currentUser.uid}'`);
-    }
-}
-
 // ========== СКРЫТИЕ ФОРМ ПОСЛЕ ВХОДА ==========
 function hideAuthSectionOnLogin(user) {
     const authSection = document.getElementById('authSection');
     if (authSection) authSection.style.display = user ? 'none' : 'block';
+}
+
+// ========== ОБНОВЛЕНИЕ КНОПКИ ВХОДА НА ВСЕХ СТРАНИЦАХ ==========
+function updateLoginButton() {
+    const loginBtn = document.getElementById('profileLoginBtn');
+    if (!loginBtn) return;
+    
+    const user = auth.currentUser;
+    if (user) {
+        loginBtn.innerText = 'Мой профиль';
+        loginBtn.href = `profile.html?id=${user.uid}`;
+    } else {
+        loginBtn.innerText = 'Войти';
+        loginBtn.href = 'login.html';
+    }
 }
 
 // ========== ИНИЦИАЛИЗАЦИЯ ==========
@@ -172,10 +179,12 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     initTabs();
     displayFighters();
+    updateLoginButton();
 });
 
+// Слушатель изменения состояния авторизации
 onAuthStateChanged(auth, (user) => {
-    updateNavbar();
+    updateLoginButton();
     hideAuthSectionOnLogin(user);
     if (user && window.location.pathname.includes('profile.html') && window.loadProfileData) {
         window.loadProfileData();
@@ -183,3 +192,8 @@ onAuthStateChanged(auth, (user) => {
         window.location.href = 'index.html#authSection';
     }
 });
+
+// Экспортируем функции для использования в других файлах
+window.registerUser = registerUser;
+window.loginUser = loginUser;
+window.displayFighters = displayFighters;

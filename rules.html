@@ -43,16 +43,92 @@
             text-align: center;
             margin: 1rem 0;
         }
+        .cta-button-outline {
+            display: inline-block;
+            background: transparent;
+            border: 2px solid #fbbf24;
+            color: #fbbf24;
+            padding: 0.7rem 1.5rem;
+            border-radius: 2rem;
+            text-decoration: none;
+            transition: 0.2s;
+        }
+        .cta-button-outline:hover {
+            background: #fbbf24;
+            color: black;
+        }
+        /* Адаптивная навигация */
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px;
+            background: #1a1a1a;
+            border-bottom: 2px solid #fbbf24;
+        }
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .logo span {
+            color: #fbbf24;
+        }
+        .nav-links {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+        .nav-links a {
+            color: #fff;
+            text-decoration: none;
+            font-size: 1rem;
+            transition: 0.3s;
+        }
+        .nav-links a:hover {
+            color: #fbbf24;
+        }
+        .menu-toggle {
+            display: none;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.8rem;
+            cursor: pointer;
+            padding: 5px 10px;
+        }
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+                flex-direction: column;
+                position: absolute;
+                top: 70px;
+                left: 0;
+                width: 100%;
+                background: #1a1a1a;
+                padding: 20px;
+                gap: 15px;
+                z-index: 100;
+                border-top: 1px solid #333;
+            }
+            .nav-links.show {
+                display: flex;
+            }
+            .menu-toggle {
+                display: block;
+            }
+        }
     </style>
 </head>
 <body>
     <header class="navbar">
         <div class="logo" onclick="window.location='index.html'" style="cursor:pointer">PRO<span>RANK</span></div>
-        <nav class="nav-links">
+        <button class="menu-toggle" id="menuToggle">☰</button>
+        <nav class="nav-links" id="navLinks">
             <a href="index.html">Главная</a>
             <a href="rating.html">Рейтинг</a>
             <a href="challenges.html">Мои вызовы</a>
-            <a href="login.html" class="btn-primary">Войти</a>
+            <a href="login.html" id="profileLoginBtn" class="btn-primary">Войти</a>
         </nav>
     </header>
 
@@ -62,16 +138,16 @@
             <p style="margin-bottom: 2rem;">Твой рейтинг (FRS) считается автоматически по формуле:</p>
 
             <div class="rule-card">
-        <div class="rule-title">⭐ Что такое FRS (Fight Rating Score)?</div>
-       <div class="rule-desc">
-             <p><strong>FRS — это твой главный показатель крутости.</strong> Чем выше число, тем выше ты в рейтинге.</p>
-             <p>Сайт автоматически считает FRS по формуле:</p>
-        <div class="formula">
-            <strong>FRS = (Победы × 100) + (Финиши × 50) + Хайп − Штраф за неактивность + Премиум</strong>
-        </div>
-        <p>Подробнее о каждом пункте — ниже.</p>
-          </div>
-         </div>
+                <div class="rule-title">⭐ Что такое FRS (Fight Rating Score)?</div>
+                <div class="rule-desc">
+                    <p><strong>FRS — это твой главный показатель крутости.</strong> Чем выше число, тем выше ты в рейтинге.</p>
+                    <p>Сайт автоматически считает FRS по формуле:</p>
+                    <div class="formula">
+                        <strong>FRS = (Победы × 100) + (Финиши × 50) + Хайп − Штраф за неактивность + Премиум</strong>
+                    </div>
+                    <p>Подробнее о каждом пункте — ниже.</p>
+                </div>
+            </div>
 
             <div class="rule-card">
                 <div class="rule-title">🏆 Победы</div>
@@ -124,21 +200,53 @@
         <div class="footer-bottom"><p>&copy; 2026 PRORANK. Сделано для тех, кто в зале.</p></div>
     </footer>
 
-    <style>
-        .cta-button-outline {
-            display: inline-block;
-            background: transparent;
-            border: 2px solid #fbbf24;
-            color: #fbbf24;
-            padding: 0.7rem 1.5rem;
-            border-radius: 2rem;
-            text-decoration: none;
-            transition: 0.2s;
+    <script type="importmap">
+        {
+            "imports": {
+                "firebase/app": "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js",
+                "firebase/auth": "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js"
+            }
         }
-        .cta-button-outline:hover {
-            background: #fbbf24;
-            color: black;
+    </script>
+    <script type="module">
+        import { initializeApp } from "firebase/app";
+        import { getAuth, onAuthStateChanged } from "firebase/auth";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDUGYJY7pX7q02MS5SACMIIQXpjpQ97mPw",
+            authDomain: "proranklive.firebaseapp.com",
+            projectId: "proranklive",
+            storageBucket: "proranklive.firebasestorage.app",
+            messagingSenderId: "716836144015",
+            appId: "1:716836144015:web:f1575147750608d0f881fa"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+
+        // Обновление кнопки входа
+        const loginBtn = document.getElementById('profileLoginBtn');
+        
+        onAuthStateChanged(auth, (user) => {
+            if (user && loginBtn) {
+                loginBtn.innerText = 'Мой профиль';
+                loginBtn.href = `profile.html?id=${user.uid}`;
+            } else if (loginBtn) {
+                loginBtn.innerText = 'Войти';
+                loginBtn.href = 'login.html';
+            }
+        });
+    </script>
+    <script>
+        // Бургер-меню
+        const menuToggle = document.getElementById('menuToggle');
+        const navLinks = document.getElementById('navLinks');
+        
+        if (menuToggle && navLinks) {
+            menuToggle.addEventListener('click', () => {
+                navLinks.classList.toggle('show');
+            });
         }
-    </style>
+    </script>
 </body>
 </html>

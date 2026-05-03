@@ -30,18 +30,79 @@
         .rating-table { width: 100%; border-collapse: collapse; background: #0f0f0f; border-radius: 1rem; overflow: hidden; }
         .rating-table th, .rating-table td { padding: 0.8rem 0.5rem; text-align: left; border-bottom: 1px solid #222; vertical-align: middle; }
         .rating-table th { background: #1a1a1a; }
-        @media (max-width: 768px) { .avatar-thumb { width: 32px; height: 32px; } }
+        /* Адаптивная навигация */
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px;
+            background: #1a1a1a;
+            border-bottom: 2px solid #fbbf24;
+        }
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .logo span {
+            color: #fbbf24;
+        }
+        .nav-links {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+        .nav-links a {
+            color: #fff;
+            text-decoration: none;
+            font-size: 1rem;
+            transition: 0.3s;
+        }
+        .nav-links a:hover {
+            color: #fbbf24;
+        }
+        .menu-toggle {
+            display: none;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.8rem;
+            cursor: pointer;
+            padding: 5px 10px;
+        }
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+                flex-direction: column;
+                position: absolute;
+                top: 70px;
+                left: 0;
+                width: 100%;
+                background: #1a1a1a;
+                padding: 20px;
+                gap: 15px;
+                z-index: 100;
+                border-top: 1px solid #333;
+            }
+            .nav-links.show {
+                display: flex;
+            }
+            .menu-toggle {
+                display: block;
+            }
+            .avatar-thumb { width: 32px; height: 32px; }
+        }
     </style>
 </head>
 <body>
     <header class="navbar">
         <div class="logo" onclick="window.location='index.html'" style="cursor:pointer">PRO<span>RANK</span></div>
-        <nav class="nav-links">
+        <button class="menu-toggle" id="menuToggle">☰</button>
+        <nav class="nav-links" id="navLinks">
             <a href="index.html">Главная</a>
-            <a href="rating.html">Рейтинг</a>
             <a href="rules.html">Правила</a>
             <a href="challenges.html">Мои вызовы</a>
-            <a href="login.html" id="ratingLoginBtn" class="btn-primary">Войти</a>
+            <a href="login.html" id="profileLoginBtn" class="btn-primary">Войти</a>
         </nav>
     </header>
 
@@ -67,7 +128,7 @@
                 <button class="filter-btn" data-sport="ММА">ММА</button>
             </div>
             <table class="rating-table"><thead><tr><th>№</th><th>Аватар</th><th>Спортсмен</th><th>Город</th><th>⭐ FRS</th></tr></thead>
-            <tbody id="ratingTableBody"><tr id="loadingRow"><td colspan="5">⏳ Загрузка...</td></tr></tbody></table>
+            <tbody id="ratingTableBody"><tr id="loadingRow"><td colspan="5">⏳ Загрузка...</td></table></tbody></table>
         </div>
     </main>
 
@@ -105,14 +166,12 @@
 
         async function loadFighters() {
             const tbody = document.getElementById('ratingTableBody');
-            tbody.innerHTML = '<tr><td colspan="5">⏳ Загрузка...</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="5">⏳ Загрузка...</tr></tr>';
             try {
-                // Загружаем ВСЕХ бойцов без фильтрации в запросе
                 const q = query(collection(db, "fighters"), orderBy("frs", "desc"));
                 const snapshot = await getDocs(q);
                 allFighters = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                 
-                // Заполняем список городов
                 const cities = [...new Set(allFighters.map(f => f.city).filter(c => c && c !== 'all'))];
                 const citySelect = document.getElementById('citySelect');
                 citySelect.innerHTML = '<option value="all">Все города</option>';
@@ -123,32 +182,18 @@
                     citySelect.appendChild(option); 
                 });
                 
-                // Применяем фильтры
                 applyFilters();
             } catch (error) { 
                 console.error("Ошибка загрузки:", error); 
-                tbody.innerHTML = '<tr><td colspan="5">❌ Ошибка загрузки. Проверьте интернет.</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="5">❌ Ошибка загрузки. Проверьте интернет.</td></table>';
             }
         }
 
         function applyFilters() {
             let filtered = [...allFighters];
-            
-            // Фильтр по городу
-            if (currentCity !== 'all') {
-                filtered = filtered.filter(f => f.city === currentCity);
-            }
-            
-            // Фильтр по весовой категории
-            if (currentWeightClass !== 'all') {
-                filtered = filtered.filter(f => f.weightClass === currentWeightClass);
-            }
-            
-            // Фильтр по виду спорта
-            if (currentSport !== 'all') {
-                filtered = filtered.filter(f => f.sport === currentSport);
-            }
-            
+            if (currentCity !== 'all') filtered = filtered.filter(f => f.city === currentCity);
+            if (currentWeightClass !== 'all') filtered = filtered.filter(f => f.weightClass === currentWeightClass);
+            if (currentSport !== 'all') filtered = filtered.filter(f => f.sport === currentSport);
             renderTable(filtered);
         }
 
@@ -187,7 +232,6 @@
             });
         }
 
-        // Слушатели фильтров
         document.getElementById('citySelect').addEventListener('change', (e) => { 
             currentCity = e.target.value; 
             applyFilters(); 
@@ -202,7 +246,7 @@
             btn.addEventListener('click', () => {
                 currentSport = btn.getAttribute('data-sport');
                 setActiveSportButton(currentSport);
-                applyFilters(); // Не перезагружаем, а фильтруем existing allFighters
+                applyFilters();
             });
         });
         
@@ -218,16 +262,30 @@
             });
         });
 
-        const loginBtn = document.getElementById('ratingLoginBtn');
+        // Обновление кнопки входа
+        const loginBtn = document.getElementById('profileLoginBtn');
         onAuthStateChanged(auth, (user) => {
             if (user && loginBtn) { 
                 loginBtn.innerText = 'Мой профиль'; 
                 loginBtn.href = `profile.html?id=${user.uid}`; 
+            } else if (loginBtn) {
+                loginBtn.innerText = 'Войти'; 
+                loginBtn.href = 'login.html';
             }
         });
         
-        // Загружаем бойцов
         loadFighters();
+    </script>
+    <script>
+        // Бургер-меню
+        const menuToggle = document.getElementById('menuToggle');
+        const navLinks = document.getElementById('navLinks');
+        
+        if (menuToggle && navLinks) {
+            menuToggle.addEventListener('click', () => {
+                navLinks.classList.toggle('show');
+            });
+        }
     </script>
 </body>
 </html>

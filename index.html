@@ -134,22 +134,90 @@
             -webkit-background-clip: text;
             color: transparent;
         }
+        /* Адаптивная навигация */
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px;
+            background: #1a1a1a;
+            border-bottom: 2px solid #fbbf24;
+        }
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .logo span {
+            color: #fbbf24;
+        }
+        .nav-links {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+        .nav-links a {
+            color: #fff;
+            text-decoration: none;
+            font-size: 1rem;
+            transition: 0.3s;
+        }
+        .nav-links a:hover {
+            color: #fbbf24;
+        }
+        .menu-toggle {
+            display: none;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.8rem;
+            cursor: pointer;
+            padding: 5px 10px;
+        }
         @media (max-width: 768px) {
-            .two-columns { grid-template-columns: 1fr; }
-            .top-rank { width: 45px; font-size: 1.3rem; }
-            .top-avatar { width: 40px; height: 40px; }
+            .nav-links {
+                display: none;
+                flex-direction: column;
+                position: absolute;
+                top: 70px;
+                left: 0;
+                width: 100%;
+                background: #1a1a1a;
+                padding: 20px;
+                gap: 15px;
+                z-index: 100;
+                border-top: 1px solid #333;
+            }
+            .nav-links.show {
+                display: flex;
+            }
+            .menu-toggle {
+                display: block;
+            }
+            .two-columns {
+                grid-template-columns: 1fr;
+            }
+            .top-rank {
+                width: 45px;
+                font-size: 1.3rem;
+            }
+            .top-avatar {
+                width: 40px;
+                height: 40px;
+            }
         }
     </style>
 </head>
 <body>
 
     <header class="navbar">
-        <div class="logo">PRO<span>RANK</span></div>
-        <nav class="nav-links">
+        <div class="logo" onclick="window.location='index.html'" style="cursor:pointer">PRO<span>RANK</span></div>
+        <button class="menu-toggle" id="menuToggle">☰</button>
+        <nav class="nav-links" id="navLinks">
             <a href="rating.html">Рейтинг</a>
             <a href="rules.html">Правила</a>
             <a href="challenges.html">Мои вызовы</a>
-            <a href="login.html" id="mainLoginBtn" class="btn-primary">Войти</a>
+            <a href="login.html" id="profileLoginBtn" class="btn-primary">Войти</a>
         </nav>
     </header>
 
@@ -262,26 +330,37 @@
         }
 
         const startPathBtn = document.getElementById('startPathBtn');
-        const loginBtn = document.getElementById('mainLoginBtn');
+        const navLoginBtn = document.getElementById('profileLoginBtn');
 
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 if (startPathBtn) startPathBtn.style.display = 'none';
-                if (loginBtn) {
-                    loginBtn.innerText = 'Мой профиль';
-                    loginBtn.href = `profile.html?id=${user.uid}`;
+                if (navLoginBtn) {
+                    navLoginBtn.innerText = 'Мой профиль';
+                    navLoginBtn.href = `profile.html?id=${user.uid}`;
                 }
             } else {
                 if (startPathBtn) startPathBtn.style.display = 'inline-block';
-                if (loginBtn) {
-                    loginBtn.innerText = 'Войти';
-                    loginBtn.href = 'login.html';
+                if (navLoginBtn) {
+                    navLoginBtn.innerText = 'Войти';
+                    navLoginBtn.href = 'login.html';
                 }
             }
         });
 
         loadTopPoints();
         loadTopLikes();
+    </script>
+    <script>
+        // Бургер-меню
+        const menuToggle = document.getElementById('menuToggle');
+        const navLinks = document.getElementById('navLinks');
+        
+        if (menuToggle && navLinks) {
+            menuToggle.addEventListener('click', () => {
+                navLinks.classList.toggle('show');
+            });
+        }
     </script>
 </body>
 </html>
