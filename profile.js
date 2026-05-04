@@ -402,13 +402,52 @@ async function setupChallengeButton(targetId) {
         }
     };
 }
-function setupMessageButton(targetId) {
-    const btn = document.getElementById('btnMessage');
-    if (!btn) return;
-    btn.onclick = async () => {
-        const target = (await getDoc(doc(db, "fighters", targetId))).data();
-        if (!target?.telegramId) return alert('У бойца нет Telegram');
-        window.open(`https://t.me/${target.telegramId}`, '_blank');
+async function setupMessageButton(targetId) {
+    const messageBtn = document.getElementById('btnMessage');
+    if (!messageBtn) return;
+    
+    messageBtn.onclick = async () => {
+        const user = auth.currentUser;
+        if (!user) {
+            alert('Войдите в аккаунт');
+            return;
+        }
+        
+        if (user.uid === targetId) {
+            alert('Нельзя написать самому себе');
+            return;
+        }
+        
+        // Создаём ID чата (всегда одинаковый для пары пользователей)
+        const chatId = `${user.uid}_${targetId}`;
+        
+        // Проверяем, существует ли чат
+        const chatRef = doc(db, "chats", chatId);
+        const chatSnap = await getDoc(chatRef);
+        
+        // Если чата нет — создаём
+        if (!chatSnap.exists()) {
+            // Получаем имена бойцов
+            const currentUserDoc = await getDoc(doc(db, "fighters", user.uid));
+            const targetUserDoc = await getDoc(doc(db, "fighters", targetId));
+            
+            const currentName = currentUserDoc.data()?.name || 'Боец';
+            const targetName = targetUserDoc.data()?.name || 'Боец';
+            
+            await setDoc(chatRef, {
+                participants: [user.uid, targetId],
+                participantNames: {
+                    [user.uid]: currentName,
+                    [targetId]: targetName
+                },
+                createdAt: new Date(),
+                lastMessage: "",
+                lastMessageTime: new Date()
+            });
+        }
+        
+        // Переходим в чат
+        window.location.href = `chat.html?id=${chatId}`;
     };
 }
 

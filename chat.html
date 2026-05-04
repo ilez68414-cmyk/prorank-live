@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Чат | PRORANK</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .chat-container {
+            max-width: 800px;
+            margin: 1rem auto;
+            background: #1a1a1a;
+            border-radius: 1.5rem;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            height: calc(100vh - 80px);
+        }
+        .chat-header {
+            padding: 1rem;
+            background: #0f0f0f;
+            border-bottom: 1px solid #333;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        .chat-header h3 {
+            margin: 0;
+            color: #fbbf24;
+        }
+        .back-btn {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+        .messages-area {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+        .message {
+            max-width: 70%;
+            padding: 0.5rem 1rem;
+            border-radius: 1rem;
+            word-wrap: break-word;
+        }
+        .message.own {
+            background: #fbbf24;
+            color: #000;
+            align-self: flex-end;
+        }
+        .message.other {
+            background: #2a2a2a;
+            color: #fff;
+            align-self: flex-start;
+        }
+        .message-sender {
+            font-size: 0.7rem;
+            opacity: 0.7;
+            margin-bottom: 0.2rem;
+        }
+        .message-time {
+            font-size: 0.6rem;
+            opacity: 0.5;
+            margin-top: 0.2rem;
+            text-align: right;
+        }
+        .chat-input-area {
+            display: flex;
+            gap: 0.5rem;
+            padding: 1rem;
+            background: #0f0f0f;
+            border-top: 1px solid #333;
+        }
+        .chat-input-area input {
+            flex: 1;
+            padding: 0.75rem;
+            background: #2a2a2a;
+            border: 1px solid #333;
+            color: white;
+            border-radius: 2rem;
+        }
+        .chat-input-area button {
+            background: #fbbf24;
+            color: #000;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 2rem;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .empty-chat {
+            text-align: center;
+            padding: 2rem;
+            color: #888;
+        }
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            color: #888;
+        }
+        @media (max-width: 600px) {
+            .message { max-width: 85%; }
+            .chat-container { height: calc(100vh - 60px); }
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <div class="chat-header">
+            <button class="back-btn" id="backBtn">←</button>
+            <h3 id="chatTitle">Загрузка...</h3>
+        </div>
+        <div id="messagesArea" class="messages-area">
+            <div class="loading">Загрузка сообщений...</div>
+        </div>
+        <div class="chat-input-area">
+            <input type="text" id="messageInput" placeholder="Напишите сообщение..." autocomplete="off">
+            <button id="sendBtn">📤 Отправить</button>
+        </div>
+    </div>
+
+    <script type="importmap">
+        {
+            "imports": {
+                "firebase/app": "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js",
+                "firebase/firestore": "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js",
+                "firebase/auth": "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js"
+            }
+        }
+    </script>
+    <script type="module">
+        import { initializeApp } from "firebase/app";
+        import { getFirestore, doc, getDoc, collection, query, orderBy, onSnapshot, addDoc, updateDoc } from "firebase/firestore";
+        import { getAuth, onAuthStateChanged } from "firebase/auth";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDUGYJY7pX7q02MS5SACMIIQXpjpQ97mPw",
+            authDomain: "proranklive.firebaseapp.com",
+            projectId: "proranklive",
+            storageBucket: "proranklive.firebasestorage.app",
+            messagingSenderId: "716836144015",
+            appId: "1:716836144015:web:f1575147750608d0f881fa"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+
+        let currentUser = null;
+        let chatId = null;
+        let unsubscribe = null;
+
+        // Функция возврата на предыдущую страницу
+        function goBack() {
+            // Пробуем вернуться в истории браузера
+            if (document.referrer && document.referrer.includes(window.location.host)) {
+                window.history.back();
+            } else {
+                // Если нет истории - идём на страницу вызовов
+                window.location.href = 'challenges.html';
+            }
+        }
+
+        async function loadChat() {
+            const params = new URLSearchParams(window.location.search);
+            chatId = params.get('id');
+            
+            if (!chatId) {
+                document.getElementById('chatTitle').innerText = 'Чат не найден';
+                return;
+            }
+
+            const chatRef = doc(db, "chats", chatId);
+            const chatSnap = await getDoc(chatRef);
+            
+            if (!chatSnap.exists()) {
+                document.getElementById('chatTitle').innerText = 'Чат не найден';
+                return;
+            }
+            
+            const chatData = chatSnap.data();
+            const participants = chatData.participants || [];
+            
+            if (!currentUser || !participants.includes(currentUser.uid)) {
+                document.getElementById('chatTitle').innerText = 'Нет доступа';
+                document.querySelector('.chat-input-area').style.display = 'none';
+                return;
+            }
+            
+            const otherId = participants.find(id => id !== currentUser.uid);
+            const otherName = chatData.participantNames?.[otherId] || 'Соперник';
+            document.getElementById('chatTitle').innerHTML = `💬 Чат с ${otherName}`;
+            
+            const messagesRef = collection(db, "chats", chatId, "messages");
+            const q = query(messagesRef, orderBy("createdAt", "asc"));
+            
+            if (unsubscribe) unsubscribe();
+            unsubscribe = onSnapshot(q, (snapshot) => {
+                const messages = [];
+                snapshot.forEach(doc => {
+                    messages.push({ id: doc.id, ...doc.data() });
+                });
+                renderMessages(messages);
+            });
+            
+            document.querySelector('.chat-input-area').style.display = 'flex';
+        }
+
+        function renderMessages(messages) {
+            const container = document.getElementById('messagesArea');
+            
+            if (messages.length === 0) {
+                container.innerHTML = '<div class="empty-chat">💬 Напишите первое сообщение!</div>';
+                return;
+            }
+            
+            container.innerHTML = '';
+            messages.forEach(msg => {
+                const isOwn = msg.from === currentUser.uid;
+                const messageDiv = document.createElement('div');
+                messageDiv.className = `message ${isOwn ? 'own' : 'other'}`;
+                
+                if (!isOwn && msg.fromName) {
+                    const senderDiv = document.createElement('div');
+                    senderDiv.className = 'message-sender';
+                    senderDiv.innerText = msg.fromName;
+                    messageDiv.appendChild(senderDiv);
+                }
+                
+                const textDiv = document.createElement('div');
+                textDiv.innerText = msg.text;
+                messageDiv.appendChild(textDiv);
+                
+                if (msg.createdAt) {
+                    const timeDiv = document.createElement('div');
+                    timeDiv.className = 'message-time';
+                    const date = msg.createdAt.toDate();
+                    timeDiv.innerText = `${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
+                    messageDiv.appendChild(timeDiv);
+                }
+                
+                container.appendChild(messageDiv);
+            });
+            
+            container.scrollTop = container.scrollHeight;
+        }
+
+        async function sendMessage() {
+            const input = document.getElementById('messageInput');
+            const text = input.value.trim();
+            
+            if (!text || !currentUser || !chatId) return;
+            
+            const userDoc = await getDoc(doc(db, "fighters", currentUser.uid));
+            const userName = userDoc.data()?.name || 'Боец';
+            
+            const messagesRef = collection(db, "chats", chatId, "messages");
+            await addDoc(messagesRef, {
+                from: currentUser.uid,
+                fromName: userName,
+                text: text,
+                createdAt: new Date()
+            });
+            
+            await updateDoc(doc(db, "chats", chatId), {
+                lastMessage: text,
+                lastMessageTime: new Date()
+            });
+            
+            input.value = '';
+            input.focus();
+        }
+
+        onAuthStateChanged(auth, (user) => {
+            currentUser = user;
+            if (user) {
+                loadChat();
+            } else {
+                document.getElementById('chatTitle').innerText = 'Войдите в аккаунт';
+                document.querySelector('.chat-input-area').style.display = 'none';
+            }
+        });
+
+        // Вешаем обработчик на кнопку назад
+        document.getElementById('backBtn').addEventListener('click', goBack);
+        document.getElementById('sendBtn').addEventListener('click', sendMessage);
+        document.getElementById('messageInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') sendMessage();
+        });
+    </script>
+</body>
+</html>

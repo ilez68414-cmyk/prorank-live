@@ -78,8 +78,9 @@
             display: flex;
             gap: 1rem;
             margin-top: 0.5rem;
+            flex-wrap: wrap;
         }
-        .btn-accept, .btn-reject {
+        .btn-accept, .btn-reject, .btn-chat {
             padding: 0.4rem 1rem;
             border-radius: 1.5rem;
             border: none;
@@ -92,6 +93,10 @@
         }
         .btn-reject {
             background: #dc2626;
+            color: white;
+        }
+        .btn-chat {
+            background: #3b82f6;
             color: white;
         }
         .empty-state {
@@ -176,6 +181,7 @@
             <a href="index.html">Главная</a>
             <a href="rating.html">Рейтинг</a>
             <a href="rules.html">Правила</a>
+            <a href="challenges.html">Мои вызовы</a>
             <a href="login.html" id="profileLoginBtn" class="btn-primary">Войти</a>
         </nav>
     </header>
@@ -214,7 +220,7 @@
     </script>
     <script type="module">
         import { initializeApp } from "firebase/app";
-        import { getFirestore, collection, query, where, getDocs, updateDoc, doc } from "firebase/firestore";
+        import { getFirestore, collection, query, where, getDocs, updateDoc, doc, setDoc, getDoc, orderBy } from "firebase/firestore";
         import { getAuth, onAuthStateChanged } from "firebase/auth";
 
         const firebaseConfig = {
@@ -242,16 +248,18 @@
             }
 
             try {
-                // Входящие вызовы (без orderBy, чтобы не требовать индекс)
+                // Входящие вызовы
                 const incomingQuery = query(
                     collection(db, "challenges"),
-                    where("toUserId", "==", currentUser.uid)
+                    where("toUserId", "==", currentUser.uid),
+                    orderBy("createdAt", "desc")
                 );
                 
-                // Исходящие вызовы (без orderBy)
+                // Исходящие вызовы
                 const outgoingQuery = query(
                     collection(db, "challenges"),
-                    where("fromUserId", "==", currentUser.uid)
+                    where("fromUserId", "==", currentUser.uid),
+                    orderBy("createdAt", "desc")
                 );
 
                 const [incomingSnap, outgoingSnap] = await Promise.all([
@@ -262,7 +270,7 @@
                 renderIncoming(incomingSnap.docs);
                 renderOutgoing(outgoingSnap.docs);
             } catch (err) {
-                console.error('Ошибка:', err);
+                console.error('Ошибка загрузки вызовов:', err);
                 document.getElementById('incomingList').innerHTML = '<div class="empty-state">❌ Ошибка загрузки</div>';
                 document.getElementById('outgoingList').innerHTML = '<div class="empty-state">❌ Ошибка загрузки</div>';
             }
@@ -297,6 +305,11 @@
                             <button class="btn-reject" data-id="${challengeId}">❌ Отклонить</button>
                         </div>
                     ` : ''}
+                    ${challenge.status === 'accepted' ? `
+                        <div class="challenge-actions">
+                            <button class="btn-chat" data-chat-id="${challenge.fromUserId}_${challenge.toUserId}">💬 Перейти в чат</button>
+                        </div>
+                    ` : ''}
                 `;
                 container.appendChild(card);
             }
@@ -306,6 +319,11 @@
             });
             document.querySelectorAll('.btn-reject').forEach(btn => {
                 btn.addEventListener('click', () => updateChallengeStatus(btn.dataset.id, 'rejected'));
+            });
+            document.querySelectorAll('.btn-chat').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    window.location.href = `chat.html?id=${btn.dataset.chatId}`;
+                });
             });
         }
 
@@ -319,6 +337,7 @@
             container.innerHTML = '';
             for (const docSnap of docs) {
                 const challenge = docSnap.data();
+                const chatId = `${challenge.fromUserId}_${challenge.toUserId}`;
                 
                 const card = document.createElement('div');
                 card.className = 'challenge-card outgoing';
@@ -331,36 +350,64 @@
                         📍 Вес: ${challenge.toWeight && challenge.toWeight > 0 ? challenge.toWeight + ' кг' : 'не указан'}
                     </div>
                     ${challenge.message ? `<div class="challenge-message">💬 ${escapeHtml(challenge.message)}</div>` : ''}
-                    ${challenge.status === 'accepted' ? '<div class="challenge-details">✅ Соперник принял вызов! Свяжитесь с ним в Telegram.</div>' : ''}
+                    ${challenge.status === 'accepted' ? `
+                        <div class="challenge-actions">
+                            <button class="btn-chat" data-chat-id="${chatId}">💬 Перейти в чат</button>
+                        </div>
+                    ` : ''}
                     ${challenge.status === 'rejected' ? '<div class="challenge-details">❌ Соперник отклонил вызов</div>' : ''}
+                    ${challenge.status === 'pending' ? '<div class="challenge-details">⏳ Ожидает ответа соперника</div>' : ''}
                 `;
                 container.appendChild(card);
             }
+            
+            document.querySelectorAll('.btn-chat').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    window.location.href = `chat.html?id=${btn.dataset.chatId}`;
+                });
+            });
         }
 
         async function updateChallengeStatus(challengeId, newStatus) {
             try {
                 const challengeRef = doc(db, "challenges", challengeId);
+                const challengeSnap = await getDoc(challengeRef);
+                const challenge = challengeSnap.data();
+                
                 await updateDoc(challengeRef, {
                     status: newStatus,
                     updatedAt: new Date()
                 });
                 
-                // Отправляем уведомление в Telegram
-                const challengeSnap = await getDocs(query(collection(db, "challenges"), where("__name__", "==", challengeId)));
-                const challenge = challengeSnap.docs[0]?.data();
-                
-                if (challenge && newStatus === 'accepted') {
-                    const fromTelegram = challenge.fromTelegramId;
-                    const toName = challenge.toName;
+                // Если вызов принят — создаём чат
+                if (newStatus === 'accepted' && challenge) {
+                    const chatId = `${challenge.fromUserId}_${challenge.toUserId}`;
+                    const chatRef = doc(db, "chats", chatId);
+                    const chatSnap = await getDoc(chatRef);
                     
+                    if (!chatSnap.exists()) {
+                        await setDoc(chatRef, {
+                            participants: [challenge.fromUserId, challenge.toUserId],
+                            participantNames: {
+                                [challenge.fromUserId]: challenge.fromName,
+                                [challenge.toUserId]: challenge.toName
+                            },
+                            createdAt: new Date(),
+                            lastMessage: "",
+                            lastMessageTime: new Date()
+                        });
+                        console.log("Чат создан:", chatId);
+                    }
+                    
+                    // Уведомление в Telegram
+                    const fromTelegram = challenge.fromTelegramId;
                     if (fromTelegram) {
                         await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({
                                 chat_id: fromTelegram,
-                                text: `✅ *ВЫЗОВ ПРИНЯТ!*\n\nБоец *${toName}* принял твой вызов на спарринг.\n\n👉 Свяжитесь друг с другом и договоритесь о времени!`,
+                                text: `✅ *ВЫЗОВ ПРИНЯТ!*\n\nБоец *${challenge.toName}* принял твой вызов.\n\n💬 Теперь вы можете общаться в чате на сайте: ${window.location.origin}/chat.html?id=${chatId}`,
                                 parse_mode: 'Markdown'
                             })
                         });
@@ -411,8 +458,7 @@
                 document.getElementById('outgoingList').innerHTML = '<div class="empty-state">🔒 Войдите, чтобы видеть вызовы</div>';
             }
         });
-    </script>
-    <script>
+
         // Бургер-меню
         const menuToggle = document.getElementById('menuToggle');
         const navLinks = document.getElementById('navLinks');
