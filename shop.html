@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Магазин | PRORANK</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .shop-container {
+            max-width: 1000px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+        .balance-card {
+            background: linear-gradient(135deg, #1e2a1a, #0f1a0f);
+            border-radius: 1.5rem;
+            padding: 1.5rem;
+            text-align: center;
+            margin-bottom: 2rem;
+            border: 1px solid #fbbf24;
+        }
+        .balance-card h2 {
+            margin: 0;
+            color: #fbbf24;
+        }
+        .balance-value {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #fff;
+        }
+        .products {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+        }
+        .product-card {
+            background: #1a1a1a;
+            border-radius: 1.5rem;
+            padding: 1.5rem;
+            text-align: center;
+            transition: 0.3s;
+            border: 1px solid #333;
+        }
+        .product-card:hover {
+            transform: translateY(-5px);
+            border-color: #fbbf24;
+        }
+        .product-icon {
+            font-size: 3rem;
+        }
+        .product-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin: 0.5rem 0;
+        }
+        .product-price {
+            font-size: 1.2rem;
+            color: #fbbf24;
+            margin: 0.5rem 0;
+        }
+        .btn-buy {
+            background: #fbbf24;
+            color: #000;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 2rem;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 1rem;
+            width: 100%;
+        }
+        .btn-buy:hover {
+            background: #e5a500;
+        }
+        .purchases {
+            margin-top: 2rem;
+            background: #1a1a1a;
+            border-radius: 1.5rem;
+            padding: 1rem;
+        }
+        .purchase-item {
+            padding: 0.75rem;
+            border-bottom: 1px solid #333;
+            display: flex;
+            justify-content: space-between;
+        }
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px;
+            background: #1a1a1a;
+            border-bottom: 2px solid #fbbf24;
+        }
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .logo span {
+            color: #fbbf24;
+        }
+        .nav-links {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+        .nav-links a {
+            color: #fff;
+            text-decoration: none;
+            font-size: 1rem;
+            transition: 0.3s;
+        }
+        .menu-toggle {
+            display: none;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.8rem;
+            cursor: pointer;
+        }
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+                flex-direction: column;
+                position: absolute;
+                top: 70px;
+                left: 0;
+                width: 100%;
+                background: #1a1a1a;
+                padding: 20px;
+                gap: 15px;
+                z-index: 100;
+            }
+            .nav-links.show {
+                display: flex;
+            }
+            .menu-toggle {
+                display: block;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="navbar">
+        <div class="logo" onclick="window.location='index.html'" style="cursor:pointer">PRO<span>RANK</span></div>
+        <button class="menu-toggle" id="menuToggle">☰</button>
+        <nav class="nav-links" id="navLinks">
+            <a href="index.html">Главная</a>
+            <a href="rating.html">Рейтинг</a>
+            <a href="rules.html">Правила</a>
+            <a href="challenges.html">Мои вызовы</a>
+            <a href="shop.html">Магазин</a>
+            <a href="login.html" id="profileLoginBtn" class="btn-primary">Войти</a>
+        </nav>
+    </header>
+
+    <div class="shop-container">
+        <div class="balance-card">
+            <h2>🎯 Твои вызовы</h2>
+            <div class="balance-value" id="balanceDisplay">Загрузка...</div>
+            <p>Бесплатные вызовы обновляются 1 раз в месяц</p>
+        </div>
+
+        <div class="products">
+            <div class="product-card">
+                <div class="product-icon">🎯</div>
+                <div class="product-title">5 вызовов</div>
+                <div class="product-price">50₽</div>
+                <button class="btn-buy" data-product="5">Купить</button>
+            </div>
+            <div class="product-card">
+                <div class="product-icon">🎯🎯</div>
+                <div class="product-title">20 вызовов</div>
+                <div class="product-price">150₽</div>
+                <button class="btn-buy" data-product="20">Купить</button>
+            </div>
+            <div class="product-card">
+                <div class="product-icon">💎</div>
+                <div class="product-title">Премиум (месяц)</div>
+                <div class="product-price">300₽</div>
+                <button class="btn-buy" data-product="premium">Купить</button>
+            </div>
+        </div>
+
+        <div class="purchases">
+            <h3>📜 История покупок</h3>
+            <div id="purchasesList">Загрузка...</div>
+        </div>
+    </div>
+
+    <script type="importmap">
+        {
+            "imports": {
+                "firebase/app": "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js",
+                "firebase/firestore": "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js",
+                "firebase/auth": "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js"
+            }
+        }
+    </script>
+    <script type="module">
+        import { initializeApp } from "firebase/app";
+        import { getFirestore, doc, getDoc, updateDoc, collection, query, where, getDocs, addDoc, orderBy, limit } from "firebase/firestore";
+        import { getAuth, onAuthStateChanged } from "firebase/auth";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDUGYJY7pX7q02MS5SACMIIQXpjpQ97mPw",
+            authDomain: "proranklive.firebaseapp.com",
+            projectId: "proranklive",
+            storageBucket: "proranklive.firebasestorage.app",
+            messagingSenderId: "716836144015",
+            appId: "1:716836144015:web:f1575147750608d0f881fa"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+
+        let currentUser = null;
+
+        async function updateBalance() {
+            if (!currentUser) return;
+            const userDoc = await getDoc(doc(db, "fighters", currentUser.uid));
+            const data = userDoc.data();
+            const free = data.freeChallenges || 0;
+            const purchased = data.purchasedChallenges || 0;
+            document.getElementById('balanceDisplay').innerHTML = `
+                🆓 Бесплатных: ${free}<br>
+                💰 Купленных: ${purchased}<br>
+                📊 Всего: ${free + purchased}
+            `;
+        }
+
+        async function buyProduct(amount) {
+            if (!currentUser) {
+                alert('Войдите в аккаунт');
+                return;
+            }
+            
+            // Пока без реальной оплаты — просто добавляем вызовы
+            const userRef = doc(db, "fighters", currentUser.uid);
+            const userDoc = await getDoc(userRef);
+            const currentPurchased = userDoc.data()?.purchasedChallenges || 0;
+            
+            await updateDoc(userRef, {
+                purchasedChallenges: currentPurchased + amount
+            });
+            
+            // Записываем покупку
+            await addDoc(collection(db, "purchases"), {
+                userId: currentUser.uid,
+                product: `${amount} вызовов`,
+                amount: amount,
+                price: amount === 5 ? 50 : 150,
+                createdAt: new Date()
+            });
+            
+            alert(`✅ Куплено ${amount} вызовов!`);
+            updateBalance();
+            loadPurchases();
+        }
+
+        async function buyPremium() {
+            if (!currentUser) {
+                alert('Войдите в аккаунт');
+                return;
+            }
+            
+            const userRef = doc(db, "fighters", currentUser.uid);
+            await updateDoc(userRef, {
+                premium: true,
+                premiumUntil: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+            });
+            
+            await addDoc(collection(db, "purchases"), {
+                userId: currentUser.uid,
+                product: "Премиум (месяц)",
+                price: 300,
+                createdAt: new Date()
+            });
+            
+            alert(`✅ Премиум активирован на месяц!`);
+            updateBalance();
+            loadPurchases();
+        }
+
+        async function loadPurchases() {
+            if (!currentUser) return;
+            const q = query(
+                collection(db, "purchases"),
+                where("userId", "==", currentUser.uid),
+                orderBy("createdAt", "desc"),
+                limit(20)
+            );
+            const snapshot = await getDocs(q);
+            const container = document.getElementById('purchasesList');
+            
+            if (snapshot.empty) {
+                container.innerHTML = '<div class="purchase-item">Нет покупок</div>';
+                return;
+            }
+            
+            container.innerHTML = '';
+            snapshot.forEach(docSnap => {
+                const purchase = docSnap.data();
+                const date = purchase.createdAt?.toDate().toLocaleDateString() || '—';
+                const div = document.createElement('div');
+                div.className = 'purchase-item';
+                div.innerHTML = `<span>${date}</span><span>${purchase.product}</span><span>${purchase.price}₽</span>`;
+                container.appendChild(div);
+            });
+        }
+
+        onAuthStateChanged(auth, (user) => {
+            currentUser = user;
+            const loginBtn = document.getElementById('profileLoginBtn');
+            
+            if (user && loginBtn) {
+                loginBtn.innerText = 'Мой профиль';
+                loginBtn.href = `profile.html?id=${user.uid}`;
+                updateBalance();
+                loadPurchases();
+            } else if (loginBtn) {
+                loginBtn.innerText = 'Войти';
+                loginBtn.href = 'login.html';
+                document.getElementById('balanceDisplay').innerText = 'Войдите, чтобы увидеть баланс';
+                document.getElementById('purchasesList').innerHTML = '<div class="purchase-item">Войдите для просмотра</div>';
+            }
+        });
+
+        document.querySelectorAll('.btn-buy').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const product = btn.dataset.product;
+                if (product === 'premium') {
+                    buyPremium();
+                } else {
+                    buyProduct(parseInt(product));
+                }
+            });
+        });
+
+        // Бургер-меню
+        const menuToggle = document.getElementById('menuToggle');
+        const navLinks = document.getElementById('navLinks');
+        if (menuToggle && navLinks) {
+            menuToggle.addEventListener('click', () => navLinks.classList.toggle('show'));
+        }
+    </script>
+</body>
+</html>

@@ -291,58 +291,39 @@ async function setupChallengeButton(targetId) {
         }
         
         try {
-            const targetDoc = await getDoc(doc(db, "fighters", targetId));
-            const target = targetDoc.data();
+            // Получаем данные текущего бойца
             const currentDoc = await getDoc(doc(db, "fighters", user.uid));
             const current = currentDoc.data();
             
-            if (!target || !current) {
-                alert('❌ Данные бойца не найдены');
+            // Проверяем остаток вызовов
+            let freeChallenges = current.freeChallenges || 0;
+            let purchasedChallenges = current.purchasedChallenges || 0;
+            let totalChallenges = freeChallenges + purchasedChallenges;
+            
+            if (totalChallenges <= 0) {
+                const confirm = confirm(`❌ У вас закончились вызовы!\n\nБесплатных: ${freeChallenges}\nКупленных: ${purchasedChallenges}\n\nПерейти в магазин вызовов?`);
+                if (confirm) {
+                    window.location.href = 'shop.html';
+                }
                 return;
             }
             
-            // Показываем что у кого в консоли для отладки
-            console.log('=== ДАННЫЕ ДЛЯ ОТЛАДКИ ===');
-            console.log('Твой профиль:', current);
-            console.log('Профиль соперника:', target);
+            // Получаем данные соперника
+            const targetDoc = await getDoc(doc(db, "fighters", targetId));
+            const target = targetDoc.data();
             
-            // Получаем вес ТОЛЬКО из weightClass
-            let targetWeight = 0;
-            let currentWeight = 0;
-            
-            if (current.weightClass && current.weightClass !== 'undefined') {
-                currentWeight = parseInt(current.weightClass);
-            }
-            if (target.weightClass && target.weightClass !== 'undefined') {
-                targetWeight = parseInt(target.weightClass);
-            }
-            
-            // Если вес не определён из weightClass, пробуем из поля weight (число)
-            if (currentWeight === 0 && current.weight) {
-                currentWeight = parseInt(current.weight);
-            }
-            if (targetWeight === 0 && target.weight) {
-                targetWeight = parseInt(target.weight);
-            }
-            
-            console.log(`Твой вес: ${currentWeight} кг (weightClass: ${current.weightClass})`);
-            console.log(`Вес соперника: ${targetWeight} кг (weightClass: ${target.weightClass})`);
-            
-            // Если вес всё ещё 0 или 1 — ошибка в данных
-            if (currentWeight <= 1) {
-                alert('⚠️ У вас не указана весовая категория. Зайдите в редактирование профиля и выберите вес.');
-                return;
-            }
-            if (targetWeight <= 1) {
-                alert('⚠️ У соперника не указана весовая категория. Он должен заполнить профиль.');
+            if (!target) {
+                alert('❌ Данные соперника не найдены');
                 return;
             }
             
+            // Проверка веса
+            const targetWeight = parseInt(target.weightClass) || 0;
+            const currentWeight = parseInt(current.weightClass) || 0;
             const weightDiff = Math.abs(currentWeight - targetWeight);
             
-            // Для одинаковой весовой разница должна быть 0 или около того
             if (weightDiff > 15) {
-                alert(`⚠️ Слишком большая разница в весе (${weightDiff} кг).\nВаш вес: ${currentWeight} кг\nВес соперника: ${targetWeight} кг\n\nСпарринг небезопасен.`);
+                alert(`⚠️ Слишком большая разница в весе (${weightDiff} кг). Спарринг небезопасен.`);
                 return;
             }
             
@@ -361,6 +342,7 @@ async function setupChallengeButton(targetId) {
             
             const message = prompt('💬 Сообщение сопернику:', 'Хочешь спарринг?') || '';
             
+            // Создаём вызов
             const challengeData = {
                 fromUserId: user.uid,
                 fromName: current.name || 'Боец',
@@ -378,27 +360,35 @@ async function setupChallengeButton(targetId) {
             
             await addDoc(collection(db, "challenges"), challengeData);
             
-            if (target.telegramId) {
-                try {
-                    await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            chat_id: target.telegramId,
-                            text: `🥊 *ВЫЗОВ НА СПАРРИНГ!*\n\nБоец *${current.name}* вызывает тебя на бой.\n📝 Сообщение: ${message || '—'}\n\n👉 Зайди на сайт в раздел "Мои вызовы", чтобы ответить.`,
-                            parse_mode: 'Markdown'
-                        })
-                    });
-                } catch (tgErr) {
-                    console.error('TG ошибка:', tgErr);
-                }
+            // Списываем вызов
+            if (freeChallenges > 0) {
+                await updateDoc(doc(db, "fighters", user.uid), {
+                    freeChallenges: freeChallenges - 1
+                });
+            } else {
+                await updateDoc(doc(db, "fighters", user.uid), {
+                    purchasedChallenges: purchasedChallenges - 1
+                });
             }
             
-            alert('✅ Вызов отправлен! Соперник получит уведомление.');
+            // Отправляем уведомление
+            if (target.telegramId) {
+                await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        chat_id: target.telegramId,
+                        text: `🥊 *ВЫЗОВ НА СПАРРИНГ!*\n\nБоец *${current.name}* вызывает тебя на бой.\n📝 Сообщение: ${message || '—'}\n\n👉 Зайди на сайт в раздел "Мои вызовы", чтобы ответить.`,
+                        parse_mode: 'Markdown'
+                    })
+                });
+            }
+            
+            alert(`✅ Вызов отправлен! Осталось вызовов: ${totalChallenges - 1}`);
             
         } catch (err) {
             console.error('Ошибка при отправке вызова:', err);
-            alert(`❌ Ошибка: ${err.message || 'Неизвестная ошибка'}`);
+            alert('❌ Ошибка при отправке вызова');
         }
     };
 }
