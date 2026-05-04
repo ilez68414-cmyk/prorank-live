@@ -139,16 +139,13 @@ async function loadProfileData() {
         const visitorDiv = document.getElementById('visitorButtons');
         const navBtn = document.getElementById('profileLoginBtn');
 
-        // Отписываемся от старого слушателя
         if (authListenerUnsub) authListenerUnsub();
         
-        // Устанавливаем новый слушатель
         authListenerUnsub = onAuthStateChanged(auth, (user) => {
             console.log('Auth state changed', user?.uid);
             const isOwner = user && user.uid === profileId;
             const isLogged = !!user;
             
-            // Навигационная кнопка
             if (navBtn) {
                 if (!isLogged) {
                     navBtn.innerText = 'Войти';
@@ -163,12 +160,10 @@ async function loadProfileData() {
                 }
             }
             
-            // Кнопки действий
             if (ownerDiv && visitorDiv) {
                 if (isOwner) {
                     ownerDiv.classList.remove('hidden');
                     visitorDiv.classList.add('hidden');
-                    // Онбординг только для владельца (один раз)
                     const shown = localStorage.getItem('frs_onboarding_shown');
                     if (!shown) {
                         const onboarding = document.getElementById('frsOnboarding');
@@ -185,9 +180,16 @@ async function loadProfileData() {
                     visitorDiv.classList.add('hidden');
                 }
             }
+            
+            // Обновляем баланс в шапке при смене пользователя
+            if (isLogged) {
+                setTimeout(() => updateHeaderBalance(), 500);
+            } else {
+                const balanceDiv = document.getElementById('balanceIndicator');
+                if (balanceDiv) balanceDiv.style.display = 'none';
+            }
         });
         
-        // Инициализация кнопок
         setupEditProfile(fighterRef, fighter);
         setupEditBio();
         setupVerifyRecord();
@@ -291,11 +293,9 @@ async function setupChallengeButton(targetId) {
         }
         
         try {
-            // Получаем данные текущего бойца
             const currentDoc = await getDoc(doc(db, "fighters", user.uid));
             const current = currentDoc.data();
             
-            // Проверяем остаток вызовов
             let freeChallenges = current.freeChallenges || 0;
             let purchasedChallenges = current.purchasedChallenges || 0;
             let totalChallenges = freeChallenges + purchasedChallenges;
@@ -308,7 +308,6 @@ async function setupChallengeButton(targetId) {
                 return;
             }
             
-            // Получаем данные соперника
             const targetDoc = await getDoc(doc(db, "fighters", targetId));
             const target = targetDoc.data();
             
@@ -317,7 +316,6 @@ async function setupChallengeButton(targetId) {
                 return;
             }
             
-            // Проверка веса
             const targetWeight = parseInt(target.weightClass) || 0;
             const currentWeight = parseInt(current.weightClass) || 0;
             const weightDiff = Math.abs(currentWeight - targetWeight);
@@ -327,7 +325,6 @@ async function setupChallengeButton(targetId) {
                 return;
             }
             
-            // Проверяем существующий вызов
             const existingQuery = await getDocs(query(
                 collection(db, "challenges"),
                 where("fromUserId", "==", user.uid),
@@ -342,7 +339,6 @@ async function setupChallengeButton(targetId) {
             
             const message = prompt('💬 Сообщение сопернику:', 'Хочешь спарринг?') || '';
             
-            // Создаём вызов
             const challengeData = {
                 fromUserId: user.uid,
                 fromName: current.name || 'Боец',
@@ -360,7 +356,6 @@ async function setupChallengeButton(targetId) {
             
             await addDoc(collection(db, "challenges"), challengeData);
             
-            // Списываем вызов
             if (freeChallenges > 0) {
                 await updateDoc(doc(db, "fighters", user.uid), {
                     freeChallenges: freeChallenges - 1
@@ -371,7 +366,6 @@ async function setupChallengeButton(targetId) {
                 });
             }
             
-            // Отправляем уведомление
             if (target.telegramId) {
                 await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
                     method: 'POST',
@@ -386,12 +380,18 @@ async function setupChallengeButton(targetId) {
             
             alert(`✅ Вызов отправлен! Осталось вызовов: ${totalChallenges - 1}`);
             
+            // Обновляем счётчик в шапке
+            if (window.updateHeaderBalance) {
+                await window.updateHeaderBalance();
+            }
+            
         } catch (err) {
             console.error('Ошибка при отправке вызова:', err);
             alert('❌ Ошибка при отправке вызова');
         }
     };
 }
+
 async function setupMessageButton(targetId) {
     const messageBtn = document.getElementById('btnMessage');
     if (!messageBtn) return;
@@ -408,16 +408,11 @@ async function setupMessageButton(targetId) {
             return;
         }
         
-        // Создаём ID чата (всегда одинаковый для пары пользователей)
         const chatId = `${user.uid}_${targetId}`;
-        
-        // Проверяем, существует ли чат
         const chatRef = doc(db, "chats", chatId);
         const chatSnap = await getDoc(chatRef);
         
-        // Если чата нет — создаём
         if (!chatSnap.exists()) {
-            // Получаем имена бойцов
             const currentUserDoc = await getDoc(doc(db, "fighters", user.uid));
             const targetUserDoc = await getDoc(doc(db, "fighters", targetId));
             
@@ -436,7 +431,6 @@ async function setupMessageButton(targetId) {
             });
         }
         
-        // Переходим в чат
         window.location.href = `chat.html?id=${chatId}`;
     };
 }
@@ -534,7 +528,31 @@ function setupSubscribeButton() {
     };
 }
 
-// Чистим слушатель при уходе
+// ========== ОБНОВЛЕНИЕ БАЛАНСА ВЫЗОВОВ В ШАПКЕ ==========
+async function updateHeaderBalance() {
+    const user = auth.currentUser;
+    const balanceDiv = document.getElementById('balanceIndicator');
+    const balanceCount = document.getElementById('headerChallengesCount');
+    
+    if (!user || !balanceDiv) return;
+    
+    try {
+        const userDoc = await getDoc(doc(db, "fighters", user.uid));
+        const data = userDoc.data();
+        const free = data.freeChallenges || 0;
+        const purchased = data.purchasedChallenges || 0;
+        const total = free + purchased;
+        
+        balanceCount.innerText = total;
+        balanceDiv.style.display = 'flex';
+    } catch (err) {
+        console.error('Ошибка загрузки баланса:', err);
+    }
+}
+
+// Делаем функцию глобальной
+window.updateHeaderBalance = updateHeaderBalance;
+
 window.addEventListener('beforeunload', () => {
     if (authListenerUnsub) authListenerUnsub();
 });

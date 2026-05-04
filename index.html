@@ -212,7 +212,11 @@
 
     <header class="navbar">
         <div class="logo" onclick="window.location='index.html'" style="cursor:pointer">PRO<span>RANK</span></div>
-        <button class="menu-toggle" id="menuToggle">☰</button>
+<div class="balance-indicator" id="balanceIndicator" style="display: none;">
+    <span class="balance-icon">🎯</span>
+    <span class="balance-count" id="headerChallengesCount">0</span>
+</div>
+<button class="menu-toggle" id="menuToggle">☰</button>
         <nav class="nav-links" id="navLinks">
             <a href="rating.html">Рейтинг</a>
             <a href="rules.html">Правила</a>
@@ -266,102 +270,127 @@
         }
     </script>
     <script type="module">
-        import { initializeApp } from "firebase/app";
-        import { getFirestore, collection, getDocs, query, orderBy, limit, doc, getDoc } from "firebase/firestore";
-        import { getAuth, onAuthStateChanged } from "firebase/auth";
+    import { initializeApp } from "firebase/app";
+    import { getFirestore, collection, getDocs, query, orderBy, limit, doc, getDoc } from "firebase/firestore";
+    import { getAuth, onAuthStateChanged } from "firebase/auth";
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyDUGYJY7pX7q02MS5SACMIIQXpjpQ97mPw",
-            authDomain: "proranklive.firebaseapp.com",
-            projectId: "proranklive",
-            storageBucket: "proranklive.firebasestorage.app",
-            messagingSenderId: "716836144015",
-            appId: "1:716836144015:web:f1575147750608d0f881fa"
-        };
+    const firebaseConfig = {
+        apiKey: "AIzaSyDUGYJY7pX7q02MS5SACMIIQXpjpQ97mPw",
+        authDomain: "proranklive.firebaseapp.com",
+        projectId: "proranklive",
+        storageBucket: "proranklive.firebasestorage.app",
+        messagingSenderId: "716836144015",
+        appId: "1:716836144015:web:f1575147750608d0f881fa"
+    };
 
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-        const auth = getAuth(app);
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
 
-        async function loadTopPoints() {
-            const container = document.getElementById('topPointsList');
-            try {
-                const q = query(collection(db, "fighters"), orderBy("frs", "desc"), limit(5));
-                const snapshot = await getDocs(q);
-                if (snapshot.empty) { container.innerHTML = '<div>Пока нет бойцов</div>'; return; }
-                let html = '', rank = 1;
-                for (const docSnap of snapshot.docs) {
-                    const fighter = docSnap.data();
-                    html += `<div class="top-item" onclick="window.location.href='profile.html?id=${docSnap.id}'">
+    async function loadTopPoints() {
+        const container = document.getElementById('topPointsList');
+        try {
+            const q = query(collection(db, "fighters"), orderBy("frs", "desc"), limit(5));
+            const snapshot = await getDocs(q);
+            if (snapshot.empty) { container.innerHTML = '<div>Пока нет бойцов</div>'; return; }
+            let html = '', rank = 1;
+            for (const docSnap of snapshot.docs) {
+                const fighter = docSnap.data();
+                html += `<div class="top-item" onclick="window.location.href='profile.html?id=${docSnap.id}'">
+                    <div class="top-rank">${rank}</div>
+                    <img src="${fighter.avatar || 'Avatar.png'}" class="top-avatar" onerror="this.src='Avatar.png'">
+                    <div class="top-name">${fighter.name || 'Боец'}</div>
+                    <div class="top-points">⭐ ${fighter.frs || 0} FRS</div>
+                </div>`;
+                rank++;
+            }
+            container.innerHTML = html;
+        } catch(e) { container.innerHTML = '<div>Ошибка</div>'; }
+    }
+
+    async function loadTopLikes() {
+        const container = document.getElementById('topLikesList');
+        try {
+            const likesSnapshot = await getDocs(collection(db, "likes"));
+            const likesCount = {};
+            likesSnapshot.forEach(doc => { const fid = doc.data().fighterId; likesCount[fid] = (likesCount[fid] || 0) + 1; });
+            const sorted = Object.entries(likesCount).map(([id, c]) => ({ id, c })).sort((a,b) => b.c - a.c).slice(0,5);
+            if (sorted.length === 0) { container.innerHTML = '<div>Пока нет лайков</div>'; return; }
+            let html = '', rank = 1;
+            for (const item of sorted) {
+                const fighterDoc = await getDoc(doc(db, "fighters", item.id));
+                if (fighterDoc.exists()) {
+                    const fighter = fighterDoc.data();
+                    html += `<div class="top-item" onclick="window.location.href='profile.html?id=${item.id}'">
                         <div class="top-rank">${rank}</div>
                         <img src="${fighter.avatar || 'Avatar.png'}" class="top-avatar" onerror="this.src='Avatar.png'">
                         <div class="top-name">${fighter.name || 'Боец'}</div>
-                        <div class="top-points">⭐ ${fighter.frs || 0} FRS</div>
+                        <div class="top-points">❤️ ${item.c}</div>
                     </div>`;
                     rank++;
                 }
-                container.innerHTML = html;
-            } catch(e) { container.innerHTML = '<div>Ошибка</div>'; }
-        }
-
-        async function loadTopLikes() {
-            const container = document.getElementById('topLikesList');
-            try {
-                const likesSnapshot = await getDocs(collection(db, "likes"));
-                const likesCount = {};
-                likesSnapshot.forEach(doc => { const fid = doc.data().fighterId; likesCount[fid] = (likesCount[fid] || 0) + 1; });
-                const sorted = Object.entries(likesCount).map(([id, c]) => ({ id, c })).sort((a,b) => b.c - a.c).slice(0,5);
-                if (sorted.length === 0) { container.innerHTML = '<div>Пока нет лайков</div>'; return; }
-                let html = '', rank = 1;
-                for (const item of sorted) {
-                    const fighterDoc = await getDoc(doc(db, "fighters", item.id));
-                    if (fighterDoc.exists()) {
-                        const fighter = fighterDoc.data();
-                        html += `<div class="top-item" onclick="window.location.href='profile.html?id=${item.id}'">
-                            <div class="top-rank">${rank}</div>
-                            <img src="${fighter.avatar || 'Avatar.png'}" class="top-avatar" onerror="this.src='Avatar.png'">
-                            <div class="top-name">${fighter.name || 'Боец'}</div>
-                            <div class="top-points">❤️ ${item.c}</div>
-                        </div>`;
-                        rank++;
-                    }
-                }
-                container.innerHTML = html;
-            } catch(e) { container.innerHTML = '<div>Ошибка</div>'; }
-        }
-
-        const startPathBtn = document.getElementById('startPathBtn');
-        const navLoginBtn = document.getElementById('profileLoginBtn');
-
-        onAuthStateChanged(auth, (user) => {
-            if (user) {
-                if (startPathBtn) startPathBtn.style.display = 'none';
-                if (navLoginBtn) {
-                    navLoginBtn.innerText = 'Мой профиль';
-                    navLoginBtn.href = `profile.html?id=${user.uid}`;
-                }
-            } else {
-                if (startPathBtn) startPathBtn.style.display = 'inline-block';
-                if (navLoginBtn) {
-                    navLoginBtn.innerText = 'Войти';
-                    navLoginBtn.href = 'login.html';
-                }
             }
-        });
+            container.innerHTML = html;
+        } catch(e) { container.innerHTML = '<div>Ошибка</div>'; }
+    }
 
-        loadTopPoints();
-        loadTopLikes();
-    </script>
-    <script>
-        // Бургер-меню
-        const menuToggle = document.getElementById('menuToggle');
-        const navLinks = document.getElementById('navLinks');
+    // Обновление баланса вызовов в шапке
+    async function updateHeaderBalance() {
+        const user = auth.currentUser;
+        const balanceDiv = document.getElementById('balanceIndicator');
+        const balanceCount = document.getElementById('headerChallengesCount');
         
-        if (menuToggle && navLinks) {
-            menuToggle.addEventListener('click', () => {
-                navLinks.classList.toggle('show');
-            });
+        if (!user || !balanceDiv) return;
+        
+        try {
+            const userDoc = await getDoc(doc(db, "fighters", user.uid));
+            const data = userDoc.data();
+            const free = data.freeChallenges || 0;
+            const purchased = data.purchasedChallenges || 0;
+            const total = free + purchased;
+            
+            balanceCount.innerText = total;
+            balanceDiv.style.display = 'flex';
+        } catch (err) {
+            console.error('Ошибка загрузки баланса:', err);
         }
-    </script>
+    }
+
+    const startPathBtn = document.getElementById('startPathBtn');
+    const navLoginBtn = document.getElementById('profileLoginBtn');
+
+    onAuthStateChanged(auth, (user) => {
+        if (user) {
+            if (startPathBtn) startPathBtn.style.display = 'none';
+            if (navLoginBtn) {
+                navLoginBtn.innerText = 'Мой профиль';
+                navLoginBtn.href = `profile.html?id=${user.uid}`;
+            }
+            setTimeout(updateHeaderBalance, 1000);
+        } else {
+            if (startPathBtn) startPathBtn.style.display = 'inline-block';
+            if (navLoginBtn) {
+                navLoginBtn.innerText = 'Войти';
+                navLoginBtn.href = 'login.html';
+            }
+            const balanceDiv = document.getElementById('balanceIndicator');
+            if (balanceDiv) balanceDiv.style.display = 'none';
+        }
+    });
+
+    loadTopPoints();
+    loadTopLikes();
+</script>
+<script>
+    // Бургер-меню
+    const menuToggle = document.getElementById('menuToggle');
+    const navLinks = document.getElementById('navLinks');
+    
+    if (menuToggle && navLinks) {
+        menuToggle.addEventListener('click', () => {
+            navLinks.classList.toggle('show');
+        });
+    }
+</script>
 </body>
 </html>

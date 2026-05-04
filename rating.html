@@ -97,7 +97,11 @@
 <body>
     <header class="navbar">
         <div class="logo" onclick="window.location='index.html'" style="cursor:pointer">PRO<span>RANK</span></div>
-        <button class="menu-toggle" id="menuToggle">☰</button>
+<div class="balance-indicator" id="balanceIndicator" style="display: none;">
+    <span class="balance-icon">🎯</span>
+    <span class="balance-count" id="headerChallengesCount">0</span>
+</div>
+<button class="menu-toggle" id="menuToggle">☰</button>
         <nav class="nav-links" id="navLinks">
             <a href="index.html">Главная</a>
             <a href="rules.html">Правила</a>
@@ -144,139 +148,160 @@
         {"imports":{"firebase/app":"https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js","firebase/firestore":"https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js","firebase/auth":"https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js"}}
     </script>
     <script type="module">
-        import { initializeApp } from "firebase/app";
-        import { getFirestore, collection, getDocs, query, orderBy, where } from "firebase/firestore";
-        import { getAuth, onAuthStateChanged } from "firebase/auth";
+    import { initializeApp } from "firebase/app";
+    import { getFirestore, collection, getDocs, query, orderBy, where, doc, getDoc } from "firebase/firestore";
+    import { getAuth, onAuthStateChanged } from "firebase/auth";
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyDUGYJY7pX7q02MS5SACMIIQXpjpQ97mPw",
-            authDomain: "proranklive.firebaseapp.com",
-            projectId: "proranklive",
-            storageBucket: "proranklive.firebasestorage.app",
-            messagingSenderId: "716836144015",
-            appId: "1:716836144015:web:f1575147750608d0f881fa"
-        };
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-        const auth = getAuth(app);
+    const firebaseConfig = {
+        apiKey: "AIzaSyDUGYJY7pX7q02MS5SACMIIQXpjpQ97mPw",
+        authDomain: "proranklive.firebaseapp.com",
+        projectId: "proranklive",
+        storageBucket: "proranklive.firebasestorage.app",
+        messagingSenderId: "716836144015",
+        appId: "1:716836144015:web:f1575147750608d0f881fa"
+    };
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
 
-        let allFighters = [];
-        let currentSport = 'all';
-        let currentCity = 'all';
-        let currentWeightClass = 'all';
+    let allFighters = [];
+    let currentSport = 'all';
+    let currentCity = 'all';
+    let currentWeightClass = 'all';
 
-        async function loadFighters() {
-            const tbody = document.getElementById('ratingTableBody');
-            tbody.innerHTML = '<tr><td colspan="5">⏳ Загрузка...</tr></tr>';
-            try {
-                const q = query(collection(db, "fighters"), orderBy("frs", "desc"));
-                const snapshot = await getDocs(q);
-                allFighters = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                
-                const cities = [...new Set(allFighters.map(f => f.city).filter(c => c && c !== 'all'))];
-                const citySelect = document.getElementById('citySelect');
-                citySelect.innerHTML = '<option value="all">Все города</option>';
-                cities.forEach(city => { 
-                    const option = document.createElement('option'); 
-                    option.value = city; 
-                    option.textContent = city; 
-                    citySelect.appendChild(option); 
-                });
-                
-                applyFilters();
-            } catch (error) { 
-                console.error("Ошибка загрузки:", error); 
-                tbody.innerHTML = '<tr><td colspan="5">❌ Ошибка загрузки. Проверьте интернет.</td></table>';
-            }
-        }
-
-        function applyFilters() {
-            let filtered = [...allFighters];
-            if (currentCity !== 'all') filtered = filtered.filter(f => f.city === currentCity);
-            if (currentWeightClass !== 'all') filtered = filtered.filter(f => f.weightClass === currentWeightClass);
-            if (currentSport !== 'all') filtered = filtered.filter(f => f.sport === currentSport);
-            renderTable(filtered);
-        }
-
-        function renderTable(fighters) {
-            const tbody = document.getElementById('ratingTableBody');
-            tbody.innerHTML = '';
-            
-            if (fighters.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="5">❌ Нет бойцов по выбранным фильтрам</td></tr>';
-                return;
-            }
-            
-            let rank = 1;
-            fighters.forEach(f => {
-                const row = tbody.insertRow();
-                let medalClass = '';
-                if (rank === 1) medalClass = 'gold';
-                else if (rank === 2) medalClass = 'silver';
-                else if (rank === 3) medalClass = 'bronze';
-                row.className = medalClass;
-                
-                row.insertCell(0).innerHTML = `<span class="rank-number">${rank}</span>`;
-                row.insertCell(1).innerHTML = `<img src="${f.avatar || 'Avatar.png'}" class="avatar-thumb" onerror="this.src='Avatar.png'">`;
-                row.insertCell(2).innerHTML = `<strong>${f.name || 'Боец'}</strong><br><small style="color:#888">${f.sport || ''}</small>`;
-                row.insertCell(3).innerText = f.city || '—';
-                row.insertCell(4).innerHTML = `<span style="color:#fbbf24; font-weight:bold;">${f.frs || 0}</span> ⭐`;
-                row.onclick = () => window.location.href = `profile.html?id=${f.id}`;
-                rank++;
-            });
-        }
-
-        function setActiveSportButton(sport) {
-            document.querySelectorAll('.filter-btn').forEach(btn => {
-                if (btn.getAttribute('data-sport') === sport) btn.classList.add('active');
-                else btn.classList.remove('active');
-            });
-        }
-
-        document.getElementById('citySelect').addEventListener('change', (e) => { 
-            currentCity = e.target.value; 
-            applyFilters(); 
-        });
+    // Обновление баланса вызовов в шапке
+    async function updateHeaderBalance() {
+        const user = auth.currentUser;
+        const balanceDiv = document.getElementById('balanceIndicator');
+        const balanceCount = document.getElementById('headerChallengesCount');
         
-        document.getElementById('weightClassSelect').addEventListener('change', (e) => { 
-            currentWeightClass = e.target.value; 
-            applyFilters(); 
-        });
+        if (!user || !balanceDiv) return;
         
+        try {
+            const userDoc = await getDoc(doc(db, "fighters", user.uid));
+            const data = userDoc.data();
+            const free = data.freeChallenges || 0;
+            const purchased = data.purchasedChallenges || 0;
+            const total = free + purchased;
+            
+            balanceCount.innerText = total;
+            balanceDiv.style.display = 'flex';
+        } catch (err) {
+            console.error('Ошибка загрузки баланса:', err);
+        }
+    }
+
+    async function loadFighters() {
+        const tbody = document.getElementById('ratingTableBody');
+        tbody.innerHTML = '<tr><td colspan="5">⏳ Загрузка...</td></tr>';
+        try {
+            const q = query(collection(db, "fighters"), orderBy("frs", "desc"));
+            const snapshot = await getDocs(q);
+            allFighters = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            
+            const cities = [...new Set(allFighters.map(f => f.city).filter(c => c && c !== 'all'))];
+            const citySelect = document.getElementById('citySelect');
+            citySelect.innerHTML = '<option value="all">Все города</option>';
+            cities.forEach(city => { 
+                const option = document.createElement('option'); 
+                option.value = city; 
+                option.textContent = city; 
+                citySelect.appendChild(option); 
+            });
+            
+            applyFilters();
+        } catch (error) { 
+            console.error("Ошибка загрузки:", error); 
+            tbody.innerHTML = '<tr><td colspan="5">❌ Ошибка загрузки. Проверьте интернет.</td></tr>';
+        }
+    }
+
+    function applyFilters() {
+        let filtered = [...allFighters];
+        if (currentCity !== 'all') filtered = filtered.filter(f => f.city === currentCity);
+        if (currentWeightClass !== 'all') filtered = filtered.filter(f => f.weightClass === currentWeightClass);
+        if (currentSport !== 'all') filtered = filtered.filter(f => f.sport === currentSport);
+        renderTable(filtered);
+    }
+
+    function renderTable(fighters) {
+        const tbody = document.getElementById('ratingTableBody');
+        tbody.innerHTML = '';
+        if (fighters.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="5">❌ Нет бойцов по выбранным фильтрам</td></tr>';
+            return;
+        }
+        let rank = 1;
+        fighters.forEach(f => {
+            const row = tbody.insertRow();
+            let medalClass = '';
+            if (rank === 1) medalClass = 'gold';
+            else if (rank === 2) medalClass = 'silver';
+            else if (rank === 3) medalClass = 'bronze';
+            row.className = medalClass;
+            row.insertCell(0).innerHTML = `<span class="rank-number">${rank}</span>`;
+            row.insertCell(1).innerHTML = `<img src="${f.avatar || 'Avatar.png'}" class="avatar-thumb" onerror="this.src='Avatar.png'">`;
+            row.insertCell(2).innerHTML = `<strong>${f.name || 'Боец'}</strong><br><small style="color:#888">${f.sport || ''}</small>`;
+            row.insertCell(3).innerText = f.city || '—';
+            row.insertCell(4).innerHTML = `<span style="color:#fbbf24; font-weight:bold;">${f.frs || 0}</span> ⭐`;
+            row.onclick = () => window.location.href = `profile.html?id=${f.id}`;
+            rank++;
+        });
+    }
+
+    function setActiveSportButton(sport) {
         document.querySelectorAll('.filter-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                currentSport = btn.getAttribute('data-sport');
-                setActiveSportButton(currentSport);
-                applyFilters();
-            });
+            if (btn.getAttribute('data-sport') === sport) btn.classList.add('active');
+            else btn.classList.remove('active');
         });
-        
-        document.getElementById('rankSearch').addEventListener('keyup', function() {
-            const term = this.value.toLowerCase().trim();
-            const rows = document.querySelectorAll('#ratingTableBody tr');
-            rows.forEach(row => {
-                const nameCell = row.cells[2];
-                if (nameCell) {
-                    const name = nameCell.innerText.toLowerCase();
-                    row.style.display = name.includes(term) ? '' : 'none';
-                }
-            });
-        });
+    }
 
-        // Обновление кнопки входа
-        const loginBtn = document.getElementById('profileLoginBtn');
-        onAuthStateChanged(auth, (user) => {
-            if (user && loginBtn) { 
-                loginBtn.innerText = 'Мой профиль'; 
-                loginBtn.href = `profile.html?id=${user.uid}`; 
-            } else if (loginBtn) {
-                loginBtn.innerText = 'Войти'; 
-                loginBtn.href = 'login.html';
+    document.getElementById('citySelect').addEventListener('change', (e) => { 
+        currentCity = e.target.value; 
+        applyFilters(); 
+    });
+    
+    document.getElementById('weightClassSelect').addEventListener('change', (e) => { 
+        currentWeightClass = e.target.value; 
+        applyFilters(); 
+    });
+    
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            currentSport = btn.getAttribute('data-sport');
+            setActiveSportButton(currentSport);
+            applyFilters();
+        });
+    });
+    
+    document.getElementById('rankSearch').addEventListener('keyup', function() {
+        const term = this.value.toLowerCase().trim();
+        const rows = document.querySelectorAll('#ratingTableBody tr');
+        rows.forEach(row => {
+            const nameCell = row.cells[2];
+            if (nameCell) {
+                const name = nameCell.innerText.toLowerCase();
+                row.style.display = name.includes(term) ? '' : 'none';
             }
         });
-        
-        loadFighters();
-    </script>
+    });
+
+    const loginBtn = document.getElementById('profileLoginBtn');
+    onAuthStateChanged(auth, (user) => {
+        if (user && loginBtn) { 
+            loginBtn.innerText = 'Мой профиль'; 
+            loginBtn.href = `profile.html?id=${user.uid}`; 
+            setTimeout(updateHeaderBalance, 1000);
+        } else if (loginBtn) {
+            loginBtn.innerText = 'Войти'; 
+            loginBtn.href = 'login.html';
+            const balanceDiv = document.getElementById('balanceIndicator');
+            if (balanceDiv) balanceDiv.style.display = 'none';
+        }
+    });
+    
+    loadFighters();
+</script>
     <script>
         // Бургер-меню
         const menuToggle = document.getElementById('menuToggle');

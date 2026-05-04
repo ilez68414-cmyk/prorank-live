@@ -143,17 +143,20 @@
 </head>
 <body>
     <header class="navbar">
-        <div class="logo" onclick="window.location='index.html'" style="cursor:pointer">PRO<span>RANK</span></div>
-        <button class="menu-toggle" id="menuToggle">☰</button>
-        <nav class="nav-links" id="navLinks">
-            <a href="index.html">Главная</a>
-            <a href="rating.html">Рейтинг</a>
-            <a href="rules.html">Правила</a>
-            <a href="challenges.html">Мои вызовы</a>
-            <a href="shop.html">Магазин</a>
-            <a href="login.html" id="profileLoginBtn" class="btn-primary">Войти</a>
-        </nav>
-    </header>
+    <div class="logo" onclick="window.location='index.html'" style="cursor:pointer">PRO<span>RANK</span></div>
+    <div class="balance-indicator" id="balanceIndicator" style="display: none;">
+        <span class="balance-icon">🎯</span>
+        <span class="balance-count" id="headerChallengesCount">0</span>
+    </div>
+    <button class="menu-toggle" id="menuToggle">☰</button>
+    <nav class="nav-links" id="navLinks">
+        <a href="index.html">Главная</a>
+        <a href="rating.html">Рейтинг</a>
+        <a href="rules.html">Правила</a>
+        <a href="challenges.html">Мои вызовы</a>
+        <a href="login.html" id="profileLoginBtn" class="btn-primary">Войти</a>
+    </nav>
+</header>
 
     <div class="shop-container">
         <div class="balance-card">
@@ -199,152 +202,174 @@
         }
     </script>
     <script type="module">
-        import { initializeApp } from "firebase/app";
-        import { getFirestore, doc, getDoc, updateDoc, collection, query, where, getDocs, addDoc, orderBy, limit } from "firebase/firestore";
-        import { getAuth, onAuthStateChanged } from "firebase/auth";
+    import { initializeApp } from "firebase/app";
+    import { getFirestore, doc, getDoc, updateDoc, collection, query, where, getDocs, addDoc, orderBy, limit } from "firebase/firestore";
+    import { getAuth, onAuthStateChanged } from "firebase/auth";
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyDUGYJY7pX7q02MS5SACMIIQXpjpQ97mPw",
-            authDomain: "proranklive.firebaseapp.com",
-            projectId: "proranklive",
-            storageBucket: "proranklive.firebasestorage.app",
-            messagingSenderId: "716836144015",
-            appId: "1:716836144015:web:f1575147750608d0f881fa"
-        };
+    const firebaseConfig = {
+        apiKey: "AIzaSyDUGYJY7pX7q02MS5SACMIIQXpjpQ97mPw",
+        authDomain: "proranklive.firebaseapp.com",
+        projectId: "proranklive",
+        storageBucket: "proranklive.firebasestorage.app",
+        messagingSenderId: "716836144015",
+        appId: "1:716836144015:web:f1575147750608d0f881fa"
+    };
 
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-        const auth = getAuth(app);
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
 
-        let currentUser = null;
+    let currentUser = null;
 
-        async function updateBalance() {
-            if (!currentUser) return;
-            const userDoc = await getDoc(doc(db, "fighters", currentUser.uid));
+    async function updateHeaderBalance() {
+        const user = auth.currentUser;
+        const balanceDiv = document.getElementById('balanceIndicator');
+        const balanceCount = document.getElementById('headerChallengesCount');
+        
+        if (!user || !balanceDiv) return;
+        
+        try {
+            const userDoc = await getDoc(doc(db, "fighters", user.uid));
             const data = userDoc.data();
             const free = data.freeChallenges || 0;
             const purchased = data.purchasedChallenges || 0;
-            document.getElementById('balanceDisplay').innerHTML = `
-                🆓 Бесплатных: ${free}<br>
-                💰 Купленных: ${purchased}<br>
-                📊 Всего: ${free + purchased}
-            `;
+            const total = free + purchased;
+            
+            balanceCount.innerText = total;
+            balanceDiv.style.display = 'flex';
+        } catch (err) {
+            console.error('Ошибка загрузки баланса:', err);
         }
+    }
 
-        async function buyProduct(amount) {
-            if (!currentUser) {
-                alert('Войдите в аккаунт');
-                return;
-            }
-            
-            // Пока без реальной оплаты — просто добавляем вызовы
-            const userRef = doc(db, "fighters", currentUser.uid);
-            const userDoc = await getDoc(userRef);
-            const currentPurchased = userDoc.data()?.purchasedChallenges || 0;
-            
-            await updateDoc(userRef, {
-                purchasedChallenges: currentPurchased + amount
-            });
-            
-            // Записываем покупку
-            await addDoc(collection(db, "purchases"), {
-                userId: currentUser.uid,
-                product: `${amount} вызовов`,
-                amount: amount,
-                price: amount === 5 ? 50 : 150,
-                createdAt: new Date()
-            });
-            
-            alert(`✅ Куплено ${amount} вызовов!`);
-            updateBalance();
-            loadPurchases();
+    async function updateBalance() {
+        if (!currentUser) return;
+        const userDoc = await getDoc(doc(db, "fighters", currentUser.uid));
+        const data = userDoc.data();
+        const free = data.freeChallenges || 0;
+        const purchased = data.purchasedChallenges || 0;
+        document.getElementById('balanceDisplay').innerHTML = `
+            🆓 Бесплатных: ${free}<br>
+            💰 Купленных: ${purchased}<br>
+            📊 Всего: ${free + purchased}
+        `;
+    }
+
+    async function buyProduct(amount) {
+        if (!currentUser) {
+            alert('Войдите в аккаунт');
+            return;
         }
+        
+        const userRef = doc(db, "fighters", currentUser.uid);
+        const userDoc = await getDoc(userRef);
+        const currentPurchased = userDoc.data()?.purchasedChallenges || 0;
+        
+        await updateDoc(userRef, {
+            purchasedChallenges: currentPurchased + amount
+        });
+        
+        await addDoc(collection(db, "purchases"), {
+            userId: currentUser.uid,
+            product: `${amount} вызовов`,
+            amount: amount,
+            price: amount === 5 ? 50 : 150,
+            createdAt: new Date()
+        });
+        
+        alert(`✅ Куплено ${amount} вызовов!`);
+        updateBalance();
+        updateHeaderBalance();
+        loadPurchases();
+    }
 
-        async function buyPremium() {
-            if (!currentUser) {
-                alert('Войдите в аккаунт');
-                return;
-            }
-            
-            const userRef = doc(db, "fighters", currentUser.uid);
-            await updateDoc(userRef, {
-                premium: true,
-                premiumUntil: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
-            });
-            
-            await addDoc(collection(db, "purchases"), {
-                userId: currentUser.uid,
-                product: "Премиум (месяц)",
-                price: 300,
-                createdAt: new Date()
-            });
-            
-            alert(`✅ Премиум активирован на месяц!`);
-            updateBalance();
-            loadPurchases();
+    async function buyPremium() {
+        if (!currentUser) {
+            alert('Войдите в аккаунт');
+            return;
         }
+        
+        const userRef = doc(db, "fighters", currentUser.uid);
+        await updateDoc(userRef, {
+            premium: true,
+            premiumUntil: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+        });
+        
+        await addDoc(collection(db, "purchases"), {
+            userId: currentUser.uid,
+            product: "Премиум (месяц)",
+            price: 300,
+            createdAt: new Date()
+        });
+        
+        alert(`✅ Премиум активирован на месяц!`);
+        updateBalance();
+        loadPurchases();
+    }
 
-        async function loadPurchases() {
-            if (!currentUser) return;
-            const q = query(
-                collection(db, "purchases"),
-                where("userId", "==", currentUser.uid),
-                orderBy("createdAt", "desc"),
-                limit(20)
-            );
-            const snapshot = await getDocs(q);
-            const container = document.getElementById('purchasesList');
-            
-            if (snapshot.empty) {
-                container.innerHTML = '<div class="purchase-item">Нет покупок</div>';
-                return;
-            }
-            
-            container.innerHTML = '';
-            snapshot.forEach(docSnap => {
-                const purchase = docSnap.data();
-                const date = purchase.createdAt?.toDate().toLocaleDateString() || '—';
-                const div = document.createElement('div');
-                div.className = 'purchase-item';
-                div.innerHTML = `<span>${date}</span><span>${purchase.product}</span><span>${purchase.price}₽</span>`;
-                container.appendChild(div);
-            });
+    async function loadPurchases() {
+        if (!currentUser) return;
+        const q = query(
+            collection(db, "purchases"),
+            where("userId", "==", currentUser.uid),
+            orderBy("createdAt", "desc"),
+            limit(20)
+        );
+        const snapshot = await getDocs(q);
+        const container = document.getElementById('purchasesList');
+        
+        if (snapshot.empty) {
+            container.innerHTML = '<div class="purchase-item">Нет покупок</div>';
+            return;
         }
+        
+        container.innerHTML = '';
+        snapshot.forEach(docSnap => {
+            const purchase = docSnap.data();
+            const date = purchase.createdAt?.toDate().toLocaleDateString() || '—';
+            const div = document.createElement('div');
+            div.className = 'purchase-item';
+            div.innerHTML = `<span>${date}</span><span>${purchase.product}</span><span>${purchase.price}₽</span>`;
+            container.appendChild(div);
+        });
+    }
 
-        onAuthStateChanged(auth, (user) => {
-            currentUser = user;
-            const loginBtn = document.getElementById('profileLoginBtn');
-            
-            if (user && loginBtn) {
-                loginBtn.innerText = 'Мой профиль';
-                loginBtn.href = `profile.html?id=${user.uid}`;
-                updateBalance();
-                loadPurchases();
-            } else if (loginBtn) {
-                loginBtn.innerText = 'Войти';
-                loginBtn.href = 'login.html';
-                document.getElementById('balanceDisplay').innerText = 'Войдите, чтобы увидеть баланс';
-                document.getElementById('purchasesList').innerHTML = '<div class="purchase-item">Войдите для просмотра</div>';
+    onAuthStateChanged(auth, async (user) => {
+        currentUser = user;
+        const loginBtn = document.getElementById('profileLoginBtn');
+        
+        if (user && loginBtn) {
+            loginBtn.innerText = 'Мой профиль';
+            loginBtn.href = `profile.html?id=${user.uid}`;
+            await updateBalance();
+            await loadPurchases();
+            setTimeout(updateHeaderBalance, 1000);
+        } else if (loginBtn) {
+            loginBtn.innerText = 'Войти';
+            loginBtn.href = 'login.html';
+            document.getElementById('balanceDisplay').innerHTML = 'Войдите, чтобы увидеть баланс';
+            document.getElementById('purchasesList').innerHTML = '<div class="purchase-item">Войдите для просмотра</div>';
+            const balanceDiv = document.getElementById('balanceIndicator');
+            if (balanceDiv) balanceDiv.style.display = 'none';
+        }
+    });
+
+    document.querySelectorAll('.btn-buy').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const product = btn.dataset.product;
+            if (product === 'premium') {
+                buyPremium();
+            } else {
+                buyProduct(parseInt(product));
             }
         });
+    });
 
-        document.querySelectorAll('.btn-buy').forEach(btn => {
-            btn.addEventListener('click', () => {
-                const product = btn.dataset.product;
-                if (product === 'premium') {
-                    buyPremium();
-                } else {
-                    buyProduct(parseInt(product));
-                }
-            });
-        });
-
-        // Бургер-меню
-        const menuToggle = document.getElementById('menuToggle');
-        const navLinks = document.getElementById('navLinks');
-        if (menuToggle && navLinks) {
-            menuToggle.addEventListener('click', () => navLinks.classList.toggle('show'));
-        }
-    </script>
+    const menuToggle = document.getElementById('menuToggle');
+    const navLinks = document.getElementById('navLinks');
+    if (menuToggle && navLinks) {
+        menuToggle.addEventListener('click', () => navLinks.classList.toggle('show'));
+    }
+</script>
 </body>
 </html>

@@ -191,7 +191,40 @@ onAuthStateChanged(auth, (user) => {
     } else if (!user && window.location.pathname.includes('profile.html')) {
         window.location.href = 'index.html#authSection';
     }
+});// Обновление баланса вызовов в шапке
+async function updateHeaderBalance() {
+    const user = auth.currentUser;
+    const balanceDiv = document.getElementById('balanceIndicator');
+    const balanceCount = document.getElementById('headerChallengesCount');
+    
+    if (!user || !balanceDiv) return;
+    
+    try {
+        const userDoc = await getDoc(doc(db, "fighters", user.uid));
+        const data = userDoc.data();
+        const free = data.freeChallenges || 0;
+        const purchased = data.purchasedChallenges || 0;
+        const total = free + purchased;
+        
+        balanceCount.innerText = total;
+        balanceDiv.style.display = 'flex';
+    } catch (err) {
+        console.error('Ошибка загрузки баланса:', err);
+    }
+}
+
+// Вызывать обновление при изменении пользователя
+onAuthStateChanged(auth, (user) => {
+    if (user) {
+        setTimeout(updateHeaderBalance, 1000);
+    } else {
+        const balanceDiv = document.getElementById('balanceIndicator');
+        if (balanceDiv) balanceDiv.style.display = 'none';
+    }
 });
+
+// Делаем функцию глобальной, чтобы её можно было вызвать из других скриптов
+window.updateHeaderBalance = updateHeaderBalance;
 
 // Экспортируем функции для использования в других файлах
 window.registerUser = registerUser;
