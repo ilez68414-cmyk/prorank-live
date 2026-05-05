@@ -222,7 +222,12 @@ onAuthStateChanged(auth, (user) => {
         if (balanceDiv) balanceDiv.style.display = 'none';
     }
 });
-
+// Глобальный обработчик для кнопки "+"
+document.addEventListener('click', (e) => {
+    if (e.target.id === 'balancePlusBtn' || e.target.closest?.('#balancePlusBtn')) {
+        window.location.href = 'shop.html';
+    }
+});
 // Делаем функцию глобальной, чтобы её можно было вызвать из других скриптов
 window.updateHeaderBalance = updateHeaderBalance;
 
