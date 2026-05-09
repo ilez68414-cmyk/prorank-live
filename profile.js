@@ -141,8 +141,7 @@ async function loadProfileData() {
 
         if (authListenerUnsub) authListenerUnsub();
         
-        authListenerUnsub = onAuthStateChanged(auth, (user) => {
-            console.log('Auth state changed', user?.uid);
+        authListenerUnsub = onAuthStateChanged(auth, async (user) => {
             const isOwner = user && user.uid === profileId;
             const isLogged = !!user;
             
@@ -172,6 +171,9 @@ async function loadProfileData() {
                             document.getElementById('onboardingFrs').innerText = fighter.frs || 0;
                         }
                     }
+                    // Рефералка и привязка Telegram только для владельца
+                    await setupReferral();
+                    await setupTelegramVerify();
                 } else if (isLogged) {
                     ownerDiv.classList.add('hidden');
                     visitorDiv.classList.remove('hidden');
@@ -181,7 +183,6 @@ async function loadProfileData() {
                 }
             }
             
-            // Обновляем баланс в шапке при смене пользователя
             if (isLogged) {
                 setTimeout(() => updateHeaderBalance(), 500);
             } else {
@@ -380,7 +381,6 @@ async function setupChallengeButton(targetId) {
             
             alert(`✅ Вызов отправлен! Осталось вызовов: ${totalChallenges - 1}`);
             
-            // Обновляем счётчик в шапке
             if (window.updateHeaderBalance) {
                 await window.updateHeaderBalance();
             }
@@ -415,7 +415,6 @@ async function setupMessageButton(targetId) {
         if (!chatSnap.exists()) {
             const currentUserDoc = await getDoc(doc(db, "fighters", user.uid));
             const targetUserDoc = await getDoc(doc(db, "fighters", targetId));
-            
             const currentName = currentUserDoc.data()?.name || 'Боец';
             const targetName = targetUserDoc.data()?.name || 'Боец';
             
@@ -528,7 +527,67 @@ function setupSubscribeButton() {
     };
 }
 
-// ========== ОБНОВЛЕНИЕ БАЛАНСА ВЫЗОВОВ В ШАПКЕ ==========
+// ========== РЕФЕРАЛЬНАЯ ПРОГРАММА ==========
+async function setupReferral() {
+    const user = auth.currentUser;
+    if (!user) return;
+    
+    const referralSection = document.getElementById('referralSection');
+    if (!referralSection) return;
+    
+    const params = new URLSearchParams(window.location.search);
+    const profileId = params.get('id');
+    if (user.uid !== profileId) {
+        referralSection.style.display = 'none';
+        return;
+    }
+    
+    referralSection.style.display = 'block';
+    
+    const referralLink = `https://ilez68414-cmyk.github.io/prorank-live/?ref=${user.uid}`;
+    const referralInput = document.getElementById('referralLink');
+    if (referralInput) referralInput.value = referralLink;
+    
+    const copyBtn = document.getElementById('copyReferralBtn');
+    if (copyBtn) {
+        copyBtn.onclick = () => {
+            const input = document.getElementById('referralLink');
+            if (input) {
+                input.select();
+                document.execCommand('copy');
+                alert('✅ Ссылка скопирована!');
+            }
+        };
+    }
+    
+    const userDoc = await getDoc(doc(db, "fighters", user.uid));
+    const refCount = userDoc.data()?.referralCount || 0;
+    const refBonus = userDoc.data()?.referralBonus || 0;
+    const statsEl = document.getElementById('referralStats');
+    if (statsEl) {
+        statsEl.innerHTML = `👥 Приглашено друзей: ${refCount}<br>🎁 Получено бонусов: +${refBonus} вызовов`;
+    }
+}
+
+// ========== ПРИВЯЗКА TELEGRAM ==========
+async function setupTelegramVerify() {
+    const user = auth.currentUser;
+    if (!user) return;
+    
+    const params = new URLSearchParams(window.location.search);
+    const profileId = params.get('id');
+    if (user.uid !== profileId) return;
+    
+    const telegramBtn = document.getElementById('telegramVerifyBtn');
+    if (telegramBtn) {
+        telegramBtn.style.display = 'inline-block';
+        telegramBtn.onclick = () => {
+            window.open(`https://t.me/ProRankBot?start=verify_${user.uid}`, '_blank');
+        };
+    }
+}
+
+// ========== ОБНОВЛЕНИЕ БАЛАНСА В ШАПКЕ ==========
 async function updateHeaderBalance() {
     const user = auth.currentUser;
     const balanceDiv = document.getElementById('balanceIndicator');
@@ -545,12 +604,14 @@ async function updateHeaderBalance() {
         
         balanceCount.innerText = total;
         balanceDiv.style.display = 'flex';
+        
+        const plusBtn = document.getElementById('balancePlusBtn');
+        if (plusBtn) plusBtn.onclick = () => window.location.href = 'shop.html';
     } catch (err) {
         console.error('Ошибка загрузки баланса:', err);
     }
 }
 
-// Делаем функцию глобальной
 window.updateHeaderBalance = updateHeaderBalance;
 
 window.addEventListener('beforeunload', () => {

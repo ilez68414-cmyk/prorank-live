@@ -123,13 +123,19 @@
 <body>
     <header class="navbar">
         <div class="logo" onclick="window.location='index.html'" style="cursor:pointer">PRO<span>RANK</span></div>
-<button class="menu-toggle" id="menuToggle">☰</button>
-<nav class="nav-links" id="navLinks">
-    <a href="index.html">Главная</a>
-    <a href="rating.html">Рейтинг</a>
-    <a href="rules.html">Правила</a>
-    <a href="login.html" id="profileLoginBtn" class="btn-primary">Войти</a>
-</nav>
+        <div class="balance-indicator" id="balanceIndicator" style="display: none;">
+            <span class="balance-icon">🎯</span>
+            <span class="balance-count" id="headerChallengesCount">0</span>
+            <button class="balance-plus" id="balancePlusBtn">+</button>
+        </div>
+        <button class="menu-toggle" id="menuToggle">☰</button>
+        <nav class="nav-links" id="navLinks">
+            <a href="index.html">Главная</a>
+            <a href="rating.html">Рейтинг</a>
+            <a href="rules.html">Правила</a>
+            <a href="challenges.html">Мои вызовы</a>
+            <a href="shop.html">Магазин</a>
+        </nav>
     </header>
 
     <div class="auth-container">
@@ -224,7 +230,7 @@
     </script>
     <script type="module">
         import { initializeApp } from "firebase/app";
-        import { getFirestore, doc, setDoc } from "firebase/firestore";
+        import { getFirestore, doc, setDoc, updateDoc, getDoc } from "firebase/firestore";
         import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendPasswordResetEmail } from "firebase/auth";
 
         const firebaseConfig = {
@@ -240,7 +246,10 @@
         const db = getFirestore(app);
         const auth = getAuth(app);
 
-        // Функция весовой категории
+        // Получаем реферальный код из URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const referrerId = urlParams.get('ref');
+
         function getWeightClass(weightValue) {
             const weight = parseInt(weightValue);
             if (weight <= 50) return 'Наилегчайшая (45–50 кг)';
@@ -294,13 +303,33 @@
             try {
                 const userCred = await createUserWithEmailAndPassword(auth, email, password);
                 const uid = userCred.user.uid;
-                const weightClass = getWeightClass(weightClassValue);
                 
                 await setDoc(doc(db, "fighters", uid), {
                     name, email, city, sport, weightClass: weightClassValue,
                     weight: parseInt(weightClassValue), frs: 50, wins: 0, finishes: 0, 
-                    bio: "", avatar: "Avatar.png", subscribers: 0, viewsLast30Days: 0
+                    bio: "", avatar: "Avatar.png", subscribers: 0, viewsLast30Days: 0,
+                    freeChallenges: 3, purchasedChallenges: 0,
+                    referralCount: 0, referralBonus: 0,
+                    referredBy: referrerId || null
                 });
+                
+                // Начисляем бонус пригласившему, если есть реферер
+                if (referrerId) {
+                    const referrerRef = doc(db, "fighters", referrerId);
+                    const referrerDoc = await getDoc(referrerRef);
+                    if (referrerDoc.exists()) {
+                        const currentCount = referrerDoc.data()?.referralCount || 0;
+                        const currentBonus = referrerDoc.data()?.referralBonus || 0;
+                        const currentFree = referrerDoc.data()?.freeChallenges || 0;
+                        
+                        await updateDoc(referrerRef, {
+                            referralCount: currentCount + 1,
+                            referralBonus: currentBonus + 1,
+                            freeChallenges: currentFree + 1
+                        });
+                    }
+                }
+                
                 alert("Регистрация успешна!");
                 window.location.href = `profile.html?id=${uid}`;
             } catch (err) {
@@ -355,15 +384,15 @@
         });
     </script>
     <script>
-    // Бургер-меню
-    const menuToggle = document.getElementById('menuToggle');
-    const navLinks = document.getElementById('navLinks');
-    
-    if (menuToggle && navLinks) {
-        menuToggle.addEventListener('click', () => {
-            navLinks.classList.toggle('show');
-        });
-    }
-</script>
+        // Бургер-меню
+        const menuToggle = document.getElementById('menuToggle');
+        const navLinks = document.getElementById('navLinks');
+        
+        if (menuToggle && navLinks) {
+            menuToggle.addEventListener('click', () => {
+                navLinks.classList.toggle('show');
+            });
+        }
+    </script>
 </body>
 </html>
