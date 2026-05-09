@@ -138,6 +138,44 @@
             margin-top: 0.5rem;
             font-size: 0.9rem;
         }
+        .telegram-bind-form {
+            background: #1f1f1f;
+            padding: 1.5rem;
+            border-radius: 1rem;
+            margin-bottom: 2rem;
+            border: 1px solid #fbbf24;
+        }
+        .telegram-bind-form h3 {
+            color: #fbbf24;
+            margin-bottom: 1rem;
+        }
+        .bind-input {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin-bottom: 1rem;
+        }
+        .bind-input input {
+            flex: 1;
+            padding: 0.75rem;
+            background: #2a2a2a;
+            border: 1px solid #333;
+            color: white;
+            border-radius: 8px;
+        }
+        .bind-btn {
+            background: #fbbf24;
+            color: black;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .bind-result {
+            margin-top: 0.5rem;
+            font-size: 0.9rem;
+        }
     </style>
 </head>
 <body>
@@ -167,6 +205,17 @@
                 </div>
             </div>
 
+            <!-- Форма привязки Telegram -->
+            <div class="telegram-bind-form">
+                <h3>🔗 Привязать Telegram к аккаунту</h3>
+                <div class="bind-input">
+                    <input type="text" id="bindUid" placeholder="UID бойца (из профиля)">
+                    <input type="text" id="bindTelegramId" placeholder="Telegram ID (число из бота)">
+                </div>
+                <button id="bindTelegramBtn" class="bind-btn">✅ Привязать</button>
+                <div id="bindResult" class="bind-result"></div>
+            </div>
+
             <div id="addFightSection" class="admin-form" style="display: none;">
                 <h3>➕ Добавить бой</h3>
                 <select id="fighterSelect1" style="background: #2a2a2a; color: white; padding: 0.5rem; border-radius: 8px; margin-right: 10px;">
@@ -192,10 +241,12 @@
                             <th>⭐ FRS</th>
                             <th>🏆</th>
                             <th>💥</th>
+                            <th>Telegram ID</th>
                             <th>Управление</th>
                         </tr>
                     </thead>
-                    <tbody id="adminTableBody"><tr><td colspan="7">Загрузка...</td></tr></tbody>
+                    <tbody id="adminTableBody"><tr><td colspan="8">Загрузка...</td></tr>
+                </tbody>
                 </table>
             </div>
         </div>
@@ -290,7 +341,7 @@
 
         async function loadFighters() {
             const tbody = document.getElementById('adminTableBody');
-            tbody.innerHTML = '<tr><td colspan="7">Загрузка...</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="8">Загрузка...</td></tr>';
             try {
                 const q = query(collection(db, "fighters"), orderBy("frs", "desc"));
                 const snapshot = await getDocs(q);
@@ -298,7 +349,7 @@
                 renderFighters(allFighters);
             } catch (err) {
                 console.error(err);
-                tbody.innerHTML = '<tr><td colspan="7">Ошибка загрузки</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="8">Ошибка загрузки</td></tr>';
             }
         }
 
@@ -314,6 +365,7 @@
                     <td>${f.frs || 0}</td>
                     <td>${f.wins || 0}</td>
                     <td>${f.finishes || 0}</td>
+                    <td>${f.telegramId || '—'}</td>
                     <td class="points-control">
                         <button onclick="changePoints('${f.id}', 100)">+100</button>
                         <button onclick="changePoints('${f.id}', 10)">+10</button>
@@ -328,13 +380,13 @@
             });
         }
 
-       window.changePoints = async (uid, delta) => {
-         const fighter = allFighters.find(f => f.id === uid);
-          if (!fighter) return;
-         const newFRS = (fighter.frs || 0) + delta;
-         await updateDoc(doc(db, "fighters", uid), { frs: newFRS });
-         loadFighters();
-         };
+        window.changePoints = async (uid, delta) => {
+            const fighter = allFighters.find(f => f.id === uid);
+            if (!fighter) return;
+            const newFRS = (fighter.frs || 0) + delta;
+            await updateDoc(doc(db, "fighters", uid), { frs: newFRS });
+            loadFighters();
+        };
 
         window.deleteFighter = async (uid) => {
             if (!confirm("Удалить бойца?")) return;
@@ -352,7 +404,6 @@
             document.getElementById('editWeight').value = f.weight || '';
             document.getElementById('editSport').value = f.sport || 'Бокс';
             
-            // Статистика
             document.getElementById('editWins').innerText = f.wins || 0;
             document.getElementById('editFinishes').innerText = f.finishes || 0;
             document.getElementById('editFRS').innerText = f.frs || 0;
@@ -436,7 +487,6 @@
             }
         });
 
-        // Кнопка пересчёта FRS
         document.getElementById('recalculateFRSBtn')?.addEventListener('click', async () => {
             if (!confirm("Пересчитать FRS для всех бойцов? Это может занять несколько секунд.")) return;
             
@@ -474,6 +524,41 @@
             } finally {
                 btn.innerText = originalText;
                 btn.disabled = false;
+            }
+        });
+
+        // ========== ПРИВЯЗКА TELEGRAM ==========
+        document.getElementById('bindTelegramBtn').addEventListener('click', async () => {
+            const uid = document.getElementById('bindUid').value.trim();
+            const telegramId = document.getElementById('bindTelegramId').value.trim();
+            const resultDiv = document.getElementById('bindResult');
+            
+            if (!uid || !telegramId) {
+                resultDiv.innerHTML = '<span style="color:red;">❌ Заполните оба поля</span>';
+                return;
+            }
+            
+            try {
+                const fighterRef = doc(db, "fighters", uid);
+                const fighterSnap = await getDoc(fighterRef);
+                
+                if (!fighterSnap.exists()) {
+                    resultDiv.innerHTML = '<span style="color:red;">❌ Боец с таким UID не найден</span>';
+                    return;
+                }
+                
+                await updateDoc(fighterRef, {
+                    telegramId: String(telegramId)
+                });
+                
+                resultDiv.innerHTML = '<span style="color:green;">✅ Telegram ID привязан!</span>';
+                document.getElementById('bindUid').value = '';
+                document.getElementById('bindTelegramId').value = '';
+                loadFighters();
+                
+            } catch (err) {
+                console.error(err);
+                resultDiv.innerHTML = '<span style="color:red;">❌ Ошибка при привязке</span>';
             }
         });
 
