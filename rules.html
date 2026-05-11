@@ -26,6 +26,9 @@
             font-weight: bold;
             color: #fbbf24;
             margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
         }
         .rule-points {
             font-size: 1.2rem;
@@ -44,6 +47,25 @@
             text-align: center;
             margin: 1rem 0;
         }
+        .league-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+        }
+        .league-table th, .league-table td {
+            padding: 0.5rem;
+            text-align: left;
+            border-bottom: 1px solid #333;
+        }
+        .league-table th {
+            color: #fbbf24;
+        }
+        .league-bronze { color: #cd7f32; }
+        .league-silver { color: #c0c0c0; }
+        .league-gold { color: #ffd700; }
+        .league-diamond { color: #00ffff; }
+        .league-elite { color: #9400d3; }
+        .league-legendary { color: #ff4500; }
         .cta-button-outline {
             display: inline-block;
             background: transparent;
@@ -57,6 +79,18 @@
         .cta-button-outline:hover {
             background: #fbbf24;
             color: black;
+        }
+        .cta-button {
+            display: inline-block;
+            background: #fbbf24;
+            color: #000;
+            padding: 0.7rem 1.5rem;
+            border-radius: 2rem;
+            text-decoration: none;
+            transition: 0.2s;
+        }
+        .cta-button:hover {
+            background: #e5a500;
         }
         .navbar {
             display: flex;
@@ -84,6 +118,9 @@
             text-decoration: none;
             font-size: 1rem;
             transition: 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
         }
         .nav-links a:hover {
             color: #fbbf24;
@@ -96,6 +133,30 @@
             font-size: 1.8rem;
             cursor: pointer;
             padding: 5px 10px;
+        }
+        .balance-indicator {
+            background: linear-gradient(135deg, #1e2a1a, #0f1a0f);
+            border: 1px solid #fbbf24;
+            border-radius: 2rem;
+            padding: 0.3rem 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            font-weight: bold;
+        }
+        .balance-plus {
+            background: none;
+            border: none;
+            color: #fbbf24;
+            font-size: 1.2rem;
+            font-weight: bold;
+            cursor: pointer;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
         }
         @media (max-width: 768px) {
             .nav-links {
@@ -117,6 +178,9 @@
             .menu-toggle {
                 display: block;
             }
+            .league-table {
+                font-size: 0.8rem;
+            }
         }
     </style>
 </head>
@@ -124,28 +188,28 @@
     <header class="navbar">
         <div class="logo" onclick="window.location='index.html'" style="cursor:pointer">PRO<span>RANK</span></div>
         <div class="balance-indicator" id="balanceIndicator" style="display: none;">
-            <span class="balance-icon">🎯</span>
+            <i class="fas fa-crosshairs icon-gold"></i>
             <span class="balance-count" id="headerChallengesCount">0</span>
-            <button class="balance-plus" id="balancePlusBtn" title="Купить вызовы">+</button>
+            <button class="balance-plus" id="balancePlusBtn">+</button>
         </div>
         <button class="menu-toggle" id="menuToggle">☰</button>
         <nav class="nav-links" id="navLinks">
-            <a href="index.html">Главная</a>
-            <a href="rating.html">Рейтинг</a>
-            <a href="leagues.html">Лиги</a>
-            <a href="shop.html">Магазин</a>
-            <a href="challenges.html">Мои вызовы</a>
-            <a href="login.html" id="profileLoginBtn" class="btn-primary">Войти</a>
+            <a href="index.html"><i class="fas fa-home"></i> Главная</a>
+            <a href="rating.html"><i class="fas fa-chart-line"></i> Рейтинг</a>
+            <a href="leagues.html"><i class="fas fa-trophy"></i> Лиги</a>
+            <a href="shop.html"><i class="fas fa-store"></i> Магазин</a>
+            <a href="challenges.html"><i class="fas fa-fist-raised"></i> Вызовы</a>
+            <a href="login.html" id="profileLoginBtn" class="btn-primary"><i class="fas fa-sign-in-alt"></i> Войти</a>
         </nav>
     </header>
 
     <main class="container">
         <div class="rules-container">
-            <h1>📋 Как работает рейтинг PRORANK</h1>
+            <h1><i class="fas fa-book icon-gold"></i> Как работает рейтинг PRORANK</h1>
             <p style="margin-bottom: 2rem;">Твой рейтинг (FRS) считается автоматически по формуле:</p>
 
             <div class="rule-card">
-                <div class="rule-title">⭐ Что такое FRS (Fight Rating Score)?</div>
+                <div class="rule-title"><i class="fas fa-star icon-gold"></i> Что такое FRS (Fight Rating Score)?</div>
                 <div class="rule-desc">
                     <p><strong>FRS — это твой главный показатель крутости.</strong> Чем выше число, тем выше ты в рейтинге.</p>
                     <p>Сайт автоматически считает FRS по формуле:</p>
@@ -157,43 +221,64 @@
             </div>
 
             <div class="rule-card">
-                <div class="rule-title">🏆 Победы</div>
+                <div class="rule-title"><i class="fas fa-trophy icon-green"></i> Победы</div>
                 <div class="rule-points">+100 очков за каждую победу</div>
                 <div class="rule-desc">Когда ты выигрываешь спарринг или турнир, администратор добавляет победу в твой профиль. Чем больше побед — тем выше рейтинг.</div>
             </div>
 
             <div class="rule-card">
-                <div class="rule-title">💥 Финиши</div>
+                <div class="rule-title"><i class="fas fa-bolt icon-orange"></i> Финиши</div>
                 <div class="rule-points">+50 дополнительных очков за победу нокаутом или сабмишеном</div>
                 <div class="rule-desc">Победа решением судей приносит только 100 очков, а финиш — 150. Рубимся красиво!</div>
             </div>
 
             <div class="rule-card">
-                <div class="rule-title">🔥 Хайп-индекс</div>
+                <div class="rule-title"><i class="fas fa-fire icon-gold"></i> Хайп-индекс</div>
                 <div class="rule-points">(Просмотры видео / 100) + (Подписчики в соцсетях / 10)</div>
                 <div class="rule-desc">Чем больше людей смотрят твои бои и подписываются на тебя, тем выше хайп. Присылай ссылки на видео и свои соцсети — мы добавим их в профиль.</div>
             </div>
 
             <div class="rule-card">
-                <div class="rule-title">😴 Штраф за неактивность</div>
+                <div class="rule-title"><i class="fas fa-bed icon-dim"></i> Штраф за неактивность</div>
                 <div class="rule-points">−25 очков за каждый месяц без боя</div>
                 <div class="rule-desc">Нельзя просто занять место в топе и сидеть. Защищай рейтинг или тебя обгонят!</div>
             </div>
 
             <div class="rule-card">
-                <div class="rule-title">💎 Премиум (синяя галочка)</div>
+                <div class="rule-title"><i class="fas fa-gem icon-gold"></i> Премиум</div>
                 <div class="rule-points">+5 очков (мелочь, но в плотной борьбе решает)</div>
                 <div class="rule-desc">Премиум подписка даёт небольшую прибавку. Поддержи проект и выделись среди других.</div>
             </div>
 
             <div class="rule-card">
-                <div class="rule-title">📢 Как сообщить о победе?</div>
+                <div class="rule-title"><i class="fas fa-trophy icon-gold"></i> Лиги</div>
+                <div class="rule-desc">
+                    <p>Твой FRS определяет лигу. Чем выше лига, тем больше уважения и преимуществ:</p>
+                    <table class="league-table">
+                        <thead>
+                            <tr><th>Лига</th><th>FRS</th><th>Награды</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td class="league-bronze"><i class="fas fa-medal"></i> Бронзовая</td><td>0 – 499</td><td>—</td></tr>
+                            <tr><td class="league-silver"><i class="fas fa-medal"></i> Серебряная</td><td>500 – 999</td><td>+1 вызов в месяц</td></tr>
+                            <tr><td class="league-gold"><i class="fas fa-crown"></i> Золотая</td><td>1000 – 1999</td><td>+3 вызова, бейдж</td></tr>
+                            <tr><td class="league-diamond"><i class="fas fa-gem"></i> Алмазная</td><td>2000 – 3499</td><td>+5 вызовов, закрытый чат</td></tr>
+                            <tr><td class="league-elite"><i class="fas fa-dragon"></i> Элитная</td><td>3500 – 4999</td><td>+10 вызовов, премиум-значок</td></tr>
+                            <tr><td class="league-legendary"><i class="fas fa-skull"></i> Легендарная</td><td>5000+</td><td>Премиум бесплатно, публикация в ТГ</td></tr>
+                        </tbody>
+                    </table>
+                    <p><a href="leagues.html" style="color:#fbbf24;">Подробнее о лигах <i class="fas fa-arrow-right"></i></a></p>
+                </div>
+            </div>
+
+            <div class="rule-card">
+                <div class="rule-title"><i class="fas fa-envelope icon-gold"></i> Как сообщить о победе?</div>
                 <div class="rule-desc">Напиши администратору в Telegram или на почту. Приложи видео или фото подтверждения, и мы добавим бой в статистику.</div>
             </div>
 
             <div style="text-align: center; margin-top: 2rem;">
-                <a href="profile.html" class="cta-button">Перейти в профиль</a>
-                <a href="rating.html" class="cta-button-outline" style="margin-left: 1rem;">Смотреть рейтинг</a>
+                <a href="profile.html" class="cta-button"><i class="fas fa-user"></i> Перейти в профиль</a>
+                <a href="rating.html" class="cta-button-outline" style="margin-left: 1rem;"><i class="fas fa-chart-line"></i> Смотреть рейтинг</a>
             </div>
         </div>
     </main>
@@ -258,11 +343,11 @@
         
         onAuthStateChanged(auth, (user) => {
             if (user && loginBtn) {
-                loginBtn.innerText = 'Мой профиль';
+                loginBtn.innerHTML = '<i class="fas fa-user"></i> Мой профиль';
                 loginBtn.href = `profile.html?id=${user.uid}`;
                 setTimeout(updateHeaderBalance, 500);
             } else if (loginBtn) {
-                loginBtn.innerText = 'Войти';
+                loginBtn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Войти';
                 loginBtn.href = 'login.html';
                 const balanceDiv = document.getElementById('balanceIndicator');
                 if (balanceDiv) balanceDiv.style.display = 'none';

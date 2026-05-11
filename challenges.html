@@ -21,6 +21,9 @@
         .challenges-section h2 {
             margin-bottom: 1rem;
             color: #fbbf24;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
         }
         .challenge-card {
             background: #0f0f0f;
@@ -45,6 +48,9 @@
         .challenge-name {
             font-size: 1.2rem;
             font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
         }
         .challenge-status {
             padding: 0.2rem 0.8rem;
@@ -67,6 +73,10 @@
             color: #aaa;
             font-size: 0.9rem;
             margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            flex-wrap: wrap;
         }
         .challenge-message {
             background: #1a1a1a;
@@ -87,6 +97,9 @@
             border: none;
             cursor: pointer;
             font-weight: bold;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
         }
         .btn-accept {
             background: #16a34a;
@@ -110,7 +123,21 @@
             padding: 2rem;
             color: #888;
         }
-        /* Адаптивная навигация */
+        .leagues-hint {
+            background: linear-gradient(135deg, #1e2a1a, #0f1a0f);
+            border-radius: 1rem;
+            padding: 1rem;
+            margin-top: 2rem;
+            text-align: center;
+            border: 1px solid #fbbf24;
+        }
+        .leagues-hint a {
+            color: #fbbf24;
+            text-decoration: none;
+        }
+        .leagues-hint a:hover {
+            text-decoration: underline;
+        }
         .navbar {
             display: flex;
             justify-content: space-between;
@@ -137,6 +164,9 @@
             text-decoration: none;
             font-size: 1rem;
             transition: 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
         }
         .nav-links a:hover {
             color: #fbbf24;
@@ -149,6 +179,30 @@
             font-size: 1.8rem;
             cursor: pointer;
             padding: 5px 10px;
+        }
+        .balance-indicator {
+            background: linear-gradient(135deg, #1e2a1a, #0f1a0f);
+            border: 1px solid #fbbf24;
+            border-radius: 2rem;
+            padding: 0.3rem 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            font-weight: bold;
+        }
+        .balance-plus {
+            background: none;
+            border: none;
+            color: #fbbf24;
+            font-size: 1.2rem;
+            font-weight: bold;
+            cursor: pointer;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
         }
         @media (max-width: 768px) {
             .nav-links {
@@ -170,40 +224,50 @@
             .menu-toggle {
                 display: block;
             }
-            .challenge-header { flex-direction: column; align-items: flex-start; gap: 0.5rem; }
+            .challenge-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.5rem;
+            }
         }
     </style>
 </head>
 <body>
     <header class="navbar">
         <div class="logo" onclick="window.location='index.html'" style="cursor:pointer">PRO<span>RANK</span></div>
-<div class="balance-indicator" id="balanceIndicator" style="display: none;">
-    <span class="balance-icon">🎯</span>
-    <span class="balance-count" id="headerChallengesCount">0</span>
-    <button class="balance-plus" id="balancePlusBtn" title="Купить вызовы">+</button>
-</div>
-<button class="menu-toggle" id="menuToggle">☰</button>
+        <div class="balance-indicator" id="balanceIndicator" style="display: none;">
+            <i class="fas fa-crosshairs icon-gold"></i>
+            <span class="balance-count" id="headerChallengesCount">0</span>
+            <button class="balance-plus" id="balancePlusBtn">+</button>
+        </div>
+        <button class="menu-toggle" id="menuToggle">☰</button>
         <nav class="nav-links" id="navLinks">
-            <a href="index.html">Главная</a>
-            <a href="rating.html">Рейтинг</a>
-            <a href="leagues.html">Лиги</a>
-            <a href="shop.html">Магазин</a>
-            <a href="rules.html">Правила</a>
-            <a href="login.html" id="profileLoginBtn" class="btn-primary">Войти</a>
+            <a href="index.html"><i class="fas fa-home"></i> Главная</a>
+            <a href="rating.html"><i class="fas fa-chart-line"></i> Рейтинг</a>
+            <a href="leagues.html"><i class="fas fa-trophy"></i> Лиги</a>
+            <a href="rules.html"><i class="fas fa-book"></i> Правила</a>
+            <a href="shop.html"><i class="fas fa-store"></i> Магазин</a>
+            <a href="login.html" id="profileLoginBtn" class="btn-primary"><i class="fas fa-sign-in-alt"></i> Войти</a>
         </nav>
     </header>
 
     <div class="challenges-container">
-        <h1>⚔️ Мои вызовы</h1>
+        <h1><i class="fas fa-fist-raised icon-gold"></i> Мои вызовы</h1>
         
         <div id="incomingSection" class="challenges-section">
-            <h2>📥 Входящие вызовы</h2>
-            <div id="incomingList" class="loading">Загрузка...</div>
+            <h2><i class="fas fa-arrow-down icon-gold"></i> Входящие вызовы</h2>
+            <div id="incomingList" class="loading"><i class="fas fa-spinner fa-pulse"></i> Загрузка...</div>
         </div>
 
         <div id="outgoingSection" class="challenges-section">
-            <h2>📤 Исходящие вызовы</h2>
-            <div id="outgoingList" class="loading">Загрузка...</div>
+            <h2><i class="fas fa-arrow-up icon-gold"></i> Исходящие вызовы</h2>
+            <div id="outgoingList" class="loading"><i class="fas fa-spinner fa-pulse"></i> Загрузка...</div>
+        </div>
+
+        <div class="leagues-hint">
+            <i class="fas fa-trophy icon-gold" style="font-size: 1.2rem;"></i>
+            <strong>Хочешь получать больше вызовов?</strong> Чем выше твоя <a href="leagues.html">лига</a>, тем больше уважения и вызовов!
+            <a href="leagues.html">Подробнее о лигах <i class="fas fa-arrow-right"></i></a>
         </div>
     </div>
 
@@ -217,294 +281,260 @@
     </footer>
 
     <script type="importmap">
-    {
-        "imports": {
-            "firebase/app": "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js",
-            "firebase/firestore": "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js",
-            "firebase/auth": "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js"
+        {
+            "imports": {
+                "firebase/app": "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js",
+                "firebase/firestore": "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js",
+                "firebase/auth": "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js"
+            }
         }
-    }
-</script>
-<script type="module">
-    import { initializeApp } from "firebase/app";
-    import { getFirestore, collection, query, where, getDocs, updateDoc, doc, setDoc, getDoc, orderBy } from "firebase/firestore";
-    import { getAuth, onAuthStateChanged } from "firebase/auth";
+    </script>
+    <script type="module">
+        import { initializeApp } from "firebase/app";
+        import { getFirestore, collection, query, where, getDocs, updateDoc, doc, setDoc, getDoc, orderBy } from "firebase/firestore";
+        import { getAuth, onAuthStateChanged } from "firebase/auth";
 
-    const firebaseConfig = {
-        apiKey: "AIzaSyDUGYJY7pX7q02MS5SACMIIQXpjpQ97mPw",
-        authDomain: "proranklive.firebaseapp.com",
-        projectId: "proranklive",
-        storageBucket: "proranklive.firebasestorage.app",
-        messagingSenderId: "716836144015",
-        appId: "1:716836144015:web:f1575147750608d0f881fa"
-    };
+        const firebaseConfig = {
+            apiKey: "AIzaSyDUGYJY7pX7q02MS5SACMIIQXpjpQ97mPw",
+            authDomain: "proranklive.firebaseapp.com",
+            projectId: "proranklive",
+            storageBucket: "proranklive.firebasestorage.app",
+            messagingSenderId: "716836144015",
+            appId: "1:716836144015:web:f1575147750608d0f881fa"
+        };
 
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-    const auth = getAuth(app);
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
 
-    const BOT_TOKEN = '8527160088:AAGc2311QFkp6F7-Jx5k8MJfqlpvbueSl5E';
+        const BOT_TOKEN = '8527160088:AAGc2311QFkp6F7-Jx5k8MJfqlpvbueSl5E';
 
-    let currentUser = null;
+        let currentUser = null;
 
-    // Обновление баланса вызовов в шапке
-    async function updateHeaderBalance() {
-        const user = auth.currentUser;
-        const balanceDiv = document.getElementById('balanceIndicator');
-        const balanceCount = document.getElementById('headerChallengesCount');
-        
-        if (!user || !balanceDiv) return;
-        
-        try {
-            const userDoc = await getDoc(doc(db, "fighters", user.uid));
-            const data = userDoc.data();
-            const free = data.freeChallenges || 0;
-            const purchased = data.purchasedChallenges || 0;
-            const total = free + purchased;
-            // Кнопка "+" в индикаторе вызовов
-function setupBalancePlusButton() {
-    const plusBtn = document.getElementById('balancePlusBtn');
-    if (plusBtn) {
-        plusBtn.onclick = () => window.location.href = 'shop.html';
-    }
-}
+        async function loadChallenges() {
+            if (!currentUser) {
+                document.getElementById('incomingList').innerHTML = '<div class="empty-state"><i class="fas fa-lock icon-gold"></i> Войдите, чтобы видеть вызовы</div>';
+                document.getElementById('outgoingList').innerHTML = '<div class="empty-state"><i class="fas fa-lock icon-gold"></i> Войдите, чтобы видеть вызовы</div>';
+                return;
+            }
 
-// Вызови её после обновления баланса
-// Внутри updateHeaderBalance, после того как показали индикатор, добавь:
-setupBalancePlusButton();
-            balanceCount.innerText = total;
-            balanceDiv.style.display = 'flex';
-        } catch (err) {
-            console.error('Ошибка загрузки баланса:', err);
-        }
-    }
+            try {
+                const incomingQuery = query(
+                    collection(db, "challenges"),
+                    where("toUserId", "==", currentUser.uid),
+                    orderBy("createdAt", "desc")
+                );
+                
+                const outgoingQuery = query(
+                    collection(db, "challenges"),
+                    where("fromUserId", "==", currentUser.uid),
+                    orderBy("createdAt", "desc")
+                );
 
-    async function loadChallenges() {
-        if (!currentUser) {
-            document.getElementById('incomingList').innerHTML = '<div class="empty-state">🔒 Войдите, чтобы видеть вызовы</div>';
-            document.getElementById('outgoingList').innerHTML = '<div class="empty-state">🔒 Войдите, чтобы видеть вызовы</div>';
-            return;
+                const [incomingSnap, outgoingSnap] = await Promise.all([
+                    getDocs(incomingQuery),
+                    getDocs(outgoingQuery)
+                ]);
+
+                renderIncoming(incomingSnap.docs);
+                renderOutgoing(outgoingSnap.docs);
+            } catch (err) {
+                console.error('Ошибка загрузки вызовов:', err);
+                document.getElementById('incomingList').innerHTML = '<div class="empty-state"><i class="fas fa-exclamation-triangle icon-red"></i> Ошибка загрузки</div>';
+                document.getElementById('outgoingList').innerHTML = '<div class="empty-state"><i class="fas fa-exclamation-triangle icon-red"></i> Ошибка загрузки</div>';
+            }
         }
 
-        try {
-            const incomingQuery = query(
-                collection(db, "challenges"),
-                where("toUserId", "==", currentUser.uid),
-                orderBy("createdAt", "desc")
-            );
-            
-            const outgoingQuery = query(
-                collection(db, "challenges"),
-                where("fromUserId", "==", currentUser.uid),
-                orderBy("createdAt", "desc")
-            );
+        function renderIncoming(docs) {
+            const container = document.getElementById('incomingList');
+            if (docs.length === 0) {
+                container.innerHTML = '<div class="empty-state"><i class="fas fa-inbox"></i> Нет входящих вызовов</div>';
+                return;
+            }
 
-            const [incomingSnap, outgoingSnap] = await Promise.all([
-                getDocs(incomingQuery),
-                getDocs(outgoingQuery)
-            ]);
-
-            renderIncoming(incomingSnap.docs);
-            renderOutgoing(outgoingSnap.docs);
-        } catch (err) {
-            console.error('Ошибка загрузки вызовов:', err);
-            document.getElementById('incomingList').innerHTML = '<div class="empty-state">❌ Ошибка загрузки</div>';
-            document.getElementById('outgoingList').innerHTML = '<div class="empty-state">❌ Ошибка загрузки</div>';
-        }
-    }
-
-    function renderIncoming(docs) {
-        const container = document.getElementById('incomingList');
-        if (docs.length === 0) {
-            container.innerHTML = '<div class="empty-state">📭 Нет входящих вызовов</div>';
-            return;
-        }
-
-        container.innerHTML = '';
-        for (const docSnap of docs) {
-            const challenge = docSnap.data();
-            const challengeId = docSnap.id;
-            
-            const card = document.createElement('div');
-            card.className = 'challenge-card incoming';
-            card.innerHTML = `
-                <div class="challenge-header">
-                    <span class="challenge-name">🥊 ${challenge.fromName || 'Боец'}</span>
-                    <span class="challenge-status status-${challenge.status}">${getStatusText(challenge.status)}</span>
-                </div>
-                <div class="challenge-details">
-                    📍 Вес: ${challenge.fromWeight && challenge.fromWeight > 0 ? challenge.fromWeight + ' кг' : 'не указан'}
-                </div>
-                ${challenge.message ? `<div class="challenge-message">💬 ${escapeHtml(challenge.message)}</div>` : ''}
-                ${challenge.status === 'pending' ? `
-                    <div class="challenge-actions">
-                        <button class="btn-accept" data-id="${challengeId}">✅ Принять</button>
-                        <button class="btn-reject" data-id="${challengeId}">❌ Отклонить</button>
+            container.innerHTML = '';
+            for (const docSnap of docs) {
+                const challenge = docSnap.data();
+                const challengeId = docSnap.id;
+                
+                const card = document.createElement('div');
+                card.className = 'challenge-card incoming';
+                card.innerHTML = `
+                    <div class="challenge-header">
+                        <span class="challenge-name"><i class="fas fa-fist-raised icon-gold"></i> ${challenge.fromName || 'Боец'}</span>
+                        <span class="challenge-status status-${challenge.status}">${getStatusText(challenge.status)}</span>
                     </div>
-                ` : ''}
-                ${challenge.status === 'accepted' ? `
-                    <div class="challenge-actions">
-                        <button class="btn-chat" data-chat-id="${challenge.fromUserId}_${challenge.toUserId}">💬 Перейти в чат</button>
+                    <div class="challenge-details">
+                        <i class="fas fa-weight-hanging"></i> Вес: ${challenge.fromWeight && challenge.fromWeight > 0 ? challenge.fromWeight + ' кг' : 'не указан'}
                     </div>
-                ` : ''}
-            `;
-            container.appendChild(card);
+                    ${challenge.message ? `<div class="challenge-message"><i class="fas fa-quote-left"></i> ${escapeHtml(challenge.message)}</div>` : ''}
+                    ${challenge.status === 'pending' ? `
+                        <div class="challenge-actions">
+                            <button class="btn-accept" data-id="${challengeId}"><i class="fas fa-check"></i> Принять</button>
+                            <button class="btn-reject" data-id="${challengeId}"><i class="fas fa-times"></i> Отклонить</button>
+                        </div>
+                    ` : ''}
+                    ${challenge.status === 'accepted' ? `
+                        <div class="challenge-actions">
+                            <button class="btn-chat" data-chat-id="${challenge.fromUserId}_${challenge.toUserId}"><i class="fas fa-comments"></i> Перейти в чат</button>
+                        </div>
+                    ` : ''}
+                `;
+                container.appendChild(card);
+            }
+
+            document.querySelectorAll('.btn-accept').forEach(btn => {
+                btn.addEventListener('click', () => updateChallengeStatus(btn.dataset.id, 'accepted'));
+            });
+            document.querySelectorAll('.btn-reject').forEach(btn => {
+                btn.addEventListener('click', () => updateChallengeStatus(btn.dataset.id, 'rejected'));
+            });
+            document.querySelectorAll('.btn-chat').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    window.location.href = `chat.html?id=${btn.dataset.chatId}`;
+                });
+            });
         }
 
-        document.querySelectorAll('.btn-accept').forEach(btn => {
-            btn.addEventListener('click', () => updateChallengeStatus(btn.dataset.id, 'accepted'));
-        });
-        document.querySelectorAll('.btn-reject').forEach(btn => {
-            btn.addEventListener('click', () => updateChallengeStatus(btn.dataset.id, 'rejected'));
-        });
-        document.querySelectorAll('.btn-chat').forEach(btn => {
-            btn.addEventListener('click', () => {
-                window.location.href = `chat.html?id=${btn.dataset.chatId}`;
-            });
-        });
-    }
+        function renderOutgoing(docs) {
+            const container = document.getElementById('outgoingList');
+            if (docs.length === 0) {
+                container.innerHTML = '<div class="empty-state"><i class="fas fa-paper-plane"></i> Нет исходящих вызовов</div>';
+                return;
+            }
 
-    function renderOutgoing(docs) {
-        const container = document.getElementById('outgoingList');
-        if (docs.length === 0) {
-            container.innerHTML = '<div class="empty-state">📭 Нет исходящих вызовов</div>';
-            return;
-        }
-
-        container.innerHTML = '';
-        for (const docSnap of docs) {
-            const challenge = docSnap.data();
-            const chatId = `${challenge.fromUserId}_${challenge.toUserId}`;
-            
-            const card = document.createElement('div');
-            card.className = 'challenge-card outgoing';
-            card.innerHTML = `
-                <div class="challenge-header">
-                    <span class="challenge-name">🎯 ${challenge.toName || 'Соперник'}</span>
-                    <span class="challenge-status status-${challenge.status}">${getStatusText(challenge.status)}</span>
-                </div>
-                <div class="challenge-details">
-                    📍 Вес: ${challenge.toWeight && challenge.toWeight > 0 ? challenge.toWeight + ' кг' : 'не указан'}
-                </div>
-                ${challenge.message ? `<div class="challenge-message">💬 ${escapeHtml(challenge.message)}</div>` : ''}
-                ${challenge.status === 'accepted' ? `
-                    <div class="challenge-actions">
-                        <button class="btn-chat" data-chat-id="${chatId}">💬 Перейти в чат</button>
-                    </div>
-                ` : ''}
-                ${challenge.status === 'rejected' ? '<div class="challenge-details">❌ Соперник отклонил вызов</div>' : ''}
-                ${challenge.status === 'pending' ? '<div class="challenge-details">⏳ Ожидает ответа соперника</div>' : ''}
-            `;
-            container.appendChild(card);
-        }
-        
-        document.querySelectorAll('.btn-chat').forEach(btn => {
-            btn.addEventListener('click', () => {
-                window.location.href = `chat.html?id=${btn.dataset.chatId}`;
-            });
-        });
-    }
-
-    async function updateChallengeStatus(challengeId, newStatus) {
-        try {
-            const challengeRef = doc(db, "challenges", challengeId);
-            const challengeSnap = await getDoc(challengeRef);
-            const challenge = challengeSnap.data();
-            
-            await updateDoc(challengeRef, {
-                status: newStatus,
-                updatedAt: new Date()
-            });
-            
-            if (newStatus === 'accepted' && challenge) {
+            container.innerHTML = '';
+            for (const docSnap of docs) {
+                const challenge = docSnap.data();
                 const chatId = `${challenge.fromUserId}_${challenge.toUserId}`;
-                const chatRef = doc(db, "chats", chatId);
-                const chatSnap = await getDoc(chatRef);
                 
-                if (!chatSnap.exists()) {
-                    await setDoc(chatRef, {
-                        participants: [challenge.fromUserId, challenge.toUserId],
-                        participantNames: {
-                            [challenge.fromUserId]: challenge.fromName,
-                            [challenge.toUserId]: challenge.toName
-                        },
-                        createdAt: new Date(),
-                        lastMessage: "",
-                        lastMessageTime: new Date()
-                    });
-                    console.log("Чат создан:", chatId);
-                }
-                
-                const fromTelegram = challenge.fromTelegramId;
-                if (fromTelegram) {
-                    await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            chat_id: fromTelegram,
-                            text: `✅ *ВЫЗОВ ПРИНЯТ!*\n\nБоец *${challenge.toName}* принял твой вызов.\n\n💬 Теперь вы можете общаться в чате на сайте: ${window.location.origin}/chat.html?id=${chatId}`,
-                            parse_mode: 'Markdown'
-                        })
-                    });
-                }
+                const card = document.createElement('div');
+                card.className = 'challenge-card outgoing';
+                card.innerHTML = `
+                    <div class="challenge-header">
+                        <span class="challenge-name"><i class="fas fa-bullseye"></i> ${challenge.toName || 'Соперник'}</span>
+                        <span class="challenge-status status-${challenge.status}">${getStatusText(challenge.status)}</span>
+                    </div>
+                    <div class="challenge-details">
+                        <i class="fas fa-weight-hanging"></i> Вес: ${challenge.toWeight && challenge.toWeight > 0 ? challenge.toWeight + ' кг' : 'не указан'}
+                    </div>
+                    ${challenge.message ? `<div class="challenge-message"><i class="fas fa-quote-left"></i> ${escapeHtml(challenge.message)}</div>` : ''}
+                    ${challenge.status === 'accepted' ? `
+                        <div class="challenge-actions">
+                            <button class="btn-chat" data-chat-id="${chatId}"><i class="fas fa-comments"></i> Перейти в чат</button>
+                        </div>
+                        <div class="challenge-details"><i class="fas fa-check-circle icon-green"></i> Соперник принял вызов! Обсудите детали в чате.</div>
+                    ` : ''}
+                    ${challenge.status === 'rejected' ? '<div class="challenge-details"><i class="fas fa-times-circle icon-red"></i> Соперник отклонил вызов</div>' : ''}
+                    ${challenge.status === 'pending' ? '<div class="challenge-details"><i class="fas fa-hourglass-half"></i> Ожидает ответа соперника</div>' : ''}
+                `;
+                container.appendChild(card);
             }
             
-            alert(`✅ Вызов ${newStatus === 'accepted' ? 'принят' : 'отклонён'}`);
-            loadChallenges();
-        } catch (err) {
-            console.error('Ошибка:', err);
-            alert('❌ Ошибка при обновлении статуса');
+            document.querySelectorAll('.btn-chat').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    window.location.href = `chat.html?id=${btn.dataset.chatId}`;
+                });
+            });
         }
-    }
 
-    function getStatusText(status) {
-        const statuses = {
-            'pending': '⏳ Ожидает ответа',
-            'accepted': '✅ Принят',
-            'rejected': '❌ Отклонён'
-        };
-        return statuses[status] || status;
-    }
+        async function updateChallengeStatus(challengeId, newStatus) {
+            try {
+                const challengeRef = doc(db, "challenges", challengeId);
+                const challengeSnap = await getDoc(challengeRef);
+                const challenge = challengeSnap.data();
+                
+                await updateDoc(challengeRef, {
+                    status: newStatus,
+                    updatedAt: new Date()
+                });
+                
+                if (newStatus === 'accepted' && challenge) {
+                    const chatId = `${challenge.fromUserId}_${challenge.toUserId}`;
+                    const chatRef = doc(db, "chats", chatId);
+                    const chatSnap = await getDoc(chatRef);
+                    
+                    if (!chatSnap.exists()) {
+                        await setDoc(chatRef, {
+                            participants: [challenge.fromUserId, challenge.toUserId],
+                            participantNames: {
+                                [challenge.fromUserId]: challenge.fromName,
+                                [challenge.toUserId]: challenge.toName
+                            },
+                            createdAt: new Date(),
+                            lastMessage: "",
+                            lastMessageTime: new Date()
+                        });
+                    }
+                    
+                    const fromTelegram = challenge.fromTelegramId;
+                    if (fromTelegram) {
+                        await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                chat_id: fromTelegram,
+                                text: `✅ *ВЫЗОВ ПРИНЯТ!*\n\nБоец *${challenge.toName}* принял твой вызов.\n\n💬 Теперь вы можете общаться в чате на сайте: ${window.location.origin}/chat.html?id=${chatId}`,
+                                parse_mode: 'Markdown'
+                            })
+                        });
+                    }
+                }
+                
+                alert(`✅ Вызов ${newStatus === 'accepted' ? 'принят' : 'отклонён'}`);
+                loadChallenges();
+            } catch (err) {
+                console.error('Ошибка:', err);
+                alert('❌ Ошибка при обновлении статуса');
+            }
+        }
 
-    function escapeHtml(str) {
-        if (!str) return '';
-        return str.replace(/[&<>]/g, function(m) {
-            if (m === '&') return '&amp;';
-            if (m === '<') return '&lt;';
-            if (m === '>') return '&gt;';
-            return m;
-        });
-    }
+        function getStatusText(status) {
+            const statuses = {
+                'pending': '⏳ Ожидает ответа',
+                'accepted': '✅ Принят',
+                'rejected': '❌ Отклонён'
+            };
+            return statuses[status] || status;
+        }
 
-    const loginBtn = document.getElementById('profileLoginBtn');
-    
-    onAuthStateChanged(auth, (user) => {
-        currentUser = user;
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/[&<>]/g, function(m) {
+                if (m === '&') return '&amp;';
+                if (m === '<') return '&lt;';
+                if (m === '>') return '&gt;';
+                return m;
+            });
+        }
+
+        const loginBtn = document.getElementById('profileLoginBtn');
         
-        if (user && loginBtn) {
-            loginBtn.innerText = 'Мой профиль';
-            loginBtn.href = `profile.html?id=${user.uid}`;
-            loadChallenges();
-            setTimeout(updateHeaderBalance, 500);
-        } else if (loginBtn) {
-            loginBtn.innerText = 'Войти';
-            loginBtn.href = 'login.html';
-            document.getElementById('incomingList').innerHTML = '<div class="empty-state">🔒 Войдите, чтобы видеть вызовы</div>';
-            document.getElementById('outgoingList').innerHTML = '<div class="empty-state">🔒 Войдите, чтобы видеть вызовы</div>';
-            const balanceDiv = document.getElementById('balanceIndicator');
-            if (balanceDiv) balanceDiv.style.display = 'none';
-        }
-    });
-
-    // Бургер-меню
-    const menuToggle = document.getElementById('menuToggle');
-    const navLinks = document.getElementById('navLinks');
-    
-    if (menuToggle && navLinks) {
-        menuToggle.addEventListener('click', () => {
-            navLinks.classList.toggle('show');
+        onAuthStateChanged(auth, (user) => {
+            currentUser = user;
+            
+            if (user && loginBtn) {
+                loginBtn.innerHTML = '<i class="fas fa-user"></i> Мой профиль';
+                loginBtn.href = `profile.html?id=${user.uid}`;
+                loadChallenges();
+            } else if (loginBtn) {
+                loginBtn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Войти';
+                loginBtn.href = 'login.html';
+                document.getElementById('incomingList').innerHTML = '<div class="empty-state"><i class="fas fa-lock"></i> Войдите, чтобы видеть вызовы</div>';
+                document.getElementById('outgoingList').innerHTML = '<div class="empty-state"><i class="fas fa-lock"></i> Войдите, чтобы видеть вызовы</div>';
+            }
         });
-    }
-</script>
+
+        const plusBtn = document.getElementById('balancePlusBtn');
+        if (plusBtn) {
+            plusBtn.onclick = () => window.location.href = 'shop.html';
+        }
+
+        const menuToggle = document.getElementById('menuToggle');
+        const navLinks = document.getElementById('navLinks');
+        if (menuToggle && navLinks) {
+            menuToggle.addEventListener('click', () => navLinks.classList.toggle('show'));
+        }
+    </script>
 </body>
 </html>

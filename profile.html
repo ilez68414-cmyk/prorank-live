@@ -43,6 +43,10 @@
         .info-section h1 {
             font-size: 1.8rem;
             margin: 0 0 0.25rem 0;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            flex-wrap: wrap;
         }
         .fighter-details {
             display: flex;
@@ -56,6 +60,9 @@
             background: #0f0f0f;
             padding: 0.2rem 0.8rem;
             border-radius: 2rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
         }
         .stats-row {
             display: flex;
@@ -91,6 +98,9 @@
             transition: 0.2s;
             border: none;
             font-size: 0.9rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
         }
         .btn-challenge { background: #fbbf24; color: #000; }
         .btn-message { background: transparent; border: 1px solid #fbbf24; color: #fbbf24; }
@@ -151,15 +161,19 @@
             flex-wrap: wrap;
             gap: 0.5rem;
         }
+        .fight-item.loss {
+            border-left-color: #dc2626;
+        }
         .fight-result {
             display: flex;
             align-items: center;
             gap: 0.5rem;
         }
-        .fight-result-text { font-weight: bold; color: #16a34a; }
+        .fight-result-text.win { color: #16a34a; }
+        .fight-result-text.loss { color: #dc2626; }
         .fight-opponent { color: #fbbf24; text-decoration: none; }
         .fight-opponent:hover { text-decoration: underline; }
-        .fight-details { color: #888; font-size: 0.8rem; display: flex; gap: 1rem; flex-wrap: wrap; }
+        .fight-details { color: #888; font-size: 0.8rem; display: flex; gap: 1rem; flex-wrap: wrap; align-items: center; }
         .fight-finish { background: #dc2626; color: white; padding: 0.1rem 0.5rem; border-radius: 1rem; font-size: 0.7rem; }
         .fight-sport { background: #2a2a2a; padding: 0.1rem 0.5rem; border-radius: 1rem; }
         .frs-onboarding {
@@ -178,6 +192,40 @@
         .onboarding-content ul { margin: 0.5rem 0; padding-left: 1.5rem; color: #aaa; }
         .onboarding-btn { background: #fbbf24; color: #000; border: none; padding: 0.5rem 1.5rem; border-radius: 2rem; font-weight: bold; cursor: pointer; margin-top: 0.5rem; }
         .onboarding-close { background: none; border: none; color: #888; cursor: pointer; font-size: 1.2rem; }
+        .league-container {
+            background: #0f0f0f;
+            border-radius: 1rem;
+            padding: 0.75rem 1rem;
+            margin: 1rem 0;
+        }
+        .league-badge {
+            font-size: 1rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .league-progress {
+            margin-top: 0.5rem;
+        }
+        .progress-bar {
+            height: 8px;
+            background: #2a2a2a;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        .progress-bar-fill {
+            height: 100%;
+            background: #fbbf24;
+            width: 0%;
+            transition: width 0.3s;
+        }
+        .progress-text {
+            font-size: 0.75rem;
+            color: #888;
+            margin-top: 0.25rem;
+        }
         .referral-section {
             background: #1a1a1a;
             border-radius: 1rem;
@@ -205,6 +253,9 @@
             padding: 0.5rem 1rem;
             border-radius: 0.5rem;
             cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
         }
         .hidden { display: none !important; }
         #bioInput {
@@ -249,7 +300,7 @@
             gap: 1rem;
             margin-top: 1rem;
         }
-        .modal-buttons button { flex: 1; padding: 0.75rem; border-radius: 0.5rem; cursor: pointer; }
+        .modal-buttons button { flex: 1; padding: 0.75rem; border-radius: 0.5rem; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; }
         #saveProfileBtn { background: #fbbf24; color: #000; }
         #cancelProfileBtn { background: #333; color: #fff; }
         .loading { text-align: center; padding: 3rem; color: #888; }
@@ -260,54 +311,32 @@
             .frs-onboarding { flex-direction: column; align-items: center; text-align: center; }
             .referral-link-box { flex-direction: column; }
             .fight-item { flex-direction: column; align-items: flex-start; }
+            .info-section h1 { justify-content: center; }
         }
-            .fight-item.win {
-           border-left-color: #16a34a;
-        }
-            .fight-item.loss {
-            border-left-color: #dc2626;
-        }
-            .fight-result-text.loss {
-            color: #dc2626;
-        }.fight-item.win {
-    border-left-color: #16a34a;
-}
-.fight-item.loss {
-    border-left-color: #dc2626;
-}
-.fight-result-text {
-    font-weight: bold;
-}
-.fight-item.win .fight-result-text {
-    color: #16a34a;
-}
-.fight-item.loss .fight-result-text {
-    color: #dc2626;
-}
     </style>
 </head>
 <body>
     <header class="navbar">
         <div class="logo" onclick="window.location='index.html'" style="cursor:pointer">PRO<span>RANK</span></div>
         <div class="balance-indicator" id="balanceIndicator" style="display: none;">
-            <span class="balance-icon">🎯</span>
+            <i class="fas fa-crosshairs icon-gold"></i>
             <span class="balance-count" id="headerChallengesCount">0</span>
             <button class="balance-plus" id="balancePlusBtn">+</button>
         </div>
         <button class="menu-toggle" id="menuToggle">☰</button>
         <nav class="nav-links" id="navLinks">
-            <a href="index.html">Главная</a>
-            <a href="rating.html">Рейтинг</a>
-            <a href="leagues.html">Лиги</a>
-            <a href="rules.html">Правила</a>
-            <a href="challenges.html">Мои вызовы</a>
-            <a href="shop.html">Магазин</a>
-            <a href="login.html" id="profileLoginBtn" class="btn-primary">Войти</a>
+            <a href="index.html"><i class="fas fa-home icon-gold"></i> Главная</a>
+            <a href="rating.html"><i class="fas fa-chart-line icon-gold"></i> Рейтинг</a>
+            <a href="leagues.html"><i class="fas fa-trophy icon-gold"></i> Лиги</a>
+            <a href="rules.html"><i class="fas fa-book icon-gold"></i> Правила</a>
+            <a href="shop.html"><i class="fas fa-store icon-gold"></i> Магазин</a>
+            <a href="challenges.html"><i class="fas fa-fist-raised icon-gold"></i> Вызовы</a>
+            <a href="login.html" id="profileLoginBtn" class="btn-primary"><i class="fas fa-sign-in-alt"></i> Войти</a>
         </nav>
     </header>
 
     <div class="profile-container">
-        <div id="profileLoading" class="loading">⏳ Загрузка профиля...</div>
+        <div id="profileLoading" class="loading"><i class="fas fa-spinner fa-pulse"></i> Загрузка профиля...</div>
         
         <div id="profileContent" style="display: none;">
             <div class="profile-card">
@@ -318,98 +347,98 @@
                     <div class="info-section">
                         <h1 id="profName">Боец</h1>
                         <div class="fighter-details">
-                            <span id="profSport">—</span>
-                            <span id="profWeight">—</span>
-                            <span id="profCity">—</span>
+                            <span><i class="fas fa-fist-raised icon-gold"></i> <span id="profSport">—</span></span>
+                            <span><i class="fas fa-weight-hanging icon-gold"></i> <span id="profWeight">—</span></span>
+                            <span><i class="fas fa-map-marker-alt icon-gold"></i> <span id="profCity">—</span></span>
                         </div>
                         <div class="stats-row">
-    <div class="stat-badge">
-        <i class="fas fa-trophy"></i>
-        <span class="value" id="statWinsHeader">0</span>
-        <span>побед</span>
-    </div>
-    <div class="stat-badge">
-        <i class="fas fa-skull-crossbones"></i>
-        <span class="value" id="statLossesHeader">0</span>
-        <span>поражений</span>
-    </div>
-    <div class="stat-badge">
-        <i class="fas fa-bolt"></i>
-        <span class="value" id="statFinishesHeader">0</span>
-        <span>финишей</span>
-    </div>
-    <div class="stat-badge">
-        <i class="fas fa-star"></i>
-        <span class="value" id="statFRSHeader">0</span>
-        <span>FRS</span>
-    </div>
-    <div class="stat-badge" id="likeButtonContainer">
-        <button id="likeBtn" class="btn-like"><i class="fas fa-heart"></i> 0</button>
-    </div>
-    <div class="stat-badge" id="subscribeButtonContainer">
-        <button id="btnSubscribe" class="btn-subscribe" style="background:#8b5cf6;"><i class="fas fa-bell"></i> 0</button>
-    </div>
-</div>
-<!-- Блок лиги -->
-<div class="league-container" id="leagueContainer">
-    <div class="league-badge" id="leagueBadge">
-        <i class="fas" id="leagueIcon"></i>
-        <span id="leagueName"></span>
-    </div>
-    <div class="league-progress">
-        <div class="progress-bar" id="leagueProgressBar"></div>
-        <div class="progress-text" id="leagueProgressText"></div>
-    </div>
-</div>
+                            <div class="stat-badge stat-wins"><i class="fas fa-trophy icon-green"></i> <span class="value" id="statWinsHeader">0</span> <span>побед</span></div>
+                            <div class="stat-badge stat-losses"><i class="fas fa-skull-crossbones icon-red"></i> <span class="value" id="statLossesHeader">0</span> <span>поражений</span></div>
+                            <div class="stat-badge stat-finishes"><i class="fas fa-bolt icon-orange"></i> <span class="value" id="statFinishesHeader">0</span> <span>финишей</span></div>
+                            <div class="stat-badge stat-frs"><i class="fas fa-star icon-gold"></i> <span class="value" id="statFRSHeader">0</span> <span>FRS</span></div>
+                            <div class="stat-badge" id="likeButtonContainer">
+                                <button id="likeBtn" class="btn-like"><i class="fas fa-heart"></i> 0</button>
+                            </div>
+                            <div class="stat-badge" id="subscribeButtonContainer">
+                                <button id="btnSubscribe" class="btn-subscribe"><i class="fas fa-bell"></i> 0</button>
+                            </div>
+                        </div>
                         <div class="action-buttons" id="ownerButtons">
-                            <button id="editProfileBtn" class="btn-edit">✏️ Редактировать</button>
-                            <button id="editBtn" class="btn-bio">✏️ Био</button>
-                            <button id="verifyRecordBtn" class="btn-primary">🏆 Подтвердить рекорд</button>
-                            <button id="telegramVerifyBtn" class="btn-primary" style="display: none;">🔗 Привязать Telegram</button>
+                            <button id="editProfileBtn" class="btn-edit"><i class="fas fa-user-edit"></i> Редактировать</button>
+                            <button id="editBtn" class="btn-bio"><i class="fas fa-pen"></i> Био</button>
+                            <button id="verifyRecordBtn" class="btn-primary"><i class="fas fa-check-circle"></i> Подтвердить рекорд</button>
+                            <button id="telegramVerifyBtn" class="btn-primary" style="display: none;"><i class="fab fa-telegram"></i> Привязать Telegram</button>
                         </div>
                         <div class="action-buttons hidden" id="visitorButtons">
-                            <button id="btnChallenge" class="btn-challenge">🥊 Вызвать</button>
-                            <button id="btnMessage" class="btn-message">💬 Написать</button>
+                            <button id="btnChallenge" class="btn-challenge"><i class="fas fa-fist-raised"></i> Вызвать</button>
+                            <button id="btnMessage" class="btn-message"><i class="fas fa-comment-dots"></i> Написать</button>
                         </div>
                     </div>
                 </div>
             </div>
 
+            <div class="league-container" id="leagueContainer">
+                <div class="league-badge" id="leagueBadge">
+                    <i class="fas" id="leagueIcon"></i>
+                    <span id="leagueName"></span>
+                </div>
+                <div class="league-progress">
+                    <div class="progress-bar" id="leagueProgressBar">
+                        <div class="progress-bar-fill" id="leagueProgressFill"></div>
+                    </div>
+                    <div class="progress-text" id="leagueProgressText"></div>
+                </div>
+            </div>
+
             <div id="frsOnboarding" class="frs-onboarding hidden">
-                <div class="onboarding-icon">⭐</div>
+                <div class="onboarding-icon"><i class="fas fa-star"></i></div>
                 <div class="onboarding-content">
                     <h4>Твой рейтинг FRS: <span id="onboardingFrs">0</span></h4>
-                    <p>⭐ FRS — это главный рейтинг бойца. Он растёт, когда ты:</p>
-                    <ul><li>🏆 <strong>Побеждаешь в боях</strong> (админ добавляет)</li><li>💥 <strong>Заканчиваешь бой досрочно</strong></li><li>❤️ <strong>Получаешь лайки</strong> от других бойцов</li><li>🔔 <strong>Набираешь подписчиков</strong></li></ul>
-                    <p>📖 <a href="rules.html" target="_blank">Полные правила →</a></p>
-                    <button id="closeOnboarding" class="onboarding-btn">Понятно, начать 💪</button>
+                    <p><i class="fas fa-star icon-gold"></i> FRS — это главный рейтинг бойца. Он растёт, когда ты:</p>
+                    <ul>
+                        <li><i class="fas fa-trophy icon-green"></i> <strong>Побеждаешь в боях</strong> (админ добавляет)</li>
+                        <li><i class="fas fa-bolt icon-orange"></i> <strong>Заканчиваешь бой досрочно</strong></li>
+                        <li><i class="fas fa-heart icon-red"></i> <strong>Получаешь лайки</strong> от других бойцов</li>
+                        <li><i class="fas fa-bell icon-purple"></i> <strong>Набираешь подписчиков</strong></li>
+                    </ul>
+                    <p><i class="fas fa-book icon-gold"></i> <a href="rules.html" target="_blank">Полные правила →</a></p>
+                    <button id="closeOnboarding" class="onboarding-btn"><i class="fas fa-check"></i> Понятно, начать</button>
                 </div>
-                <button id="closeOnboardingX" class="onboarding-close">✖</button>
+                <button id="closeOnboardingX" class="onboarding-close"><i class="fas fa-times"></i></button>
             </div>
 
             <div class="referral-section" id="referralSection" style="display: none;">
-                <h3>👥 Пригласи друга</h3>
+                <h3><i class="fas fa-users icon-gold"></i> Пригласи друга</h3>
                 <p>Приведи друга в PRORANK — получи +1 вызов за каждого!</p>
-                <div class="referral-link-box"><input type="text" id="referralLink" readonly><button id="copyReferralBtn">📋 Скопировать</button></div>
+                <div class="referral-link-box">
+                    <input type="text" id="referralLink" readonly>
+                    <button id="copyReferralBtn"><i class="fas fa-copy"></i> Скопировать</button>
+                </div>
                 <p id="referralStats"></p>
             </div>
 
             <div class="profile-bio">
-                <div class="bio-header"><h3>📝 О себе</h3><button id="saveBtn" class="btn-save hidden">💾 Сохранить</button></div>
+                <div class="bio-header">
+                    <h3><i class="fas fa-address-card icon-gold"></i> О себе</h3>
+                    <button id="saveBtn" class="btn-save hidden"><i class="fas fa-save"></i> Сохранить</button>
+                </div>
                 <div id="bioText">Тут пока пусто...</div>
                 <textarea id="bioInput" rows="4" class="hidden" placeholder="Расскажи о себе..."></textarea>
             </div>
 
             <div id="fightsSection" class="profile-fights" style="display: none;">
-                <div class="fights-header"><h3>🥊 История боёв</h3><span class="fights-count" id="fightsCount"></span></div>
-                <div id="fightsList" class="fights-list"><div class="loading-fights">Загрузка...</div></div>
+                <div class="fights-header">
+                    <h3><i class="fas fa-history icon-gold"></i> История боёв</h3>
+                    <span class="fights-count" id="fightsCount"></span>
+                </div>
+                <div id="fightsList" class="fights-list"><div class="loading-fights"><i class="fas fa-spinner fa-pulse"></i> Загрузка...</div></div>
             </div>
         </div>
     </div>
 
     <div id="editProfileModal" class="modal">
         <div class="modal-content">
-            <h3>✏️ Редактировать профиль</h3>
+            <h3><i class="fas fa-user-edit icon-gold"></i> Редактировать профиль</h3>
             <input type="text" id="editName" placeholder="Имя и фамилия">
             <input type="text" id="editCity" placeholder="Город">
             <select id="editWeightClass">
@@ -419,7 +448,10 @@
                 <option value="110">Тяжёлая (100+ кг)</option>
             </select>
             <select id="editSport"><option value="Бокс">Бокс</option><option value="Борьба">Борьба</option><option value="ММА">ММА</option></select>
-            <div class="modal-buttons"><button id="saveProfileBtn">Сохранить</button><button id="cancelProfileBtn">Отмена</button></div>
+            <div class="modal-buttons">
+                <button id="saveProfileBtn"><i class="fas fa-save"></i> Сохранить</button>
+                <button id="cancelProfileBtn"><i class="fas fa-times"></i> Отмена</button>
+            </div>
         </div>
     </div>
 

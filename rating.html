@@ -26,11 +26,13 @@
         #rankSearch { width: 100%; }
         #citySelect, #weightClassSelect { min-width: 180px; }
         .rating-filters { display: flex; gap: 0.5rem; margin-bottom: 2rem; flex-wrap: wrap; }
-        .filter-btn { background: #1e1e1e; border: 1px solid #333; color: #ccc; padding: 0.5rem 1rem; border-radius: 2rem; cursor: pointer; transition: 0.2s; }
+        .filter-btn { background: #1e1e1e; border: 1px solid #333; color: #ccc; padding: 0.5rem 1rem; border-radius: 2rem; cursor: pointer; transition: 0.2s; display: inline-flex; align-items: center; gap: 0.5rem; }
         .filter-btn.active { background: #fbbf24; color: black; border-color: #fbbf24; }
+        .filter-btn i { margin-right: 0.3rem; }
         .rating-table { width: 100%; border-collapse: collapse; background: #0f0f0f; border-radius: 1rem; overflow: hidden; }
         .rating-table th, .rating-table td { padding: 0.8rem 0.5rem; text-align: left; border-bottom: 1px solid #222; vertical-align: middle; }
         .rating-table th { background: #1a1a1a; }
+        .rating-table th i { margin-right: 0.3rem; }
         .navbar {
             display: flex;
             justify-content: space-between;
@@ -57,6 +59,9 @@
             text-decoration: none;
             font-size: 1rem;
             transition: 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
         }
         .nav-links a:hover {
             color: #fbbf24;
@@ -69,6 +74,30 @@
             font-size: 1.8rem;
             cursor: pointer;
             padding: 5px 10px;
+        }
+        .balance-indicator {
+            background: linear-gradient(135deg, #1e2a1a, #0f1a0f);
+            border: 1px solid #fbbf24;
+            border-radius: 2rem;
+            padding: 0.3rem 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            font-weight: bold;
+        }
+        .balance-plus {
+            background: none;
+            border: none;
+            color: #fbbf24;
+            font-size: 1.2rem;
+            font-weight: bold;
+            cursor: pointer;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
         }
         @media (max-width: 768px) {
             .nav-links {
@@ -98,81 +127,68 @@
     <header class="navbar">
         <div class="logo" onclick="window.location='index.html'" style="cursor:pointer">PRO<span>RANK</span></div>
         <div class="balance-indicator" id="balanceIndicator" style="display: none;">
-            <span class="balance-icon">🎯</span>
+            <i class="fas fa-crosshairs icon-gold"></i>
             <span class="balance-count" id="headerChallengesCount">0</span>
-            <button class="balance-plus" id="balancePlusBtn" title="Купить вызовы">+</button>
+            <button class="balance-plus" id="balancePlusBtn">+</button>
         </div>
         <button class="menu-toggle" id="menuToggle">☰</button>
         <nav class="nav-links" id="navLinks">
-            <a href="index.html">Главная</a>
-            <a href="leagues.html">Лиги</a>
-            <a href="rules.html">Правила</a>
-            <a href="shop.html">Магазин</a>
-            <a href="challenges.html">Мои вызовы</a>
-            <a href="login.html" id="profileLoginBtn" class="btn-primary">Войти</a>
+            <a href="index.html"><i class="fas fa-home"></i> Главная</a>
+            <a href="leagues.html"><i class="fas fa-trophy"></i> Лиги</a>
+            <a href="rules.html"><i class="fas fa-book"></i> Правила</a>
+            <a href="shop.html"><i class="fas fa-store"></i> Магазин</a>
+            <a href="challenges.html"><i class="fas fa-fist-raised"></i> Вызовы</a>
+            <a href="login.html" id="profileLoginBtn" class="btn-primary"><i class="fas fa-sign-in-alt"></i> Войти</a>
         </nav>
     </header>
 
     <main class="container">
-        <section class="hero"><h1>🏆 Рейтинг спортсменов</h1></section>
+        <section class="hero"><h1><i class="fas fa-chart-line icon-gold"></i> Рейтинг спортсменов</h1></section>
         <div class="rating-section">
             <div class="search-container"><input type="text" id="rankSearch" placeholder="🔍 Поиск по имени..."></div>
-            <div class="city-filter"><label style="color:#fbbf24;">🏙️ Город:</label><select id="citySelect"><option value="all">Все города</option></select></div>
-            <div class="weight-filter"><label style="color:#fbbf24;">⚖️ Весовая категория:</label>
+            <div class="city-filter"><label><i class="fas fa-city icon-gold"></i> Город:</label><select id="citySelect"><option value="all">Все города</option></select></div>
+            <div class="weight-filter"><label><i class="fas fa-weight-hanging icon-gold"></i> Весовая категория:</label>
                 <select id="weightClassSelect">
                     <option value="all">Все категории</option>
-                    <option value="Наилегчайшая (45–50 кг)">Наилегчайшая (45–50 кг)</option>
-                    <option value="Легчайшая (51–56 кг)">Легчайшая (51–56 кг)</option>
-                    <option value="Полулёгкая (57–61 кг)">Полулёгкая (57–61 кг)</option>
-                    <option value="Лёгкая (62–66 кг)">Лёгкая (62–66 кг)</option>
-                    <option value="1-я полусредняя (67–71 кг)">1-я полусредняя (67–71 кг)</option>
-                    <option value="Полусредняя (72–77 кг)">Полусредняя (72–77 кг)</option>
-                    <option value="1-я средняя (78–83 кг)">1-я средняя (78–83 кг)</option>
-                    <option value="Средняя (84–89 кг)">Средняя (84–89 кг)</option>
-                    <option value="Полутяжёлая (90–99 кг)">Полутяжёлая (90–99 кг)</option>
-                    <option value="Тяжёлая (100+ кг)">Тяжёлая (100+ кг)</option>
+                    <option value="Наилегчайшая (45–50 кг)">Наилегчайшая (45–50 кг)</option><option value="Легчайшая (51–56 кг)">Легчайшая (51–56 кг)</option>
+                    <option value="Полулёгкая (57–61 кг)">Полулёгкая (57–61 кг)</option><option value="Лёгкая (62–66 кг)">Лёгкая (62–66 кг)</option>
+                    <option value="1-я полусредняя (67–71 кг)">1-я полусредняя (67–71 кг)</option><option value="Полусредняя (72–77 кг)">Полусредняя (72–77 кг)</option>
+                    <option value="1-я средняя (78–83 кг)">1-я средняя (78–83 кг)</option><option value="Средняя (84–89 кг)">Средняя (84–89 кг)</option>
+                    <option value="Полутяжёлая (90–99 кг)">Полутяжёлая (90–99 кг)</option><option value="Тяжёлая (100+ кг)">Тяжёлая (100+ кг)</option>
                 </select>
             </div>
             <div class="rating-filters" id="ratingFilters">
-                <button class="filter-btn active" data-sport="all">Все виды</button>
-                <button class="filter-btn" data-sport="Бокс">Бокс</button>
-                <button class="filter-btn" data-sport="Борьба">Борьба</button>
-                <button class="filter-btn" data-sport="ММА">ММА</button>
+                <button class="filter-btn active" data-sport="all"><i class="fas fa-globe"></i> Все виды</button>
+                <button class="filter-btn" data-sport="Бокс"><i class="fas fa-fist-raised"></i> Бокс</button>
+                <button class="filter-btn" data-sport="Борьба"><i class="fas fa-handshake"></i> Борьба</button>
+                <button class="filter-btn" data-sport="ММА"><i class="fas fa-shield-alt"></i> ММА</button>
             </div>
             <table class="rating-table">
                 <thead>
                     <tr>
-                        <th>№</th>
-                        <th>Аватар</th>
-                        <th>Спортсмен</th>
-                        <th>Город</th>
-                        <th>⭐ FRS</th>
+                        <th><i class="fas fa-hashtag"></i> №</th>
+                        <th><i class="fas fa-user-circle"></i> Аватар</th>
+                        <th><i class="fas fa-user-fighter"></i> Спортсмен</th>
+                        <th><i class="fas fa-city"></i> Город</th>
+                        <th><i class="fas fa-star icon-gold"></i> FRS</th>
                     </tr>
                 </thead>
                 <tbody id="ratingTableBody">
-                    <tr id="loadingRow"><td colspan="5">⏳ Загрузка...</td></tr>
+                    <tr id="loadingRow"><td colspan="5"><i class="fas fa-spinner fa-pulse"></i> Загрузка...<\/td><\/tr>
                 </tbody>
             </table>
         </div>
     </main>
 
     <footer class="main-footer">
-        <div class="container footer-content">
-            <div class="footer-logo"><div class="logo">PRO<span>RANK</span></div><p>Рейтинг любительского спорта</p></div>
-            <div class="footer-about"><h4>О проекте</h4><p>Платформа для спортсменов-любителей.</p></div>
-            <div class="footer-links"><h4>Навигация</h4><a href="index.html">Главная</a><a href="rating.html">Рейтинг</a><a href="login.html">Вход</a></div>
-        </div>
-        <div class="footer-bottom"><p>&copy; 2026 PRORANK</p></div>
+        <div class="container footer-content"><div class="footer-logo"><div class="logo">PRO<span>RANK</span></div><p>Рейтинг любительского спорта</p><\/div>
+        <div class="footer-about"><h4>О проекте</h4><p>Платформа для спортсменов-любителей.<\/p><\/div>
+        <div class="footer-links"><h4>Навигация</h4><a href="index.html">Главная</a><a href="rating.html">Рейтинг</a><a href="login.html">Вход</a><\/div><\/div>
+        <div class="footer-bottom"><p>&copy; 2026 PRORANK<\/p><\/div>
     </footer>
 
     <script type="importmap">
-        {
-            "imports": {
-                "firebase/app": "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js",
-                "firebase/firestore": "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js",
-                "firebase/auth": "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js"
-            }
-        }
+        {"imports":{"firebase/app":"https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js","firebase/firestore":"https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js","firebase/auth":"https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js"}}
     </script>
     <script type="module">
         import { initializeApp } from "firebase/app";
@@ -227,7 +243,7 @@
 
         async function loadFighters() {
             const tbody = document.getElementById('ratingTableBody');
-            tbody.innerHTML = '<tr><td colspan="5">⏳ Загрузка...</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="5"><i class="fas fa-spinner fa-pulse"><\/i> Загрузка...<\/td></tr>';
             try {
                 const q = query(collection(db, "fighters"), orderBy("frs", "desc"));
                 const snapshot = await getDocs(q);
@@ -246,7 +262,7 @@
                 applyFilters();
             } catch (error) { 
                 console.error("Ошибка загрузки:", error); 
-                tbody.innerHTML = '<tr><td colspan="5">❌ Ошибка загрузки. Проверьте интернет.</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="5"><i class="fas fa-exclamation-triangle icon-red"><\/i> Ошибка загрузки. Проверьте интернет.<\/td></td>';
             }
         }
 
@@ -262,7 +278,7 @@
             const tbody = document.getElementById('ratingTableBody');
             tbody.innerHTML = '';
             if (fighters.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="5">❌ Нет бойцов по выбранным фильтрам</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="5"><i class="fas fa-info-circle"><\/i> Нет бойцов по выбранным фильтрам<\/td></tr>';
                 return;
             }
             let rank = 1;
@@ -279,9 +295,9 @@
                 
                 const league = getLeague(f.frs || 0);
                 const leagueIcon = `<i class="fas ${league.icon}" style="color:${league.color}; font-size:0.9rem; margin-left: 0.3rem;"></i>`;
-                row.insertCell(2).innerHTML = `<strong>${f.name || 'Боец'}</strong> ${leagueIcon}<br><small style="color:#888">${f.sport || ''}</small>`;
+                row.insertCell(2).innerHTML = `<strong>${f.name || 'Боец'}</strong> ${leagueIcon}<br><small style="color:#888"><i class="fas ${f.sport === 'Бокс' ? 'fa-fist-raised' : (f.sport === 'Борьба' ? 'fa-handshake' : 'fa-shield-alt')}" style="margin-right:0.2rem;"></i> ${f.sport || ''}</small>`;
                 row.insertCell(3).innerText = f.city || '—';
-                row.insertCell(4).innerHTML = `<span style="color:#fbbf24; font-weight:bold;">${f.frs || 0}</span> ⭐`;
+                row.insertCell(4).innerHTML = `<span style="color:#fbbf24; font-weight:bold;"><i class="fas fa-star"></i> ${f.frs || 0}</span>`;
                 row.onclick = () => window.location.href = `profile.html?id=${f.id}`;
                 rank++;
             });
@@ -327,16 +343,21 @@
         const loginBtn = document.getElementById('profileLoginBtn');
         onAuthStateChanged(auth, (user) => {
             if (user && loginBtn) { 
-                loginBtn.innerText = 'Мой профиль'; 
+                loginBtn.innerHTML = '<i class="fas fa-user"></i> Мой профиль';
                 loginBtn.href = `profile.html?id=${user.uid}`; 
                 setTimeout(updateHeaderBalance, 1000);
             } else if (loginBtn) {
-                loginBtn.innerText = 'Войти'; 
+                loginBtn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Войти';
                 loginBtn.href = 'login.html';
                 const balanceDiv = document.getElementById('balanceIndicator');
                 if (balanceDiv) balanceDiv.style.display = 'none';
             }
         });
+        
+        const plusBtn = document.getElementById('balancePlusBtn');
+        if (plusBtn) {
+            plusBtn.onclick = () => window.location.href = 'shop.html';
+        }
         
         loadFighters();
     </script>
@@ -347,11 +368,6 @@
             menuToggle.addEventListener('click', () => {
                 navLinks.classList.toggle('show');
             });
-        }
-        
-        const plusBtn = document.getElementById('balancePlusBtn');
-        if (plusBtn) {
-            plusBtn.onclick = () => window.location.href = 'shop.html';
         }
     </script>
 </body>
