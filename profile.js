@@ -24,6 +24,16 @@ let currentFighterId = null;
 let currentFighterData = null;
 let authListenerUnsub = null;
 
+function getDeclension(number, one, two, five) {
+    let n = Math.abs(number);
+    n %= 100;
+    if (n >= 5 && n <= 20) return five;
+    n %= 10;
+    if (n === 1) return one;
+    if (n >= 2 && n <= 4) return two;
+    return five;
+}
+
 async function uploadAvatar(file, userId) {
     const formData = new FormData();
     formData.append('file', file);
@@ -83,6 +93,66 @@ function setupAvatarUpload() {
     });
 }
 
+async function loadFightHistory() {
+    const profileId = currentFighterId;
+    if (!profileId) return;
+    const fightsSection = document.getElementById('fightsSection');
+    const fightsList = document.getElementById('fightsList');
+    if (!fightsSection) return;
+    
+    try {
+        // Бойцы участвует либо как победитель, либо как проигравший
+        const qWinner = query(collection(db, "fights"), where("winnerId", "==", profileId));
+        const qLoser = query(collection(db, "fights"), where("loserId", "==", profileId));
+        
+        const [winnerSnap, loserSnap] = await Promise.all([getDocs(qWinner), getDocs(qLoser)]);
+        
+        const fights = [];
+        winnerSnap.forEach(docSnap => fights.push({ id: docSnap.id, ...docSnap.data(), result: 'win' }));
+        loserSnap.forEach(docSnap => fights.push({ id: docSnap.id, ...docSnap.data(), result: 'loss' }));
+        
+        if (fights.length === 0) {
+            fightsList.innerHTML = '<div class="empty-fights">📭 Пока нет боёв</div>';
+            document.getElementById('fightsCount').innerText = '0 боёв';
+            fightsSection.style.display = 'block';
+            return;
+        }
+        
+        // Сортировка по дате (сначала новые)
+        fights.sort((a, b) => b.date?.toDate() - a.date?.toDate());
+        
+        let html = '';
+        fights.forEach(fight => {
+            const date = fight.date?.toDate().toLocaleDateString() || '—';
+            const finishHtml = fight.isFinish ? '<span class="fight-finish">💥 Финиш</span>' : '<span class="fight-finish" style="background:#555;">🤝 Решением</span>';
+            
+            if (fight.result === 'win') {
+                html += `<div class="fight-item win">
+                    <div class="fight-result"><span class="fight-result-icon">✅</span><span class="fight-result-text">Победа</span></div>
+                    <div><a href="profile.html?id=${fight.loserId}" class="fight-opponent">🎯 ${fight.loserName || 'Соперник'}</a></div>
+                    <div class="fight-details"><span>📅 ${date}</span><span class="fight-sport">${fight.sport || '—'}</span>${finishHtml}</div>
+                </div>`;
+            } else {
+                html += `<div class="fight-item loss">
+                    <div class="fight-result"><span class="fight-result-icon">❌</span><span class="fight-result-text">Поражение</span></div>
+                    <div><a href="profile.html?id=${fight.winnerId}" class="fight-opponent">🎯 ${fight.winnerName || 'Соперник'}</a></div>
+                    <div class="fight-details"><span>📅 ${date}</span><span class="fight-sport">${fight.sport || '—'}</span>${finishHtml}</div>
+                </div>`;
+            }
+        });
+        
+        fightsList.innerHTML = html;
+        const wins = fights.filter(f => f.result === 'win').length;
+        const losses = fights.filter(f => f.result === 'loss').length;
+        document.getElementById('fightsCount').innerText = `${fights.length} ${getDeclension(fights.length, 'бой', 'боя', 'боёв')} (${wins} побед, ${losses} поражений)`;
+        fightsSection.style.display = 'block';
+        
+    } catch (err) {
+        console.error('Ошибка загрузки истории боёв:', err);
+        fightsList.innerHTML = '<div class="empty-fights">❌ Ошибка загрузки</div>';
+        fightsSection.style.display = 'block';
+    }
+}
 async function loadProfileData() {
     const loadingDiv = document.getElementById('profileLoading');
     const profileContent = document.getElementById('profileContent');
@@ -112,15 +182,13 @@ async function loadProfileData() {
         document.getElementById('profSport').innerText = fighter.sport || '—';
         document.getElementById('profCity').innerText = fighter.city || '—';
         
-        let weightDisplay = '—';
         const weightMap = {
             '47': 'Наилегчайшая (до 50 кг)', '53': 'Легчайшая (51–56 кг)', '59': 'Полулёгкая (57–61 кг)',
             '64': 'Лёгкая (62–66 кг)', '69': '1-я полусредняя (67–71 кг)', '74': 'Полусредняя (72–77 кг)',
             '80': '1-я средняя (78–83 кг)', '86': 'Средняя (84–89 кг)', '94': 'Полутяжёлая (90–99 кг)',
             '110': 'Тяжёлая (100+ кг)'
         };
-        weightDisplay = weightMap[fighter.weightClass] || fighter.weightClass || '—';
-        document.getElementById('profWeight').innerText = weightDisplay;
+        document.getElementById('profWeight').innerText = weightMap[fighter.weightClass] || fighter.weightClass || '—';
         document.getElementById('bioText').innerText = fighter.bio || "Тут пока пусто...";
         
         const avatarImg = document.getElementById('profAvatar');
@@ -130,6 +198,8 @@ async function loadProfileData() {
         }
         
         document.getElementById('statWinsHeader').innerText = fighter.wins || 0;
+        document.getElementById('statLossesHeader').innerText = fighter.losses || 0;
+        document.getElementById('statFinishesHeader').innerText = fighter.finishes || 0;
         document.getElementById('statFRSHeader').innerText = fighter.frs || 0;
         
         await updateLikesUI();
@@ -140,25 +210,14 @@ async function loadProfileData() {
         const navBtn = document.getElementById('profileLoginBtn');
 
         if (authListenerUnsub) authListenerUnsub();
-        
         authListenerUnsub = onAuthStateChanged(auth, async (user) => {
             const isOwner = user && user.uid === profileId;
             const isLogged = !!user;
-            
             if (navBtn) {
-                if (!isLogged) {
-                    navBtn.innerText = 'Войти';
-                    navBtn.href = 'login.html';
-                    navBtn.classList.remove('hidden');
-                } else if (isOwner) {
-                    navBtn.classList.add('hidden');
-                } else {
-                    navBtn.innerText = 'Мой профиль';
-                    navBtn.href = `profile.html?id=${user.uid}`;
-                    navBtn.classList.remove('hidden');
-                }
+                if (!isLogged) { navBtn.innerText = 'Войти'; navBtn.href = 'login.html'; navBtn.classList.remove('hidden'); }
+                else if (isOwner) { navBtn.classList.add('hidden'); }
+                else { navBtn.innerText = 'Мой профиль'; navBtn.href = `profile.html?id=${user.uid}`; navBtn.classList.remove('hidden'); }
             }
-            
             if (ownerDiv && visitorDiv) {
                 if (isOwner) {
                     ownerDiv.classList.remove('hidden');
@@ -171,7 +230,6 @@ async function loadProfileData() {
                             document.getElementById('onboardingFrs').innerText = fighter.frs || 0;
                         }
                     }
-                    // Рефералка и привязка Telegram только для владельца
                     await setupReferral();
                     await setupTelegramVerify();
                 } else if (isLogged) {
@@ -182,13 +240,8 @@ async function loadProfileData() {
                     visitorDiv.classList.add('hidden');
                 }
             }
-            
-            if (isLogged) {
-                setTimeout(() => updateHeaderBalance(), 500);
-            } else {
-                const balanceDiv = document.getElementById('balanceIndicator');
-                if (balanceDiv) balanceDiv.style.display = 'none';
-            }
+            if (isLogged) setTimeout(() => updateHeaderBalance(), 500);
+            else { const balanceDiv = document.getElementById('balanceIndicator'); if (balanceDiv) balanceDiv.style.display = 'none'; }
         });
         
         setupEditProfile(fighterRef, fighter);
@@ -200,6 +253,7 @@ async function loadProfileData() {
         setupSubscribeButton();
         setupAvatarUpload();
         setupOnboardingClose();
+        await loadFightHistory();
         
         if (loadingDiv) loadingDiv.style.display = 'none';
         if (profileContent) profileContent.style.display = 'block';
@@ -285,62 +339,38 @@ function setupVerifyRecord() {
 async function setupChallengeButton(targetId) {
     const btn = document.getElementById('btnChallenge');
     if (!btn) return;
-    
     btn.onclick = async () => {
         const user = auth.currentUser;
-        if (!user) {
-            alert('Вы не авторизованы');
-            return;
-        }
-        
+        if (!user) { alert('Вы не авторизованы'); return; }
         try {
             const currentDoc = await getDoc(doc(db, "fighters", user.uid));
             const current = currentDoc.data();
-            
             let freeChallenges = current.freeChallenges || 0;
             let purchasedChallenges = current.purchasedChallenges || 0;
             let totalChallenges = freeChallenges + purchasedChallenges;
-            
             if (totalChallenges <= 0) {
-                const confirm = confirm(`❌ У вас закончились вызовы!\n\nБесплатных: ${freeChallenges}\nКупленных: ${purchasedChallenges}\n\nПерейти в магазин вызовов?`);
-                if (confirm) {
-                    window.location.href = 'shop.html';
-                }
+                if (confirm(`❌ У вас закончились вызовы!\nПерейти в магазин?`)) window.location.href = 'shop.html';
                 return;
             }
-            
             const targetDoc = await getDoc(doc(db, "fighters", targetId));
             const target = targetDoc.data();
-            
-            if (!target) {
-                alert('❌ Данные соперника не найдены');
-                return;
-            }
-            
+            if (!target) { alert('❌ Данные соперника не найдены'); return; }
             const targetWeight = parseInt(target.weightClass) || 0;
             const currentWeight = parseInt(current.weightClass) || 0;
             const weightDiff = Math.abs(currentWeight - targetWeight);
-            
             if (weightDiff > 15) {
                 alert(`⚠️ Слишком большая разница в весе (${weightDiff} кг). Спарринг небезопасен.`);
                 return;
             }
-            
             const existingQuery = await getDocs(query(
                 collection(db, "challenges"),
                 where("fromUserId", "==", user.uid),
                 where("toUserId", "==", targetId),
                 where("status", "in", ["pending", "accepted"])
             ));
-            
-            if (!existingQuery.empty) {
-                alert('Вы уже вызывали этого бойца');
-                return;
-            }
-            
+            if (!existingQuery.empty) { alert('Вы уже вызывали этого бойца'); return; }
             const message = prompt('💬 Сообщение сопернику:', 'Хочешь спарринг?') || '';
-            
-            const challengeData = {
+            await addDoc(collection(db, "challenges"), {
                 fromUserId: user.uid,
                 fromName: current.name || 'Боец',
                 fromWeight: currentWeight,
@@ -349,87 +379,39 @@ async function setupChallengeButton(targetId) {
                 toName: target.name || 'Соперник',
                 toWeight: targetWeight,
                 toTelegramId: target.telegramId ? String(target.telegramId) : null,
-                status: "pending",
-                message: message || '',
-                createdAt: new Date(),
-                updatedAt: new Date()
-            };
-            
-            await addDoc(collection(db, "challenges"), challengeData);
-            
-            if (freeChallenges > 0) {
-                await updateDoc(doc(db, "fighters", user.uid), {
-                    freeChallenges: freeChallenges - 1
-                });
-            } else {
-                await updateDoc(doc(db, "fighters", user.uid), {
-                    purchasedChallenges: purchasedChallenges - 1
-                });
-            }
-            
+                status: "pending", message: message, createdAt: new Date(), updatedAt: new Date()
+            });
+            if (freeChallenges > 0) await updateDoc(doc(db, "fighters", user.uid), { freeChallenges: freeChallenges - 1 });
+            else await updateDoc(doc(db, "fighters", user.uid), { purchasedChallenges: purchasedChallenges - 1 });
             if (target.telegramId) {
                 await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        chat_id: target.telegramId,
-                        text: `🥊 *ВЫЗОВ НА СПАРРИНГ!*\n\nБоец *${current.name}* вызывает тебя на бой.\n📝 Сообщение: ${message || '—'}\n\n👉 Зайди на сайт в раздел "Мои вызовы", чтобы ответить.`,
-                        parse_mode: 'Markdown'
-                    })
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ chat_id: target.telegramId, text: `🥊 *ВЫЗОВ НА СПАРРИНГ!*\n\nБоец *${current.name}* вызывает тебя на бой.\n📝 Сообщение: ${message || '—'}\n\n👉 Зайди на сайт, чтобы ответить.`, parse_mode: 'Markdown' })
                 });
             }
-            
             alert(`✅ Вызов отправлен! Осталось вызовов: ${totalChallenges - 1}`);
-            
-            if (window.updateHeaderBalance) {
-                await window.updateHeaderBalance();
-            }
-            
-        } catch (err) {
-            console.error('Ошибка при отправке вызова:', err);
-            alert('❌ Ошибка при отправке вызова');
-        }
+            if (window.updateHeaderBalance) await window.updateHeaderBalance();
+        } catch (err) { console.error(err); alert('❌ Ошибка при отправке вызова'); }
     };
 }
 
 async function setupMessageButton(targetId) {
     const messageBtn = document.getElementById('btnMessage');
     if (!messageBtn) return;
-    
     messageBtn.onclick = async () => {
         const user = auth.currentUser;
-        if (!user) {
-            alert('Войдите в аккаунт');
-            return;
-        }
-        
-        if (user.uid === targetId) {
-            alert('Нельзя написать самому себе');
-            return;
-        }
-        
+        if (!user) { alert('Войдите в аккаунт'); return; }
+        if (user.uid === targetId) { alert('Нельзя написать самому себе'); return; }
         const chatId = `${user.uid}_${targetId}`;
         const chatRef = doc(db, "chats", chatId);
         const chatSnap = await getDoc(chatRef);
-        
         if (!chatSnap.exists()) {
             const currentUserDoc = await getDoc(doc(db, "fighters", user.uid));
             const targetUserDoc = await getDoc(doc(db, "fighters", targetId));
             const currentName = currentUserDoc.data()?.name || 'Боец';
             const targetName = targetUserDoc.data()?.name || 'Боец';
-            
-            await setDoc(chatRef, {
-                participants: [user.uid, targetId],
-                participantNames: {
-                    [user.uid]: currentName,
-                    [targetId]: targetName
-                },
-                createdAt: new Date(),
-                lastMessage: "",
-                lastMessageTime: new Date()
-            });
+            await setDoc(chatRef, { participants: [user.uid, targetId], participantNames: { [user.uid]: currentName, [targetId]: targetName }, createdAt: new Date(), lastMessage: "", lastMessageTime: new Date() });
         }
-        
         window.location.href = `chat.html?id=${chatId}`;
     };
 }
@@ -445,19 +427,9 @@ async function updateLikesUI() {
             const user = auth.currentUser;
             if (user && user.uid !== currentFighterId) {
                 const liked = await getDoc(doc(db, "likes", `${user.uid}_${currentFighterId}`));
-                if (liked.exists()) {
-                    btn.classList.add('liked');
-                    btn.style.background = '#16a34a';
-                    btn.disabled = true;
-                } else {
-                    btn.classList.remove('liked');
-                    btn.style.background = '#dc2626';
-                    btn.disabled = false;
-                }
-            } else {
-                btn.disabled = true;
-                btn.style.background = '#555';
-            }
+                if (liked.exists()) { btn.classList.add('liked'); btn.style.background = '#16a34a'; btn.disabled = true; }
+                else { btn.classList.remove('liked'); btn.style.background = '#dc2626'; btn.disabled = false; }
+            } else { btn.disabled = true; btn.style.background = '#555'; }
         }
     } catch(e) { console.error('Likes error:', e); }
 }
@@ -472,19 +444,9 @@ async function updateSubscribeUI() {
             const user = auth.currentUser;
             if (user && user.uid !== currentFighterId) {
                 const sub = await getDoc(doc(db, "subscriptions", `${user.uid}_${currentFighterId}`));
-                if (sub.exists()) {
-                    btn.classList.add('subscribed');
-                    btn.innerHTML = `✅ ${subs}`;
-                    btn.style.background = '#16a34a';
-                } else {
-                    btn.classList.remove('subscribed');
-                    btn.innerHTML = `🔔 ${subs}`;
-                    btn.style.background = '#8b5cf6';
-                }
-            } else {
-                btn.disabled = true;
-                btn.style.background = '#555';
-            }
+                if (sub.exists()) { btn.classList.add('subscribed'); btn.innerHTML = `✅ ${subs}`; btn.style.background = '#16a34a'; }
+                else { btn.classList.remove('subscribed'); btn.innerHTML = `🔔 ${subs}`; btn.style.background = '#8b5cf6'; }
+            } else { btn.disabled = true; btn.style.background = '#555'; }
         }
     } catch(e) { console.error('Subscribe error:', e); }
 }
@@ -527,99 +489,61 @@ function setupSubscribeButton() {
     };
 }
 
-// ========== РЕФЕРАЛЬНАЯ ПРОГРАММА ==========
 async function setupReferral() {
     const user = auth.currentUser;
     if (!user) return;
-    
     const referralSection = document.getElementById('referralSection');
     if (!referralSection) return;
-    
     const params = new URLSearchParams(window.location.search);
     const profileId = params.get('id');
-    if (user.uid !== profileId) {
-        referralSection.style.display = 'none';
-        return;
-    }
-    
+    if (user.uid !== profileId) { referralSection.style.display = 'none'; return; }
     referralSection.style.display = 'block';
-    
     const referralLink = `https://ilez68414-cmyk.github.io/prorank-live/?ref=${user.uid}`;
     const referralInput = document.getElementById('referralLink');
     if (referralInput) referralInput.value = referralLink;
-    
     const copyBtn = document.getElementById('copyReferralBtn');
     if (copyBtn) {
-        copyBtn.onclick = () => {
-            const input = document.getElementById('referralLink');
-            if (input) {
-                input.select();
-                document.execCommand('copy');
-                alert('✅ Ссылка скопирована!');
-            }
-        };
+        copyBtn.onclick = () => { const input = document.getElementById('referralLink'); if (input) { input.select(); document.execCommand('copy'); alert('✅ Ссылка скопирована!'); } };
     }
-    
     const userDoc = await getDoc(doc(db, "fighters", user.uid));
     const refCount = userDoc.data()?.referralCount || 0;
     const refBonus = userDoc.data()?.referralBonus || 0;
     const statsEl = document.getElementById('referralStats');
-    if (statsEl) {
-        statsEl.innerHTML = `👥 Приглашено друзей: ${refCount}<br>🎁 Получено бонусов: +${refBonus} вызовов`;
-    }
+    if (statsEl) statsEl.innerHTML = `👥 Приглашено друзей: ${refCount}<br>🎁 Получено бонусов: +${refBonus} вызовов`;
 }
 
-// ========== ПРИВЯЗКА TELEGRAM ==========
 async function setupTelegramVerify() {
     const user = auth.currentUser;
     if (!user) return;
-    
     const params = new URLSearchParams(window.location.search);
     const profileId = params.get('id');
     if (user.uid !== profileId) return;
-    
     const telegramBtn = document.getElementById('telegramVerifyBtn');
     if (telegramBtn) {
         telegramBtn.style.display = 'inline-block';
-        telegramBtn.onclick = () => {
-            window.open(`https://t.me/ProRankBot?start=verify_${user.uid}`, '_blank');
-        };
+        telegramBtn.onclick = () => window.open(`https://t.me/ProRankBot?start=verify_${user.uid}`, '_blank');
     }
 }
 
-// ========== ОБНОВЛЕНИЕ БАЛАНСА В ШАПКЕ ==========
 async function updateHeaderBalance() {
     const user = auth.currentUser;
     const balanceDiv = document.getElementById('balanceIndicator');
     const balanceCount = document.getElementById('headerChallengesCount');
-    
     if (!user || !balanceDiv) return;
-    
     try {
         const userDoc = await getDoc(doc(db, "fighters", user.uid));
         const data = userDoc.data();
         const free = data.freeChallenges || 0;
         const purchased = data.purchasedChallenges || 0;
         const total = free + purchased;
-        
         balanceCount.innerText = total;
         balanceDiv.style.display = 'flex';
-        
         const plusBtn = document.getElementById('balancePlusBtn');
         if (plusBtn) plusBtn.onclick = () => window.location.href = 'shop.html';
-    } catch (err) {
-        console.error('Ошибка загрузки баланса:', err);
-    }
+    } catch (err) { console.error('Ошибка загрузки баланса:', err); }
 }
 
 window.updateHeaderBalance = updateHeaderBalance;
-
-window.addEventListener('beforeunload', () => {
-    if (authListenerUnsub) authListenerUnsub();
-});
-
-document.addEventListener('DOMContentLoaded', () => {
-    loadProfileData();
-});
-
+window.addEventListener('beforeunload', () => { if (authListenerUnsub) authListenerUnsub(); });
+document.addEventListener('DOMContentLoaded', () => { loadProfileData(); });
 window.loadProfileData = loadProfileData;

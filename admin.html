@@ -205,7 +205,6 @@
                 </div>
             </div>
 
-            <!-- Форма привязки Telegram -->
             <div class="telegram-bind-form">
                 <h3>🔗 Привязать Telegram к аккаунту</h3>
                 <div class="bind-input">
@@ -245,8 +244,7 @@
                             <th>Управление</th>
                         </tr>
                     </thead>
-                    <tbody id="adminTableBody"><tr><td colspan="8">Загрузка...</td></tr>
-                </tbody>
+                    <tbody id="adminTableBody"><tr><td colspan="8">Загрузка...<\/td></tr></tbody>
                 </table>
             </div>
         </div>
@@ -292,7 +290,7 @@
     </script>
     <script type="module">
         import { initializeApp } from "firebase/app";
-        import { getFirestore, collection, getDocs, doc, updateDoc, query, orderBy, deleteDoc, increment } from "firebase/firestore";
+        import { getFirestore, collection, getDocs, doc, updateDoc, query, orderBy, deleteDoc, increment, addDoc, getDoc } from "firebase/firestore";
         import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "firebase/auth";
 
         const firebaseConfig = {
@@ -341,7 +339,7 @@
 
         async function loadFighters() {
             const tbody = document.getElementById('adminTableBody');
-            tbody.innerHTML = '<tr><td colspan="8">Загрузка...</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="8">Загрузка...<\/td></tr>';
             try {
                 const q = query(collection(db, "fighters"), orderBy("frs", "desc"));
                 const snapshot = await getDocs(q);
@@ -349,7 +347,7 @@
                 renderFighters(allFighters);
             } catch (err) {
                 console.error(err);
-                tbody.innerHTML = '<tr><td colspan="8">Ошибка загрузки</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="8">Ошибка загрузки<\/td></tr>';
             }
         }
 
@@ -451,41 +449,64 @@
         }
 
         document.getElementById('addFightBtn')?.addEventListener('click', async () => {
-            const winnerId = document.getElementById('fighterSelect1').value;
-            const loserId = document.getElementById('fighterSelect2').value;
-            const isFinish = document.getElementById('finishCheckbox').checked;
-            const messageDiv = document.getElementById('fightMessage');
+    const winnerId = document.getElementById('fighterSelect1').value;
+    const loserId = document.getElementById('fighterSelect2').value;
+    const isFinish = document.getElementById('finishCheckbox').checked;
+    const messageDiv = document.getElementById('fightMessage');
 
-            if (!winnerId || !loserId) {
-                messageDiv.innerText = 'Выберите обоих бойцов';
-                return;
-            }
-            if (winnerId === loserId) {
-                messageDiv.innerText = 'Нельзя выбрать одного бойца дважды';
-                return;
-            }
+    if (!winnerId || !loserId) {
+        messageDiv.innerText = 'Выберите обоих бойцов';
+        return;
+    }
+    if (winnerId === loserId) {
+        messageDiv.innerText = 'Нельзя выбрать одного бойца дважды';
+        return;
+    }
 
-            try {
-                const winnerRef = doc(db, "fighters", winnerId);
-                const loserRef = doc(db, "fighters", loserId);
-                
-                await updateDoc(winnerRef, {
-                    wins: increment(1),
-                    finishes: increment(isFinish ? 1 : 0),
-                    lastFightDate: new Date()
-                });
-                await updateDoc(loserRef, {
-                    lastFightDate: new Date()
-                });
-                
-                messageDiv.innerText = '✅ Бой добавлен! Нажмите "Пересчитать FRS" для обновления рейтинга.';
-                setTimeout(() => messageDiv.innerText = '', 4000);
-                loadFighters();
-                loadFightersForSelect();
-            } catch (error) {
-                messageDiv.innerText = 'Ошибка: ' + error.message;
-            }
+    try {
+        const winnerRef = doc(db, "fighters", winnerId);
+        const loserRef = doc(db, "fighters", loserId);
+        
+        // Получаем данные для истории боёв
+        const winnerSnap = await getDoc(winnerRef);
+        const loserSnap = await getDoc(loserRef);
+        const winnerName = winnerSnap.data()?.name || 'Боец';
+        const loserName = loserSnap.data()?.name || 'Боец';
+        const sport = winnerSnap.data()?.sport || '—';
+        
+        // Обновляем счётчики победителя
+        await updateDoc(winnerRef, {
+            wins: increment(1),
+            finishes: increment(isFinish ? 1 : 0),
+            lastFightDate: new Date()
         });
+        
+        // Обновляем счётчики проигравшего
+        await updateDoc(loserRef, {
+            losses: increment(1),
+            lastFightDate: new Date()
+        });
+        
+        // Сохраняем запись в историю боёв
+        await addDoc(collection(db, "fights"), {
+            winnerId: winnerId,
+            winnerName: winnerName,
+            loserId: loserId,
+            loserName: loserName,
+            isFinish: isFinish,
+            sport: sport,
+            date: new Date()
+        });
+        
+        messageDiv.innerText = '✅ Бой добавлен! История боёв обновлена.';
+        setTimeout(() => messageDiv.innerText = '', 4000);
+        loadFighters();
+        loadFightersForSelect();
+    } catch (error) {
+        console.error(error);
+        messageDiv.innerText = 'Ошибка: ' + error.message;
+    }
+});
 
         document.getElementById('recalculateFRSBtn')?.addEventListener('click', async () => {
             if (!confirm("Пересчитать FRS для всех бойцов? Это может занять несколько секунд.")) return;
