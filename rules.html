@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Правила рейтинга | PRORANK</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
     <style>
         .rules-container {
             max-width: 800px;
@@ -57,7 +58,6 @@
             background: #fbbf24;
             color: black;
         }
-        /* Адаптивная навигация */
         .navbar {
             display: flex;
             justify-content: space-between;
@@ -123,15 +123,16 @@
 <body>
     <header class="navbar">
         <div class="logo" onclick="window.location='index.html'" style="cursor:pointer">PRO<span>RANK</span></div>
-<<div class="balance-indicator" id="balanceIndicator" style="display: none;">
-    <span class="balance-icon">🎯</span>
-    <span class="balance-count" id="headerChallengesCount">0</span>
-    <button class="balance-plus" id="balancePlusBtn" title="Купить вызовы">+</button>
-</div>
-<button class="menu-toggle" id="menuToggle">☰</button>
+        <div class="balance-indicator" id="balanceIndicator" style="display: none;">
+            <span class="balance-icon">🎯</span>
+            <span class="balance-count" id="headerChallengesCount">0</span>
+            <button class="balance-plus" id="balancePlusBtn" title="Купить вызовы">+</button>
+        </div>
+        <button class="menu-toggle" id="menuToggle">☰</button>
         <nav class="nav-links" id="navLinks">
             <a href="index.html">Главная</a>
             <a href="rating.html">Рейтинг</a>
+            <a href="leagues.html">Лиги</a>
             <a href="shop.html">Магазин</a>
             <a href="challenges.html">Мои вызовы</a>
             <a href="login.html" id="profileLoginBtn" class="btn-primary">Войти</a>
@@ -207,88 +208,81 @@
     </footer>
 
     <script type="importmap">
-    {
-        "imports": {
-            "firebase/app": "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js",
-            "firebase/firestore": "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js",
-            "firebase/auth": "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js"
+        {
+            "imports": {
+                "firebase/app": "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js",
+                "firebase/firestore": "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js",
+                "firebase/auth": "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js"
+            }
         }
-    }
-</script>
-<script type="module">
-    import { initializeApp } from "firebase/app";
-    import { getAuth, onAuthStateChanged } from "firebase/auth";
-    import { getFirestore, doc, getDoc } from "firebase/firestore";
+    </script>
+    <script type="module">
+        import { initializeApp } from "firebase/app";
+        import { getAuth, onAuthStateChanged } from "firebase/auth";
+        import { getFirestore, doc, getDoc } from "firebase/firestore";
 
-    const firebaseConfig = {
-        apiKey: "AIzaSyDUGYJY7pX7q02MS5SACMIIQXpjpQ97mPw",
-        authDomain: "proranklive.firebaseapp.com",
-        projectId: "proranklive",
-        storageBucket: "proranklive.firebasestorage.app",
-        messagingSenderId: "716836144015",
-        appId: "1:716836144015:web:f1575147750608d0f881fa"
-    };
+        const firebaseConfig = {
+            apiKey: "AIzaSyDUGYJY7pX7q02MS5SACMIIQXpjpQ97mPw",
+            authDomain: "proranklive.firebaseapp.com",
+            projectId: "proranklive",
+            storageBucket: "proranklive.firebasestorage.app",
+            messagingSenderId: "716836144015",
+            appId: "1:716836144015:web:f1575147750608d0f881fa"
+        };
 
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getFirestore(app);
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
 
-    async function updateHeaderBalance() {
-        const user = auth.currentUser;
-        const balanceDiv = document.getElementById('balanceIndicator');
-        const balanceCount = document.getElementById('headerChallengesCount');
-        
-        if (!user || !balanceDiv) return;
-        
-        try {
-            const userDoc = await getDoc(doc(db, "fighters", user.uid));
-            const data = userDoc.data();
-            const free = data.freeChallenges || 0;
-            const purchased = data.purchasedChallenges || 0;
-            const total = free + purchased;
-            // Кнопка "+" в индикаторе вызовов
-function setupBalancePlusButton() {
-    const plusBtn = document.getElementById('balancePlusBtn');
-    if (plusBtn) {
-        plusBtn.onclick = () => window.location.href = 'shop.html';
-    }
-}
-
-// Вызови её после обновления баланса
-// Внутри updateHeaderBalance, после того как показали индикатор, добавь:
-setupBalancePlusButton();
-            balanceCount.innerText = total;
-            balanceDiv.style.display = 'flex';
-        } catch (err) {
-            console.error('Ошибка загрузки баланса:', err);
-        }
-    }
-
-    const loginBtn = document.getElementById('profileLoginBtn');
-    
-    onAuthStateChanged(auth, (user) => {
-        if (user && loginBtn) {
-            loginBtn.innerText = 'Мой профиль';
-            loginBtn.href = `profile.html?id=${user.uid}`;
-            setTimeout(updateHeaderBalance, 500);
-        } else if (loginBtn) {
-            loginBtn.innerText = 'Войти';
-            loginBtn.href = 'login.html';
+        async function updateHeaderBalance() {
+            const user = auth.currentUser;
             const balanceDiv = document.getElementById('balanceIndicator');
-            if (balanceDiv) balanceDiv.style.display = 'none';
+            const balanceCount = document.getElementById('headerChallengesCount');
+            
+            if (!user || !balanceDiv) return;
+            
+            try {
+                const userDoc = await getDoc(doc(db, "fighters", user.uid));
+                const data = userDoc.data();
+                const free = data.freeChallenges || 0;
+                const purchased = data.purchasedChallenges || 0;
+                const total = free + purchased;
+                balanceCount.innerText = total;
+                balanceDiv.style.display = 'flex';
+            } catch (err) {
+                console.error('Ошибка загрузки баланса:', err);
+            }
         }
-    });
-</script>
-<script>
-    // Бургер-меню
-    const menuToggle = document.getElementById('menuToggle');
-    const navLinks = document.getElementById('navLinks');
-    
-    if (menuToggle && navLinks) {
-        menuToggle.addEventListener('click', () => {
-            navLinks.classList.toggle('show');
+
+        const loginBtn = document.getElementById('profileLoginBtn');
+        
+        onAuthStateChanged(auth, (user) => {
+            if (user && loginBtn) {
+                loginBtn.innerText = 'Мой профиль';
+                loginBtn.href = `profile.html?id=${user.uid}`;
+                setTimeout(updateHeaderBalance, 500);
+            } else if (loginBtn) {
+                loginBtn.innerText = 'Войти';
+                loginBtn.href = 'login.html';
+                const balanceDiv = document.getElementById('balanceIndicator');
+                if (balanceDiv) balanceDiv.style.display = 'none';
+            }
         });
-    }
-</script>
+
+        const plusBtn = document.getElementById('balancePlusBtn');
+        if (plusBtn) {
+            plusBtn.onclick = () => window.location.href = 'shop.html';
+        }
+    </script>
+    <script>
+        const menuToggle = document.getElementById('menuToggle');
+        const navLinks = document.getElementById('navLinks');
+        
+        if (menuToggle && navLinks) {
+            menuToggle.addEventListener('click', () => {
+                navLinks.classList.toggle('show');
+            });
+        }
+    </script>
 </body>
 </html>

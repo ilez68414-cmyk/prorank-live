@@ -24,6 +24,15 @@ let currentFighterId = null;
 let currentFighterData = null;
 let authListenerUnsub = null;
 
+function getLeague(frs) {
+    if (frs >= 5000) return { name: 'ЛЕГЕНДАРНАЯ', min: 5000, icon: 'fa-skull', badge: '[ЛЕГЕНДА]', color: '#ff4500' };
+    if (frs >= 3500) return { name: 'ЭЛИТНАЯ', min: 3500, icon: 'fa-dragon', badge: '[ЭЛИТА]', color: '#9400d3' };
+    if (frs >= 2000) return { name: 'АЛМАЗНАЯ', min: 2000, icon: 'fa-gem', badge: '[АЛМАЗ]', color: '#00ffff' };
+    if (frs >= 1000) return { name: 'ЗОЛОТАЯ', min: 1000, icon: 'fa-crown', badge: '[ЗОЛОТО]', color: '#ffd700' };
+    if (frs >= 500) return { name: 'СЕРЕБРЯНАЯ', min: 500, icon: 'fa-medal', badge: '[СЕРЕБРО]', color: '#c0c0c0' };
+    return { name: 'БРОНЗОВАЯ', min: 0, icon: 'fa-medal', badge: '[БРОНЗА]', color: '#cd7f32' };
+}
+
 function getDeclension(number, one, two, five) {
     let n = Math.abs(number);
     n %= 100;
@@ -177,7 +186,8 @@ async function loadProfileData() {
         }
         currentFighterData = fighterSnap.data();
         const fighter = currentFighterData;
-        
+        // Обновление лиги
+        updateLeagueDisplay(fighter.frs || 0);
         document.getElementById('profName').innerText = fighter.name || 'Без имени';
         document.getElementById('profSport').innerText = fighter.sport || '—';
         document.getElementById('profCity').innerText = fighter.city || '—';
@@ -263,7 +273,50 @@ async function loadProfileData() {
         if (profileContent) profileContent.style.display = 'block';
     }
 }
+function updateLeagueDisplay(frs) {
+    const league = getLeague(frs);
+    const leagueBadge = document.getElementById('leagueBadge');
+    const leagueIcon = document.getElementById('leagueIcon');
+    const leagueName = document.getElementById('leagueName');
+    
+    if (!leagueBadge) return;
+    
+    leagueIcon.className = `fas ${league.icon}`;
+    leagueName.innerText = `${league.name} ЛИГА`;
+    leagueBadge.style.color = league.color;
+    
+    // Прогресс до следующей лиги
+    const nextMin = getNextLeagueMin(frs);
+    if (nextMin) {
+        const currentMin = league.min;
+        const progress = ((frs - currentMin) / (nextMin - currentMin)) * 100;
+        const remaining = nextMin - frs;
+        
+        const progressBar = document.getElementById('leagueProgressBar');
+        const progressText = document.getElementById('leagueProgressText');
+        
+        if (progressBar) {
+            progressBar.innerHTML = `<div class="progress-bar-fill" style="width: ${Math.min(100, progress)}%"></div>`;
+        }
+        if (progressText) {
+            progressText.innerText = `До ${getLeague(nextMin).name} лиги осталось ${remaining} FRS`;
+        }
+    } else {
+        const progressBar = document.getElementById('leagueProgressBar');
+        const progressText = document.getElementById('leagueProgressText');
+        if (progressBar) progressBar.innerHTML = `<div class="progress-bar-fill" style="width: 100%"></div>`;
+        if (progressText) progressText.innerText = `Максимальная лига! 🔥`;
+    }
+}
 
+function getNextLeagueMin(frs) {
+    if (frs < 500) return 500;
+    if (frs < 1000) return 1000;
+    if (frs < 2000) return 2000;
+    if (frs < 3500) return 3500;
+    if (frs < 5000) return 5000;
+    return null;
+}
 function setupOnboardingClose() {
     const close1 = document.getElementById('closeOnboarding');
     const close2 = document.getElementById('closeOnboardingX');
