@@ -24,15 +24,6 @@ let currentFighterId = null;
 let currentFighterData = null;
 let authListenerUnsub = null;
 
-function getLeague(frs) {
-    if (frs >= 5000) return { name: 'ЛЕГЕНДАРНАЯ', min: 5000, icon: 'fa-skull', badge: '[ЛЕГЕНДА]', color: '#ff4500' };
-    if (frs >= 3500) return { name: 'ЭЛИТНАЯ', min: 3500, icon: 'fa-dragon', badge: '[ЭЛИТА]', color: '#9400d3' };
-    if (frs >= 2000) return { name: 'АЛМАЗНАЯ', min: 2000, icon: 'fa-gem', badge: '[АЛМАЗ]', color: '#00ffff' };
-    if (frs >= 1000) return { name: 'ЗОЛОТАЯ', min: 1000, icon: 'fa-crown', badge: '[ЗОЛОТО]', color: '#ffd700' };
-    if (frs >= 500) return { name: 'СЕРЕБРЯНАЯ', min: 500, icon: 'fa-medal', badge: '[СЕРЕБРО]', color: '#c0c0c0' };
-    return { name: 'БРОНЗОВАЯ', min: 0, icon: 'fa-medal', badge: '[БРОНЗА]', color: '#cd7f32' };
-}
-
 function getDeclension(number, one, two, five) {
     let n = Math.abs(number);
     n %= 100;
@@ -41,6 +32,102 @@ function getDeclension(number, one, two, five) {
     if (n === 1) return one;
     if (n >= 2 && n <= 4) return two;
     return five;
+}
+
+function getLeague(frs) {
+    if (frs >= 5000) return { name: 'ЛЕГЕНДАРНАЯ', min: 5000, icon: 'fa-skull', color: '#ff4500', reward: { type: 'premium', days: 30 } };
+    if (frs >= 3500) return { name: 'ЭЛИТНАЯ', min: 3500, icon: 'fa-dragon', color: '#9400d3', reward: { type: 'challenges', amount: 10 } };
+    if (frs >= 2000) return { name: 'АЛМАЗНАЯ', min: 2000, icon: 'fa-gem', color: '#00ffff', reward: { type: 'challenges', amount: 5 } };
+    if (frs >= 1000) return { name: 'ЗОЛОТАЯ', min: 1000, icon: 'fa-crown', color: '#ffd700', reward: { type: 'challenges', amount: 3 } };
+    if (frs >= 500) return { name: 'СЕРЕБРЯНАЯ', min: 500, icon: 'fa-medal', color: '#c0c0c0', reward: { type: 'challenges', amount: 1 } };
+    return { name: 'БРОНЗОВАЯ', min: 0, icon: 'fa-medal', color: '#cd7f32', reward: null };
+}
+
+function getNextLeagueMin(frs) {
+    if (frs < 500) return 500;
+    if (frs < 1000) return 1000;
+    if (frs < 2000) return 2000;
+    if (frs < 3500) return 3500;
+    if (frs < 5000) return 5000;
+    return null;
+}
+
+async function checkAndAwardLeagueRewards(userId, oldFrs, newFrs) {
+    const oldLeague = getLeague(oldFrs);
+    const newLeague = getLeague(newFrs);
+    
+    if (newLeague.name !== oldLeague.name && newLeague.reward) {
+        const userRef = doc(db, "fighters", userId);
+        const userSnap = await getDoc(userRef);
+        const userData = userSnap.data();
+        
+        if (newLeague.reward.type === 'challenges') {
+            const currentPurchased = userData.purchasedChallenges || 0;
+            await updateDoc(userRef, {
+                purchasedChallenges: currentPurchased + newLeague.reward.amount
+            });
+            alert(`🎉 Поздравляем! Вы достигли ${newLeague.name} ЛИГИ и получили +${newLeague.reward.amount} вызовов!`);
+        }
+        
+        if (newLeague.reward.type === 'premium') {
+            const premiumUntil = new Date(Date.now() + newLeague.reward.days * 24 * 60 * 60 * 1000);
+            await updateDoc(userRef, {
+                premium: true,
+                premiumUntil: premiumUntil
+            });
+            alert(`🎉 ПОЗДРАВЛЯЕМ! Вы достигли ЛЕГЕНДАРНОЙ ЛИГИ и получили ПРЕМИУМ на ${newLeague.reward.days} дней!`);
+        }
+        
+        if (window.updateHeaderBalance) window.updateHeaderBalance();
+    }
+}
+
+async function refreshMonthlyChallenges(userId) {
+    const userRef = doc(db, "fighters", userId);
+    const userSnap = await getDoc(userRef);
+    const userData = userSnap.data();
+    const lastRefresh = userData.lastMonthlyRefresh?.toDate();
+    const now = new Date();
+    
+    if (!lastRefresh || now.getMonth() !== lastRefresh.getMonth() || now.getFullYear() !== lastRefresh.getFullYear()) {
+        const currentFree = userData.freeChallenges || 0;
+        await updateDoc(userRef, {
+            freeChallenges: currentFree + 3,
+            lastMonthlyRefresh: now
+        });
+        console.log('✅ Бесплатные вызовы обновлены (+3)');
+        if (window.updateHeaderBalance) window.updateHeaderBalance();
+    }
+}
+
+function updateLeagueDisplay(frs) {
+    const league = getLeague(frs);
+    const leagueBadge = document.getElementById('leagueBadge');
+    const leagueIcon = document.getElementById('leagueIcon');
+    const leagueName = document.getElementById('leagueName');
+    
+    if (!leagueBadge) return;
+    
+    leagueIcon.className = `fas ${league.icon}`;
+    leagueIcon.style.color = league.color;
+    leagueName.innerText = `${league.name} ЛИГА`;
+    
+    const nextMin = getNextLeagueMin(frs);
+    const progressBar = document.getElementById('leagueProgressFill');
+    const progressText = document.getElementById('leagueProgressText');
+    
+    if (nextMin) {
+        const currentMin = league.min;
+        const progress = ((frs - currentMin) / (nextMin - currentMin)) * 100;
+        const remaining = nextMin - frs;
+        const nextLeague = getLeague(nextMin);
+        
+        if (progressBar) progressBar.style.width = `${Math.min(100, progress)}%`;
+        if (progressText) progressText.innerText = `До ${nextLeague.name} лиги осталось ${remaining} FRS`;
+    } else if (progressBar && progressText) {
+        progressBar.style.width = '100%';
+        progressText.innerText = `Максимальная лига! 🔥`;
+    }
 }
 
 async function uploadAvatar(file, userId) {
@@ -110,7 +197,6 @@ async function loadFightHistory() {
     if (!fightsSection) return;
     
     try {
-        // Бойцы участвует либо как победитель, либо как проигравший
         const qWinner = query(collection(db, "fights"), where("winnerId", "==", profileId));
         const qLoser = query(collection(db, "fights"), where("loserId", "==", profileId));
         
@@ -127,25 +213,24 @@ async function loadFightHistory() {
             return;
         }
         
-        // Сортировка по дате (сначала новые)
         fights.sort((a, b) => b.date?.toDate() - a.date?.toDate());
         
         let html = '';
         fights.forEach(fight => {
             const date = fight.date?.toDate().toLocaleDateString() || '—';
-            const finishHtml = fight.isFinish ? '<span class="fight-finish">💥 Финиш</span>' : '<span class="fight-finish" style="background:#555;">🤝 Решением</span>';
+            const finishHtml = fight.isFinish ? '<span class="fight-finish"><i class="fas fa-bolt"></i> Финиш</span>' : '<span class="fight-finish" style="background:#555;"><i class="fas fa-balance-scale"></i> Решением</span>';
             
             if (fight.result === 'win') {
                 html += `<div class="fight-item win">
-                    <div class="fight-result"><span class="fight-result-icon">✅</span><span class="fight-result-text">Победа</span></div>
-                    <div><a href="profile.html?id=${fight.loserId}" class="fight-opponent">🎯 ${fight.loserName || 'Соперник'}</a></div>
-                    <div class="fight-details"><span>📅 ${date}</span><span class="fight-sport">${fight.sport || '—'}</span>${finishHtml}</div>
+                    <div class="fight-result"><i class="fas fa-trophy icon-green"></i><span class="fight-result-text win">Победа</span></div>
+                    <div><a href="profile.html?id=${fight.loserId}" class="fight-opponent"><i class="fas fa-fist-raised"></i> ${fight.loserName || 'Соперник'}</a></div>
+                    <div class="fight-details"><i class="fas fa-calendar-alt"></i> ${date}<span class="fight-sport"><i class="fas ${fight.sport === 'Бокс' ? 'fa-fist-raised' : (fight.sport === 'Борьба' ? 'fa-handshake' : 'fa-shield-alt')}"></i> ${fight.sport || '—'}</span>${finishHtml}</div>
                 </div>`;
             } else {
                 html += `<div class="fight-item loss">
-                    <div class="fight-result"><span class="fight-result-icon">❌</span><span class="fight-result-text">Поражение</span></div>
-                    <div><a href="profile.html?id=${fight.winnerId}" class="fight-opponent">🎯 ${fight.winnerName || 'Соперник'}</a></div>
-                    <div class="fight-details"><span>📅 ${date}</span><span class="fight-sport">${fight.sport || '—'}</span>${finishHtml}</div>
+                    <div class="fight-result"><i class="fas fa-skull-crossbones icon-red"></i><span class="fight-result-text loss">Поражение</span></div>
+                    <div><a href="profile.html?id=${fight.winnerId}" class="fight-opponent"><i class="fas fa-fist-raised"></i> ${fight.winnerName || 'Соперник'}</a></div>
+                    <div class="fight-details"><i class="fas fa-calendar-alt"></i> ${date}<span class="fight-sport"><i class="fas ${fight.sport === 'Бокс' ? 'fa-fist-raised' : (fight.sport === 'Борьба' ? 'fa-handshake' : 'fa-shield-alt')}"></i> ${fight.sport || '—'}</span>${finishHtml}</div>
                 </div>`;
             }
         });
@@ -153,15 +238,15 @@ async function loadFightHistory() {
         fightsList.innerHTML = html;
         const wins = fights.filter(f => f.result === 'win').length;
         const losses = fights.filter(f => f.result === 'loss').length;
-        document.getElementById('fightsCount').innerText = `${fights.length} ${getDeclension(fights.length, 'бой', 'боя', 'боёв')} (${wins} побед, ${losses} поражений)`;
+        document.getElementById('fightsCount').innerHTML = `${fights.length} ${getDeclension(fights.length, 'бой', 'боя', 'боёв')} <span style="color:#10b981;">(${wins} побед)</span> <span style="color:#ef4444;">(${losses} поражений)</span>`;
         fightsSection.style.display = 'block';
-        
     } catch (err) {
         console.error('Ошибка загрузки истории боёв:', err);
-        fightsList.innerHTML = '<div class="empty-fights">❌ Ошибка загрузки</div>';
+        fightsList.innerHTML = '<div class="empty-fights"><i class="fas fa-exclamation-triangle icon-red"></i> Ошибка загрузки</div>';
         fightsSection.style.display = 'block';
     }
 }
+
 async function loadProfileData() {
     const loadingDiv = document.getElementById('profileLoading');
     const profileContent = document.getElementById('profileContent');
@@ -186,9 +271,8 @@ async function loadProfileData() {
         }
         currentFighterData = fighterSnap.data();
         const fighter = currentFighterData;
-        // Обновление лиги
-        updateLeagueDisplay(fighter.frs || 0);
-        document.getElementById('profName').innerText = fighter.name || 'Без имени';
+        
+        document.getElementById('profName').innerHTML = `${fighter.name || 'Без имени'} <i class="fas ${getLeague(fighter.frs || 0).icon}" style="color:${getLeague(fighter.frs || 0).color}; font-size: 1.2rem;"></i>`;
         document.getElementById('profSport').innerText = fighter.sport || '—';
         document.getElementById('profCity').innerText = fighter.city || '—';
         
@@ -207,6 +291,13 @@ async function loadProfileData() {
             avatarImg.onerror = () => { avatarImg.src = 'Avatar.png'; };
         }
         
+        const oldFrs = currentFighterData?.frs || 0;
+        const newFrs = fighter.frs || 0;
+        
+        await checkAndAwardLeagueRewards(profileId, oldFrs, newFrs);
+        await refreshMonthlyChallenges(profileId);
+        updateLeagueDisplay(newFrs);
+        
         document.getElementById('statWinsHeader').innerText = fighter.wins || 0;
         document.getElementById('statLossesHeader').innerText = fighter.losses || 0;
         document.getElementById('statFinishesHeader').innerText = fighter.finishes || 0;
@@ -224,9 +315,9 @@ async function loadProfileData() {
             const isOwner = user && user.uid === profileId;
             const isLogged = !!user;
             if (navBtn) {
-                if (!isLogged) { navBtn.innerText = 'Войти'; navBtn.href = 'login.html'; navBtn.classList.remove('hidden'); }
+                if (!isLogged) { navBtn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Войти'; navBtn.href = 'login.html'; navBtn.classList.remove('hidden'); }
                 else if (isOwner) { navBtn.classList.add('hidden'); }
-                else { navBtn.innerText = 'Мой профиль'; navBtn.href = `profile.html?id=${user.uid}`; navBtn.classList.remove('hidden'); }
+                else { navBtn.innerHTML = '<i class="fas fa-user"></i> Мой профиль'; navBtn.href = `profile.html?id=${user.uid}`; navBtn.classList.remove('hidden'); }
             }
             if (ownerDiv && visitorDiv) {
                 if (isOwner) {
@@ -273,50 +364,7 @@ async function loadProfileData() {
         if (profileContent) profileContent.style.display = 'block';
     }
 }
-function updateLeagueDisplay(frs) {
-    const league = getLeague(frs);
-    const leagueBadge = document.getElementById('leagueBadge');
-    const leagueIcon = document.getElementById('leagueIcon');
-    const leagueName = document.getElementById('leagueName');
-    
-    if (!leagueBadge) return;
-    
-    leagueIcon.className = `fas ${league.icon}`;
-    leagueName.innerText = `${league.name} ЛИГА`;
-    leagueBadge.style.color = league.color;
-    
-    // Прогресс до следующей лиги
-    const nextMin = getNextLeagueMin(frs);
-    if (nextMin) {
-        const currentMin = league.min;
-        const progress = ((frs - currentMin) / (nextMin - currentMin)) * 100;
-        const remaining = nextMin - frs;
-        
-        const progressBar = document.getElementById('leagueProgressBar');
-        const progressText = document.getElementById('leagueProgressText');
-        
-        if (progressBar) {
-            progressBar.innerHTML = `<div class="progress-bar-fill" style="width: ${Math.min(100, progress)}%"></div>`;
-        }
-        if (progressText) {
-            progressText.innerText = `До ${getLeague(nextMin).name} лиги осталось ${remaining} FRS`;
-        }
-    } else {
-        const progressBar = document.getElementById('leagueProgressBar');
-        const progressText = document.getElementById('leagueProgressText');
-        if (progressBar) progressBar.innerHTML = `<div class="progress-bar-fill" style="width: 100%"></div>`;
-        if (progressText) progressText.innerText = `Максимальная лига! 🔥`;
-    }
-}
 
-function getNextLeagueMin(frs) {
-    if (frs < 500) return 500;
-    if (frs < 1000) return 1000;
-    if (frs < 2000) return 2000;
-    if (frs < 3500) return 3500;
-    if (frs < 5000) return 5000;
-    return null;
-}
 function setupOnboardingClose() {
     const close1 = document.getElementById('closeOnboarding');
     const close2 = document.getElementById('closeOnboardingX');
@@ -439,7 +487,7 @@ async function setupChallengeButton(targetId) {
             if (target.telegramId) {
                 await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
                     method: 'POST', headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ chat_id: target.telegramId, text: `🥊 *ВЫЗОВ НА СПАРРИНГ!*\n\nБоец *${current.name}* вызывает тебя на бой.\n📝 Сообщение: ${message || '—'}\n\n👉 Зайди на сайт, чтобы ответить.`, parse_mode: 'Markdown' })
+                    body: JSON.stringify({ chat_id: target.telegramId, text: `🥊 *ВЫЗОВ НА СПАРРИНГ!*\n\nБоец *${current.name}* вызывает тебя на бой.\n📝 Сообщение: ${message || '—'}\n\n👉 Зайди на сайт в раздел "Мои вызовы", чтобы ответить.`, parse_mode: 'Markdown' })
                 });
             }
             alert(`✅ Вызов отправлен! Осталось вызовов: ${totalChallenges - 1}`);
@@ -476,7 +524,7 @@ async function updateLikesUI() {
         const count = snap.size;
         const btn = document.getElementById('likeBtn');
         if (btn) {
-            btn.innerHTML = `👍 ${count}`;
+            btn.innerHTML = `<i class="fas fa-heart"></i> ${count}`;
             const user = auth.currentUser;
             if (user && user.uid !== currentFighterId) {
                 const liked = await getDoc(doc(db, "likes", `${user.uid}_${currentFighterId}`));
@@ -493,12 +541,12 @@ async function updateSubscribeUI() {
         const subs = currentFighterData?.subscribers || 0;
         const btn = document.getElementById('btnSubscribe');
         if (btn) {
-            btn.innerHTML = `🔔 ${subs}`;
+            btn.innerHTML = `<i class="fas fa-bell"></i> ${subs}`;
             const user = auth.currentUser;
             if (user && user.uid !== currentFighterId) {
                 const sub = await getDoc(doc(db, "subscriptions", `${user.uid}_${currentFighterId}`));
-                if (sub.exists()) { btn.classList.add('subscribed'); btn.innerHTML = `✅ ${subs}`; btn.style.background = '#16a34a'; }
-                else { btn.classList.remove('subscribed'); btn.innerHTML = `🔔 ${subs}`; btn.style.background = '#8b5cf6'; }
+                if (sub.exists()) { btn.classList.add('subscribed'); btn.innerHTML = `<i class="fas fa-check-circle"></i> ${subs}`; btn.style.background = '#16a34a'; }
+                else { btn.classList.remove('subscribed'); btn.innerHTML = `<i class="fas fa-bell"></i> ${subs}`; btn.style.background = '#8b5cf6'; }
             } else { btn.disabled = true; btn.style.background = '#555'; }
         }
     } catch(e) { console.error('Subscribe error:', e); }
@@ -562,7 +610,7 @@ async function setupReferral() {
     const refCount = userDoc.data()?.referralCount || 0;
     const refBonus = userDoc.data()?.referralBonus || 0;
     const statsEl = document.getElementById('referralStats');
-    if (statsEl) statsEl.innerHTML = `👥 Приглашено друзей: ${refCount}<br>🎁 Получено бонусов: +${refBonus} вызовов`;
+    if (statsEl) statsEl.innerHTML = `<i class="fas fa-users"></i> Приглашено друзей: ${refCount}<br><i class="fas fa-gift"></i> Получено бонусов: +${refBonus} вызовов`;
 }
 
 async function setupTelegramVerify() {
@@ -573,7 +621,8 @@ async function setupTelegramVerify() {
     if (user.uid !== profileId) return;
     const telegramBtn = document.getElementById('telegramVerifyBtn');
     if (telegramBtn) {
-        telegramBtn.style.display = 'inline-block';
+        telegramBtn.style.display = 'inline-flex';
+        telegramBtn.innerHTML = '<i class="fab fa-telegram"></i> Привязать Telegram';
         telegramBtn.onclick = () => window.open(`https://t.me/ProRankBot?start=verify_${user.uid}`, '_blank');
     }
 }
