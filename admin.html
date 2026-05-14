@@ -397,6 +397,49 @@
         let allFighters = [];
         let currentAdminEmail = null;
 
+async function checkAndAwardAchievements(userId) {
+    const userRef = doc(db, "fighters", userId);
+    const userSnap = await getDoc(userRef);
+    const user = userSnap.data();
+    if (!user) return;
+    
+    const achievementsSnap = await getDocs(collection(db, "achievements"));
+    const userAchievementsSnap = await getDocs(query(collection(db, "userAchievements"), where("userId", "==", userId)));
+    const earnedIds = new Set();
+    userAchievementsSnap.forEach(doc => earnedIds.add(doc.data().achievementId));
+    
+    const fightsSnap = await getDocs(query(collection(db, "fights"), where("winnerId", "==", userId)));
+    const totalFights = fightsSnap.size;
+    const wins = user.wins || 0;
+    const finishes = user.finishes || 0;
+    
+    for (const docSnap of achievementsSnap.docs) {
+        const ach = docSnap.data();
+        if (earnedIds.has(docSnap.id)) continue;
+        
+        let earned = false;
+        const cond = ach.condition;
+        
+        if (!cond) continue; // пропускаем ачивки без условия
+        
+        if (cond.type === 'total_fights' && totalFights >= cond.value) earned = true;
+        if (cond.type === 'wins' && wins >= cond.value) earned = true;
+        if (cond.type === 'finishes' && finishes >= cond.value) earned = true;
+        
+        if (earned) {
+            if (ach.reward && ach.reward.type === 'frs') {
+                await updateDoc(userRef, { frs: (user.frs || 0) + ach.reward.amount });
+            }
+            await setDoc(doc(db, "userAchievements", `${userId}_${docSnap.id}`), {
+                userId: userId,
+                achievementId: docSnap.id,
+                earnedAt: new Date(),
+                isNegative: ach.isNegative || false
+            });
+            console.log(`🏆 ${ach.name} получена!`);
+        }
+    }
+}
         async function logAction(action, targetId, details) {
             if (!currentAdminEmail) return;
             await addDoc(collection(db, "adminLogs"), {
@@ -572,6 +615,8 @@
                 await updateDoc(winnerRef, { wins: increment(1), finishes: increment(isFinish ? 1 : 0), lastFightDate: new Date() });
                 await updateDoc(loserRef, { losses: increment(1), lastFightDate: new Date() });
                 await addDoc(collection(db, "fights"), { winnerId, winnerName, loserId, loserName, isFinish, sport, date: new Date() });
+                await checkAndAwardAchievements(winnerId);
+                await checkAndAwardAchievements(loserId);
                 await logAction('add_fight', `${winnerId}_${loserId}`, `${winnerName} победил ${loserName}`);
                 document.getElementById('fightMessage').innerHTML = '<span style="color:green;">✅ Бой добавлен!</span>';
                 loadFighters();

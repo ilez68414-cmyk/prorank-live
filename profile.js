@@ -355,7 +355,7 @@ async function loadProfileData() {
         setupAvatarUpload();
         setupOnboardingClose();
         await loadFightHistory();
-        
+        await loadAchievements();
         if (loadingDiv) loadingDiv.style.display = 'none';
         if (profileContent) profileContent.style.display = 'block';
     } catch (error) {
@@ -643,6 +643,47 @@ async function updateHeaderBalance() {
         const plusBtn = document.getElementById('balancePlusBtn');
         if (plusBtn) plusBtn.onclick = () => window.location.href = 'shop.html';
     } catch (err) { console.error('Ошибка загрузки баланса:', err); }
+}
+async function loadAchievements() {
+    const userId = currentFighterId;
+    if (!userId) return;
+    
+    const section = document.getElementById('achievementsSection');
+    const container = document.getElementById('achievementsList');
+    if (!section) return;
+    
+    try {
+        // Получаем все ачивки
+        const achievementsSnap = await getDocs(collection(db, "achievements"));
+        const allAchievements = [];
+        achievementsSnap.forEach(doc => allAchievements.push({ id: doc.id, ...doc.data() }));
+        
+        // Получаем полученные пользователем
+        const userAchievementsSnap = await getDocs(query(collection(db, "userAchievements"), where("userId", "==", userId)));
+        const earnedIds = new Set();
+        userAchievementsSnap.forEach(doc => earnedIds.add(doc.data().achievementId));
+        
+        let html = '';
+        allAchievements.forEach(ach => {
+            const earned = earnedIds.has(ach.id);
+            const icon = ach.icon || 'fa-medal';
+            const rewardText = ach.reward ? `${ach.reward.amount} ${ach.reward.type === 'frs' ? 'FRS' : (ach.reward.type === 'challenges' ? 'вызовов' : '')}` : '';
+            
+            html += `
+                <div class="achievement-card ${earned ? 'earned' : 'locked'}">
+                    <div class="achievement-icon"><i class="fas ${icon}"></i></div>
+                    <div class="achievement-name">${ach.name}</div>
+                    <div class="achievement-desc">${ach.description || ''}</div>
+                    ${rewardText ? `<div class="achievement-reward">+${rewardText}</div>` : ''}
+                </div>
+            `;
+        });
+        
+        container.innerHTML = html;
+        section.style.display = 'block';
+    } catch (err) {
+        console.error('Ошибка загрузки ачивок:', err);
+    }
 }
 
 window.updateHeaderBalance = updateHeaderBalance;
