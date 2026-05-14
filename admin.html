@@ -436,6 +436,20 @@ async function checkAndAwardAchievements(userId) {
                 earnedAt: new Date(),
                 isNegative: ach.isNegative || false
             });
+            // Отправляем уведомление в Telegram (если есть)
+const userSnap = await getDoc(userRef);
+const telegramId = userSnap.data()?.telegramId;
+if (telegramId) {
+    await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            chat_id: telegramId,
+            text: `🏆 НОВАЯ АЧИВКА!\n\n${ach.name}\n${ach.description}\nНаграда: +${ach.reward?.amount || 0} ${ach.reward?.type === 'frs' ? 'FRS' : 'вызовов'}`,
+            parse_mode: 'Markdown'
+        })
+    });
+}
             console.log(`🏆 ${ach.name} получена!`);
         }
     }

@@ -247,6 +247,123 @@ async function loadFightHistory() {
     }
 }
 
+async function loadAchievements() {
+    const userId = currentFighterId;
+    if (!userId) return;
+    
+    const section = document.getElementById('achievementsSection');
+    const container = document.getElementById('achievementsList');
+    if (!section) return;
+    
+    try {
+        const achievementsSnap = await getDocs(collection(db, "achievements"));
+        const allAchievements = [];
+        achievementsSnap.forEach(doc => allAchievements.push({ id: doc.id, ...doc.data() }));
+        
+        const userAchievementsSnap = await getDocs(query(collection(db, "userAchievements"), where("userId", "==", userId)));
+        const earnedIds = new Set();
+        userAchievementsSnap.forEach(doc => earnedIds.add(doc.data().achievementId));
+        
+        const earnedCount = earnedIds.size;
+        const totalCount = allAchievements.length;
+        const countSpan = document.getElementById('achievementsCount');
+        if (countSpan) countSpan.innerText = `${earnedCount}/${totalCount}`;
+        
+        let html = '';
+        allAchievements.forEach(ach => {
+            const earned = earnedIds.has(ach.id);
+            const icon = ach.icon || 'fa-medal';
+            const rewardText = ach.reward ? `${ach.reward.amount} ${ach.reward.type === 'frs' ? 'FRS' : (ach.reward.type === 'challenges' ? 'вызовов' : '')}` : '';
+            
+            html += `
+                <div class="achievement-card ${earned ? 'earned' : 'locked'}">
+                    <div class="achievement-icon"><i class="fas ${icon}"></i></div>
+                    <div class="achievement-name">${ach.name}</div>
+                    <div class="achievement-desc">${ach.description || ''}</div>
+                    ${rewardText ? `<div class="achievement-reward">+${rewardText}</div>` : ''}
+                </div>
+            `;
+        });
+        
+        container.innerHTML = html;
+        section.style.display = 'block';
+    } catch (err) {
+        console.error('Ошибка загрузки ачивок:', err);
+    }
+}
+
+async function checkAndAwardAchievements(userId) {
+    const userRef = doc(db, "fighters", userId);
+    const userSnap = await getDoc(userRef);
+    const user = userSnap.data();
+    if (!user) return;
+    
+    const achievementsSnap = await getDocs(collection(db, "achievements"));
+    const userAchievementsSnap = await getDocs(query(collection(db, "userAchievements"), where("userId", "==", userId)));
+    const earnedIds = new Set();
+    userAchievementsSnap.forEach(doc => earnedIds.add(doc.data().achievementId));
+    
+    const fightsSnap = await getDocs(query(collection(db, "fights"), where("winnerId", "==", userId)));
+    const totalFights = fightsSnap.size;
+    const wins = user.wins || 0;
+    const finishes = user.finishes || 0;
+    const likes = await getLikesCount(userId);
+    const subscribers = user.subscribers || 0;
+    const frs = user.frs || 0;
+    
+    for (const docSnap of achievementsSnap.docs) {
+        const ach = docSnap.data();
+        if (earnedIds.has(docSnap.id)) continue;
+        
+        let earned = false;
+        const cond = ach.condition;
+        if (!cond) continue;
+        
+        if (cond.type === 'total_fights' && totalFights >= cond.value) earned = true;
+        if (cond.type === 'wins' && wins >= cond.value) earned = true;
+        if (cond.type === 'finishes' && finishes >= cond.value) earned = true;
+        if (cond.type === 'likes' && likes >= cond.value) earned = true;
+        if (cond.type === 'subscribers' && subscribers >= cond.value) earned = true;
+        if (cond.type === 'frs' && frs >= cond.value) earned = true;
+        
+        if (earned) {
+            if (ach.reward && ach.reward.type === 'frs') {
+                await updateDoc(userRef, { frs: (user.frs || 0) + ach.reward.amount });
+            }
+            if (ach.reward && ach.reward.type === 'challenges') {
+                const purchased = user.purchasedChallenges || 0;
+                await updateDoc(userRef, { purchasedChallenges: purchased + ach.reward.amount });
+            }
+            await setDoc(doc(db, "userAchievements", `${userId}_${docSnap.id}`), {
+                userId: userId,
+                achievementId: docSnap.id,
+                earnedAt: new Date(),
+                isNegative: ach.isNegative || false
+            });
+            
+            // Уведомление в Telegram
+            if (user.telegramId) {
+                await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        chat_id: user.telegramId,
+                        text: `🏆 НОВАЯ АЧИВКА!\n\n${ach.name}\n${ach.description || ''}\nНаграда: +${ach.reward?.amount || 0} ${ach.reward?.type === 'frs' ? 'FRS' : 'вызовов'}`,
+                        parse_mode: 'Markdown'
+                    })
+                });
+            }
+            
+            console.log(`🏆 ${ach.name} получена!`);
+        }
+    }
+}
+
+async function getLikesCount(userId) {
+    const snap = await getDocs(query(collection(db, "likes"), where("fighterId", "==", userId)));
+    return snap.size;
+}
+
 async function loadProfileData() {
     const loadingDiv = document.getElementById('profileLoading');
     const profileContent = document.getElementById('profileContent');
@@ -356,6 +473,8 @@ async function loadProfileData() {
         setupOnboardingClose();
         await loadFightHistory();
         await loadAchievements();
+        await checkAndAwardAchievements(profileId);
+        
         if (loadingDiv) loadingDiv.style.display = 'none';
         if (profileContent) profileContent.style.display = 'block';
     } catch (error) {
@@ -491,6 +610,7 @@ async function setupChallengeButton(targetId) {
                 });
             }
             alert(`✅ Вызов отправлен! Осталось вызовов: ${totalChallenges - 1}`);
+            await checkAndAwardAchievements(user.uid);
             if (window.updateHeaderBalance) await window.updateHeaderBalance();
         } catch (err) { console.error(err); alert('❌ Ошибка при отправке вызова'); }
     };
@@ -532,6 +652,7 @@ async function updateLikesUI() {
                 else { btn.classList.remove('liked'); btn.style.background = '#dc2626'; btn.disabled = false; }
             } else { btn.disabled = true; btn.style.background = '#555'; }
         }
+        await checkAndAwardAchievements(currentFighterId);
     } catch(e) { console.error('Likes error:', e); }
 }
 
@@ -549,6 +670,7 @@ async function updateSubscribeUI() {
                 else { btn.classList.remove('subscribed'); btn.innerHTML = `<i class="fas fa-bell"></i> ${subs}`; btn.style.background = '#8b5cf6'; }
             } else { btn.disabled = true; btn.style.background = '#555'; }
         }
+        await checkAndAwardAchievements(currentFighterId);
     } catch(e) { console.error('Subscribe error:', e); }
 }
 
@@ -643,47 +765,6 @@ async function updateHeaderBalance() {
         const plusBtn = document.getElementById('balancePlusBtn');
         if (plusBtn) plusBtn.onclick = () => window.location.href = 'shop.html';
     } catch (err) { console.error('Ошибка загрузки баланса:', err); }
-}
-async function loadAchievements() {
-    const userId = currentFighterId;
-    if (!userId) return;
-    
-    const section = document.getElementById('achievementsSection');
-    const container = document.getElementById('achievementsList');
-    if (!section) return;
-    
-    try {
-        // Получаем все ачивки
-        const achievementsSnap = await getDocs(collection(db, "achievements"));
-        const allAchievements = [];
-        achievementsSnap.forEach(doc => allAchievements.push({ id: doc.id, ...doc.data() }));
-        
-        // Получаем полученные пользователем
-        const userAchievementsSnap = await getDocs(query(collection(db, "userAchievements"), where("userId", "==", userId)));
-        const earnedIds = new Set();
-        userAchievementsSnap.forEach(doc => earnedIds.add(doc.data().achievementId));
-        
-        let html = '';
-        allAchievements.forEach(ach => {
-            const earned = earnedIds.has(ach.id);
-            const icon = ach.icon || 'fa-medal';
-            const rewardText = ach.reward ? `${ach.reward.amount} ${ach.reward.type === 'frs' ? 'FRS' : (ach.reward.type === 'challenges' ? 'вызовов' : '')}` : '';
-            
-            html += `
-                <div class="achievement-card ${earned ? 'earned' : 'locked'}">
-                    <div class="achievement-icon"><i class="fas ${icon}"></i></div>
-                    <div class="achievement-name">${ach.name}</div>
-                    <div class="achievement-desc">${ach.description || ''}</div>
-                    ${rewardText ? `<div class="achievement-reward">+${rewardText}</div>` : ''}
-                </div>
-            `;
-        });
-        
-        container.innerHTML = html;
-        section.style.display = 'block';
-    } catch (err) {
-        console.error('Ошибка загрузки ачивок:', err);
-    }
 }
 
 window.updateHeaderBalance = updateHeaderBalance;

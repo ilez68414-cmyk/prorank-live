@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Достижения | PRORANK</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+    <style>
+        .achievements-container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+        .achievements-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        .stats-badge {
+            background: linear-gradient(135deg, #1e2a1a, #0f1a0f);
+            border: 1px solid #fbbf24;
+            border-radius: 2rem;
+            padding: 0.5rem 1.5rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+        .achievements-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 1rem;
+        }
+        .achievement-card {
+            background: #1a1a1a;
+            border-radius: 1rem;
+            padding: 1rem;
+            transition: 0.2s;
+            border: 1px solid #2a2a2a;
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+        .achievement-card.earned {
+            border-color: #fbbf24;
+            background: linear-gradient(135deg, #1e2a1a, #0f1a0f);
+        }
+        .achievement-card.locked {
+            filter: grayscale(0.7);
+            opacity: 0.6;
+        }
+        .achievement-card:hover {
+            transform: translateY(-3px);
+        }
+        .achievement-icon {
+            font-size: 2.5rem;
+            width: 60px;
+            text-align: center;
+        }
+        .achievement-info {
+            flex: 1;
+        }
+        .achievement-name {
+            font-size: 1rem;
+            font-weight: bold;
+            margin-bottom: 0.2rem;
+        }
+        .achievement-desc {
+            font-size: 0.75rem;
+            color: #888;
+            margin-bottom: 0.2rem;
+        }
+        .achievement-how {
+            font-size: 0.7rem;
+            color: #fbbf24;
+            margin-top: 0.2rem;
+        }
+        .achievement-reward {
+            font-size: 0.7rem;
+            margin-top: 0.2rem;
+        }
+        .achievement-reward.positive {
+            color: #16a34a;
+        }
+        .achievement-reward.negative {
+            color: #dc2626;
+        }
+        .achievement-status {
+            font-size: 0.8rem;
+            min-width: 80px;
+            text-align: right;
+        }
+        .status-earned {
+            color: #16a34a;
+        }
+        .status-locked {
+            color: #dc2626;
+        }
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px;
+            background: #1a1a1a;
+            border-bottom: 2px solid #fbbf24;
+        }
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .logo span { color: #fbbf24; }
+        .nav-links {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+        .nav-links a {
+            color: #fff;
+            text-decoration: none;
+            font-size: 1rem;
+            transition: 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+        .nav-links a:hover { color: #fbbf24; }
+        .menu-toggle {
+            display: none;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.8rem;
+            cursor: pointer;
+        }
+        .balance-indicator {
+            background: linear-gradient(135deg, #1e2a1a, #0f1a0f);
+            border: 1px solid #fbbf24;
+            border-radius: 2rem;
+            padding: 0.3rem 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            font-weight: bold;
+        }
+        .balance-plus {
+            background: none;
+            border: none;
+            color: #fbbf24;
+            font-size: 1.2rem;
+            font-weight: bold;
+            cursor: pointer;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+        }
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+                flex-direction: column;
+                position: absolute;
+                top: 70px;
+                left: 0;
+                width: 100%;
+                background: #1a1a1a;
+                padding: 20px;
+                gap: 15px;
+                z-index: 100;
+                border-top: 1px solid #333;
+            }
+            .nav-links.show { display: flex; }
+            .menu-toggle { display: block; }
+            .achievements-grid { grid-template-columns: 1fr; }
+            .achievement-card { flex-direction: column; text-align: center; }
+            .achievement-status { text-align: center; }
+        }
+    </style>
+</head>
+<body>
+    <header class="navbar">
+        <div class="logo" onclick="window.location='index.html'" style="cursor:pointer">PRO<span>RANK</span></div>
+        <div class="balance-indicator" id="balanceIndicator" style="display: none;">
+            <i class="fas fa-crosshairs icon-gold"></i>
+            <span class="balance-count" id="headerChallengesCount">0</span>
+            <button class="balance-plus" id="balancePlusBtn">+</button>
+        </div>
+        <button class="menu-toggle" id="menuToggle">☰</button>
+        <nav class="nav-links" id="navLinks">
+            <a href="index.html"><i class="fas fa-home"></i> Главная</a>
+            <a href="rating.html"><i class="fas fa-chart-line"></i> Рейтинг</a>
+            <a href="leagues.html"><i class="fas fa-trophy"></i> Лиги</a>
+            <a href="rules.html"><i class="fas fa-book"></i> Правила</a>
+            <a href="shop.html"><i class="fas fa-store"></i> Магазин</a>
+            <a href="challenges.html"><i class="fas fa-fist-raised"></i> Вызовы</a>
+            <a href="achievements.html"><i class="fas fa-medal"></i> Достижения</a>
+            <a href="login.html" id="profileLoginBtn" class="btn-primary"><i class="fas fa-sign-in-alt"></i> Войти</a>
+        </nav>
+    </header>
+
+    <div class="achievements-container">
+        <div class="achievements-header">
+            <h1><i class="fas fa-trophy icon-gold"></i> Все достижения</h1>
+            <div class="stats-badge" id="progressStats">
+                <i class="fas fa-chart-line"></i> Загрузка...
+            </div>
+        </div>
+        <div id="achievementsGrid" class="achievements-grid">
+            <div class="loading"><i class="fas fa-spinner fa-pulse"></i> Загрузка...</div>
+        </div>
+    </div>
+
+    <footer class="main-footer">
+        <div class="container footer-content">
+            <div class="footer-logo"><div class="logo">PRO<span>RANK</span></div><p>Рейтинг любительского спорта</p></div>
+            <div class="footer-about"><h4>О проекте</h4><p>Платформа для спортсменов-любителей</p></div>
+            <div class="footer-links"><h4>Навигация</h4><a href="index.html">Главная</a><a href="rating.html">Рейтинг</a><a href="login.html">Вход</a></div>
+        </div>
+        <div class="footer-bottom"><p>&copy; 2026 PRORANK</p></div>
+    </footer>
+
+    <script type="importmap">
+        {
+            "imports": {
+                "firebase/app": "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js",
+                "firebase/firestore": "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js",
+                "firebase/auth": "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js"
+            }
+        }
+    </script>
+    <script type="module">
+        import { initializeApp } from "firebase/app";
+        import { getFirestore, collection, getDocs, query, where, doc, getDoc } from "firebase/firestore";
+        import { getAuth, onAuthStateChanged } from "firebase/auth";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDUGYJY7pX7q02MS5SACMIIQXpjpQ97mPw",
+            authDomain: "proranklive.firebaseapp.com",
+            projectId: "proranklive",
+            storageBucket: "proranklive.firebasestorage.app",
+            messagingSenderId: "716836144015",
+            appId: "1:716836144015:web:f1575147750608d0f881fa"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+
+        let currentUser = null;
+
+        async function updateHeaderBalance() {
+            const user = auth.currentUser;
+            const balanceDiv = document.getElementById('balanceIndicator');
+            const balanceCount = document.getElementById('headerChallengesCount');
+            
+            if (!user || !balanceDiv) return;
+            
+            try {
+                const userDoc = await getDoc(doc(db, "fighters", user.uid));
+                const data = userDoc.data();
+                const free = data.freeChallenges || 0;
+                const purchased = data.purchasedChallenges || 0;
+                const total = free + purchased;
+                balanceCount.innerText = total;
+                balanceDiv.style.display = 'flex';
+            } catch (err) {
+                console.error('Ошибка загрузки баланса:', err);
+            }
+        }
+
+        async function loadAchievementsPage() {
+            const container = document.getElementById('achievementsGrid');
+            
+            try {
+                const achievementsSnap = await getDocs(collection(db, "achievements"));
+                const allAchievements = [];
+                achievementsSnap.forEach(doc => allAchievements.push({ id: doc.id, ...doc.data() }));
+                
+                let earnedIds = new Set();
+                let earnedCount = 0;
+                
+                if (currentUser) {
+                    const userAchievementsSnap = await getDocs(query(collection(db, "userAchievements"), where("userId", "==", currentUser.uid)));
+                    userAchievementsSnap.forEach(doc => earnedIds.add(doc.data().achievementId));
+                    earnedCount = earnedIds.size;
+                }
+                
+                const totalCount = allAchievements.length;
+                const progressStats = document.getElementById('progressStats');
+                if (progressStats && currentUser) {
+                    progressStats.innerHTML = `<i class="fas fa-medal"></i> ${earnedCount}/${totalCount} достижений получено`;
+                } else if (progressStats) {
+                    progressStats.innerHTML = `<i class="fas fa-lock"></i> Войдите, чтобы отслеживать прогресс`;
+                }
+                
+                let html = '';
+                allAchievements.forEach(ach => {
+                    const earned = earnedIds.has(ach.id);
+                    const icon = ach.icon || 'fa-medal';
+                    
+                    let rewardText = '';
+                    let rewardClass = 'positive';
+                    if (ach.reward) {
+                        const amount = ach.reward.amount;
+                        const type = ach.reward.type === 'frs' ? 'FRS' : (ach.reward.type === 'challenges' ? 'вызовов' : (ach.reward.type === 'premium' ? 'дней премиума' : ''));
+                        const sign = amount > 0 ? '+' : '';
+                        rewardText = `${sign}${amount} ${type}`;
+                        rewardClass = amount > 0 ? 'positive' : 'negative';
+                    }
+                    
+                    html += `
+                        <div class="achievement-card ${earned ? 'earned' : 'locked'}">
+                            <div class="achievement-icon"><i class="fas ${icon}"></i></div>
+                            <div class="achievement-info">
+                                <div class="achievement-name">${ach.name}</div>
+                                <div class="achievement-desc">${ach.description || ''}</div>
+                                <div class="achievement-how"><i class="fas fa-question-circle"></i> Как получить: ${ach.howTo || ach.description || ''}</div>
+                                ${rewardText ? `<div class="achievement-reward ${rewardClass}"><i class="fas fa-gift"></i> Награда: ${rewardText}</div>` : ''}
+                            </div>
+                            <div class="achievement-status">
+                                ${earned ? '<span class="status-earned"><i class="fas fa-check-circle"></i> Получено</span>' : '<span class="status-locked"><i class="fas fa-lock"></i> Не получено</span>'}
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                container.innerHTML = html;
+            } catch (err) {
+                console.error('Ошибка загрузки ачивок:', err);
+                container.innerHTML = '<div class="loading"><i class="fas fa-exclamation-triangle"></i> Ошибка загрузки</div>';
+            }
+        }
+
+        const loginBtn = document.getElementById('profileLoginBtn');
+        
+        onAuthStateChanged(auth, async (user) => {
+            currentUser = user;
+            
+            if (user && loginBtn) {
+                loginBtn.innerHTML = '<i class="fas fa-user"></i> Мой профиль';
+                loginBtn.href = `profile.html?id=${user.uid}`;
+                setTimeout(updateHeaderBalance, 1000);
+            } else if (loginBtn) {
+                loginBtn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Войти';
+                loginBtn.href = 'login.html';
+                const balanceDiv = document.getElementById('balanceIndicator');
+                if (balanceDiv) balanceDiv.style.display = 'none';
+            }
+            
+            await loadAchievementsPage();
+        });
+
+        const plusBtn = document.getElementById('balancePlusBtn');
+        if (plusBtn) {
+            plusBtn.onclick = () => window.location.href = 'shop.html';
+        }
+
+        const menuToggle = document.getElementById('menuToggle');
+        const navLinks = document.getElementById('navLinks');
+        if (menuToggle && navLinks) {
+            menuToggle.addEventListener('click', () => navLinks.classList.toggle('show'));
+        }
+    </script>
+</body>
+</html>
