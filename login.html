@@ -2,35 +2,162 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Вход и регистрация | PRORANK</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Вход | PRORANK</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700;14..32,800;14..32,900&display=swap" rel="stylesheet">
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: radial-gradient(ellipse at 30% 40%, rgba(251, 191, 36, 0.15) 0%, transparent 60%),
+                        radial-gradient(ellipse at 70% 80%, rgba(251, 191, 36, 0.08) 0%, transparent 50%),
+                        linear-gradient(135deg, #1a1a1a 0%, #0f0f0f 40%, #1a1a1a 100%);
+            background-attachment: fixed;
+            color: #fff;
+            line-height: 1.4;
+            min-height: 100vh;
+        }
+
+        .gold-top {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(90deg, #fbbf24, #ffdd88, #fbbf24, #b8860b);
+            z-index: 1001;
+        }
+
+        /* ===== ШАПКА ===== */
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 32px;
+            background: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(16px);
+            border-bottom: 1px solid rgba(251, 191, 36, 0.25);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            cursor: pointer;
+            background: linear-gradient(135deg, #ffffff, #fbbf24);
+            background-clip: text;
+            color: transparent;
+        }
+        .logo span {
+            background: linear-gradient(135deg, #fbbf24, #ffdd77);
+            background-clip: text;
+            color: transparent;
+        }
+
+        .menu-toggle {
+            display: none;
+            background: rgba(251,191,36,0.1);
+            border: 1px solid #fbbf24;
+            color: #fbbf24;
+            font-size: 1.6rem;
+            cursor: pointer;
+            padding: 8px 14px;
+            border-radius: 12px;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 6px;
+            background: rgba(15,15,15,0.7);
+            backdrop-filter: blur(12px);
+            padding: 5px 14px;
+            border-radius: 60px;
+            border: 1px solid rgba(251,191,36,0.2);
+        }
+        .nav-links a {
+            color: #ddd;
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 500;
+            padding: 8px 18px;
+            border-radius: 40px;
+            transition: all 0.2s;
+        }
+        .nav-links a i {
+            margin-right: 8px;
+            color: #fbbf24;
+        }
+        .nav-links a:hover {
+            color: #fbbf24;
+        }
+
+        /* ===== АВТОРИЗАЦИЯ ===== */
+        .auth-wrapper {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: calc(100vh - 80px);
+            padding: 40px 20px;
+        }
         .auth-container {
-            max-width: 500px;
-            margin: 4rem auto;
-            padding: 2rem;
-            background: #1f1f1f;
-            border-radius: 2rem;
+            max-width: 480px;
+            width: 100%;
+            background: rgba(15,15,15,0.7);
+            backdrop-filter: blur(8px);
+            border-radius: 32px;
+            padding: 32px;
+            border: 1px solid rgba(251,191,36,0.2);
+            box-shadow: 0 20px 40px -12px rgba(0,0,0,0.5);
+        }
+        .auth-header {
+            text-align: center;
+            margin-bottom: 28px;
+        }
+        .auth-header h1 {
+            font-size: 1.8rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #fff, #fbbf24);
+            background-clip: text;
+            color: transparent;
+        }
+        .auth-header p {
+            color: #888;
+            font-size: 0.8rem;
+            margin-top: 8px;
         }
         .auth-tabs {
             display: flex;
-            gap: 1rem;
-            margin-bottom: 2rem;
-            border-bottom: 1px solid #333;
+            gap: 8px;
+            margin-bottom: 24px;
+            background: #1a1a1a;
+            border-radius: 60px;
+            padding: 4px;
         }
         .tab-btn {
+            flex: 1;
             background: none;
             border: none;
-            color: #ccc;
-            padding: 0.5rem 1rem;
+            color: #aaa;
+            padding: 12px 20px;
             cursor: pointer;
-            font-size: 1.1rem;
+            font-size: 0.95rem;
+            font-weight: 600;
+            border-radius: 60px;
+            transition: all 0.2s;
         }
         .tab-btn.active {
-            color: #fbbf24;
-            border-bottom: 2px solid #fbbf24;
+            background: #fbbf24;
+            color: #000;
         }
         .auth-form {
             transition: 0.2s;
@@ -39,45 +166,73 @@
             display: none;
         }
         .input-group {
-            margin-bottom: 1rem;
+            margin-bottom: 20px;
         }
         .input-group label {
             display: block;
-            margin-bottom: 0.5rem;
-            color: #aaa;
+            margin-bottom: 8px;
+            color: #ccc;
+            font-size: 0.8rem;
+            font-weight: 500;
         }
         .input-group input, .input-group select {
             width: 100%;
-            padding: 0.75rem;
-            background: #2a2a2a;
-            border: 1px solid #333;
-            color: white;
-            border-radius: 8px;
+            padding: 14px 18px;
+            background: #1a1a1a;
+            border: 1px solid rgba(251,191,36,0.25);
+            color: #fff;
+            border-radius: 60px;
+            font-size: 0.9rem;
+            font-family: inherit;
+            transition: 0.2s;
+        }
+        .input-group input:focus, .input-group select:focus {
+            outline: none;
+            border-color: #fbbf24;
+            box-shadow: 0 0 8px rgba(251,191,36,0.2);
         }
         .submit-btn {
             width: 100%;
             background: #fbbf24;
-            color: black;
-            padding: 0.75rem;
+            color: #000;
+            padding: 14px;
             border: none;
-            border-radius: 8px;
-            font-weight: bold;
+            border-radius: 60px;
+            font-weight: 700;
+            font-size: 1rem;
             cursor: pointer;
-            margin-top: 1rem;
+            transition: 0.1s;
+            margin-top: 8px;
+        }
+        .submit-btn:active {
+            transform: scale(0.97);
         }
         .message {
-            margin-top: 1rem;
-            color: #ef4444;
+            margin-top: 16px;
+            color: #ff5555;
             text-align: center;
+            font-size: 0.8rem;
         }
         .forgot-link {
             text-align: center;
-            margin-top: 1rem;
+            margin-top: 16px;
         }
         .forgot-link a {
             color: #fbbf24;
             text-decoration: none;
+            font-size: 0.8rem;
         }
+        .referral-hint {
+            background: rgba(251,191,36,0.08);
+            border-radius: 16px;
+            padding: 12px;
+            margin-top: 20px;
+            text-align: center;
+            font-size: 0.75rem;
+            color: #fbbf24;
+        }
+
+        /* Модалка */
         .modal {
             display: none;
             position: fixed;
@@ -85,134 +240,212 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0,0,0,0.8);
+            background: rgba(0,0,0,0.85);
+            backdrop-filter: blur(8px);
             justify-content: center;
             align-items: center;
-            z-index: 1000;
+            z-index: 1100;
         }
         .modal-content {
-            background: #1f1f1f;
-            padding: 2rem;
-            border-radius: 1rem;
+            background: #151515;
+            padding: 28px;
+            border-radius: 28px;
             width: 90%;
             max-width: 400px;
+            border: 1px solid rgba(251,191,36,0.3);
+        }
+        .modal-content h3 {
+            margin-bottom: 16px;
+            color: #fbbf24;
         }
         .modal-content input {
             width: 100%;
-            padding: 0.75rem;
-            margin: 1rem 0;
-            background: #2a2a2a;
+            padding: 14px;
+            margin: 16px 0;
+            background: #1a1a1a;
             border: 1px solid #333;
-            color: white;
-            border-radius: 8px;
+            color: #fff;
+            border-radius: 60px;
         }
-        .modal-content button {
-            width: 100%;
-            background: #fbbf24;
-            color: black;
-            padding: 0.75rem;
-            border: none;
-            border-radius: 8px;
+        .modal-buttons {
+            display: flex;
+            gap: 12px;
+        }
+        .modal-buttons button {
+            flex: 1;
+            padding: 12px;
+            border-radius: 60px;
+            font-weight: 600;
             cursor: pointer;
-            margin-bottom: 0.5rem;
+            border: none;
         }
-        .modal-content button:last-child {
+        #sendResetBtn {
+            background: #fbbf24;
+            color: #000;
+        }
+        #closeResetBtn {
             background: #333;
+            color: #fff;
         }
+
+        @media (max-width: 768px) {
+            .navbar {
+                padding: 12px 18px;
+            }
+            .menu-toggle {
+                display: block;
+            }
+            .nav-links {
+                display: none;
+                flex-direction: column;
+                position: absolute;
+                top: 68px;
+                left: 18px;
+                right: 18px;
+                background: #0f0f0f;
+                border-radius: 24px;
+                padding: 20px;
+                gap: 10px;
+                border: 1px solid rgba(251,191,36,0.3);
+            }
+            .nav-links.show {
+                display: flex;
+            }
+            .nav-links a {
+                width: 100%;
+                text-align: center;
+                padding: 12px;
+            }
+            .auth-container {
+                padding: 24px;
+                margin: 20px;
+            }
+            .auth-header h1 {
+                font-size: 1.5rem;
+            }
+        }
+
+        ::-webkit-scrollbar {
+            width: 5px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #1a1a1a;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #fbbf24;
+            border-radius: 10px;
+        }
+        .icon-gold { color: #fbbf24; }
     </style>
 </head>
 <body>
+    <div class="gold-top"></div>
+
     <header class="navbar">
-        <div class="logo" onclick="window.location='index.html'" style="cursor:pointer">PRO<span>RANK</span></div>
-        <div class="balance-indicator" id="balanceIndicator" style="display: none;">
-            <span class="balance-icon">🎯</span>
-            <span class="balance-count" id="headerChallengesCount">0</span>
-            <button class="balance-plus" id="balancePlusBtn">+</button>
-        </div>
+        <div class="logo" onclick="window.location='index.html'">PRO<span>RANK</span></div>
         <button class="menu-toggle" id="menuToggle">☰</button>
         <nav class="nav-links" id="navLinks">
             <a href="index.html"><i class="fas fa-home"></i> Главная</a>
+            <a href="rating.html"><i class="fas fa-chart-line"></i> Рейтинг</a>
+            <a href="leagues.html"><i class="fas fa-trophy"></i> Лиги</a>
+            <a href="rules.html"><i class="fas fa-book"></i> Правила</a>
+            <a href="shop.html"><i class="fas fa-store"></i> Магазин</a>
+            <a href="challenges.html"><i class="fas fa-fist-raised"></i> Вызовы</a>
         </nav>
     </header>
 
-    <div class="auth-container">
-        <div class="auth-tabs">
-            <button id="loginTabBtn" class="tab-btn active">Вход</button>
-            <button id="registerTabBtn" class="tab-btn">Регистрация</button>
-        </div>
+    <div class="auth-wrapper">
+        <div class="auth-container">
+            <div class="auth-header">
+                <h1>PRO<span style="color:#fbbf24;">RANK</span></h1>
+                <p>Войди или зарегистрируйся, чтобы начать путь</p>
+            </div>
 
-        <div id="loginFormContainer" class="auth-form">
-            <form id="loginForm">
-                <div class="input-group">
-                    <label>Email</label>
-                    <input type="email" id="loginEmail" required>
-                </div>
-                <div class="input-group">
-                    <label>Пароль</label>
-                    <input type="password" id="loginPassword" required>
-                </div>
-                <button type="submit" class="submit-btn">Войти</button>
-                <div class="forgot-link">
-                    <a href="#" id="forgotPasswordLink">Забыли пароль?</a>
-                </div>
-            </form>
-            <div id="loginMessage" class="message"></div>
-        </div>
+            <div class="auth-tabs">
+                <button id="loginTabBtn" class="tab-btn active">Вход</button>
+                <button id="registerTabBtn" class="tab-btn">Регистрация</button>
+            </div>
 
-        <div id="registerFormContainer" class="auth-form hidden">
-            <form id="registrationForm">
-                <div class="input-group">
-                    <label>Имя Фамилия</label>
-                    <input type="text" id="userName" required>
-                </div>
-                <div class="input-group">
-                    <label>Email</label>
-                    <input type="email" id="userEmail" required>
-                </div>
-                <div class="input-group">
-                    <label>Пароль (минимум 6 символов)</label>
-                    <input type="password" id="userPassword" required>
-                </div>
-                <div class="input-group">
-                    <label>Город</label>
-                    <input type="text" id="userCity" required>
-                </div>
-                <div class="input-group">
-                    <label>Весовая категория</label>
-                    <select id="userWeightClass" required>
-                        <option value="">Выберите категорию</option>
-                        <option value="47">Наилегчайшая (до 50 кг)</option>
-                        <option value="53">Легчайшая (51–56 кг)</option>
-                        <option value="59">Полулёгкая (57–61 кг)</option>
-                        <option value="64">Лёгкая (62–66 кг)</option>
-                        <option value="69">1-я полусредняя (67–71 кг)</option>
-                        <option value="74">Полусредняя (72–77 кг)</option>
-                        <option value="80">1-я средняя (78–83 кг)</option>
-                        <option value="86">Средняя (84–89 кг)</option>
-                        <option value="94">Полутяжёлая (90–99 кг)</option>
-                        <option value="110">Тяжёлая (100+ кг)</option>
-                    </select>
-                </div>
-                <div class="input-group">
-                    <label>Вид спорта</label>
-                    <select id="userSport" required>
-                        <option value="">Выберите</option>
-                        <option value="Бокс">Бокс</option>
-                        <option value="Борьба">Борьба</option>
-                        <option value="ММА">ММА</option>
-                    </select>
-                </div>
-                <button type="submit" class="submit-btn">Зарегистрироваться</button>
-            </form>
+            <div id="loginFormContainer" class="auth-form">
+                <form id="loginForm">
+                    <div class="input-group">
+                        <label><i class="fas fa-envelope"></i> Email</label>
+                        <input type="email" id="loginEmail" placeholder="example@mail.ru" required>
+                    </div>
+                    <div class="input-group">
+                        <label><i class="fas fa-lock"></i> Пароль</label>
+                        <input type="password" id="loginPassword" placeholder="••••••" required>
+                    </div>
+                    <button type="submit" class="submit-btn"><i class="fas fa-sign-in-alt"></i> Войти</button>
+                    <div class="forgot-link">
+                        <a href="#" id="forgotPasswordLink">Забыли пароль?</a>
+                    </div>
+                </form>
+                <div id="loginMessage" class="message"></div>
+            </div>
+
+            <div id="registerFormContainer" class="auth-form hidden">
+                <form id="registrationForm">
+                    <div class="input-group">
+                        <label><i class="fas fa-user"></i> Имя и фамилия</label>
+                        <input type="text" id="userName" placeholder="Иван Иванов" required>
+                    </div>
+                    <div class="input-group">
+                        <label><i class="fas fa-envelope"></i> Email</label>
+                        <input type="email" id="userEmail" placeholder="example@mail.ru" required>
+                    </div>
+                    <div class="input-group">
+                        <label><i class="fas fa-lock"></i> Пароль (минимум 6 символов)</label>
+                        <input type="password" id="userPassword" placeholder="••••••" required>
+                    </div>
+                    <div class="input-group">
+                        <label><i class="fas fa-city"></i> Город</label>
+                        <input type="text" id="userCity" placeholder="Москва" required>
+                    </div>
+                    <div class="input-group">
+                        <label><i class="fas fa-weight-hanging"></i> Весовая категория</label>
+                        <select id="userWeightClass" required>
+                            <option value="">Выберите категорию</option>
+                            <option value="Наилегчайшая (45–50 кг)">Наилегчайшая (45–50 кг)</option>
+                            <option value="Легчайшая (51–56 кг)">Легчайшая (51–56 кг)</option>
+                            <option value="Полулёгкая (57–61 кг)">Полулёгкая (57–61 кг)</option>
+                            <option value="Лёгкая (62–66 кг)">Лёгкая (62–66 кг)</option>
+                            <option value="1-я полусредняя (67–71 кг)">1-я полусредняя (67–71 кг)</option>
+                            <option value="Полусредняя (72–77 кг)">Полусредняя (72–77 кг)</option>
+                            <option value="1-я средняя (78–83 кг)">1-я средняя (78–83 кг)</option>
+                            <option value="Средняя (84–89 кг)">Средняя (84–89 кг)</option>
+                            <option value="Полутяжёлая (90–99 кг)">Полутяжёлая (90–99 кг)</option>
+                            <option value="Тяжёлая (100+ кг)">Тяжёлая (100+ кг)</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label><i class="fas fa-fist-raised"></i> Вид спорта</label>
+                        <select id="userSport" required>
+                            <option value="">Выберите вид спорта</option>
+                            <option value="Бокс">Бокс</option>
+                            <option value="Борьба">Борьба</option>
+                            <option value="ММА">ММА</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="submit-btn"><i class="fas fa-user-plus"></i> Зарегистрироваться</button>
+                </form>
+            </div>
+
+            <div id="referralHint" class="referral-hint" style="display: none;">
+                <i class="fas fa-gift icon-gold"></i> Вы перешли по пригласительной ссылке!
+            </div>
         </div>
     </div>
 
     <div id="resetModal" class="modal">
         <div class="modal-content">
-            <h3>Сброс пароля</h3>
+            <h3><i class="fas fa-key icon-gold"></i> Сброс пароля</h3>
+            <p style="font-size:0.8rem; color:#aaa;">Введите email, на который отправим инструкции</p>
             <input type="email" id="resetEmail" placeholder="Ваш email">
-            <button id="sendResetBtn">Отправить письмо</button>
-            <button id="closeResetBtn">Отмена</button>
+            <div class="modal-buttons">
+                <button id="sendResetBtn">Отправить</button>
+                <button id="closeResetBtn">Отмена</button>
+            </div>
         </div>
     </div>
 
@@ -243,22 +476,11 @@
         const db = getFirestore(app);
         const auth = getAuth(app);
 
-        // Получаем реферальный код из URL
         const urlParams = new URLSearchParams(window.location.search);
         const referrerId = urlParams.get('ref');
 
-        function getWeightClass(weightValue) {
-            const weight = parseInt(weightValue);
-            if (weight <= 50) return 'Наилегчайшая (45–50 кг)';
-            if (weight <= 56) return 'Легчайшая (51–56 кг)';
-            if (weight <= 61) return 'Полулёгкая (57–61 кг)';
-            if (weight <= 66) return 'Лёгкая (62–66 кг)';
-            if (weight <= 71) return '1-я полусредняя (67–71 кг)';
-            if (weight <= 77) return 'Полусредняя (72–77 кг)';
-            if (weight <= 83) return '1-я средняя (78–83 кг)';
-            if (weight <= 89) return 'Средняя (84–89 кг)';
-            if (weight <= 99) return 'Полутяжёлая (90–99 кг)';
-            return 'Тяжёлая (100+ кг)';
+        if (referrerId) {
+            document.getElementById('referralHint').style.display = 'block';
         }
 
         const loginTab = document.getElementById('loginTabBtn');
@@ -285,7 +507,7 @@
             const email = document.getElementById('userEmail').value.trim();
             const password = document.getElementById('userPassword').value;
             const city = document.getElementById('userCity').value;
-            const weightClassValue = document.getElementById('userWeightClass').value;
+            const weightClass = document.getElementById('userWeightClass').value;
             const sport = document.getElementById('userSport').value;
 
             if (name.split(' ').length < 2) {
@@ -302,15 +524,16 @@
                 const uid = userCred.user.uid;
                 
                 await setDoc(doc(db, "fighters", uid), {
-                    name, email, city, sport, weightClass: weightClassValue,
-                    weight: parseInt(weightClassValue), frs: 50, wins: 0, finishes: 0, 
-                    bio: "", avatar: "Avatar.png", subscribers: 0, viewsLast30Days: 0,
+                    name, email, city, sport, weightClass: weightClass,
+                    weight: parseInt(weightClass.split(' ')[0]) || 70,
+                    frs: 50, wins: 0, losses: 0, finishes: 0,
+                    bio: "", avatar: "Avatar.png", subscribers: 0, likes: 0,
                     freeChallenges: 3, purchasedChallenges: 0,
                     referralCount: 0, referralBonus: 0,
-                    referredBy: referrerId || null
+                    referredBy: referrerId || null,
+                    createdAt: new Date()
                 });
                 
-                // Начисляем бонус пригласившему, если есть реферер
                 if (referrerId) {
                     const referrerRef = doc(db, "fighters", referrerId);
                     const referrerDoc = await getDoc(referrerRef);
@@ -375,16 +598,14 @@
                 await sendPasswordResetEmail(auth, email);
                 alert("Письмо для сброса пароля отправлено");
                 resetModal.style.display = 'none';
+                resetEmail.value = '';
             } catch (error) {
                 alert("Ошибка: " + error.message);
             }
         });
-    </script>
-    <script>
-        // Бургер-меню
+
         const menuToggle = document.getElementById('menuToggle');
         const navLinks = document.getElementById('navLinks');
-        
         if (menuToggle && navLinks) {
             menuToggle.addEventListener('click', () => {
                 navLinks.classList.toggle('show');

@@ -2,43 +2,188 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Лиги | PRORANK</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700;14..32,800;14..32,900&display=swap" rel="stylesheet">
     <style>
-        .leagues-container {
-            max-width: 1000px;
-            margin: 2rem auto;
-            padding: 0 1rem;
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
-        .leagues-title {
-            text-align: center;
-            margin-bottom: 2rem;
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: radial-gradient(ellipse at 30% 40%, rgba(251, 191, 36, 0.15) 0%, transparent 60%),
+                        radial-gradient(ellipse at 70% 80%, rgba(251, 191, 36, 0.08) 0%, transparent 50%),
+                        linear-gradient(135deg, #1a1a1a 0%, #0f0f0f 40%, #1a1a1a 100%);
+            background-attachment: fixed;
+            color: #fff;
+            line-height: 1.4;
+        }
+
+        .gold-top {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(90deg, #fbbf24, #ffdd88, #fbbf24, #b8860b);
+            z-index: 1001;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 24px;
+            position: relative;
+            z-index: 2;
+        }
+
+        /* ===== ШАПКА ===== */
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 32px;
+            background: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(16px);
+            border-bottom: 1px solid rgba(251, 191, 36, 0.25);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            cursor: pointer;
+            background: linear-gradient(135deg, #ffffff, #fbbf24);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        .logo span {
+            background: linear-gradient(135deg, #fbbf24, #ffdd77);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .balance-indicator {
+            background: #111;
+            border: 1px solid rgba(251, 191, 36, 0.5);
+            border-radius: 60px;
+            padding: 7px 18px;
             display: flex;
             align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
+            gap: 12px;
+            font-weight: 700;
+            font-size: 0.9rem;
+        }
+        .balance-count {
+            color: #fbbf24;
+        }
+        .balance-plus {
+            background: rgba(251,191,36,0.15);
+            border: none;
+            color: #fbbf24;
+            cursor: pointer;
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+        }
+        .balance-plus:active {
+            background: #fbbf24;
+            color: #000;
+        }
+
+        .menu-toggle {
+            display: none;
+            background: rgba(251,191,36,0.1);
+            border: 1px solid #fbbf24;
+            color: #fbbf24;
+            font-size: 1.6rem;
+            cursor: pointer;
+            padding: 8px 14px;
+            border-radius: 12px;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 6px;
+            background: rgba(15,15,15,0.7);
+            backdrop-filter: blur(12px);
+            padding: 5px 14px;
+            border-radius: 60px;
+            border: 1px solid rgba(251,191,36,0.2);
+        }
+        .nav-links a {
+            color: #ddd;
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 500;
+            padding: 8px 18px;
+            border-radius: 40px;
+            transition: all 0.2s;
+        }
+        .nav-links a i {
+            margin-right: 8px;
+            color: #fbbf24;
+        }
+        .nav-links a:hover {
+            color: #fbbf24;
+        }
+
+        /* ===== ЗАГОЛОВОК ===== */
+        .page-header {
+            text-align: center;
+            padding: 50px 20px 30px;
+        }
+        .page-header h1 {
+            font-size: 2.2rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #fff, #fbbf24);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        .page-header h1 {
+    font-size: 2.2rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, #fff, #fbbf24);
+    background-clip: text;
+    color: transparent;
+}
+        /* ===== ЛИГИ ===== */
+        .leagues-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            margin: 30px 0;
         }
         .league-card {
-            background: #1a1a1a;
-            border-radius: 1rem;
-            padding: 1.5rem;
-            margin-bottom: 1rem;
+            background: rgba(15,15,15,0.7);
+            backdrop-filter: blur(8px);
+            border-radius: 28px;
+            padding: 24px;
             display: flex;
             align-items: center;
-            gap: 1.5rem;
+            gap: 24px;
             flex-wrap: wrap;
-            border-left: 4px solid;
-            transition: transform 0.2s;
+            border-left: 5px solid;
+            transition: 0.15s;
         }
-        .league-card:hover {
-            transform: translateX(5px);
-            background: #222;
+        .league-card:active {
+            transform: scale(0.99);
+            background: rgba(25,25,25,0.8);
         }
         .league-icon {
-            font-size: 2.5rem;
-            width: 70px;
+            font-size: 2.8rem;
+            width: 80px;
             text-align: center;
         }
         .league-info {
@@ -46,137 +191,204 @@
         }
         .league-name {
             font-size: 1.3rem;
-            font-weight: bold;
-            margin-bottom: 0.25rem;
+            font-weight: 800;
+            margin-bottom: 8px;
             display: flex;
             align-items: center;
-            gap: 0.5rem;
+            gap: 10px;
+            flex-wrap: wrap;
         }
         .league-range {
-            color: #888;
-            margin-bottom: 0.5rem;
+            color: #aaa;
+            font-size: 0.85rem;
+            margin-bottom: 12px;
             display: flex;
             align-items: center;
-            gap: 0.5rem;
+            gap: 8px;
         }
         .league-rewards {
-            color: #fbbf24;
-            font-size: 0.9rem;
             display: flex;
-            align-items: center;
-            gap: 0.5rem;
+            gap: 10px;
             flex-wrap: wrap;
         }
         .reward-tag {
-            background: #2a2a2a;
-            padding: 0.2rem 0.6rem;
-            border-radius: 2rem;
+            background: rgba(251,191,36,0.12);
+            padding: 5px 14px;
+            border-radius: 40px;
             font-size: 0.75rem;
+            font-weight: 600;
             display: inline-flex;
             align-items: center;
-            gap: 0.3rem;
-        }
-        .navbar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 15px 20px;
-            background: #1a1a1a;
-            border-bottom: 2px solid #fbbf24;
-        }
-        .logo {
-            font-size: 1.5rem;
-            font-weight: bold;
-            cursor: pointer;
-        }
-        .logo span { color: #fbbf24; }
-        .nav-links {
-            display: flex;
-            gap: 20px;
-            align-items: center;
-        }
-        .nav-links a {
-            color: #fff;
-            text-decoration: none;
-            font-size: 1rem;
-            transition: 0.3s;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.3rem;
-        }
-        .nav-links a:hover { color: #fbbf24; }
-        .menu-toggle {
-            display: none;
-            background: none;
-            border: none;
-            color: white;
-            font-size: 1.8rem;
-            cursor: pointer;
-            padding: 5px 10px;
-        }
-        .balance-indicator {
-            background: linear-gradient(135deg, #1e2a1a, #0f1a0f);
-            border: 1px solid #fbbf24;
-            border-radius: 2rem;
-            padding: 0.3rem 0.8rem;
-            display: flex;
-            align-items: center;
-            gap: 0.4rem;
-            font-weight: bold;
-        }
-        .balance-plus {
-            background: none;
-            border: none;
+            gap: 6px;
             color: #fbbf24;
-            font-size: 1.2rem;
-            font-weight: bold;
-            cursor: pointer;
-            width: 20px;
-            height: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 50%;
         }
+
+        .league-bronze { color: #cd7f32; }
+        .league-silver { color: #c0c0c0; }
+        .league-gold { color: #ffd700; }
+        .league-diamond { color: #00ffff; }
+        .league-elite { color: #9400d3; }
+        .league-legendary { color: #ff4500; }
+
         .frs-calc {
-            background: #0f0f0f;
-            border-radius: 1rem;
-            padding: 1.5rem;
-            margin-top: 2rem;
+            background: rgba(15,15,15,0.7);
+            backdrop-filter: blur(8px);
+            border-radius: 28px;
+            padding: 28px;
+            margin: 30px 0 50px;
             text-align: center;
+            border: 1px solid rgba(251,191,36,0.2);
         }
         .frs-calc h3 {
             color: #fbbf24;
-            margin-bottom: 0.5rem;
+            font-size: 1.3rem;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
         }
+        .frs-calc p {
+            color: #ccc;
+            line-height: 1.6;
+            margin-bottom: 16px;
+        }
+        .frs-calc a {
+            color: #fbbf24;
+            text-decoration: none;
+            font-weight: 600;
+        }
+        .frs-calc a:hover {
+            text-decoration: underline;
+        }
+
+        /* ===== ПОДВАЛ ===== */
+        .main-footer {
+            background: #0a0a0a;
+            border-top: 1px solid rgba(251,191,36,0.15);
+            margin-top: 40px;
+            padding: 40px 0 24px;
+        }
+        .footer-content {
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 32px;
+        }
+        .footer-logo .logo {
+            font-size: 1.3rem;
+            display: inline-block;
+        }
+        .footer-logo p {
+            font-size: 0.7rem;
+            color: #777;
+            margin-top: 6px;
+        }
+        .footer-about h4, .footer-links h4 {
+            color: #fbbf24;
+            font-size: 0.9rem;
+            margin-bottom: 12px;
+        }
+        .footer-about p {
+            font-size: 0.75rem;
+            color: #888;
+            max-width: 220px;
+        }
+        .footer-links a {
+            display: block;
+            color: #aaa;
+            text-decoration: none;
+            font-size: 0.75rem;
+            margin-bottom: 8px;
+        }
+        .footer-links a:hover {
+            color: #fbbf24;
+        }
+        .footer-bottom {
+            text-align: center;
+            margin-top: 32px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255,255,255,0.05);
+            font-size: 0.65rem;
+            color: #555;
+        }
+
         @media (max-width: 768px) {
+            .navbar {
+                padding: 12px 18px;
+            }
+            .menu-toggle {
+                display: block;
+            }
             .nav-links {
                 display: none;
                 flex-direction: column;
                 position: absolute;
-                top: 70px;
-                left: 0;
-                width: 100%;
-                background: #1a1a1a;
+                top: 68px;
+                left: 18px;
+                right: 18px;
+                background: #0f0f0f;
+                border-radius: 24px;
                 padding: 20px;
-                gap: 15px;
-                z-index: 100;
-                border-top: 1px solid #333;
+                gap: 10px;
+                border: 1px solid rgba(251,191,36,0.3);
             }
-            .nav-links.show { display: flex; }
-            .menu-toggle { display: block; }
-            .league-card { flex-direction: column; text-align: center; }
-            .league-name { justify-content: center; }
-            .league-range { justify-content: center; }
-            .league-rewards { justify-content: center; }
+            .nav-links.show {
+                display: flex;
+            }
+            .nav-links a {
+                width: 100%;
+                text-align: center;
+                padding: 12px;
+            }
+            .container {
+                padding: 0 16px;
+            }
+            .page-header h1 {
+                font-size: 1.6rem;
+            }
+            .league-card {
+                flex-direction: column;
+                text-align: center;
+            }
+            .league-name {
+                justify-content: center;
+            }
+            .league-range {
+                justify-content: center;
+            }
+            .league-rewards {
+                justify-content: center;
+            }
+            .footer-content {
+                flex-direction: column;
+                text-align: center;
+            }
+            .footer-about p {
+                margin: 0 auto;
+            }
         }
+
+        ::-webkit-scrollbar {
+            width: 5px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #1a1a1a;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #fbbf24;
+            border-radius: 10px;
+        }
+        .icon-gold { color: #fbbf24; }
     </style>
 </head>
 <body>
+    <div class="gold-top"></div>
+
     <header class="navbar">
-        <div class="logo" onclick="window.location='index.html'" style="cursor:pointer">PRO<span>RANK</span></div>
+        <div class="logo" onclick="window.location='index.html'">PRO<span>RANK</span></div>
         <div class="balance-indicator" id="balanceIndicator" style="display: none;">
-            <i class="fas fa-crosshairs icon-gold"></i>
+            <i class="fas fa-crosshairs"></i>
             <span class="balance-count" id="headerChallengesCount">0</span>
             <button class="balance-plus" id="balancePlusBtn">+</button>
         </div>
@@ -187,82 +399,114 @@
             <a href="rules.html"><i class="fas fa-book"></i> Правила</a>
             <a href="shop.html"><i class="fas fa-store"></i> Магазин</a>
             <a href="challenges.html"><i class="fas fa-fist-raised"></i> Вызовы</a>
-            <a href="login.html" id="profileLoginBtn" class="btn-primary"><i class="fas fa-sign-in-alt"></i> Войти</a>
+            <a href="login.html" id="profileLoginBtn"><i class="fas fa-sign-in-alt"></i> Войти</a>
         </nav>
     </header>
 
-    <div class="leagues-container">
-        <h1 class="leagues-title"><i class="fas fa-trophy icon-gold"></i> Рейтинговые лиги PRORANK</h1>
-
-        <div class="league-card" style="border-left-color: #cd7f32;">
-            <div class="league-icon"><i class="fas fa-medal" style="color:#cd7f32; font-size: 2.5rem;"></i></div>
-            <div class="league-info">
-                <div class="league-name"><span class="league-bronze">БРОНЗОВАЯ ЛИГА</span></div>
-                <div class="league-range"><i class="fas fa-chart-simple"></i> 0 – 499 FRS</div>
-                <div class="league-rewards"><i class="fas fa-gift icon-dim"></i> Награда: —</div>
-            </div>
+    <main class="container">
+        <div class="page-header">
+            <h1><i class="fas fa-trophy"></i> Рейтинговые лиги</h1>
         </div>
 
-        <div class="league-card" style="border-left-color: #c0c0c0;">
-            <div class="league-icon"><i class="fas fa-medal" style="color:#c0c0c0; font-size: 2.5rem;"></i></div>
-            <div class="league-info">
-                <div class="league-name"><span class="league-silver">СЕРЕБРЯНАЯ ЛИГА</span></div>
-                <div class="league-range"><i class="fas fa-chart-simple"></i> 500 – 999 FRS</div>
-                <div class="league-rewards"><span class="reward-tag"><i class="fas fa-crosshairs"></i> +1 вызов в месяц</span></div>
+        <div class="leagues-grid">
+            <div class="league-card" style="border-left-color: #cd7f32;">
+                <div class="league-icon"><i class="fas fa-medal" style="color:#cd7f32;"></i></div>
+                <div class="league-info">
+                    <div class="league-name"><span class="league-bronze">БРОНЗОВАЯ ЛИГА</span></div>
+                    <div class="league-range"><i class="fas fa-chart-simple"></i> 0 – 499 FRS</div>
+                    <div class="league-rewards"><span class="reward-tag"><i class="fas fa-gift"></i> Награда: —</span></div>
+                </div>
             </div>
-        </div>
 
-        <div class="league-card" style="border-left-color: #ffd700;">
-            <div class="league-icon"><i class="fas fa-crown" style="color:#ffd700; font-size: 2.5rem;"></i></div>
-            <div class="league-info">
-                <div class="league-name"><span class="league-gold">ЗОЛОТАЯ ЛИГА</span></div>
-                <div class="league-range"><i class="fas fa-chart-simple"></i> 1000 – 1999 FRS</div>
-                <div class="league-rewards"><span class="reward-tag"><i class="fas fa-crosshairs"></i> +3 вызова</span><span class="reward-tag"><i class="fas fa-certificate"></i> Бейдж в профиле</span></div>
+            <div class="league-card" style="border-left-color: #c0c0c0;">
+                <div class="league-icon"><i class="fas fa-medal" style="color:#c0c0c0;"></i></div>
+                <div class="league-info">
+                    <div class="league-name"><span class="league-silver">СЕРЕБРЯНАЯ ЛИГА</span></div>
+                    <div class="league-range"><i class="fas fa-chart-simple"></i> 500 – 999 FRS</div>
+                    <div class="league-rewards"><span class="reward-tag"><i class="fas fa-crosshairs"></i> +1 вызов в месяц</span></div>
+                </div>
             </div>
-        </div>
 
-        <div class="league-card" style="border-left-color: #00ffff;">
-            <div class="league-icon"><i class="fas fa-gem" style="color:#00ffff; font-size: 2.5rem;"></i></div>
-            <div class="league-info">
-                <div class="league-name"><span class="league-diamond">АЛМАЗНАЯ ЛИГА</span></div>
-                <div class="league-range"><i class="fas fa-chart-simple"></i> 2000 – 3499 FRS</div>
-                <div class="league-rewards"><span class="reward-tag"><i class="fas fa-crosshairs"></i> +5 вызовов</span><span class="reward-tag"><i class="fas fa-lock-open"></i> Доступ в закрытый чат</span></div>
+            <div class="league-card" style="border-left-color: #ffd700;">
+                <div class="league-icon"><i class="fas fa-crown" style="color:#ffd700;"></i></div>
+                <div class="league-info">
+                    <div class="league-name"><span class="league-gold">ЗОЛОТАЯ ЛИГА</span></div>
+                    <div class="league-range"><i class="fas fa-chart-simple"></i> 1000 – 1999 FRS</div>
+                    <div class="league-rewards">
+                        <span class="reward-tag"><i class="fas fa-crosshairs"></i> +3 вызова</span>
+                        <span class="reward-tag"><i class="fas fa-certificate"></i> Бейдж в профиле</span>
+                    </div>
+                </div>
             </div>
-        </div>
 
-        <div class="league-card" style="border-left-color: #9400d3;">
-            <div class="league-icon"><i class="fas fa-dragon" style="color:#9400d3; font-size: 2.5rem;"></i></div>
-            <div class="league-info">
-                <div class="league-name"><span class="league-elite">ЭЛИТНАЯ ЛИГА</span></div>
-                <div class="league-range"><i class="fas fa-chart-simple"></i> 3500 – 4999 FRS</div>
-                <div class="league-rewards"><span class="reward-tag"><i class="fas fa-crosshairs"></i> +10 вызовов</span><span class="reward-tag"><i class="fas fa-star"></i> Премиум-значок</span></div>
+            <div class="league-card" style="border-left-color: #00ffff;">
+                <div class="league-icon"><i class="fas fa-gem" style="color:#00ffff;"></i></div>
+                <div class="league-info">
+                    <div class="league-name"><span class="league-diamond">АЛМАЗНАЯ ЛИГА</span></div>
+                    <div class="league-range"><i class="fas fa-chart-simple"></i> 2000 – 3499 FRS</div>
+                    <div class="league-rewards">
+                        <span class="reward-tag"><i class="fas fa-crosshairs"></i> +5 вызовов</span>
+                        <span class="reward-tag"><i class="fas fa-lock-open"></i> Доступ в закрытый чат</span>
+                    </div>
+                </div>
             </div>
-        </div>
 
-        <div class="league-card" style="border-left-color: #ff4500;">
-            <div class="league-icon"><i class="fas fa-skull" style="color:#ff4500; font-size: 2.5rem;"></i></div>
-            <div class="league-info">
-                <div class="league-name"><span class="league-legendary">ЛЕГЕНДАРНАЯ ЛИГА</span></div>
-                <div class="league-range"><i class="fas fa-chart-simple"></i> 5000+ FRS</div>
-                <div class="league-rewards"><span class="reward-tag"><i class="fas fa-gem"></i> Премиум бесплатно</span><span class="reward-tag"><i class="fab fa-telegram"></i> Публикация в ТГ-канале</span></div>
+            <div class="league-card" style="border-left-color: #9400d3;">
+                <div class="league-icon"><i class="fas fa-dragon" style="color:#9400d3;"></i></div>
+                <div class="league-info">
+                    <div class="league-name"><span class="league-elite">ЭЛИТНАЯ ЛИГА</span></div>
+                    <div class="league-range"><i class="fas fa-chart-simple"></i> 3500 – 4999 FRS</div>
+                    <div class="league-rewards">
+                        <span class="reward-tag"><i class="fas fa-crosshairs"></i> +10 вызовов</span>
+                        <span class="reward-tag"><i class="fas fa-star"></i> Премиум-значок</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="league-card" style="border-left-color: #ff4500;">
+                <div class="league-icon"><i class="fas fa-skull" style="color:#ff4500;"></i></div>
+                <div class="league-info">
+                    <div class="league-name"><span class="league-legendary">ЛЕГЕНДАРНАЯ ЛИГА</span></div>
+                    <div class="league-range"><i class="fas fa-chart-simple"></i> 5000+ FRS</div>
+                    <div class="league-rewards">
+                        <span class="reward-tag"><i class="fas fa-gem"></i> Премиум бесплатно</span>
+                        <span class="reward-tag"><i class="fab fa-telegram"></i> Публикация в ТГ-канале</span>
+                    </div>
+                </div>
             </div>
         </div>
 
         <div class="frs-calc">
-            <h3><i class="fas fa-calculator icon-gold"></i> Как заработать FRS?</h3>
-            <p>Победа → +100<br>Финиш → +50<br>Лайки и подписчики → +Хайп</p>
-            <p><a href="rules.html" style="color: #fbbf24;">Подробнее о формуле <i class="fas fa-arrow-right"></i></a></p>
+            <h3><i class="fas fa-calculator"></i> Как заработать FRS?</h3>
+            <p>🏆 Победа в бою → +100 FRS<br>⚡ Досрочная победа (финиш) → +50 FRS<br>❤️ Лайки и подписчики → влияют на хайп-рейтинг</p>
+            <p><a href="rules.html"><i class="fas fa-book"></i> Подробнее о формуле рейтинга →</a></p>
         </div>
-    </div>
+    </main>
 
     <footer class="main-footer">
-        <div class="container footer-content">
-            <div class="footer-logo"><div class="logo">PRO<span>RANK</span></div><p>Рейтинг любительского спорта</p></div>
-            <div class="footer-about"><h4>О проекте</h4><p>Платформа для спортсменов-любителей</p></div>
-            <div class="footer-links"><h4>Навигация</h4><a href="index.html">Главная</a><a href="rating.html">Рейтинг</a><a href="login.html">Вход</a></div>
+    <div class="container">
+        <div class="footer-inner">
+            <div class="footer-logo">
+                <div class="logo">PRO<span>RANK</span></div>
+                <p>Рейтинг спортсменов-любителей</p>
+            </div>
+            <div class="footer-social">
+                <a href="#" target="_blank" rel="noopener noreferrer" class="social-icon" aria-label="Telegram"><i class="fab fa-telegram"></i></a>
+                <a href="#" target="_blank" rel="noopener noreferrer" class="social-icon" aria-label="VK"><i class="fab fa-vk"></i></a>
+                <a href="#" target="_blank" rel="noopener noreferrer" class="social-icon" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
+                <a href="#" target="_blank" rel="noopener noreferrer" class="social-icon" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+            </div>
+            <div class="footer-links">
+                <a href="about.html">О проекте</a>
+                <a href="privacy.html">Конфиденциальность</a>
+                <a href="disclaimer.html">Дисклеймер</a>
+            </div>
         </div>
-        <div class="footer-bottom"><p>&copy; 2026 PRORANK</p></div>
-    </footer>
+        <div class="footer-bottom">
+            <p>© 2026 PRORANK. Все права защищены.</p>
+        </div>
+    </div>
+</footer>
 
     <script type="importmap">
         {
@@ -295,20 +539,14 @@
             const user = auth.currentUser;
             const balanceDiv = document.getElementById('balanceIndicator');
             const balanceCount = document.getElementById('headerChallengesCount');
-            
             if (!user || !balanceDiv) return;
-            
             try {
                 const userDoc = await getDoc(doc(db, "fighters", user.uid));
                 const data = userDoc.data();
-                const free = data.freeChallenges || 0;
-                const purchased = data.purchasedChallenges || 0;
-                const total = free + purchased;
+                const total = (data.freeChallenges || 0) + (data.purchasedChallenges || 0);
                 balanceCount.innerText = total;
                 balanceDiv.style.display = 'flex';
-            } catch (err) {
-                console.error('Ошибка загрузки баланса:', err);
-            }
+            } catch (err) { console.error(err); }
         }
 
         const loginBtn = document.getElementById('profileLoginBtn');
@@ -327,9 +565,7 @@
         });
 
         const plusBtn = document.getElementById('balancePlusBtn');
-        if (plusBtn) {
-            plusBtn.onclick = () => window.location.href = 'shop.html';
-        }
+        if (plusBtn) plusBtn.onclick = () => window.location.href = 'shop.html';
 
         const menuToggle = document.getElementById('menuToggle');
         const navLinks = document.getElementById('navLinks');

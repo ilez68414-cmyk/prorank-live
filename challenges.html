@@ -2,35 +2,186 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Мои вызовы | PRORANK</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Вызовы | PRORANK</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700;14..32,800;14..32,900&display=swap" rel="stylesheet">
     <style>
-        .challenges-container {
-            max-width: 900px;
-            margin: 2rem auto;
-            padding: 0 1rem;
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
-        .challenges-section {
-            background: #1a1a1a;
-            border-radius: 1.5rem;
-            padding: 1.5rem;
-            margin-bottom: 2rem;
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: radial-gradient(ellipse at 30% 40%, rgba(251, 191, 36, 0.15) 0%, transparent 60%),
+                        radial-gradient(ellipse at 70% 80%, rgba(251, 191, 36, 0.08) 0%, transparent 50%),
+                        linear-gradient(135deg, #1a1a1a 0%, #0f0f0f 40%, #1a1a1a 100%);
+            background-attachment: fixed;
+            color: #fff;
+            line-height: 1.4;
         }
-        .challenges-section h2 {
-            margin-bottom: 1rem;
-            color: #fbbf24;
+
+        .gold-top {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(90deg, #fbbf24, #ffdd88, #fbbf24, #b8860b);
+            z-index: 1001;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 0 24px;
+            position: relative;
+            z-index: 2;
+        }
+
+        /* ===== ШАПКА ===== */
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 32px;
+            background: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(16px);
+            border-bottom: 1px solid rgba(251, 191, 36, 0.25);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            cursor: pointer;
+            background: linear-gradient(135deg, #ffffff, #fbbf24);
+            background-clip: text;
+            color: transparent;
+        }
+        .logo span {
+            background: linear-gradient(135deg, #fbbf24, #ffdd77);
+            background-clip: text;
+            color: transparent;
+        }
+
+        .balance-indicator {
+            background: #111;
+            border: 1px solid rgba(251, 191, 36, 0.5);
+            border-radius: 60px;
+            padding: 7px 18px;
             display: flex;
             align-items: center;
-            gap: 0.5rem;
+            gap: 12px;
+            font-weight: 700;
+            font-size: 0.9rem;
+        }
+        .balance-count {
+            color: #fbbf24;
+        }
+        .balance-plus {
+            background: rgba(251,191,36,0.15);
+            border: none;
+            color: #fbbf24;
+            cursor: pointer;
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+        }
+        .balance-plus:active {
+            background: #fbbf24;
+            color: #000;
+        }
+
+        .menu-toggle {
+            display: none;
+            background: rgba(251,191,36,0.1);
+            border: 1px solid #fbbf24;
+            color: #fbbf24;
+            font-size: 1.6rem;
+            cursor: pointer;
+            padding: 8px 14px;
+            border-radius: 12px;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 6px;
+            background: rgba(15,15,15,0.7);
+            backdrop-filter: blur(12px);
+            padding: 5px 14px;
+            border-radius: 60px;
+            border: 1px solid rgba(251,191,36,0.2);
+        }
+        .nav-links a {
+            color: #ddd;
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 500;
+            padding: 8px 18px;
+            border-radius: 40px;
+            transition: all 0.2s;
+        }
+        .nav-links a i {
+            margin-right: 8px;
+            color: #fbbf24;
+        }
+        .nav-links a:hover {
+            color: #fbbf24;
+        }
+
+        /* ===== ЗАГОЛОВОК ===== */
+        .page-header {
+            text-align: center;
+            padding: 40px 20px 20px;
+        }
+        .page-header h1 {
+            font-size: 2rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #fff, #fbbf24);
+            background-clip: text;
+            color: transparent;
+        }
+        .page-header h1 i {
+            background: none;
+            background-clip: unset;
+            color: #fbbf24;
+        }
+
+        /* ===== ВЫЗОВЫ ===== */
+        .challenges-section {
+            background: rgba(15,15,15,0.7);
+            backdrop-filter: blur(8px);
+            border-radius: 28px;
+            padding: 24px;
+            margin-bottom: 24px;
+            border: 1px solid rgba(251,191,36,0.15);
+        }
+        .challenges-section h2 {
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #fbbf24;
         }
         .challenge-card {
-            background: #0f0f0f;
-            border-radius: 1rem;
-            padding: 1rem;
-            margin-bottom: 1rem;
-            border-left: 4px solid #fbbf24;
+            background: #1a1a1a;
+            border-radius: 20px;
+            padding: 18px;
+            margin-bottom: 16px;
+            border-left: 4px solid;
+            transition: 0.1s;
+        }
+        .challenge-card:active {
+            transform: scale(0.99);
         }
         .challenge-card.incoming {
             border-left-color: #fbbf24;
@@ -43,19 +194,21 @@
             justify-content: space-between;
             align-items: center;
             flex-wrap: wrap;
-            margin-bottom: 0.5rem;
+            gap: 12px;
+            margin-bottom: 10px;
         }
         .challenge-name {
-            font-size: 1.2rem;
-            font-weight: bold;
+            font-size: 1.1rem;
+            font-weight: 700;
             display: flex;
             align-items: center;
-            gap: 0.5rem;
+            gap: 10px;
         }
         .challenge-status {
-            padding: 0.2rem 0.8rem;
-            border-radius: 2rem;
-            font-size: 0.8rem;
+            padding: 4px 12px;
+            border-radius: 40px;
+            font-size: 0.7rem;
+            font-weight: 600;
         }
         .status-pending {
             background: #fbbf24;
@@ -71,35 +224,39 @@
         }
         .challenge-details {
             color: #aaa;
-            font-size: 0.9rem;
-            margin-bottom: 0.5rem;
+            font-size: 0.8rem;
+            margin-bottom: 10px;
             display: flex;
             align-items: center;
-            gap: 0.5rem;
+            gap: 12px;
             flex-wrap: wrap;
         }
         .challenge-message {
-            background: #1a1a1a;
-            padding: 0.5rem;
-            border-radius: 0.5rem;
-            margin: 0.5rem 0;
+            background: #0f0f0f;
+            padding: 10px 14px;
+            border-radius: 14px;
+            margin: 10px 0;
             font-style: italic;
+            font-size: 0.85rem;
+            border-left: 2px solid #fbbf24;
         }
         .challenge-actions {
             display: flex;
-            gap: 1rem;
-            margin-top: 0.5rem;
+            gap: 12px;
+            margin-top: 12px;
             flex-wrap: wrap;
         }
         .btn-accept, .btn-reject, .btn-chat {
-            padding: 0.4rem 1rem;
-            border-radius: 1.5rem;
+            padding: 8px 20px;
+            border-radius: 40px;
             border: none;
             cursor: pointer;
-            font-weight: bold;
+            font-weight: 600;
+            font-size: 0.8rem;
             display: inline-flex;
             align-items: center;
-            gap: 0.5rem;
+            gap: 8px;
+            transition: 0.1s;
         }
         .btn-accept {
             background: #16a34a;
@@ -113,130 +270,159 @@
             background: #3b82f6;
             color: white;
         }
+        .btn-accept:active, .btn-reject:active, .btn-chat:active {
+            transform: scale(0.96);
+        }
         .empty-state {
             text-align: center;
             color: #888;
-            padding: 2rem;
+            padding: 40px 20px;
         }
         .loading {
             text-align: center;
-            padding: 2rem;
+            padding: 40px;
             color: #888;
         }
+
+        /* Подсказка о лигах */
         .leagues-hint {
-            background: linear-gradient(135deg, #1e2a1a, #0f1a0f);
-            border-radius: 1rem;
-            padding: 1rem;
-            margin-top: 2rem;
+            background: linear-gradient(135deg, rgba(30,42,26,0.8), rgba(15,26,15,0.8));
+            backdrop-filter: blur(8px);
+            border-radius: 24px;
+            padding: 20px;
+            margin: 20px 0 40px;
             text-align: center;
-            border: 1px solid #fbbf24;
+            border: 1px solid rgba(251,191,36,0.3);
         }
         .leagues-hint a {
             color: #fbbf24;
             text-decoration: none;
+            font-weight: 600;
         }
         .leagues-hint a:hover {
             text-decoration: underline;
         }
-        .navbar {
+
+        /* ===== ПОДВАЛ ===== */
+        .main-footer {
+            background: #0a0a0a;
+            border-top: 1px solid rgba(251,191,36,0.15);
+            margin-top: 40px;
+            padding: 40px 0 24px;
+        }
+        .footer-content {
             display: flex;
             justify-content: space-between;
-            align-items: center;
-            padding: 15px 20px;
-            background: #1a1a1a;
-            border-bottom: 2px solid #fbbf24;
+            flex-wrap: wrap;
+            gap: 32px;
         }
-        .logo {
-            font-size: 1.5rem;
-            font-weight: bold;
-            cursor: pointer;
+        .footer-logo .logo {
+            font-size: 1.3rem;
+            display: inline-block;
         }
-        .logo span {
+        .footer-logo p {
+            font-size: 0.7rem;
+            color: #777;
+            margin-top: 6px;
+        }
+        .footer-about h4, .footer-links h4 {
             color: #fbbf24;
+            font-size: 0.9rem;
+            margin-bottom: 12px;
         }
-        .nav-links {
-            display: flex;
-            gap: 20px;
-            align-items: center;
+        .footer-about p {
+            font-size: 0.75rem;
+            color: #888;
+            max-width: 220px;
         }
-        .nav-links a {
-            color: #fff;
+        .footer-links a {
+            display: block;
+            color: #aaa;
             text-decoration: none;
-            font-size: 1rem;
-            transition: 0.3s;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.3rem;
+            font-size: 0.75rem;
+            margin-bottom: 8px;
         }
-        .nav-links a:hover {
+        .footer-links a:hover {
             color: #fbbf24;
         }
-        .menu-toggle {
-            display: none;
-            background: none;
-            border: none;
-            color: white;
-            font-size: 1.8rem;
-            cursor: pointer;
-            padding: 5px 10px;
+        .footer-bottom {
+            text-align: center;
+            margin-top: 32px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255,255,255,0.05);
+            font-size: 0.65rem;
+            color: #555;
         }
-        .balance-indicator {
-            background: linear-gradient(135deg, #1e2a1a, #0f1a0f);
-            border: 1px solid #fbbf24;
-            border-radius: 2rem;
-            padding: 0.3rem 0.8rem;
-            display: flex;
-            align-items: center;
-            gap: 0.4rem;
-            font-weight: bold;
-        }
-        .balance-plus {
-            background: none;
-            border: none;
-            color: #fbbf24;
-            font-size: 1.2rem;
-            font-weight: bold;
-            cursor: pointer;
-            width: 20px;
-            height: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 50%;
-        }
+
         @media (max-width: 768px) {
-            .nav-links {
-                display: none;
-                flex-direction: column;
-                position: absolute;
-                top: 70px;
-                left: 0;
-                width: 100%;
-                background: #1a1a1a;
-                padding: 20px;
-                gap: 15px;
-                z-index: 100;
-                border-top: 1px solid #333;
-            }
-            .nav-links.show {
-                display: flex;
+            .navbar {
+                padding: 12px 18px;
             }
             .menu-toggle {
                 display: block;
             }
+            .nav-links {
+                display: none;
+                flex-direction: column;
+                position: absolute;
+                top: 68px;
+                left: 18px;
+                right: 18px;
+                background: #0f0f0f;
+                border-radius: 24px;
+                padding: 20px;
+                gap: 10px;
+                border: 1px solid rgba(251,191,36,0.3);
+            }
+            .nav-links.show {
+                display: flex;
+            }
+            .nav-links a {
+                width: 100%;
+                text-align: center;
+                padding: 12px;
+            }
+            .container {
+                padding: 0 16px;
+            }
+            .page-header h1 {
+                font-size: 1.6rem;
+            }
             .challenge-header {
                 flex-direction: column;
                 align-items: flex-start;
-                gap: 0.5rem;
+            }
+            .footer-content {
+                flex-direction: column;
+                text-align: center;
+            }
+            .footer-about p {
+                margin: 0 auto;
             }
         }
+
+        ::-webkit-scrollbar {
+            width: 5px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #1a1a1a;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #fbbf24;
+            border-radius: 10px;
+        }
+        .icon-gold { color: #fbbf24; }
+        .icon-red { color: #ff5555; }
+        .icon-green { color: #16a34a; }
     </style>
 </head>
 <body>
+    <div class="gold-top"></div>
+
     <header class="navbar">
-        <div class="logo" onclick="window.location='index.html'" style="cursor:pointer">PRO<span>RANK</span></div>
+        <div class="logo" onclick="window.location='index.html'">PRO<span>RANK</span></div>
         <div class="balance-indicator" id="balanceIndicator" style="display: none;">
-            <i class="fas fa-crosshairs icon-gold"></i>
+            <i class="fas fa-crosshairs"></i>
             <span class="balance-count" id="headerChallengesCount">0</span>
             <button class="balance-plus" id="balancePlusBtn">+</button>
         </div>
@@ -247,13 +433,15 @@
             <a href="leagues.html"><i class="fas fa-trophy"></i> Лиги</a>
             <a href="rules.html"><i class="fas fa-book"></i> Правила</a>
             <a href="shop.html"><i class="fas fa-store"></i> Магазин</a>
-            <a href="login.html" id="profileLoginBtn" class="btn-primary"><i class="fas fa-sign-in-alt"></i> Войти</a>
+            <a href="login.html" id="profileLoginBtn"><i class="fas fa-sign-in-alt"></i> Войти</a>
         </nav>
     </header>
 
-    <div class="challenges-container">
-        <h1><i class="fas fa-fist-raised icon-gold"></i> Мои вызовы</h1>
-        
+    <main class="container">
+        <div class="page-header">
+            <h1><i class="fas fa-fist-raised"></i> Мои вызовы</h1>
+        </div>
+
         <div id="incomingSection" class="challenges-section">
             <h2><i class="fas fa-arrow-down icon-gold"></i> Входящие вызовы</h2>
             <div id="incomingList" class="loading"><i class="fas fa-spinner fa-pulse"></i> Загрузка...</div>
@@ -265,20 +453,36 @@
         </div>
 
         <div class="leagues-hint">
-            <i class="fas fa-trophy icon-gold" style="font-size: 1.2rem;"></i>
+            <i class="fas fa-trophy icon-gold"></i>
             <strong>Хочешь получать больше вызовов?</strong> Чем выше твоя <a href="leagues.html">лига</a>, тем больше уважения и вызовов!
             <a href="leagues.html">Подробнее о лигах <i class="fas fa-arrow-right"></i></a>
         </div>
-    </div>
+    </main>
 
     <footer class="main-footer">
-        <div class="container footer-content">
-            <div class="footer-logo"><div class="logo">PRO<span>RANK</span></div><p>Рейтинг любительского спорта</p></div>
-            <div class="footer-about"><h4>О проекте</h4><p>Платформа для спортсменов-любителей</p></div>
-            <div class="footer-links"><h4>Навигация</h4><a href="index.html">Главная</a><a href="rating.html">Рейтинг</a><a href="login.html">Вход</a></div>
+    <div class="container">
+        <div class="footer-inner">
+            <div class="footer-logo">
+                <div class="logo">PRO<span>RANK</span></div>
+                <p>Рейтинг спортсменов-любителей</p>
+            </div>
+            <div class="footer-social">
+                <a href="#" target="_blank" rel="noopener noreferrer" class="social-icon" aria-label="Telegram"><i class="fab fa-telegram"></i></a>
+                <a href="#" target="_blank" rel="noopener noreferrer" class="social-icon" aria-label="VK"><i class="fab fa-vk"></i></a>
+                <a href="#" target="_blank" rel="noopener noreferrer" class="social-icon" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
+                <a href="#" target="_blank" rel="noopener noreferrer" class="social-icon" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+            </div>
+            <div class="footer-links">
+                <a href="about.html">О проекте</a>
+                <a href="privacy.html">Конфиденциальность</a>
+                <a href="disclaimer.html">Дисклеймер</a>
+            </div>
         </div>
-        <div class="footer-bottom"><p>&copy; 2026 PRORANK</p></div>
-    </footer>
+        <div class="footer-bottom">
+            <p>© 2026 PRORANK. Все права защищены.</p>
+        </div>
+    </div>
+</footer>
 
     <script type="importmap">
         {
@@ -310,6 +514,20 @@
         const BOT_TOKEN = '8527160088:AAGc2311QFkp6F7-Jx5k8MJfqlpvbueSl5E';
 
         let currentUser = null;
+
+        async function updateHeaderBalance() {
+            const user = auth.currentUser;
+            const balanceDiv = document.getElementById('balanceIndicator');
+            const balanceCount = document.getElementById('headerChallengesCount');
+            if (!user || !balanceDiv) return;
+            try {
+                const userDoc = await getDoc(doc(db, "fighters", user.uid));
+                const data = userDoc.data();
+                const total = (data.freeChallenges || 0) + (data.purchasedChallenges || 0);
+                balanceCount.innerText = total;
+                balanceDiv.style.display = 'flex';
+            } catch (err) { console.error(err); }
+        }
 
         async function loadChallenges() {
             if (!currentUser) {
@@ -361,11 +579,12 @@
                 card.className = 'challenge-card incoming';
                 card.innerHTML = `
                     <div class="challenge-header">
-                        <span class="challenge-name"><i class="fas fa-fist-raised icon-gold"></i> ${challenge.fromName || 'Боец'}</span>
+                        <span class="challenge-name"><i class="fas fa-fist-raised icon-gold"></i> ${escapeHtml(challenge.fromName || 'Боец')}</span>
                         <span class="challenge-status status-${challenge.status}">${getStatusText(challenge.status)}</span>
                     </div>
                     <div class="challenge-details">
                         <i class="fas fa-weight-hanging"></i> Вес: ${challenge.fromWeight && challenge.fromWeight > 0 ? challenge.fromWeight + ' кг' : 'не указан'}
+                        <i class="fas fa-trophy"></i> Рейтинг: ${challenge.fromFrs || 0} FRS
                     </div>
                     ${challenge.message ? `<div class="challenge-message"><i class="fas fa-quote-left"></i> ${escapeHtml(challenge.message)}</div>` : ''}
                     ${challenge.status === 'pending' ? `
@@ -412,11 +631,12 @@
                 card.className = 'challenge-card outgoing';
                 card.innerHTML = `
                     <div class="challenge-header">
-                        <span class="challenge-name"><i class="fas fa-bullseye"></i> ${challenge.toName || 'Соперник'}</span>
+                        <span class="challenge-name"><i class="fas fa-bullseye"></i> ${escapeHtml(challenge.toName || 'Соперник')}</span>
                         <span class="challenge-status status-${challenge.status}">${getStatusText(challenge.status)}</span>
                     </div>
                     <div class="challenge-details">
                         <i class="fas fa-weight-hanging"></i> Вес: ${challenge.toWeight && challenge.toWeight > 0 ? challenge.toWeight + ' кг' : 'не указан'}
+                        <i class="fas fa-trophy"></i> Рейтинг: ${challenge.toFrs || 0} FRS
                     </div>
                     ${challenge.message ? `<div class="challenge-message"><i class="fas fa-quote-left"></i> ${escapeHtml(challenge.message)}</div>` : ''}
                     ${challenge.status === 'accepted' ? `
@@ -516,19 +736,20 @@
             if (user && loginBtn) {
                 loginBtn.innerHTML = '<i class="fas fa-user"></i> Мой профиль';
                 loginBtn.href = `profile.html?id=${user.uid}`;
+                updateHeaderBalance();
                 loadChallenges();
             } else if (loginBtn) {
                 loginBtn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Войти';
                 loginBtn.href = 'login.html';
+                const balanceDiv = document.getElementById('balanceIndicator');
+                if (balanceDiv) balanceDiv.style.display = 'none';
                 document.getElementById('incomingList').innerHTML = '<div class="empty-state"><i class="fas fa-lock"></i> Войдите, чтобы видеть вызовы</div>';
                 document.getElementById('outgoingList').innerHTML = '<div class="empty-state"><i class="fas fa-lock"></i> Войдите, чтобы видеть вызовы</div>';
             }
         });
 
         const plusBtn = document.getElementById('balancePlusBtn');
-        if (plusBtn) {
-            plusBtn.onclick = () => window.location.href = 'shop.html';
-        }
+        if (plusBtn) plusBtn.onclick = () => window.location.href = 'shop.html';
 
         const menuToggle = document.getElementById('menuToggle');
         const navLinks = document.getElementById('navLinks');

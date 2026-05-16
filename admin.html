@@ -2,15 +2,70 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Админка | PRORANK</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700;14..32,800;14..32,900&display=swap" rel="stylesheet">
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: radial-gradient(ellipse at 30% 40%, rgba(251, 191, 36, 0.15) 0%, transparent 60%),
+                        radial-gradient(ellipse at 70% 80%, rgba(251, 191, 36, 0.08) 0%, transparent 50%),
+                        linear-gradient(135deg, #1a1a1a 0%, #0f0f0f 40%, #1a1a1a 100%);
+            background-attachment: fixed;
+            color: #fff;
+            line-height: 1.4;
+        }
+
+        .gold-top {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(90deg, #fbbf24, #ffdd88, #fbbf24, #b8860b);
+            z-index: 1001;
+        }
+
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 32px;
+            background: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(16px);
+            border-bottom: 1px solid rgba(251, 191, 36, 0.25);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            cursor: pointer;
+            background: linear-gradient(135deg, #ffffff, #fbbf24);
+            background-clip: text;
+            color: transparent;
+        }
+        .logo span {
+            background: linear-gradient(135deg, #fbbf24, #ffdd77);
+            background-clip: text;
+            color: transparent;
+        }
+
         .admin-container {
             max-width: 1400px;
             margin: 2rem auto;
-            padding: 0 1rem;
+            padding: 0 24px;
         }
         .stats-grid {
             display: grid;
@@ -19,20 +74,22 @@
             margin-bottom: 2rem;
         }
         .stat-card {
-            background: #1a1a1a;
-            border-radius: 1rem;
-            padding: 1rem;
+            background: rgba(15,15,15,0.7);
+            backdrop-filter: blur(8px);
+            border-radius: 24px;
+            padding: 20px;
             text-align: center;
-            border-left: 4px solid #fbbf24;
+            border: 1px solid rgba(251,191,36,0.2);
         }
         .stat-card .value {
             font-size: 2rem;
-            font-weight: bold;
+            font-weight: 800;
             color: #fbbf24;
         }
         .stat-card .label {
             color: #888;
             font-size: 0.8rem;
+            margin-top: 6px;
         }
         .admin-header {
             display: flex;
@@ -44,24 +101,26 @@
         }
         .admin-tabs {
             display: flex;
-            gap: 0.5rem;
+            gap: 8px;
             flex-wrap: wrap;
             margin-bottom: 2rem;
-            border-bottom: 1px solid #333;
-            padding-bottom: 0.5rem;
+            background: rgba(15,15,15,0.5);
+            padding: 8px;
+            border-radius: 60px;
         }
         .tab-btn {
             background: none;
             border: none;
-            color: #ccc;
-            padding: 0.5rem 1.2rem;
+            color: #aaa;
+            padding: 10px 24px;
             cursor: pointer;
-            font-size: 1rem;
-            border-radius: 2rem;
+            font-size: 0.9rem;
+            font-weight: 600;
+            border-radius: 60px;
             transition: 0.2s;
             display: inline-flex;
             align-items: center;
-            gap: 0.5rem;
+            gap: 8px;
         }
         .tab-btn.active {
             background: #fbbf24;
@@ -72,144 +131,182 @@
         }
         .tab-pane.active {
             display: block;
+            animation: fadeIn 0.3s ease;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
         .admin-form {
-            background: #1f1f1f;
-            padding: 1.5rem;
-            border-radius: 1rem;
+            background: rgba(15,15,15,0.7);
+            backdrop-filter: blur(8px);
+            border-radius: 28px;
+            padding: 24px;
             margin-bottom: 2rem;
+            border: 1px solid rgba(251,191,36,0.2);
         }
         .admin-form h3 {
-            margin-bottom: 1rem;
+            margin-bottom: 20px;
             display: flex;
             align-items: center;
-            gap: 0.5rem;
+            gap: 10px;
             color: #fbbf24;
         }
         .form-row {
             display: flex;
-            gap: 1rem;
+            gap: 16px;
             flex-wrap: wrap;
-            margin-bottom: 1rem;
+            margin-bottom: 16px;
         }
         .form-group {
             flex: 1;
-            min-width: 150px;
+            min-width: 180px;
         }
         .form-group label {
             display: block;
-            margin-bottom: 0.3rem;
+            margin-bottom: 6px;
             color: #aaa;
-            font-size: 0.8rem;
+            font-size: 0.75rem;
+            font-weight: 600;
         }
-        .form-group input, .form-group select {
+        .form-group input, .form-group select, .form-group textarea {
             width: 100%;
-            padding: 0.6rem;
-            background: #2a2a2a;
-            border: 1px solid #333;
-            color: white;
-            border-radius: 8px;
+            padding: 10px 14px;
+            background: #1a1a1a;
+            border: 1px solid rgba(251,191,36,0.25);
+            color: #fff;
+            border-radius: 60px;
+            font-size: 0.85rem;
+        }
+        .form-group textarea {
+            border-radius: 20px;
+            resize: vertical;
         }
         .btn {
-            padding: 0.6rem 1.2rem;
-            border-radius: 8px;
+            padding: 10px 20px;
+            border-radius: 60px;
             border: none;
             cursor: pointer;
-            font-weight: bold;
+            font-weight: 600;
             display: inline-flex;
             align-items: center;
-            gap: 0.5rem;
-            transition: 0.2s;
+            gap: 8px;
+            transition: 0.1s;
+        }
+        .btn:active {
+            transform: scale(0.96);
         }
         .btn-primary { background: #fbbf24; color: #000; }
-        .btn-danger { background: #dc2626; color: white; }
-        .btn-success { background: #16a34a; color: white; }
-        .btn-warning { background: #f59e0b; color: white; }
-        .btn-secondary { background: #3b82f6; color: white; }
-        .fighters-list {
-            background: #1f1f1f;
-            border-radius: 12px;
+        .btn-danger { background: #dc2626; color: #fff; }
+        .btn-success { background: #16a34a; color: #fff; }
+        .btn-warning { background: #f59e0b; color: #fff; }
+        .btn-secondary { background: #3b82f6; color: #fff; }
+
+        .fighters-list, .partners-list, .requests-list {
+            background: rgba(15,15,15,0.7);
+            backdrop-filter: blur(8px);
+            border-radius: 28px;
             overflow-x: auto;
+            padding: 0;
         }
         table {
             width: 100%;
             border-collapse: collapse;
         }
         th, td {
-            padding: 0.75rem;
+            padding: 12px;
             text-align: left;
-            border-bottom: 1px solid #333;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
         }
         th {
-            background: #2a2a2a;
+            background: #1a1a1a;
             color: #fbbf24;
+            font-weight: 600;
         }
         .points-control {
             display: flex;
-            gap: 0.3rem;
+            gap: 6px;
             flex-wrap: wrap;
         }
         .points-control button {
             background: #3b82f6;
             color: white;
             border: none;
-            padding: 0.2rem 0.6rem;
-            border-radius: 4px;
+            padding: 4px 10px;
+            border-radius: 20px;
             cursor: pointer;
+        }
+        .points-control button.danger {
+            background: #dc2626;
+        }
+        .banned-badge {
+            background: #dc2626;
+            padding: 2px 8px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            margin-left: 6px;
         }
         .login-form {
             max-width: 400px;
             margin: 3rem auto;
+            background: rgba(15,15,15,0.7);
+            backdrop-filter: blur(8px);
+            border-radius: 32px;
+            padding: 32px;
             text-align: center;
+            border: 1px solid rgba(251,191,36,0.2);
         }
         .login-form input {
             width: 100%;
-            padding: 0.75rem;
-            margin: 0.5rem 0;
-            background: #2a2a2a;
-            border: 1px solid #333;
-            color: white;
-            border-radius: 8px;
+            padding: 12px;
+            margin: 8px 0;
+            background: #1a1a1a;
+            border: 1px solid rgba(251,191,36,0.25);
+            color: #fff;
+            border-radius: 60px;
         }
         .hidden { display: none; }
-        .navbar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 15px 20px;
-            background: #1a1a1a;
-            border-bottom: 2px solid #fbbf24;
-        }
-        .logo { font-size: 1.5rem; font-weight: bold; cursor: pointer; }
-        .logo span { color: #fbbf24; }
-        .challenge-item {
-            padding: 0.75rem;
-            border-bottom: 1px solid #333;
+        .challenge-item, .history-item, .request-item {
+            padding: 12px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
             display: flex;
             justify-content: space-between;
             align-items: center;
             flex-wrap: wrap;
-            gap: 0.5rem;
+            gap: 10px;
         }
-        .history-item {
-            padding: 0.5rem;
-            border-bottom: 1px solid #333;
-            font-size: 0.8rem;
-            display: flex;
-            gap: 1rem;
-            flex-wrap: wrap;
-        }
+
         @media (max-width: 768px) {
-            .form-row { flex-direction: column; }
-            .admin-tabs { justify-content: center; }
+            .admin-container {
+                padding: 0 16px;
+            }
+            .admin-tabs {
+                justify-content: center;
+            }
+            .form-row {
+                flex-direction: column;
+            }
+        }
+
+        ::-webkit-scrollbar {
+            width: 5px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #1a1a1a;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #fbbf24;
+            border-radius: 10px;
         }
     </style>
 </head>
 <body>
+    <div class="gold-top"></div>
+
     <header class="navbar">
-        <div class="logo" onclick="window.location='index.html'" style="cursor:pointer">PRO<span>RANK</span></div>
+        <div class="logo" onclick="window.location='index.html'">PRO<span>RANK</span></div>
         <nav class="nav-links">
-            <a href="index.html"><i class="fas fa-home"></i> Рейтинг</a>
+            <a href="index.html"><i class="fas fa-home"></i> Главная</a>
         </nav>
     </header>
 
@@ -219,76 +316,54 @@
             <input type="email" id="adminEmail" placeholder="Email">
             <input type="password" id="adminPassword" placeholder="Пароль">
             <button onclick="login()" class="btn btn-primary" style="width:100%; justify-content:center;"><i class="fas fa-sign-in-alt"></i> Войти</button>
-            <p id="loginMessage" style="color:#ef4444;"></p>
+            <p id="loginMessage" style="color:#ef4444; margin-top:12px;"></p>
         </div>
 
         <div id="adminPanel" class="hidden">
             <div class="admin-header">
                 <h1><i class="fas fa-shield-alt"></i> Панель управления</h1>
-                <div>
-                    <button id="adminLogoutBtn" class="btn btn-danger"><i class="fas fa-sign-out-alt"></i> Выйти</button>
-                </div>
+                <button id="adminLogoutBtn" class="btn btn-danger"><i class="fas fa-sign-out-alt"></i> Выйти</button>
             </div>
 
             <div class="stats-grid" id="statsGrid">
                 <div class="stat-card"><div class="value" id="statFighters">0</div><div class="label">👥 Бойцов</div></div>
+                <div class="stat-card"><div class="value" id="statBanned">0</div><div class="label">🔒 Заблокировано</div></div>
                 <div class="stat-card"><div class="value" id="statFights">0</div><div class="label">🥊 Всего боёв</div></div>
-                <div class="stat-card"><div class="value" id="statFightsMonth">0</div><div class="label">📅 Боёв за месяц</div></div>
                 <div class="stat-card"><div class="value" id="statChallenges">0</div><div class="label">⚔️ Вызовов</div></div>
                 <div class="stat-card"><div class="value" id="statPremium">0</div><div class="label">💎 Премиум</div></div>
+                <div class="stat-card"><div class="value" id="statPartners">0</div><div class="label">🏪 Магазинов</div></div>
+                <div class="stat-card"><div class="value" id="statRequests">0</div><div class="label">📋 Заявок</div></div>
             </div>
 
             <div class="admin-tabs">
-                <button class="tab-btn active" data-tab="edit"><i class="fas fa-user-edit"></i> Редактирование</button>
-                <button class="tab-btn" data-tab="fight"><i class="fas fa-fist-raised"></i> Добавить бой</button>
+                <button class="tab-btn active" data-tab="fighters"><i class="fas fa-users"></i> Бойцы</button>
+                <button class="tab-btn" data-tab="fight"><i class="fas fa-fist-raised"></i> Бои</button>
+                <button class="tab-btn" data-tab="partners"><i class="fas fa-store"></i> Магазины</button>
+                <button class="tab-btn" data-tab="requests"><i class="fas fa-envelope"></i> Заявки</button>
                 <button class="tab-btn" data-tab="challenges"><i class="fas fa-crosshairs"></i> Вызовы</button>
                 <button class="tab-btn" data-tab="history"><i class="fas fa-history"></i> История</button>
                 <button class="tab-btn" data-tab="broadcast"><i class="fas fa-bullhorn"></i> Рассылка</button>
-                <button class="tab-btn" data-tab="list"><i class="fas fa-list"></i> Список бойцов</button>
             </div>
 
-            <!-- Вкладка: Редактирование -->
-            <div id="tab-edit" class="tab-pane active">
+            <!-- Бойцы -->
+            <div id="tab-fighters" class="tab-pane active">
                 <div class="admin-form">
-                    <h3><i class="fas fa-user-edit"></i> Редактировать бойца</h3>
                     <div class="form-row">
-                        <div class="form-group">
-                            <label>Выбрать бойца</label>
-                            <select id="selectFighterForEdit">
-                                <option value="">-- Выберите бойца --</option>
-                            </select>
-                        </div>
+                        <div class="form-group"><label>🔍 Поиск</label><input type="text" id="searchFighter" placeholder="По имени или email"></div>
+                        <div class="form-group"><button id="recalculateFRSBtn" class="btn btn-warning"><i class="fas fa-calculator"></i> Пересчитать FRS</button></div>
                     </div>
-                    <div id="editForm" style="display: none;">
-                        <div class="form-row">
-                            <div class="form-group"><label>Имя</label><input type="text" id="editName"></div>
-                            <div class="form-group"><label>Город</label><input type="text" id="editCity"></div>
-                            <div class="form-group"><label>Весовая</label><select id="editWeightClass"></select></div>
-                            <div class="form-group"><label>Спорт</label><select id="editSport"><option>Бокс</option><option>Борьба</option><option>ММА</option></select></div>
-                        </div>
-                        <div class="form-row">
-                            <div class="form-group"><label>🏆 Победы</label><input type="number" id="editWins"></div>
-                            <div class="form-group"><label>❌ Поражения</label><input type="number" id="editLosses"></div>
-                            <div class="form-group"><label>💥 Финиши</label><input type="number" id="editFinishes"></div>
-                            <div class="form-group"><label>⭐ FRS</label><input type="number" id="editFRS"></div>
-                        </div>
-                        <div class="form-row">
-                            <div class="form-group"><label>👥 Подписчики</label><input type="number" id="editSubscribers"></div>
-                            <div class="form-group"><label>👀 Просмотры</label><input type="number" id="editViews"></div>
-                            <div class="form-group"><label>🎯 Бесплатные вызовы</label><input type="number" id="editFreeChallenges"></div>
-                            <div class="form-group"><label>💰 Купленные вызовы</label><input type="number" id="editPurchasedChallenges"></div>
-                        </div>
-                        <div class="form-row">
-                            <div class="form-group"><label>💎 Премиум</label><select id="editPremium"><option value="false">Нет</option><option value="true">Да</option></select></div>
-                            <div class="form-group"><label>🔗 Telegram ID</label><input type="text" id="editTelegramId"></div>
-                        </div>
-                        <button id="saveFighterBtn" class="btn btn-success"><i class="fas fa-save"></i> Сохранить</button>
-                        <div id="editResult" style="margin-top:0.5rem;"></div>
-                    </div>
+                </div>
+                <div class="fighters-list">
+                    <table>
+                        <thead>
+                            <tr><th>Имя</th><th>Спорт</th><th>Город</th><th>⭐ FRS</th><th>🏆</th><th>❌</th><th>💥</th><th>Telegram</th><th>Премиум</th><th>Статус</th><th>Действия</th></tr>
+                        </thead>
+                        <tbody id="adminTableBody"><tr><td colspan="11"><i class="fas fa-spinner fa-pulse"></i> Загрузка...</td></tr>
+                    </table>
                 </div>
             </div>
 
-            <!-- Вкладка: Добавить бой -->
+            <!-- Добавить бой + Управление боями -->
             <div id="tab-fight" class="tab-pane">
                 <div class="admin-form">
                     <h3><i class="fas fa-fist-raised"></i> Добавить бой</h3>
@@ -300,14 +375,66 @@
                         <div class="form-group"><label><input type="checkbox" id="finishCheckbox"> 💥 Финиш (нокаут/сабмишен)</label></div>
                     </div>
                     <button id="addFightBtn" class="btn btn-primary"><i class="fas fa-plus"></i> Добавить бой</button>
-                    <div id="fightMessage" style="margin-top:0.5rem;"></div>
+                    <div id="fightMessage" style="margin-top:12px;"></div>
+                </div>
+
+                <!-- НОВЫЙ БЛОК: Управление боями (удаление) -->
+                <div class="admin-form">
+                    <h3><i class="fas fa-trash-alt"></i> Управление боями</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Выбрать бойца для удаления истории</label>
+                            <select id="deleteFightsForFighter">
+                                <option value="">-- Все бойцы --</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <button id="deleteFightsBtn" class="btn btn-danger"><i class="fas fa-trash"></i> Удалить историю боёв</button>
+                        </div>
+                        <div class="form-group">
+                            <button id="deleteAllFightsBtn" class="btn btn-danger"><i class="fas fa-trash-alt"></i> Удалить ВСЕ бои</button>
+                        </div>
+                    </div>
+                    <div id="deleteFightsResult" style="margin-top:12px;"></div>
                 </div>
             </div>
 
-            <!-- Вкладка: Вызовы -->
+            <!-- Магазины -->
+            <div id="tab-partners" class="tab-pane">
+                <div class="admin-form">
+                    <h3><i class="fas fa-plus"></i> Добавить магазин</h3>
+                    <div class="form-row">
+                        <div class="form-group"><label>Название</label><input type="text" id="partnerName" placeholder="FightShop Pro"></div>
+                        <div class="form-group"><label>Сайт</label><input type="url" id="partnerUrl" placeholder="https://..."></div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group"><label>Описание</label><input type="text" id="partnerDesc" placeholder="Экипировка для ММА"></div>
+                        <div class="form-group"><label>Скидка</label><input type="text" id="partnerDiscount" placeholder="10% по промокоду PRORANK"></div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group"><label>Иконка (fa-...)</label><input type="text" id="partnerIcon" value="fa-store"></div>
+                    </div>
+                    <button id="addPartnerBtn" class="btn btn-success"><i class="fas fa-store"></i> Добавить магазин</button>
+                </div>
+                <div class="partners-list">
+                    <table>
+                        <thead><tr><th>Название</th><th>Описание</th><th>Скидка</th><th>Действия</th></tr></thead>
+                        <tbody id="partnersTableBody"><tr><td colspan="4"><i class="fas fa-spinner fa-pulse"></i> Загрузка...</td></tr></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Заявки -->
+            <div id="tab-requests" class="tab-pane">
+                <div class="admin-form">
+                    <h3><i class="fas fa-envelope"></i> Заявки на партнёрство</h3>
+                    <div id="requestsList">Загрузка...</div>
+                </div>
+            </div>
+
+            <!-- Вызовы -->
             <div id="tab-challenges" class="tab-pane">
                 <div class="admin-form">
-                    <h3><i class="fas fa-crosshairs"></i> Управление вызовами</h3>
                     <div class="form-row">
                         <div class="form-group"><label>Статус</label><select id="challengeStatusFilter"><option value="all">Все</option><option value="pending">Ожидают</option><option value="accepted">Приняты</option><option value="rejected">Отклонены</option></select></div>
                         <div class="form-group"><button id="refreshChallengesBtn" class="btn btn-secondary"><i class="fas fa-sync-alt"></i> Обновить</button></div>
@@ -317,10 +444,9 @@
                 </div>
             </div>
 
-            <!-- Вкладка: История -->
+            <!-- История -->
             <div id="tab-history" class="tab-pane">
                 <div class="admin-form">
-                    <h3><i class="fas fa-history"></i> История действий</h3>
                     <div class="form-row">
                         <div class="form-group"><label>Фильтр по админу</label><input type="text" id="historyAdminFilter" placeholder="Email"></div>
                         <div class="form-group"><button id="refreshHistoryBtn" class="btn btn-secondary"><i class="fas fa-sync-alt"></i> Обновить</button></div>
@@ -330,7 +456,7 @@
                 </div>
             </div>
 
-            <!-- Вкладка: Рассылка -->
+            <!-- Рассылка -->
             <div id="tab-broadcast" class="tab-pane">
                 <div class="admin-form">
                     <h3><i class="fas fa-bullhorn"></i> Массовая рассылка</h3>
@@ -341,26 +467,10 @@
                         <div class="form-group"><label>Тема</label><input type="text" id="broadcastSubject" placeholder="Тема сообщения"></div>
                     </div>
                     <div class="form-row">
-                        <div class="form-group"><label>Сообщение</label><textarea id="broadcastMessage" rows="4" style="width:100%; background:#2a2a2a; border:1px solid #333; color:white; border-radius:8px; padding:0.75rem;"></textarea></div>
+                        <div class="form-group"><label>Сообщение</label><textarea id="broadcastMessage" rows="4" placeholder="Текст сообщения..."></textarea></div>
                     </div>
                     <button id="sendBroadcastBtn" class="btn btn-primary"><i class="fas fa-paper-plane"></i> Отправить</button>
-                    <div id="broadcastResult" style="margin-top:0.5rem;"></div>
-                </div>
-            </div>
-
-            <!-- Вкладка: Список бойцов -->
-            <div id="tab-list" class="tab-pane">
-                <div class="admin-form">
-                    <div class="form-row">
-                        <div class="form-group"><label>🔍 Поиск</label><input type="text" id="searchFighter" placeholder="По имени или email"></div>
-                        <div class="form-group"><button id="recalculateFRSBtn" class="btn btn-warning"><i class="fas fa-calculator"></i> Пересчитать FRS</button></div>
-                    </div>
-                </div>
-                <div class="fighters-list">
-                    <table>
-                        <thead><tr><th>Имя</th><th>Спорт</th><th>Город</th><th>⭐ FRS</th><th>🏆</th><th>❌</th><th>💥</th><th>Telegram</th><th>Управление</th></tr></thead>
-                        <tbody id="adminTableBody"><tr><td colspan="9"><i class="fas fa-spinner fa-pulse"></i> Загрузка...</td></tr></tbody>
-                    </table>
+                    <div id="broadcastResult" style="margin-top:12px;"></div>
                 </div>
             </div>
         </div>
@@ -377,7 +487,7 @@
     </script>
     <script type="module">
         import { initializeApp } from "firebase/app";
-        import { getFirestore, collection, getDocs, doc, updateDoc, query, orderBy, deleteDoc, increment, addDoc, getDoc, where, setDoc, limit } from "firebase/firestore";
+        import { getFirestore, collection, getDocs, doc, updateDoc, query, orderBy, deleteDoc, increment, addDoc, getDoc, where, setDoc, serverTimestamp } from "firebase/firestore";
         import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "firebase/auth";
 
         const firebaseConfig = {
@@ -397,102 +507,54 @@
         let allFighters = [];
         let currentAdminEmail = null;
 
-async function checkAndAwardAchievements(userId) {
-    const userRef = doc(db, "fighters", userId);
-    const userSnap = await getDoc(userRef);
-    const user = userSnap.data();
-    if (!user) return;
-    
-    const achievementsSnap = await getDocs(collection(db, "achievements"));
-    const userAchievementsSnap = await getDocs(query(collection(db, "userAchievements"), where("userId", "==", userId)));
-    const earnedIds = new Set();
-    userAchievementsSnap.forEach(doc => earnedIds.add(doc.data().achievementId));
-    
-    const fightsSnap = await getDocs(query(collection(db, "fights"), where("winnerId", "==", userId)));
-    const totalFights = fightsSnap.size;
-    const wins = user.wins || 0;
-    const finishes = user.finishes || 0;
-    
-    for (const docSnap of achievementsSnap.docs) {
-        const ach = docSnap.data();
-        if (earnedIds.has(docSnap.id)) continue;
-        
-        let earned = false;
-        const cond = ach.condition;
-        
-        if (!cond) continue; // пропускаем ачивки без условия
-        
-        if (cond.type === 'total_fights' && totalFights >= cond.value) earned = true;
-        if (cond.type === 'wins' && wins >= cond.value) earned = true;
-        if (cond.type === 'finishes' && finishes >= cond.value) earned = true;
-        
-        if (earned) {
-            if (ach.reward && ach.reward.type === 'frs') {
-                await updateDoc(userRef, { frs: (user.frs || 0) + ach.reward.amount });
-            }
-            await setDoc(doc(db, "userAchievements", `${userId}_${docSnap.id}`), {
-                userId: userId,
-                achievementId: docSnap.id,
-                earnedAt: new Date(),
-                isNegative: ach.isNegative || false
-            });
-            // Отправляем уведомление в Telegram (если есть)
-const userSnap = await getDoc(userRef);
-const telegramId = userSnap.data()?.telegramId;
-if (telegramId) {
-    await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-            chat_id: telegramId,
-            text: `🏆 НОВАЯ АЧИВКА!\n\n${ach.name}\n${ach.description}\nНаграда: +${ach.reward?.amount || 0} ${ach.reward?.type === 'frs' ? 'FRS' : 'вызовов'}`,
-            parse_mode: 'Markdown'
-        })
-    });
-}
-            console.log(`🏆 ${ach.name} получена!`);
-        }
-    }
-}
         async function logAction(action, targetId, details) {
             if (!currentAdminEmail) return;
-            await addDoc(collection(db, "adminLogs"), {
-                admin: currentAdminEmail,
-                action: action,
-                targetId: targetId || null,
-                details: details || '',
-                timestamp: new Date()
-            }).catch(e => console.error);
+            try {
+                await addDoc(collection(db, "adminLogs"), {
+                    admin: currentAdminEmail,
+                    action: action,
+                    targetId: targetId || null,
+                    details: details || '',
+                    timestamp: serverTimestamp()
+                });
+            } catch(e) { console.error(e); }
         }
 
         async function loadStats() {
             const fightersSnap = await getDocs(collection(db, "fighters"));
             const fightsSnap = await getDocs(collection(db, "fights"));
             const challengesSnap = await getDocs(collection(db, "challenges"));
-            const now = new Date();
-            const monthAgo = new Date(now.getFullYear(), now.getMonth() - 1, now.getDate());
-            let fightsMonth = 0;
-            fightsSnap.forEach(doc => { const date = doc.data().date?.toDate(); if (date && date > monthAgo) fightsMonth++; });
+            const partnersSnap = await getDocs(collection(db, "partners"));
+            const requestsSnap = await getDocs(query(collection(db, "partner_requests"), where("status", "==", "pending")));
+            
             let premiumCount = 0;
-            fightersSnap.forEach(doc => { if (doc.data().premium) premiumCount++; });
+            let bannedCount = 0;
+            fightersSnap.forEach(doc => { 
+                if (doc.data().premium) premiumCount++; 
+                if (doc.data().banned) bannedCount++;
+            });
+            
             document.getElementById('statFighters').innerText = fightersSnap.size;
+            document.getElementById('statBanned').innerText = bannedCount;
             document.getElementById('statFights').innerText = fightsSnap.size;
-            document.getElementById('statFightsMonth').innerText = fightsMonth;
             document.getElementById('statChallenges').innerText = challengesSnap.size;
             document.getElementById('statPremium').innerText = premiumCount;
+            document.getElementById('statPartners').innerText = partnersSnap.size;
+            document.getElementById('statRequests').innerText = requestsSnap.size;
         }
 
         async function loadFighters() {
             const tbody = document.getElementById('adminTableBody');
-            tbody.innerHTML = '<tr><td colspan="9"><i class="fas fa-spinner fa-pulse"></i> Загрузка...</td></tr>';
             try {
                 const q = query(collection(db, "fighters"), orderBy("frs", "desc"));
                 const snapshot = await getDocs(q);
                 allFighters = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                 renderFighters(allFighters);
-            } catch (err) {
+                loadFightersForSelect();
+                loadFightersForDeleteSelect();
+            } catch(err) {
                 console.error(err);
-                tbody.innerHTML = '<tr><td colspan="9">Ошибка загрузки</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="11">Ошибка загрузки</td></tr>';
             }
         }
 
@@ -501,22 +563,28 @@ if (telegramId) {
             tbody.innerHTML = '';
             fighters.forEach(f => {
                 const row = tbody.insertRow();
+                const isBanned = f.banned === true;
                 row.innerHTML = `
-                    <td><strong>${f.name || 'Боец'}</strong><br><small>${f.email || ''}</small></td>
-                    <td>${f.sport || '—'}</td>
-                    <td>${f.city || '—'}</td>
+                    <td><strong>${escapeHtml(f.name || 'Боец')}</strong><br><small>${escapeHtml(f.email || '')}</small></td>
+                    <td>${escapeHtml(f.sport || '—')}</td>
+                    <td>${escapeHtml(f.city || '—')}</td>
                     <td>${f.frs || 0}</td>
                     <td>${f.wins || 0}</td>
                     <td>${f.losses || 0}</td>
                     <td>${f.finishes || 0}</td>
                     <td>${f.telegramId || '—'}</td>
+                    <td>${f.premium ? '✅' : '❌'}</td>
+                    <td>${isBanned ? '<span class="banned-badge">🔒 Забанен</span>' : '✅ Активен'}</td>
                     <td class="points-control">
-                        <button onclick="changePoints('${f.id}', 100)">+100</button>
-                        <button onclick="changePoints('${f.id}', 10)">+10</button>
-                        <button onclick="changePoints('${f.id}', 1)">+1</button>
-                        <button class="danger" onclick="changePoints('${f.id}', -1)">-1</button>
-                        <button class="danger" onclick="changePoints('${f.id}', -10)">-10</button>
-                        <button class="danger" onclick="changePoints('${f.id}', -100)">-100</button>
+                        <button onclick="window.changePoints('${f.id}', 100)">+100</button>
+                        <button onclick="window.changePoints('${f.id}', 10)">+10</button>
+                        <button onclick="window.changePoints('${f.id}', 1)">+1</button>
+                        <button class="danger" onclick="window.changePoints('${f.id}', -1)">-1</button>
+                        <button class="danger" onclick="window.changePoints('${f.id}', -10)">-10</button>
+                        <button class="danger" onclick="window.changePoints('${f.id}', -100)">-100</button>
+                        ${!isBanned ? `<button class="danger" onclick="window.banFighter('${f.id}')">🔨 Бан</button>` : `<button onclick="window.unbanFighter('${f.id}')">🔓 Разбан</button>`}
+                        <button onclick="window.resetRecord('${f.id}')">🔄 Сброс</button>
+                        <button class="danger" onclick="window.deleteAccount('${f.id}')">🗑️ Удалить</button>
                     </td>
                 `;
             });
@@ -526,83 +594,70 @@ if (telegramId) {
             const fighter = allFighters.find(f => f.id === uid);
             if (!fighter) return;
             const newFRS = (fighter.frs || 0) + delta;
-            await updateDoc(doc(db, "fighters", uid), { frs: newFRS });
+            await updateDoc(doc(db, "fighters", uid), { frs: Math.max(0, newFRS) });
             await logAction('change_points', uid, `Изменил FRS на ${delta}`);
             loadFighters();
             loadStats();
         };
 
-        async function loadFightersForSelectEdit() {
-            const snapshot = await getDocs(query(collection(db, "fighters"), orderBy("name")));
-            const select = document.getElementById('selectFighterForEdit');
-            select.innerHTML = '<option value="">-- Выберите бойца --</option>';
-            snapshot.forEach(doc => {
-                const fighter = doc.data();
-                select.innerHTML += `<option value="${doc.id}">${fighter.name || 'Боец'} (${fighter.city || '—'})</option>`;
-            });
-            select.onchange = () => {
-                if (select.value) openEditDialog(select.value);
-                else document.getElementById('editForm').style.display = 'none';
-            };
-        }
-
-        function openEditDialog(uid) {
-            const f = allFighters.find(f => f.id === uid);
-            if (!f) return;
-            document.getElementById('editName').value = f.name || '';
-            document.getElementById('editCity').value = f.city || '';
-            document.getElementById('editWins').value = f.wins || 0;
-            document.getElementById('editLosses').value = f.losses || 0;
-            document.getElementById('editFinishes').value = f.finishes || 0;
-            document.getElementById('editFRS').value = f.frs || 0;
-            document.getElementById('editSubscribers').value = f.subscribers || 0;
-            document.getElementById('editViews').value = f.viewsLast30Days || 0;
-            document.getElementById('editFreeChallenges').value = f.freeChallenges || 0;
-            document.getElementById('editPurchasedChallenges').value = f.purchasedChallenges || 0;
-            document.getElementById('editTelegramId').value = f.telegramId || '';
-            document.getElementById('editPremium').value = f.premium ? 'true' : 'false';
-            
-            const weightSelect = document.getElementById('editWeightClass');
-            weightSelect.innerHTML = '<option value="47">Наилегчайшая (до 50 кг)</option><option value="53">Легчайшая (51–56 кг)</option><option value="59">Полулёгкая (57–61 кг)</option><option value="64">Лёгкая (62–66 кг)</option><option value="69">1-я полусредняя (67–71 кг)</option><option value="74">Полусредняя (72–77 кг)</option><option value="80">1-я средняя (78–83 кг)</option><option value="86">Средняя (84–89 кг)</option><option value="94">Полутяжёлая (90–99 кг)</option><option value="110">Тяжёлая (100+ кг)</option>';
-            weightSelect.value = f.weightClass || '64';
-            
-            document.getElementById('editForm').style.display = 'block';
-        }
-
-        document.getElementById('saveFighterBtn').addEventListener('click', async () => {
-            const uid = document.getElementById('selectFighterForEdit').value;
-            if (!uid) { alert('Выберите бойца'); return; }
-            const updates = {
-                name: document.getElementById('editName').value,
-                city: document.getElementById('editCity').value,
-                weightClass: document.getElementById('editWeightClass').value,
-                sport: document.getElementById('editSport').value,
-                wins: parseInt(document.getElementById('editWins').value) || 0,
-                losses: parseInt(document.getElementById('editLosses').value) || 0,
-                finishes: parseInt(document.getElementById('editFinishes').value) || 0,
-                frs: parseInt(document.getElementById('editFRS').value) || 0,
-                subscribers: parseInt(document.getElementById('editSubscribers').value) || 0,
-                viewsLast30Days: parseInt(document.getElementById('editViews').value) || 0,
-                freeChallenges: parseInt(document.getElementById('editFreeChallenges').value) || 0,
-                purchasedChallenges: parseInt(document.getElementById('editPurchasedChallenges').value) || 0,
-                telegramId: document.getElementById('editTelegramId').value || null,
-                premium: document.getElementById('editPremium').value === 'true'
-            };
-            await updateDoc(doc(db, "fighters", uid), updates);
-            await logAction('edit_fighter', uid, 'Редактировал профиль');
-            document.getElementById('editResult').innerHTML = '<span style="color:green;">✅ Сохранено!</span>';
+        window.banFighter = async (uid) => {
+            if (!confirm('Заблокировать бойца? Он не сможет вызывать других и участвовать в рейтинге')) return;
+            await updateDoc(doc(db, "fighters", uid), { banned: true, banReason: 'Нарушение правил', bannedAt: new Date() });
+            await logAction('ban_fighter', uid, 'Заблокировал бойца');
             loadFighters();
             loadStats();
-        });
+            alert('✅ Боец заблокирован');
+        };
+
+        window.unbanFighter = async (uid) => {
+            await updateDoc(doc(db, "fighters", uid), { banned: false, banReason: null, bannedAt: null });
+            await logAction('unban_fighter', uid, 'Разблокировал бойца');
+            loadFighters();
+            loadStats();
+            alert('✅ Боец разблокирован');
+        };
+
+        window.resetRecord = async (uid) => {
+            if (!confirm('СБРОСИТЬ рекорд бойца? Победы, поражения и финиши станут 0.')) return;
+            await updateDoc(doc(db, "fighters", uid), { wins: 0, losses: 0, finishes: 0 });
+            await logAction('reset_record', uid, 'Сбросил рекорд');
+            loadFighters();
+            alert('✅ Рекорд сброшен');
+        };
+
+        window.deleteAccount = async (uid) => {
+            if (!confirm('УДАЛИТЬ аккаунт бойца? Это действие НЕОБРАТИМО!')) return;
+            let code = prompt('Введите "УДАЛИТЬ" для подтверждения');
+            if (code !== 'УДАЛИТЬ') { alert('Операция отменена'); return; }
+            try {
+                const challengesSnap = await getDocs(query(collection(db, "challenges"), where("fromUserId", "==", uid)));
+                for (const docSnap of challengesSnap) await deleteDoc(doc(db, "challenges", docSnap.id));
+                const challengesToSnap = await getDocs(query(collection(db, "challenges"), where("toUserId", "==", uid)));
+                for (const docSnap of challengesToSnap) await deleteDoc(doc(db, "challenges", docSnap.id));
+                const chatsSnap = await getDocs(query(collection(db, "chats"), where("participants", "array-contains", uid)));
+                for (const docSnap of chatsSnap) await deleteDoc(doc(db, "chats", docSnap.id));
+                const likesSnap = await getDocs(query(collection(db, "likes"), where("fighterId", "==", uid)));
+                for (const docSnap of likesSnap) await deleteDoc(doc(db, "likes", docSnap.id));
+                const userAchSnap = await getDocs(query(collection(db, "userAchievements"), where("userId", "==", uid)));
+                for (const docSnap of userAchSnap) await deleteDoc(doc(db, "userAchievements", docSnap.id));
+                await deleteDoc(doc(db, "fighters", uid));
+                await logAction('delete_account', uid, 'Удалил аккаунт');
+                loadFighters();
+                loadStats();
+                alert('✅ Аккаунт удалён');
+            } catch (err) { alert('Ошибка: ' + err.message); }
+        };
 
         async function loadFightersForSelect() {
             const snapshot = await getDocs(collection(db, "fighters"));
             const select1 = document.getElementById('fighterSelect1');
             const select2 = document.getElementById('fighterSelect2');
+            if (!select1 || !select2) return;
             select1.innerHTML = '<option value="">Выбери победителя</option>';
             select2.innerHTML = '<option value="">Выбери проигравшего</option>';
             snapshot.forEach(doc => {
                 const fighter = doc.data();
+                if (fighter.banned) return;
                 const option1 = document.createElement('option');
                 option1.value = doc.id;
                 option1.textContent = fighter.name || 'Боец';
@@ -612,7 +667,100 @@ if (telegramId) {
             });
         }
 
-        document.getElementById('addFightBtn').addEventListener('click', async () => {
+        async function loadFightersForDeleteSelect() {
+            const snapshot = await getDocs(collection(db, "fighters"));
+            const select = document.getElementById('deleteFightsForFighter');
+            if (!select) return;
+            select.innerHTML = '<option value="">-- Все бойцы --</option>';
+            snapshot.forEach(doc => {
+                const fighter = doc.data();
+                select.innerHTML += `<option value="${doc.id}">${fighter.name || 'Боец'} (${fighter.city || '—'})</option>`;
+            });
+        }
+
+        // Удаление истории боёв
+        window.deleteFights = async () => {
+            const fighterId = document.getElementById('deleteFightsForFighter')?.value;
+            const confirmMsg = fighterId ? 'Удалить ВСЮ историю боёв этого бойца? Это затронет его личную статистику.' : 'Удалить ВСЕ бои из системы? Это НЕОБРАТИМО!';
+            if (!confirm(confirmMsg)) return;
+            
+            const btn = document.getElementById('deleteFightsBtn');
+            if (btn) { btn.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> Удаление...'; btn.disabled = true; }
+            
+            try {
+                if (fighterId) {
+                    const asWinner = await getDocs(query(collection(db, "fights"), where("winnerId", "==", fighterId)));
+                    const asLoser = await getDocs(query(collection(db, "fights"), where("loserId", "==", fighterId)));
+                    const allFights = [...asWinner.docs, ...asLoser.docs];
+                    const uniqueIds = [...new Map(allFights.map(doc => [doc.id, doc])).values()];
+                    for (const docSnap of uniqueIds) {
+                        await deleteDoc(doc(db, "fights", docSnap.id));
+                    }
+                    await updateDoc(doc(db, "fighters", fighterId), {
+                        wins: 0, losses: 0, finishes: 0, lastFightDate: null
+                    });
+                    alert(`✅ Удалено ${uniqueIds.length} боёв для бойца`);
+                } else {
+                    const querySnapshot = await getDocs(collection(db, "fights"));
+                    for (const docSnap of querySnapshot.docs) {
+                        await deleteDoc(doc(db, "fights", docSnap.id));
+                    }
+                    const fightersSnap = await getDocs(collection(db, "fighters"));
+                    for (const docSnap of fightersSnap.docs) {
+                        await updateDoc(doc(db, "fighters", docSnap.id), {
+                            wins: 0, losses: 0, finishes: 0, lastFightDate: null
+                        });
+                    }
+                    alert(`✅ Удалено ${querySnapshot.size} боёв, статистика всех бойцов обнулена`);
+                }
+                
+                await logAction('delete_fights', fighterId || 'all', 'Удалил историю боёв');
+                loadFighters();
+                loadStats();
+                const resultDiv = document.getElementById('deleteFightsResult');
+                if (resultDiv) {
+                    resultDiv.innerHTML = '<span style="color:green;">✅ Бои удалены</span>';
+                    setTimeout(() => { resultDiv.innerHTML = ''; }, 3000);
+                }
+            } catch (err) {
+                alert('Ошибка: ' + err.message);
+            } finally {
+                if (btn) { btn.innerHTML = '<i class="fas fa-trash"></i> Удалить историю боёв'; btn.disabled = false; }
+            }
+        };
+
+        // Удаление всех боёв (отдельная кнопка)
+        window.deleteAllFights = async () => {
+            if (!confirm('УДАЛИТЬ ВСЕ БОИ? Это действие НЕОБРАТИМО! Статистика всех бойцов обнулится.')) return;
+            let code = prompt('Введите "УДАЛИТЬ ВСЕ" для подтверждения');
+            if (code !== 'УДАЛИТЬ ВСЕ') { alert('Операция отменена'); return; }
+            
+            const btn = document.getElementById('deleteAllFightsBtn');
+            if (btn) { btn.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> Удаление...'; btn.disabled = true; }
+            
+            try {
+                const querySnapshot = await getDocs(collection(db, "fights"));
+                for (const docSnap of querySnapshot.docs) {
+                    await deleteDoc(doc(db, "fights", docSnap.id));
+                }
+                const fightersSnap = await getDocs(collection(db, "fighters"));
+                for (const docSnap of fightersSnap.docs) {
+                    await updateDoc(doc(db, "fighters", docSnap.id), {
+                        wins: 0, losses: 0, finishes: 0, lastFightDate: null
+                    });
+                }
+                await logAction('delete_all_fights', null, 'Удалил все бои');
+                alert(`✅ Удалено ${querySnapshot.size} боёв, статистика всех бойцов обнулена`);
+                loadFighters();
+                loadStats();
+            } catch (err) {
+                alert('Ошибка: ' + err.message);
+            } finally {
+                if (btn) { btn.innerHTML = '<i class="fas fa-trash-alt"></i> Удалить ВСЕ бои'; btn.disabled = false; }
+            }
+        };
+
+        document.getElementById('addFightBtn')?.addEventListener('click', async () => {
             const winnerId = document.getElementById('fighterSelect1').value;
             const loserId = document.getElementById('fighterSelect2').value;
             const isFinish = document.getElementById('finishCheckbox').checked;
@@ -628,40 +776,122 @@ if (telegramId) {
                 const sport = winnerSnap.data()?.sport || '—';
                 await updateDoc(winnerRef, { wins: increment(1), finishes: increment(isFinish ? 1 : 0), lastFightDate: new Date() });
                 await updateDoc(loserRef, { losses: increment(1), lastFightDate: new Date() });
-                await addDoc(collection(db, "fights"), { winnerId, winnerName, loserId, loserName, isFinish, sport, date: new Date() });
-                await checkAndAwardAchievements(winnerId);
-                await checkAndAwardAchievements(loserId);
+                await addDoc(collection(db, "fights"), { winnerId, winnerName, loserId, loserName, isFinish, sport, date: serverTimestamp() });
                 await logAction('add_fight', `${winnerId}_${loserId}`, `${winnerName} победил ${loserName}`);
                 document.getElementById('fightMessage').innerHTML = '<span style="color:green;">✅ Бой добавлен!</span>';
                 loadFighters();
-                loadFightersForSelect();
                 loadStats();
-            } catch (error) { console.error(error); alert('Ошибка: ' + error.message); }
+            } catch (error) { alert('Ошибка: ' + error.message); }
         });
 
-        document.getElementById('recalculateFRSBtn').addEventListener('click', async () => {
-            if (!confirm("Пересчитать FRS для всех бойцов?")) return;
-            const btn = document.getElementById('recalculateFRSBtn');
-            btn.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> Пересчёт...';
-            btn.disabled = true;
-            try {
-                const fightersSnapshot = await getDocs(collection(db, "fighters"));
-                const now = Date.now();
-                const monthMs = 30 * 24 * 60 * 60 * 1000;
-                for (const docSnap of fightersSnapshot.docs) {
-                    const f = docSnap.data();
-                    const frs = (f.wins || 0) * 100 + (f.finishes || 0) * 50 + ((f.viewsLast30Days || 0) / 100) + ((f.subscribers || 0) / 10) - ((f.lastFightDate ? Math.floor((now - f.lastFightDate.toDate()) / monthMs) : 0) * 25) + (f.premium ? 5 : 0);
-                    await updateDoc(doc(db, "fighters", docSnap.id), { frs });
-                }
-                alert("✅ FRS пересчитан!");
-                loadFighters();
-                await logAction('recalculate_frs', null, 'Пересчитал FRS');
-            } catch (error) { alert("Ошибка: " + error.message); }
-            finally { btn.innerHTML = '<i class="fas fa-calculator"></i> Пересчитать FRS'; btn.disabled = false; }
+        async function loadPartners() {
+            const snapshot = await getDocs(collection(db, "partners"));
+            const tbody = document.getElementById('partnersTableBody');
+            if (!tbody) return;
+            if (snapshot.empty) {
+                tbody.innerHTML = '<tr><td colspan="4">Нет магазинов</td></tr>';
+                return;
+            }
+            let html = '';
+            snapshot.forEach(docSnap => {
+                const p = docSnap.data();
+                html += `<tr>
+                    <td><strong>${escapeHtml(p.name)}</strong></td>
+                    <td>${escapeHtml(p.description)}</td>
+                    <td>${p.discount || '—'}</td>
+                    <td><button class="btn btn-danger" onclick="window.deletePartner('${docSnap.id}')"><i class="fas fa-trash"></i> Удалить</button></td>
+                </tr>`;
+            });
+            tbody.innerHTML = html;
+        }
+
+        window.deletePartner = async (id) => {
+            if (!confirm('Удалить магазин?')) return;
+            await deleteDoc(doc(db, "partners", id));
+            await logAction('delete_partner', id, 'Удалил магазин');
+            loadPartners();
+            loadStats();
+        };
+
+        document.getElementById('addPartnerBtn')?.addEventListener('click', async () => {
+            const name = document.getElementById('partnerName').value;
+            const url = document.getElementById('partnerUrl').value;
+            const description = document.getElementById('partnerDesc').value;
+            const discount = document.getElementById('partnerDiscount').value;
+            const icon = document.getElementById('partnerIcon').value || 'fa-store';
+            if (!name || !url) { alert('Заполните название и ссылку'); return; }
+            await addDoc(collection(db, "partners"), {
+                name, url, description, discount, icon,
+                createdAt: serverTimestamp()
+            });
+            await logAction('add_partner', null, `Добавил магазин ${name}`);
+            document.getElementById('partnerName').value = '';
+            document.getElementById('partnerUrl').value = '';
+            document.getElementById('partnerDesc').value = '';
+            document.getElementById('partnerDiscount').value = '';
+            alert('✅ Магазин добавлен');
+            loadPartners();
+            loadStats();
         });
+
+        async function loadRequests() {
+            const snapshot = await getDocs(query(collection(db, "partner_requests"), orderBy("createdAt", "desc")));
+            const container = document.getElementById('requestsList');
+            if (snapshot.empty) {
+                container.innerHTML = '<div class="request-item">Нет заявок</div>';
+                return;
+            }
+            let html = '';
+            snapshot.forEach(docSnap => {
+                const r = docSnap.data();
+                const date = r.createdAt?.toDate().toLocaleString() || '—';
+                html += `
+                    <div class="request-item">
+                        <div><strong>${escapeHtml(r.storeName)}</strong><br><small>${escapeHtml(r.contactName)} | ${escapeHtml(r.contactEmail)}</small></div>
+                        <div>${escapeHtml(r.storeDescription?.substring(0, 100))}...</div>
+                        <div>${r.discount ? '🎁 ' + r.discount : ''}</div>
+                        <div>
+                            ${r.status === 'pending' ? `
+                                <button class="btn btn-success" onclick="window.approveRequest('${docSnap.id}')"><i class="fas fa-check"></i> Одобрить</button>
+                                <button class="btn btn-danger" onclick="window.rejectRequest('${docSnap.id}')"><i class="fas fa-times"></i> Отклонить</button>
+                            ` : `<span style="color:${r.status === 'approved' ? '#16a34a' : '#dc2626'}">${r.status === 'approved' ? '✅ Одобрено' : '❌ Отклонено'}</span>`}
+                        </div>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+        }
+
+        window.approveRequest = async (requestId) => {
+            const requestRef = doc(db, "partner_requests", requestId);
+            const requestSnap = await getDoc(requestRef);
+            const r = requestSnap.data();
+            if (!r) return;
+            await addDoc(collection(db, "partners"), {
+                name: r.storeName,
+                url: r.storeUrl,
+                description: r.storeDescription,
+                discount: r.storeDiscount || null,
+                icon: "fa-store",
+                createdAt: serverTimestamp()
+            });
+            await updateDoc(requestRef, { status: 'approved' });
+            await logAction('approve_partner', requestId, `Одобрил заявку ${r.storeName}`);
+            loadRequests();
+            loadPartners();
+            loadStats();
+            alert('✅ Магазин добавлен на витрину');
+        };
+
+        window.rejectRequest = async (requestId) => {
+            await updateDoc(doc(db, "partner_requests", requestId), { status: 'rejected' });
+            await logAction('reject_partner', requestId, 'Отклонил заявку');
+            loadRequests();
+            alert('❌ Заявка отклонена');
+        };
 
         async function loadChallengesForAdmin() {
-            const statusFilter = document.getElementById('challengeStatusFilter').value;
+            const statusFilter = document.getElementById('challengeStatusFilter')?.value || 'all';
             let q;
             if (statusFilter === 'all') q = query(collection(db, "challenges"), orderBy("createdAt", "desc"));
             else q = query(collection(db, "challenges"), where("status", "==", statusFilter), orderBy("createdAt", "desc"));
@@ -673,10 +903,10 @@ if (telegramId) {
                 const c = docSnap.data();
                 const date = c.createdAt?.toDate().toLocaleString() || '—';
                 html += `<div class="challenge-item">
-                    <span><strong>${c.fromName}</strong> → <strong>${c.toName}</strong></span>
+                    <span><strong>${escapeHtml(c.fromName)}</strong> → <strong>${escapeHtml(c.toName)}</strong></span>
                     <span>Статус: ${c.status}</span>
                     <span>${date}</span>
-                    <button class="btn btn-warning" onclick="updateChallengeStatusAdmin('${docSnap.id}', 'cancelled')">Отменить</button>
+                    <button class="btn btn-warning" onclick="window.updateChallengeStatusAdmin('${docSnap.id}', 'cancelled')">Отменить</button>
                 </div>`;
             });
             container.innerHTML = html;
@@ -684,38 +914,24 @@ if (telegramId) {
 
         window.updateChallengeStatusAdmin = async (challengeId, newStatus) => {
             await updateDoc(doc(db, "challenges", challengeId), { status: newStatus });
-            await logAction('update_challenge', challengeId, `Изменил статус вызова на ${newStatus}`);
+            await logAction('update_challenge', challengeId, `Изменил статус на ${newStatus}`);
             loadChallengesForAdmin();
         };
 
         document.getElementById('clearAllChallengesBtn')?.addEventListener('click', async () => {
-            if (!confirm('Удалить ВСЕ вызовы? Это необратимо!')) return;
-            const btn = document.getElementById('clearAllChallengesBtn');
-            btn.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> Удаление...';
-            btn.disabled = true;
-    
-            try {
+            if (!confirm('Удалить ВСЕ вызовы?')) return;
             const snapshot = await getDocs(collection(db, "challenges"));
-            let deleted = 0;
             for (const docSnap of snapshot.docs) {
-            await deleteDoc(doc(db, "challenges", docSnap.id));
-            deleted++;
+                await deleteDoc(doc(db, "challenges", docSnap.id));
             }
-            alert(`✅ Удалено ${deleted} вызовов`);
-            await logAction('clear_challenges', null, `Очистил все вызовы (${deleted})`);
+            await logAction('clear_challenges', null, 'Очистил все вызовы');
             loadChallengesForAdmin();
             loadStats();
-        } catch (error) {
-            console.error(error);
-            alert('Ошибка при удалении: ' + error.message);
-        } finally {
-            btn.innerHTML = '<i class="fas fa-trash"></i> Очистить все';
-            btn.disabled = false;
-        }
+            alert('✅ Вызовы удалены');
         });
 
         async function loadAdminHistory() {
-            const adminFilter = document.getElementById('historyAdminFilter').value;
+            const adminFilter = document.getElementById('historyAdminFilter')?.value || '';
             let q;
             if (adminFilter) q = query(collection(db, "adminLogs"), where("admin", "==", adminFilter), orderBy("timestamp", "desc"), limit(100));
             else q = query(collection(db, "adminLogs"), orderBy("timestamp", "desc"), limit(100));
@@ -727,9 +943,9 @@ if (telegramId) {
                 const log = docSnap.data();
                 const date = log.timestamp?.toDate().toLocaleString() || '—';
                 html += `<div class="history-item">
-                    <span><strong>${log.admin}</strong></span>
-                    <span>${log.action}</span>
-                    <span>${log.details || ''}</span>
+                    <span><strong>${escapeHtml(log.admin)}</strong></span>
+                    <span>${escapeHtml(log.action)}</span>
+                    <span>${escapeHtml(log.details || '')}</span>
                     <span>${date}</span>
                 </div>`;
             });
@@ -737,31 +953,17 @@ if (telegramId) {
         }
 
         document.getElementById('clearHistoryBtn')?.addEventListener('click', async () => {
-        if (!confirm('Удалить ВСЮ историю действий? Это необратимо!')) return;
-        const btn = document.getElementById('clearHistoryBtn');
-        btn.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> Удаление...';
-        btn.disabled = true;
-    
-        try {
-        const snapshot = await getDocs(collection(db, "adminLogs"));
-        let deleted = 0;
-        for (const docSnap of snapshot.docs) {
-            await deleteDoc(doc(db, "adminLogs", docSnap.id));
-            deleted++;
-        }
-        alert(`✅ Удалено ${deleted} записей`);
-        await logAction('clear_history', null, `Очистил историю (${deleted})`);
-        loadAdminHistory();
-        } catch (error) {
-        console.error(error);
-        alert('Ошибка при удалении: ' + error.message);
-        } finally {
-        btn.innerHTML = '<i class="fas fa-trash"></i> Очистить историю';
-        btn.disabled = false;
-        }
+            if (!confirm('Удалить ВСЮ историю?')) return;
+            const snapshot = await getDocs(collection(db, "adminLogs"));
+            for (const docSnap of snapshot.docs) {
+                await deleteDoc(doc(db, "adminLogs", docSnap.id));
+            }
+            await logAction('clear_history', null, 'Очистил историю');
+            loadAdminHistory();
+            alert('✅ История очищена');
         });
 
-        async function sendBroadcast() {
+        document.getElementById('sendBroadcastBtn')?.addEventListener('click', async () => {
             const target = document.getElementById('broadcastTarget').value;
             const subject = document.getElementById('broadcastSubject').value;
             const message = document.getElementById('broadcastMessage').value;
@@ -786,21 +988,45 @@ if (telegramId) {
             }
             await logAction('broadcast', null, `Рассылка "${subject}" отправлена ${sent} пользователям`);
             document.getElementById('broadcastResult').innerHTML = `<span style="color:green;">✅ Отправлено ${sent} сообщений</span>`;
-        }
+        });
 
-        document.getElementById('refreshChallengesBtn').addEventListener('click', () => loadChallengesForAdmin());
-        document.getElementById('refreshHistoryBtn').addEventListener('click', () => loadAdminHistory());
-        document.getElementById('sendBroadcastBtn').addEventListener('click', sendBroadcast);
-        document.getElementById('searchFighter').addEventListener('input', (e) => {
+        document.getElementById('recalculateFRSBtn')?.addEventListener('click', async () => {
+            if (!confirm("Пересчитать FRS для всех бойцов?")) return;
+            const btn = document.getElementById('recalculateFRSBtn');
+            btn.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> Пересчёт...';
+            btn.disabled = true;
+            try {
+                const fightersSnapshot = await getDocs(collection(db, "fighters"));
+                const now = Date.now();
+                const monthMs = 30 * 24 * 60 * 60 * 1000;
+                for (const docSnap of fightersSnapshot.docs) {
+                    const f = docSnap.data();
+                    const monthsInactive = f.lastFightDate ? Math.floor((now - f.lastFightDate.toDate()) / monthMs) : 0;
+                    const frs = (f.wins || 0) * 100 + (f.finishes || 0) * 50 + ((f.viewsLast30Days || 0) / 100) + ((f.subscribers || 0) / 10) - (monthsInactive * 25) + (f.premium ? 5 : 0);
+                    await updateDoc(doc(db, "fighters", docSnap.id), { frs: Math.max(0, frs) });
+                }
+                alert("✅ FRS пересчитан!");
+                loadFighters();
+                await logAction('recalculate_frs', null, 'Пересчитал FRS');
+            } catch (error) { alert("Ошибка: " + error.message); }
+            finally { btn.innerHTML = '<i class="fas fa-calculator"></i> Пересчитать FRS'; btn.disabled = false; }
+        });
+
+        document.getElementById('searchFighter')?.addEventListener('input', (e) => {
             const term = e.target.value.toLowerCase();
             const filtered = allFighters.filter(f => f.name?.toLowerCase().includes(term) || f.email?.toLowerCase().includes(term));
             renderFighters(filtered);
         });
 
-        document.getElementById('adminLogoutBtn').addEventListener('click', async () => {
-            await signOut(auth);
-            window.location.reload();
-        });
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/[&<>]/g, function(m) {
+                if (m === '&') return '&amp;';
+                if (m === '<') return '&lt;';
+                if (m === '>') return '&gt;';
+                return m;
+            });
+        }
 
         document.querySelectorAll('.tab-btn').forEach(btn => {
             btn.addEventListener('click', () => {
@@ -808,35 +1034,42 @@ if (telegramId) {
                 document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
                 btn.classList.add('active');
                 document.getElementById(`tab-${btn.dataset.tab}`).classList.add('active');
+                if (btn.dataset.tab === 'fighters') loadFighters();
+                if (btn.dataset.tab === 'partners') loadPartners();
+                if (btn.dataset.tab === 'requests') loadRequests();
                 if (btn.dataset.tab === 'challenges') loadChallengesForAdmin();
                 if (btn.dataset.tab === 'history') loadAdminHistory();
-                if (btn.dataset.tab === 'list') loadFighters();
             });
         });
+
+        document.getElementById('refreshChallengesBtn')?.addEventListener('click', () => loadChallengesForAdmin());
+        document.getElementById('refreshHistoryBtn')?.addEventListener('click', () => loadAdminHistory());
+
+        // Кнопки удаления боёв
+        document.getElementById('deleteFightsBtn')?.addEventListener('click', window.deleteFights);
+        document.getElementById('deleteAllFightsBtn')?.addEventListener('click', window.deleteAllFights);
 
         window.login = async function() {
             const email = document.getElementById('adminEmail').value;
             const password = document.getElementById('adminPassword').value;
             try {
-                await signInWithEmailAndPassword(auth, email, password);
+                const userCred = await signInWithEmailAndPassword(auth, email, password);
                 currentAdminEmail = email;
                 document.getElementById('loginSection').classList.add('hidden');
                 document.getElementById('adminPanel').classList.remove('hidden');
                 loadStats();
                 loadFighters();
-                loadFightersForSelect();
-                loadFightersForSelectEdit();
+                loadPartners();
+                loadRequests();
             } catch (error) {
                 document.getElementById('loginMessage').innerText = "Ошибка входа";
             }
         };
 
-        window.logout = async () => {
+        document.getElementById('adminLogoutBtn')?.addEventListener('click', async () => {
             await signOut(auth);
-            currentAdminEmail = null;
-            document.getElementById('loginSection').classList.remove('hidden');
-            document.getElementById('adminPanel').classList.add('hidden');
-        };
+            window.location.reload();
+        });
 
         onAuthStateChanged(auth, (user) => {
             if (user) {
@@ -845,8 +1078,8 @@ if (telegramId) {
                 document.getElementById('adminPanel').classList.remove('hidden');
                 loadStats();
                 loadFighters();
-                loadFightersForSelect();
-                loadFightersForSelectEdit();
+                loadPartners();
+                loadRequests();
             }
         });
     </script>
