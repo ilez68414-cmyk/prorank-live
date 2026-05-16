@@ -180,6 +180,13 @@
             border-radius: 20px;
             cursor: pointer;
         }
+        .photo-preview {
+            width: 80px;
+            height: 80px;
+            object-fit: cover;
+            border-radius: 12px;
+            margin-top: 8px;
+        }
         .btn-add-product {
             background: rgba(251,191,36,0.15);
             color: #fbbf24;
@@ -336,7 +343,8 @@
             "imports": {
                 "firebase/app": "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js",
                 "firebase/firestore": "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js",
-                "firebase/auth": "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js"
+                "firebase/auth": "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js",
+                "firebase/storage": "https://www.gstatic.com/firebasejs/11.0.2/firebase-storage.js"
             }
         }
     </script>
@@ -344,6 +352,7 @@
         import { initializeApp } from "firebase/app";
         import { getFirestore, collection, addDoc, serverTimestamp } from "firebase/firestore";
         import { getAuth, onAuthStateChanged } from "firebase/auth";
+        import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
         const firebaseConfig = {
             apiKey: "AIzaSyDUGYJY7pX7q02MS5SACMIIQXpjpQ97mPw",
@@ -357,6 +366,7 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
         const auth = getAuth(app);
+        const storage = getStorage(app);
 
         let currentUser = null;
         let products = [];
@@ -388,8 +398,10 @@
                             <textarea class="product-desc" data-index="${index}" rows="2" placeholder="Краткое описание товара">${escapeHtml(p.desc)}</textarea>
                         </div>
                         <div class="form-group">
-                            <label>Ссылка на фото (необязательно)</label>
-                            <input type="url" class="product-image" value="${p.image || ''}" data-index="${index}" placeholder="https://...">
+                            <label>Фото товара</label>
+                            <input type="file" class="product-photo" data-index="${index}" accept="image/*">
+                            ${p.imagePreview ? `<img src="${p.imagePreview}" class="photo-preview">` : ''}
+                            ${p.uploading ? '<span style="color:#fbbf24;"><i class="fas fa-spinner fa-pulse"></i> Загрузка...</span>' : ''}
                         </div>
                     </div>
                 `;
@@ -405,8 +417,24 @@
             document.querySelectorAll('.product-desc').forEach(inp => {
                 inp.addEventListener('input', (e) => products[parseInt(e.target.dataset.index)].desc = e.target.value);
             });
-            document.querySelectorAll('.product-image').forEach(inp => {
-                inp.addEventListener('input', (e) => products[parseInt(e.target.dataset.index)].image = e.target.value);
+            document.querySelectorAll('.product-photo').forEach(inp => {
+                inp.addEventListener('change', async (e) => {
+                    const idx = parseInt(e.target.dataset.index);
+                    const file = e.target.files[0];
+                    if (!file) return;
+                    
+                    products[idx].uploading = true;
+                    renderProducts();
+                    
+                    const storageRef = ref(storage, `product_photos/${Date.now()}_${file.name}`);
+                    await uploadBytes(storageRef, file);
+                    const url = await getDownloadURL(storageRef);
+                    
+                    products[idx].image = url;
+                    products[idx].imagePreview = url;
+                    products[idx].uploading = false;
+                    renderProducts();
+                });
             });
         }
 
@@ -416,7 +444,7 @@
         };
 
         document.getElementById('addProductBtn').addEventListener('click', () => {
-            products.push({ name: '', price: 0, desc: '', image: '' });
+            products.push({ name: '', price: 0, desc: '', image: null, imagePreview: null, uploading: false });
             renderProducts();
         });
 
@@ -441,6 +469,10 @@
                 showMessage('Заполните название и цену всех товаров', 'error');
                 return;
             }
+            if (products.some(p => p.uploading)) {
+                showMessage('Дождитесь загрузки всех фото', 'error');
+                return;
+            }
             
             const storeName = document.getElementById('storeName').value.trim();
             const storeUrl = document.getElementById('storeUrl').value.trim();
@@ -457,7 +489,7 @@
                     contactName,
                     contactEmail,
                     contactTelegram: contactTelegram || null,
-                    products: products,
+                    products: products.map(p => ({ name: p.name, price: p.price, desc: p.desc, image: p.image })),
                     userId: currentUser?.uid || null,
                     status: 'pending',
                     createdAt: serverTimestamp()
