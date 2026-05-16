@@ -678,7 +678,6 @@
             });
         }
 
-        // Удаление истории боёв
         window.deleteFights = async () => {
             const fighterId = document.getElementById('deleteFightsForFighter')?.value;
             const confirmMsg = fighterId ? 'Удалить ВСЮ историю боёв этого бойца? Это затронет его личную статистику.' : 'Удалить ВСЕ бои из системы? Это НЕОБРАТИМО!';
@@ -729,7 +728,6 @@
             }
         };
 
-        // Удаление всех боёв (отдельная кнопка)
         window.deleteAllFights = async () => {
             if (!confirm('УДАЛИТЬ ВСЕ БОИ? Это действие НЕОБРАТИМО! Статистика всех бойцов обнулится.')) return;
             let code = prompt('Введите "УДАЛИТЬ ВСЕ" для подтверждения');
@@ -789,7 +787,7 @@
             const tbody = document.getElementById('partnersTableBody');
             if (!tbody) return;
             if (snapshot.empty) {
-                tbody.innerHTML = '<tr><td colspan="4">Нет магазинов</td></tr>';
+                tbody.innerHTML = '<td><td colspan="4">Нет магазинов</td></tr>';
                 return;
             }
             let html = '';
@@ -842,14 +840,14 @@
                 return;
             }
             let html = '';
-            snapshot.forEach(docSnap => {
+            for (const docSnap of snapshot.docs) {
                 const r = docSnap.data();
                 const date = r.createdAt?.toDate().toLocaleString() || '—';
                 html += `
                     <div class="request-item">
                         <div><strong>${escapeHtml(r.storeName)}</strong><br><small>${escapeHtml(r.contactName)} | ${escapeHtml(r.contactEmail)}</small></div>
                         <div>${escapeHtml(r.storeDescription?.substring(0, 100))}...</div>
-                        <div>${r.discount ? '🎁 ' + r.discount : ''}</div>
+                        <div><strong>📦 Товаров: ${r.products?.length || 0}</strong></div>
                         <div>
                             ${r.status === 'pending' ? `
                                 <button class="btn btn-success" onclick="window.approveRequest('${docSnap.id}')"><i class="fas fa-check"></i> Одобрить</button>
@@ -858,7 +856,7 @@
                         </div>
                     </div>
                 `;
-            });
+            }
             container.innerHTML = html;
         }
 
@@ -867,20 +865,38 @@
             const requestSnap = await getDoc(requestRef);
             const r = requestSnap.data();
             if (!r) return;
-            await addDoc(collection(db, "partners"), {
+            
+            // Создаём магазин в partners
+            const partnerRef = await addDoc(collection(db, "partners"), {
                 name: r.storeName,
                 url: r.storeUrl,
                 description: r.storeDescription,
-                discount: r.storeDiscount || null,
+                discount: null,
                 icon: "fa-store",
                 createdAt: serverTimestamp()
             });
+            
+            // Добавляем товары в products
+            if (r.products && r.products.length > 0) {
+                for (const product of r.products) {
+                    await addDoc(collection(db, "products"), {
+                        name: product.name,
+                        price: product.price,
+                        desc: product.desc,
+                        image: product.image || null,
+                        partnerId: partnerRef.id,
+                        partnerName: r.storeName,
+                        createdAt: serverTimestamp()
+                    });
+                }
+            }
+            
             await updateDoc(requestRef, { status: 'approved' });
-            await logAction('approve_partner', requestId, `Одобрил заявку ${r.storeName}`);
+            await logAction('approve_partner', requestId, `Одобрил заявку ${r.storeName} с ${r.products?.length || 0} товарами`);
             loadRequests();
             loadPartners();
             loadStats();
-            alert('✅ Магазин добавлен на витрину');
+            alert(`✅ Магазин "${r.storeName}" добавлен на витрину с ${r.products?.length || 0} товарами`);
         };
 
         window.rejectRequest = async (requestId) => {
@@ -1045,7 +1061,6 @@
         document.getElementById('refreshChallengesBtn')?.addEventListener('click', () => loadChallengesForAdmin());
         document.getElementById('refreshHistoryBtn')?.addEventListener('click', () => loadAdminHistory());
 
-        // Кнопки удаления боёв
         document.getElementById('deleteFightsBtn')?.addEventListener('click', window.deleteFights);
         document.getElementById('deleteAllFightsBtn')?.addEventListener('click', window.deleteAllFights);
 
