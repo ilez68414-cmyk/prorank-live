@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Кабинет партнёра | PRORANK</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700;14..32,800;14..32,900&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: radial-gradient(ellipse at 30% 40%, rgba(251, 191, 36, 0.15) 0%, transparent 60%),
+                        radial-gradient(ellipse at 70% 80%, rgba(251, 191, 36, 0.08) 0%, transparent 50%),
+                        linear-gradient(135deg, #1a1a1a 0%, #0f0f0f 40%, #1a1a1a 100%);
+            background-attachment: fixed;
+            color: #fff;
+            line-height: 1.4;
+        }
+        .gold-top { position: fixed; top: 0; left: 0; width: 100%; height: 3px; background: linear-gradient(90deg, #fbbf24, #ffdd88, #fbbf24, #b8860b); z-index: 1001; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 0 24px; position: relative; z-index: 2; }
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 32px;
+            background: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(16px);
+            border-bottom: 1px solid rgba(251, 191, 36, 0.25);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+        .logo {
+            font-size: 1.8rem;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            cursor: pointer;
+            background: linear-gradient(135deg, #ffffff, #fbbf24);
+            background-clip: text;
+            color: transparent;
+        }
+        .logo span { background: linear-gradient(135deg, #fbbf24, #ffdd77); background-clip: text; color: transparent; }
+        .menu-toggle { display: none; background: rgba(251,191,36,0.1); border: 1px solid #fbbf24; color: #fbbf24; font-size: 1.6rem; cursor: pointer; padding: 8px 14px; border-radius: 12px; }
+        .nav-links {
+            display: flex;
+            gap: 6px;
+            background: rgba(15,15,15,0.7);
+            backdrop-filter: blur(12px);
+            padding: 5px 14px;
+            border-radius: 60px;
+            border: 1px solid rgba(251,191,36,0.2);
+        }
+        .nav-links a { color: #ddd; text-decoration: none; font-size: 0.9rem; font-weight: 500; padding: 8px 18px; border-radius: 40px; transition: all 0.2s; }
+        .nav-links a i { margin-right: 8px; color: #fbbf24; }
+        .nav-links a:hover { color: #fbbf24; }
+
+        .page-header { text-align: center; padding: 40px 20px 20px; }
+        .page-header h1 { font-size: 2rem; font-weight: 800; background: linear-gradient(135deg, #fff, #fbbf24); background-clip: text; color: transparent; }
+
+        .dashboard-tabs {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 28px;
+            background: rgba(15,15,15,0.5);
+            padding: 6px;
+            border-radius: 60px;
+        }
+        .tab-btn {
+            flex: 1;
+            background: none;
+            border: none;
+            color: #aaa;
+            padding: 12px 20px;
+            cursor: pointer;
+            font-size: 0.95rem;
+            font-weight: 600;
+            border-radius: 60px;
+            transition: 0.2s;
+        }
+        .tab-btn.active { background: #fbbf24; color: #000; }
+        .tab-pane { display: none; }
+        .tab-pane.active { display: block; animation: fadeIn 0.3s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .products-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; margin: 20px 0; }
+        .product-card {
+            background: rgba(15,15,15,0.7);
+            backdrop-filter: blur(8px);
+            border-radius: 24px;
+            padding: 20px;
+            text-align: center;
+            border: 1px solid rgba(251,191,36,0.15);
+        }
+        .product-image { width: 100%; height: 150px; object-fit: cover; border-radius: 16px; margin-bottom: 12px; background: #1a1a1a; }
+        .product-title { font-size: 1rem; font-weight: 700; margin-bottom: 8px; }
+        .product-price { font-size: 1.1rem; font-weight: 800; color: #fbbf24; margin-bottom: 12px; }
+        .btn-edit, .btn-delete { padding: 6px 12px; border-radius: 30px; border: none; cursor: pointer; margin: 0 4px; }
+        .btn-edit { background: #3b82f6; color: white; }
+        .btn-delete { background: #dc2626; color: white; }
+
+        .empty-state { text-align: center; padding: 60px; color: #888; }
+        .loading { text-align: center; padding: 40px; color: #888; }
+
+        .main-footer { background: #0a0a0a; border-top: 1px solid rgba(251,191,36,0.15); margin-top: 60px; padding: 40px 0 24px; }
+        .footer-content { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 32px; }
+        .footer-bottom { text-align: center; margin-top: 32px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.05); font-size: 0.65rem; color: #555; }
+
+        @media (max-width: 768px) {
+            .navbar { padding: 12px 18px; }
+            .menu-toggle { display: block; }
+            .nav-links { display: none; flex-direction: column; position: absolute; top: 68px; left: 18px; right: 18px; background: #0f0f0f; border-radius: 24px; padding: 20px; gap: 10px; border: 1px solid rgba(251,191,36,0.3); }
+            .nav-links.show { display: flex; }
+            .nav-links a { width: 100%; text-align: center; padding: 12px; }
+            .container { padding: 0 16px; }
+            .dashboard-tabs { flex-direction: column; }
+            .footer-content { flex-direction: column; text-align: center; }
+        }
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-track { background: #1a1a1a; }
+        ::-webkit-scrollbar-thumb { background: #fbbf24; border-radius: 10px; }
+        .icon-gold { color: #fbbf24; }
+    </style>
+</head>
+<body>
+    <div class="gold-top"></div>
+
+    <header class="navbar">
+        <div class="logo" onclick="window.location='index.html'">PRO<span>RANK</span></div>
+        <button class="menu-toggle" id="menuToggle">☰</button>
+        <nav class="nav-links" id="navLinks">
+            <a href="index.html"><i class="fas fa-home"></i> Главная</a>
+            <a href="rating.html"><i class="fas fa-chart-line"></i> Рейтинг</a>
+            <a href="leagues.html"><i class="fas fa-trophy"></i> Лиги</a>
+            <a href="rules.html"><i class="fas fa-book"></i> Правила</a>
+            <a href="shop.html"><i class="fas fa-store"></i> Магазин</a>
+            <a href="challenges.html"><i class="fas fa-fist-raised"></i> Вызовы</a>
+            <a href="login.html" id="profileLoginBtn"><i class="fas fa-sign-in-alt"></i> Войти</a>
+        </nav>
+    </header>
+
+    <main class="container">
+        <div class="page-header">
+            <h1><i class="fas fa-store"></i> Кабинет партнёра</h1>
+            <p>Управляйте своими товарами</p>
+        </div>
+
+        <div class="dashboard-tabs">
+            <button class="tab-btn active" data-tab="products"><i class="fas fa-box"></i> Мои товары</button>
+            <button class="tab-btn" data-tab="orders"><i class="fas fa-shopping-cart"></i> Заказы</button>
+            <button class="tab-btn" data-tab="add"><i class="fas fa-plus"></i> Добавить товар</button>
+        </div>
+
+        <div id="tab-products" class="tab-pane active">
+            <div id="productsList" class="products-grid"><div class="loading"><i class="fas fa-spinner fa-pulse"></i> Загрузка...</div></div>
+        </div>
+
+        <div id="tab-orders" class="tab-pane">
+            <div id="partnerOrdersList" class="orders-list">Загрузка...</div>
+        </div>
+
+        <div id="tab-add" class="tab-pane">
+            <div class="admin-form" style="background: rgba(15,15,15,0.7); border-radius: 28px; padding: 24px;">
+                <div class="form-group"><label>Название товара</label><input type="text" id="newProductName" placeholder="Перчатки для ММА"></div>
+                <div class="form-group"><label>Цена (₽)</label><input type="number" id="newProductPrice" placeholder="1000"></div>
+                <div class="form-group"><label>Описание</label><textarea id="newProductDesc" rows="3" placeholder="Краткое описание"></textarea></div>
+                <div class="form-group"><label>Фото</label><input type="file" id="newProductImage" accept="image/*"></div>
+                <button id="addProductBtn" class="btn btn-primary"><i class="fas fa-plus"></i> Добавить товар</button>
+                <div id="addResult" style="margin-top:12px;"></div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="main-footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-logo"><div class="logo">PRO<span>RANK</span></div><p>Рейтинг любительского спорта</p></div>
+                <div class="footer-about"><h4>О проекте</h4><p>Платформа для спортсменов-любителей</p></div>
+                <div class="footer-links"><h4>Навигация</h4><a href="index.html">Главная</a><a href="rating.html">Рейтинг</a><a href="login.html">Вход</a></div>
+            </div>
+            <div class="footer-bottom"><p>&copy; 2026 PRORANK</p></div>
+        </div>
+    </footer>
+
+    <script type="importmap">
+        {
+            "imports": {
+                "firebase/app": "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js",
+                "firebase/firestore": "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js",
+                "firebase/auth": "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js",
+                "firebase/storage": "https://www.gstatic.com/firebasejs/11.0.2/firebase-storage.js"
+            }
+        }
+    </script>
+    <script type="module">
+        import { initializeApp } from "firebase/app";
+        import { getFirestore, collection, getDocs, query, where, orderBy, addDoc, updateDoc, deleteDoc, doc, getDoc } from "firebase/firestore";
+        import { getAuth, onAuthStateChanged } from "firebase/auth";
+        import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDUGYJY7pX7q02MS5SACMIIQXpjpQ97mPw",
+            authDomain: "proranklive.firebaseapp.com",
+            projectId: "proranklive",
+            storageBucket: "proranklive.firebasestorage.app",
+            messagingSenderId: "716836144015",
+            appId: "1:716836144015:web:f1575147750608d0f881fa"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+        const storage = getStorage(app);
+
+        let currentUser = null;
+        let currentPartner = null;
+        let partnerId = null;
+
+        async function loadPartnerProducts() {
+            const container = document.getElementById('productsList');
+            if (!currentPartner || !partnerId) {
+                container.innerHTML = '<div class="empty-state"><i class="fas fa-store"></i><p>Вы не являетесь партнёром</p><p><a href="partner-request.html" style="color:#fbbf24;">Стать партнёром →</a></p></div>';
+                return;
+            }
+            try {
+                const q = query(collection(db, "products"), where("partnerId", "==", partnerId));
+                const snapshot = await getDocs(q);
+                if (snapshot.empty) {
+                    container.innerHTML = '<div class="empty-state"><i class="fas fa-box-open"></i><p>У вас пока нет товаров</p></div>';
+                    return;
+                }
+                let html = '';
+                snapshot.forEach(docSnap => {
+                    const p = docSnap.data();
+                    html += `
+                        <div class="product-card">
+                            ${p.image ? `<img src="${p.image}" class="product-image" onerror="this.src='https://placehold.co/300x200/1a1a1a/fbbf24?text=No+Image'">` : '<div class="product-image" style="display:flex;align-items:center;justify-content:center;"><i class="fas fa-image" style="font-size: 3rem; color: #555;"></i></div>'}
+                            <div class="product-title">${escapeHtml(p.name)}</div>
+                            <div class="product-price">${p.price} ₽</div>
+                            <div>
+                                <button class="btn-edit" data-id="${docSnap.id}" data-name="${p.name}" data-price="${p.price}" data-desc="${escapeHtml(p.desc)}" data-image="${p.image || ''}"><i class="fas fa-edit"></i> Редактировать</button>
+                                <button class="btn-delete" data-id="${docSnap.id}"><i class="fas fa-trash"></i> Удалить</button>
+                            </div>
+                        </div>
+                    `;
+                });
+                container.innerHTML = html;
+
+                document.querySelectorAll('.btn-edit').forEach(btn => {
+                    btn.addEventListener('click', async () => {
+                        const id = btn.dataset.id;
+                        const newName = prompt('Новое название', btn.dataset.name);
+                        if (!newName) return;
+                        const newPrice = prompt('Новая цена', btn.dataset.price);
+                        if (!newPrice) return;
+                        const newDesc = prompt('Новое описание', btn.dataset.desc);
+                        await updateDoc(doc(db, "products", id), { name: newName, price: parseInt(newPrice), desc: newDesc });
+                        loadPartnerProducts();
+                    });
+                });
+                document.querySelectorAll('.btn-delete').forEach(btn => {
+                    btn.addEventListener('click', async () => {
+                        if (confirm('Удалить товар?')) {
+                            await deleteDoc(doc(db, "products", btn.dataset.id));
+                            loadPartnerProducts();
+                        }
+                    });
+                });
+            } catch (err) {
+                console.error(err);
+                container.innerHTML = '<div class="empty-state">Ошибка загрузки</div>';
+            }
+        }
+
+        async function loadPartnerOrders() {
+            const container = document.getElementById('partnerOrdersList');
+            if (!currentPartner || !partnerId) {
+                container.innerHTML = '<div class="empty-state">Войдите как партнёр</div>';
+                return;
+            }
+            try {
+                const productsSnap = await getDocs(query(collection(db, "products"), where("partnerId", "==", partnerId)));
+                const productNames = productsSnap.docs.map(d => d.data().name);
+                const ordersSnap = await getDocs(collection(db, "orders"));
+                let ordersHtml = '';
+                let totalSales = 0;
+                ordersSnap.forEach(orderDoc => {
+                    const order = orderDoc.data();
+                    if (productNames.includes(order.productName) && order.status === 'completed') {
+                        totalSales += order.price;
+                        ordersHtml += `<div class="product-card"><strong>${order.productName}</strong> — ${order.price} ₽<br><small>${order.createdAt?.toDate().toLocaleDateString() || '—'}</small></div>`;
+                    }
+                });
+                if (!ordersHtml) {
+                    container.innerHTML = '<div class="empty-state">Нет заказов</div>';
+                    return;
+                }
+                container.innerHTML = `<div style="margin-bottom:16px;"><strong>💰 Общая выручка: ${totalSales} ₽</strong><br><small>Ваша часть (90%): ${totalSales * 0.9} ₽</small></div>${ordersHtml}`;
+            } catch (err) {
+                console.error(err);
+                container.innerHTML = '<div class="empty-state">Ошибка загрузки</div>';
+            }
+        }
+
+        document.getElementById('addProductBtn')?.addEventListener('click', async () => {
+            const name = document.getElementById('newProductName').value;
+            const price = parseInt(document.getElementById('newProductPrice').value);
+            const desc = document.getElementById('newProductDesc').value;
+            const file = document.getElementById('newProductImage').files[0];
+            if (!name || !price) { alert('Заполните название и цену'); return; }
+            let imageUrl = null;
+            if (file) {
+                const storageRef = ref(storage, `product_photos/${Date.now()}_${file.name}`);
+                await uploadBytes(storageRef, file);
+                imageUrl = await getDownloadURL(storageRef);
+            }
+            await addDoc(collection(db, "products"), {
+                name, price, desc, image: imageUrl,
+                partnerId: partnerId,
+                partnerName: currentPartner.name,
+                createdAt: new Date()
+            });
+            alert('✅ Товар добавлен');
+            document.getElementById('newProductName').value = '';
+            document.getElementById('newProductPrice').value = '';
+            document.getElementById('newProductDesc').value = '';
+            document.getElementById('newProductImage').value = '';
+            loadPartnerProducts();
+        });
+
+        function escapeHtml(str) { if (!str) return ''; return str.replace(/[&<>]/g, m => m === '&' ? '&amp;' : m === '<' ? '&lt;' : '&gt;'); }
+
+        onAuthStateChanged(auth, async (user) => {
+            const loginBtn = document.getElementById('profileLoginBtn');
+            if (user && loginBtn) {
+                loginBtn.innerHTML = '<i class="fas fa-user"></i> Мой профиль';
+                loginBtn.href = `profile.html?id=${user.uid}`;
+                currentUser = user;
+                const partnersSnap = await getDocs(query(collection(db, "partners"), where("name", "==", user.displayName || user.email)));
+                if (!partnersSnap.empty) {
+                    currentPartner = partnersSnap.docs[0].data();
+                    partnerId = partnersSnap.docs[0].id;
+                }
+                await loadPartnerProducts();
+                await loadPartnerOrders();
+            } else if (loginBtn) {
+                loginBtn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Войти';
+                loginBtn.href = 'login.html';
+            }
+        });
+
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+                btn.classList.add('active');
+                document.getElementById(`tab-${btn.dataset.tab}`).classList.add('active');
+                if (btn.dataset.tab === 'products') loadPartnerProducts();
+                if (btn.dataset.tab === 'orders') loadPartnerOrders();
+            });
+        });
+
+        const menuToggle = document.getElementById('menuToggle');
+        const navLinks = document.getElementById('navLinks');
+        if (menuToggle && navLinks) menuToggle.addEventListener('click', () => navLinks.classList.toggle('show'));
+    </script>
+</body>
+</html>

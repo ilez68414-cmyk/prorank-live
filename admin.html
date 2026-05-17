@@ -34,34 +34,6 @@
             z-index: 1001;
         }
 
-        .navbar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 16px 32px;
-            background: rgba(0, 0, 0, 0.75);
-            backdrop-filter: blur(16px);
-            border-bottom: 1px solid rgba(251, 191, 36, 0.25);
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-        }
-
-        .logo {
-            font-size: 1.8rem;
-            font-weight: 800;
-            letter-spacing: -0.5px;
-            cursor: pointer;
-            background: linear-gradient(135deg, #ffffff, #fbbf24);
-            background-clip: text;
-            color: transparent;
-        }
-        .logo span {
-            background: linear-gradient(135deg, #fbbf24, #ffdd77);
-            background-clip: text;
-            color: transparent;
-        }
-
         .admin-container {
             max-width: 1400px;
             margin: 2rem auto;
@@ -202,7 +174,7 @@
         .btn-warning { background: #f59e0b; color: #fff; }
         .btn-secondary { background: #3b82f6; color: #fff; }
 
-        .fighters-list, .partners-list, .requests-list {
+        .fighters-list, .partners-list, .requests-list, .commissions-list {
             background: rgba(15,15,15,0.7);
             backdrop-filter: blur(8px);
             border-radius: 28px;
@@ -266,7 +238,7 @@
             border-radius: 60px;
         }
         .hidden { display: none; }
-        .challenge-item, .history-item, .request-item {
+        .challenge-item, .history-item, .request-item, .commission-item {
             padding: 12px;
             border-bottom: 1px solid rgba(255,255,255,0.05);
             display: flex;
@@ -274,6 +246,11 @@
             align-items: center;
             flex-wrap: wrap;
             gap: 10px;
+        }
+        .commission-total {
+            font-size: 1.2rem;
+            font-weight: 800;
+            color: #fbbf24;
         }
 
         @media (max-width: 768px) {
@@ -298,17 +275,11 @@
             background: #fbbf24;
             border-radius: 10px;
         }
+        .icon-gold { color: #fbbf24; }
     </style>
 </head>
 <body>
     <div class="gold-top"></div>
-
-    <header class="navbar">
-        <div class="logo" onclick="window.location='index.html'">PRO<span>RANK</span></div>
-        <nav class="nav-links">
-            <a href="index.html"><i class="fas fa-home"></i> Главная</a>
-        </nav>
-    </header>
 
     <div class="admin-container">
         <div id="loginSection" class="login-form">
@@ -343,6 +314,7 @@
                 <button class="tab-btn" data-tab="challenges"><i class="fas fa-crosshairs"></i> Вызовы</button>
                 <button class="tab-btn" data-tab="history"><i class="fas fa-history"></i> История</button>
                 <button class="tab-btn" data-tab="broadcast"><i class="fas fa-bullhorn"></i> Рассылка</button>
+                <button class="tab-btn" data-tab="commissions"><i class="fas fa-percent"></i> Комиссии</button>
             </div>
 
             <!-- Бойцы -->
@@ -363,7 +335,7 @@
                 </div>
             </div>
 
-            <!-- Добавить бой + Управление боями -->
+            <!-- Бои -->
             <div id="tab-fight" class="tab-pane">
                 <div class="admin-form">
                     <h3><i class="fas fa-fist-raised"></i> Добавить бой</h3>
@@ -377,8 +349,6 @@
                     <button id="addFightBtn" class="btn btn-primary"><i class="fas fa-plus"></i> Добавить бой</button>
                     <div id="fightMessage" style="margin-top:12px;"></div>
                 </div>
-
-                <!-- НОВЫЙ БЛОК: Управление боями (удаление) -->
                 <div class="admin-form">
                     <h3><i class="fas fa-trash-alt"></i> Управление боями</h3>
                     <div class="form-row">
@@ -473,6 +443,27 @@
                     <div id="broadcastResult" style="margin-top:12px;"></div>
                 </div>
             </div>
+
+            <!-- Комиссии -->
+            <div id="tab-commissions" class="tab-pane">
+                <div class="admin-form">
+                    <h3><i class="fas fa-percent"></i> Комиссии партнёрам (10%)</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Период</label>
+                            <select id="commissionPeriod">
+                                <option value="month">Этот месяц</option>
+                                <option value="prev_month">Прошлый месяц</option>
+                                <option value="all">Всё время</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <button id="refreshCommissionsBtn" class="btn btn-secondary"><i class="fas fa-sync-alt"></i> Обновить</button>
+                        </div>
+                    </div>
+                    <div id="commissionsList" class="commissions-list">Загрузка...</div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -481,7 +472,8 @@
             "imports": {
                 "firebase/app": "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js",
                 "firebase/firestore": "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js",
-                "firebase/auth": "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js"
+                "firebase/auth": "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js",
+                "firebase/storage": "https://www.gstatic.com/firebasejs/11.0.2/firebase-storage.js"
             }
         }
     </script>
@@ -489,6 +481,7 @@
         import { initializeApp } from "firebase/app";
         import { getFirestore, collection, getDocs, doc, updateDoc, query, orderBy, deleteDoc, increment, addDoc, getDoc, where, setDoc, serverTimestamp } from "firebase/firestore";
         import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "firebase/auth";
+        import { getStorage, ref, uploadBytes, getDownloadURL, deleteObject } from "firebase/storage";
 
         const firebaseConfig = {
             apiKey: "AIzaSyDUGYJY7pX7q02MS5SACMIIQXpjpQ97mPw",
@@ -502,6 +495,7 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
         const auth = getAuth(app);
+        const storage = getStorage(app);
         const BOT_TOKEN = '8527160088:AAGc2311QFkp6F7-Jx5k8MJfqlpvbueSl5E';
 
         let allFighters = [];
@@ -787,7 +781,7 @@
             const tbody = document.getElementById('partnersTableBody');
             if (!tbody) return;
             if (snapshot.empty) {
-                tbody.innerHTML = '<td><td colspan="4">Нет магазинов</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="4">Нет магазинов</td></tr>';
                 return;
             }
             let html = '';
@@ -866,7 +860,6 @@
             const r = requestSnap.data();
             if (!r) return;
             
-            // Создаём магазин в partners
             const partnerRef = await addDoc(collection(db, "partners"), {
                 name: r.storeName,
                 url: r.storeUrl,
@@ -876,7 +869,6 @@
                 createdAt: serverTimestamp()
             });
             
-            // Добавляем товары в products
             if (r.products && r.products.length > 0) {
                 for (const product of r.products) {
                     await addDoc(collection(db, "products"), {
@@ -1034,6 +1026,78 @@
             renderFighters(filtered);
         });
 
+        // Загрузка комиссий
+        async function loadCommissions() {
+            const period = document.getElementById('commissionPeriod')?.value || 'month';
+            const container = document.getElementById('commissionsList');
+            if (!container) return;
+            container.innerHTML = '<div class="commission-item"><i class="fas fa-spinner fa-pulse"></i> Загрузка...</div>';
+            
+            try {
+                const ordersSnap = await getDocs(collection(db, "orders"));
+                const partnersSnap = await getDocs(collection(db, "partners"));
+                
+                const now = new Date();
+                let startDate = null, endDate = null;
+                if (period === 'month') {
+                    startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+                } else if (period === 'prev_month') {
+                    startDate = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+                    endDate = new Date(now.getFullYear(), now.getMonth(), 0);
+                }
+                
+                const partnerCommission = {};
+                
+                for (const orderDoc of ordersSnap.docs) {
+                    const order = orderDoc.data();
+                    if (order.status !== 'completed') continue;
+                    
+                    const orderDate = order.createdAt?.toDate();
+                    if (startDate && orderDate < startDate) continue;
+                    if (endDate && orderDate > endDate) continue;
+                    
+                    // Ищем партнёра по названию товара
+                    for (const partnerDoc of partnersSnap.docs) {
+                        const partner = partnerDoc.data();
+                        const productsSnap = await getDocs(query(collection(db, "products"), where("partnerId", "==", partnerDoc.id)));
+                        for (const productDoc of productsSnap.docs) {
+                            const product = productDoc.data();
+                            if (order.productName === product.name) {
+                                const commission = order.price * 0.1;
+                                if (!partnerCommission[partnerDoc.id]) {
+                                    partnerCommission[partnerDoc.id] = { name: partner.name, total: 0, orders: [] };
+                                }
+                                partnerCommission[partnerDoc.id].total += commission;
+                                partnerCommission[partnerDoc.id].orders.push({ price: order.price, commission, date: orderDate });
+                            }
+                        }
+                    }
+                }
+                
+                if (Object.keys(partnerCommission).length === 0) {
+                    container.innerHTML = '<div class="commission-item">Нет комиссий за выбранный период</div>';
+                    return;
+                }
+                
+                let html = '';
+                let grandTotal = 0;
+                for (const [id, data] of Object.entries(partnerCommission)) {
+                    grandTotal += data.total;
+                    html += `
+                        <div class="commission-item">
+                            <div><strong>${escapeHtml(data.name)}</strong><br><small>${data.orders.length} продаж</small></div>
+                            <div class="commission-total">${data.total.toFixed(2)} ₽ (комиссия 10%)</div>
+                        </div>
+                    `;
+                }
+                html += `<div class="commission-item" style="background: #fbbf24; color: #000; margin-top: 8px;"><strong>ИТОГО К ВЫПЛАТЕ:</strong> ${grandTotal.toFixed(2)} ₽</div>`;
+                container.innerHTML = html;
+            } catch (err) {
+                console.error('Ошибка загрузки комиссий:', err);
+                container.innerHTML = '<div class="commission-item">Ошибка загрузки</div>';
+            }
+        }
+
         function escapeHtml(str) {
             if (!str) return '';
             return str.replace(/[&<>]/g, function(m) {
@@ -1055,11 +1119,13 @@
                 if (btn.dataset.tab === 'requests') loadRequests();
                 if (btn.dataset.tab === 'challenges') loadChallengesForAdmin();
                 if (btn.dataset.tab === 'history') loadAdminHistory();
+                if (btn.dataset.tab === 'commissions') loadCommissions();
             });
         });
 
         document.getElementById('refreshChallengesBtn')?.addEventListener('click', () => loadChallengesForAdmin());
         document.getElementById('refreshHistoryBtn')?.addEventListener('click', () => loadAdminHistory());
+        document.getElementById('refreshCommissionsBtn')?.addEventListener('click', () => loadCommissions());
 
         document.getElementById('deleteFightsBtn')?.addEventListener('click', window.deleteFights);
         document.getElementById('deleteAllFightsBtn')?.addEventListener('click', window.deleteAllFights);
@@ -1076,6 +1142,7 @@
                 loadFighters();
                 loadPartners();
                 loadRequests();
+                loadCommissions();
             } catch (error) {
                 document.getElementById('loginMessage').innerText = "Ошибка входа";
             }
@@ -1095,6 +1162,7 @@
                 loadFighters();
                 loadPartners();
                 loadRequests();
+                loadCommissions();
             }
         });
     </script>

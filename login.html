@@ -110,7 +110,7 @@
             padding: 40px 20px;
         }
         .auth-container {
-            max-width: 480px;
+            max-width: 500px;
             width: 100%;
             background: rgba(15,15,15,0.7);
             backdrop-filter: blur(8px);
@@ -175,7 +175,7 @@
             font-size: 0.8rem;
             font-weight: 500;
         }
-        .input-group input, .input-group select {
+        .input-group input, .input-group select, .input-group textarea {
             width: 100%;
             padding: 14px 18px;
             background: #1a1a1a;
@@ -186,7 +186,11 @@
             font-family: inherit;
             transition: 0.2s;
         }
-        .input-group input:focus, .input-group select:focus {
+        .input-group textarea {
+            border-radius: 20px;
+            resize: vertical;
+        }
+        .input-group input:focus, .input-group select:focus, .input-group textarea:focus {
             outline: none;
             border-color: #fbbf24;
             box-shadow: 0 0 8px rgba(251,191,36,0.2);
@@ -223,6 +227,15 @@
             font-size: 0.8rem;
         }
         .referral-hint {
+            background: rgba(251,191,36,0.08);
+            border-radius: 16px;
+            padding: 12px;
+            margin-top: 20px;
+            text-align: center;
+            font-size: 0.75rem;
+            color: #fbbf24;
+        }
+        .role-hint {
             background: rgba(251,191,36,0.08);
             border-radius: 16px;
             padding: 12px;
@@ -386,10 +399,69 @@
 
             <div id="registerFormContainer" class="auth-form hidden">
                 <form id="registrationForm">
+                    <!-- ВЫБОР РОЛИ -->
                     <div class="input-group">
-                        <label><i class="fas fa-user"></i> Имя и фамилия</label>
-                        <input type="text" id="userName" placeholder="Иван Иванов" required>
+                        <label><i class="fas fa-user-tag"></i> Регистрация как</label>
+                        <select id="registerRole" required>
+                            <option value="fighter">🥊 Боец (участие в рейтинге)</option>
+                            <option value="partner">🏪 Партнёр (продажа экипировки)</option>
+                        </select>
                     </div>
+
+                    <!-- ПОЛЯ ДЛЯ БОЙЦА -->
+                    <div id="fighterFields">
+                        <div class="input-group">
+                            <label><i class="fas fa-user"></i> Имя и фамилия</label>
+                            <input type="text" id="userName" placeholder="Иван Иванов">
+                        </div>
+                        <div class="input-group">
+                            <label><i class="fas fa-city"></i> Город</label>
+                            <input type="text" id="userCity" placeholder="Москва">
+                        </div>
+                        <div class="input-group">
+                            <label><i class="fas fa-weight-hanging"></i> Весовая категория</label>
+                            <select id="userWeightClass">
+                                <option value="">Выберите категорию</option>
+                                <option value="Наилегчайшая (45–50 кг)">Наилегчайшая (45–50 кг)</option>
+                                <option value="Легчайшая (51–56 кг)">Легчайшая (51–56 кг)</option>
+                                <option value="Полулёгкая (57–61 кг)">Полулёгкая (57–61 кг)</option>
+                                <option value="Лёгкая (62–66 кг)">Лёгкая (62–66 кг)</option>
+                                <option value="1-я полусредняя (67–71 кг)">1-я полусредняя (67–71 кг)</option>
+                                <option value="Полусредняя (72–77 кг)">Полусредняя (72–77 кг)</option>
+                                <option value="1-я средняя (78–83 кг)">1-я средняя (78–83 кг)</option>
+                                <option value="Средняя (84–89 кг)">Средняя (84–89 кг)</option>
+                                <option value="Полутяжёлая (90–99 кг)">Полутяжёлая (90–99 кг)</option>
+                                <option value="Тяжёлая (100+ кг)">Тяжёлая (100+ кг)</option>
+                            </select>
+                        </div>
+                        <div class="input-group">
+                            <label><i class="fas fa-fist-raised"></i> Вид спорта</label>
+                            <select id="userSport">
+                                <option value="">Выберите вид спорта</option>
+                                <option value="Бокс">Бокс</option>
+                                <option value="Борьба">Борьба</option>
+                                <option value="ММА">ММА</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- ПОЛЯ ДЛЯ ПАРТНЁРА -->
+                    <div id="partnerFields" class="hidden">
+                        <div class="input-group">
+                            <label><i class="fas fa-store"></i> Название магазина</label>
+                            <input type="text" id="partnerStoreName" placeholder="FightShop Pro">
+                        </div>
+                        <div class="input-group">
+                            <label><i class="fas fa-align-left"></i> Описание магазина</label>
+                            <textarea id="partnerStoreDesc" rows="2" placeholder="Экипировка для ММА, бокса и борьбы"></textarea>
+                        </div>
+                        <div class="input-group">
+                            <label><i class="fas fa-link"></i> Сайт или соцсети</label>
+                            <input type="url" id="partnerStoreUrl" placeholder="https://...">
+                        </div>
+                    </div>
+
+                    <!-- ОБЩИЕ ПОЛЯ -->
                     <div class="input-group">
                         <label><i class="fas fa-envelope"></i> Email</label>
                         <input type="email" id="userEmail" placeholder="example@mail.ru" required>
@@ -398,41 +470,19 @@
                         <label><i class="fas fa-lock"></i> Пароль (минимум 6 символов)</label>
                         <input type="password" id="userPassword" placeholder="••••••" required>
                     </div>
-                    <div class="input-group">
-                        <label><i class="fas fa-city"></i> Город</label>
-                        <input type="text" id="userCity" placeholder="Москва" required>
-                    </div>
-                    <div class="input-group">
-                        <label><i class="fas fa-weight-hanging"></i> Весовая категория</label>
-                        <select id="userWeightClass" required>
-                            <option value="">Выберите категорию</option>
-                            <option value="Наилегчайшая (45–50 кг)">Наилегчайшая (45–50 кг)</option>
-                            <option value="Легчайшая (51–56 кг)">Легчайшая (51–56 кг)</option>
-                            <option value="Полулёгкая (57–61 кг)">Полулёгкая (57–61 кг)</option>
-                            <option value="Лёгкая (62–66 кг)">Лёгкая (62–66 кг)</option>
-                            <option value="1-я полусредняя (67–71 кг)">1-я полусредняя (67–71 кг)</option>
-                            <option value="Полусредняя (72–77 кг)">Полусредняя (72–77 кг)</option>
-                            <option value="1-я средняя (78–83 кг)">1-я средняя (78–83 кг)</option>
-                            <option value="Средняя (84–89 кг)">Средняя (84–89 кг)</option>
-                            <option value="Полутяжёлая (90–99 кг)">Полутяжёлая (90–99 кг)</option>
-                            <option value="Тяжёлая (100+ кг)">Тяжёлая (100+ кг)</option>
-                        </select>
-                    </div>
-                    <div class="input-group">
-                        <label><i class="fas fa-fist-raised"></i> Вид спорта</label>
-                        <select id="userSport" required>
-                            <option value="">Выберите вид спорта</option>
-                            <option value="Бокс">Бокс</option>
-                            <option value="Борьба">Борьба</option>
-                            <option value="ММА">ММА</option>
-                        </select>
-                    </div>
+
                     <button type="submit" class="submit-btn"><i class="fas fa-user-plus"></i> Зарегистрироваться</button>
                 </form>
+                <div id="registerMessage" class="message"></div>
             </div>
 
             <div id="referralHint" class="referral-hint" style="display: none;">
                 <i class="fas fa-gift icon-gold"></i> Вы перешли по пригласительной ссылке!
+            </div>
+
+            <div class="role-hint" id="roleHint">
+                <i class="fas fa-info-circle"></i> 
+                <span>🥊 Боец — участвует в рейтинге, вызывает на спарринги. 🏪 Партнёр — продаёт экипировку на платформе.</span>
             </div>
         </div>
     </div>
@@ -460,7 +510,7 @@
     </script>
     <script type="module">
         import { initializeApp } from "firebase/app";
-        import { getFirestore, doc, setDoc, updateDoc, getDoc } from "firebase/firestore";
+        import { getFirestore, doc, setDoc, updateDoc, getDoc, collection, addDoc, serverTimestamp } from "firebase/firestore";
         import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendPasswordResetEmail } from "firebase/auth";
 
         const firebaseConfig = {
@@ -483,6 +533,7 @@
             document.getElementById('referralHint').style.display = 'block';
         }
 
+        // Переключение табов
         const loginTab = document.getElementById('loginTabBtn');
         const registerTab = document.getElementById('registerTabBtn');
         const loginFormDiv = document.getElementById('loginFormContainer');
@@ -501,19 +552,53 @@
             registerFormDiv.classList.remove('hidden');
         });
 
+        // Переключение полей в зависимости от роли
+        const registerRole = document.getElementById('registerRole');
+        const fighterFields = document.getElementById('fighterFields');
+        const partnerFields = document.getElementById('partnerFields');
+        const roleHintSpan = document.querySelector('#roleHint span');
+
+        function updateRoleFields() {
+            const role = registerRole.value;
+            if (role === 'fighter') {
+                fighterFields.classList.remove('hidden');
+                partnerFields.classList.add('hidden');
+                roleHintSpan.innerHTML = '🥊 Боец — участвует в рейтинге, вызывает на спарринги, общается в чатах.';
+                // Делаем поля бойца обязательными
+                document.getElementById('userName').required = true;
+                document.getElementById('userCity').required = true;
+                document.getElementById('userWeightClass').required = true;
+                document.getElementById('userSport').required = true;
+                // Убираем обязательность полей партнёра
+                document.getElementById('partnerStoreName').required = false;
+                document.getElementById('partnerStoreDesc').required = false;
+                document.getElementById('partnerStoreUrl').required = false;
+            } else {
+                fighterFields.classList.add('hidden');
+                partnerFields.classList.remove('hidden');
+                roleHintSpan.innerHTML = '🏪 Партнёр — продаёт экипировку, получает 90% от продаж. После регистрации отправьте заявку на одобрение.';
+                // Убираем обязательность полей бойца
+                document.getElementById('userName').required = false;
+                document.getElementById('userCity').required = false;
+                document.getElementById('userWeightClass').required = false;
+                document.getElementById('userSport').required = false;
+                // Делаем поля партнёра обязательными
+                document.getElementById('partnerStoreName').required = true;
+                document.getElementById('partnerStoreDesc').required = true;
+                document.getElementById('partnerStoreUrl').required = true;
+            }
+        }
+
+        registerRole.addEventListener('change', updateRoleFields);
+        updateRoleFields();
+
+        // РЕГИСТРАЦИЯ
         document.getElementById('registrationForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const name = document.getElementById('userName').value.trim();
             const email = document.getElementById('userEmail').value.trim();
             const password = document.getElementById('userPassword').value;
-            const city = document.getElementById('userCity').value;
-            const weightClass = document.getElementById('userWeightClass').value;
-            const sport = document.getElementById('userSport').value;
+            const role = document.getElementById('registerRole').value;
 
-            if (name.split(' ').length < 2) {
-                alert("Введите имя и фамилию");
-                return;
-            }
             if (password.length < 6) {
                 alert("Пароль минимум 6 символов");
                 return;
@@ -522,36 +607,91 @@
             try {
                 const userCred = await createUserWithEmailAndPassword(auth, email, password);
                 const uid = userCred.user.uid;
-                
-                await setDoc(doc(db, "fighters", uid), {
-                    name, email, city, sport, weightClass: weightClass,
-                    weight: parseInt(weightClass.split(' ')[0]) || 70,
-                    frs: 50, wins: 0, losses: 0, finishes: 0,
-                    bio: "", avatar: "Avatar.png", subscribers: 0, likes: 0,
-                    freeChallenges: 3, purchasedChallenges: 0,
-                    referralCount: 0, referralBonus: 0,
-                    referredBy: referrerId || null,
-                    createdAt: new Date()
-                });
-                
-                if (referrerId) {
-                    const referrerRef = doc(db, "fighters", referrerId);
-                    const referrerDoc = await getDoc(referrerRef);
-                    if (referrerDoc.exists()) {
-                        const currentCount = referrerDoc.data()?.referralCount || 0;
-                        const currentBonus = referrerDoc.data()?.referralBonus || 0;
-                        const currentFree = referrerDoc.data()?.freeChallenges || 0;
-                        
-                        await updateDoc(referrerRef, {
-                            referralCount: currentCount + 1,
-                            referralBonus: currentBonus + 1,
-                            freeChallenges: currentFree + 1
-                        });
+
+                if (role === 'fighter') {
+                    const name = document.getElementById('userName').value.trim();
+                    const city = document.getElementById('userCity').value;
+                    const weightClass = document.getElementById('userWeightClass').value;
+                    const sport = document.getElementById('userSport').value;
+
+                    if (name.split(' ').length < 2) {
+                        alert("Введите имя и фамилию");
+                        return;
                     }
+
+                    await setDoc(doc(db, "fighters", uid), {
+                        name, email, city, sport, weightClass: weightClass,
+                        weight: parseInt(weightClass.split(' ')[0]) || 70,
+                        frs: 50, wins: 0, losses: 0, finishes: 0,
+                        bio: "", avatar: "Avatar.png", subscribers: 0, likes: 0,
+                        freeChallenges: 3, purchasedChallenges: 0,
+                        referralCount: 0, referralBonus: 0,
+                        referredBy: referrerId || null,
+                        createdAt: new Date()
+                    });
+                    
+                    if (referrerId) {
+                        const referrerRef = doc(db, "fighters", referrerId);
+                        const referrerDoc = await getDoc(referrerRef);
+                        if (referrerDoc.exists()) {
+                            const currentCount = referrerDoc.data()?.referralCount || 0;
+                            const currentBonus = referrerDoc.data()?.referralBonus || 0;
+                            const currentFree = referrerDoc.data()?.freeChallenges || 0;
+                            await updateDoc(referrerRef, {
+                                referralCount: currentCount + 1,
+                                referralBonus: currentBonus + 1,
+                                freeChallenges: currentFree + 1
+                            });
+                        }
+                    }
+                    
+                    alert("Регистрация успешна!");
+                    window.location.href = `profile.html?id=${uid}`;
+                } 
+                else if (role === 'partner') {
+                    const storeName = document.getElementById('partnerStoreName').value.trim();
+                    const storeDesc = document.getElementById('partnerStoreDesc').value.trim();
+                    const storeUrl = document.getElementById('partnerStoreUrl').value.trim();
+
+                    if (!storeName || !storeDesc || !storeUrl) {
+                        alert("Заполните все поля магазина");
+                        return;
+                    }
+
+                    // Создаём заявку на партнёрство
+                    await addDoc(collection(db, "partner_requests"), {
+                        storeName: storeName,
+                        storeUrl: storeUrl,
+                        storeDescription: storeDesc,
+                        contactName: storeName,
+                        contactEmail: email,
+                        contactTelegram: null,
+                        userId: uid,
+                        products: [],
+                        status: 'pending',
+                        createdAt: serverTimestamp()
+                    });
+
+                    // Создаём базовый профиль (чтобы был вход)
+                    await setDoc(doc(db, "fighters", uid), {
+                        name: storeName,
+                        email: email,
+                        city: '—',
+                        sport: '—',
+                        weightClass: '—',
+                        frs: 0,
+                        wins: 0, losses: 0, finishes: 0,
+                        bio: "",
+                        avatar: "Avatar.png",
+                        freeChallenges: 0,
+                        purchasedChallenges: 0,
+                        isPartner: true,
+                        createdAt: new Date()
+                    });
+
+                    alert("Заявка на партнёрство отправлена! После одобрения вы сможете добавлять товары.");
+                    window.location.href = `index.html`;
                 }
-                
-                alert("Регистрация успешна!");
-                window.location.href = `profile.html?id=${uid}`;
             } catch (err) {
                 if (err.code === 'auth/email-already-in-use') {
                     alert("Этот email уже зарегистрирован");
@@ -561,18 +701,25 @@
             }
         });
 
+        // ВХОД
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const email = document.getElementById('loginEmail').value;
             const password = document.getElementById('loginPassword').value;
             try {
                 const userCred = await signInWithEmailAndPassword(auth, email, password);
-                window.location.href = `profile.html?id=${userCred.user.uid}`;
+                const userDoc = await getDoc(doc(db, "fighters", userCred.user.uid));
+                if (userDoc.exists() && userDoc.data().isPartner) {
+                    window.location.href = 'partner-dashboard.html';
+                } else {
+                    window.location.href = `profile.html?id=${userCred.user.uid}`;
+                }
             } catch (err) {
                 document.getElementById('loginMessage').innerText = "Неверный email или пароль";
             }
         });
 
+        // СБРОС ПАРОЛЯ
         const forgotLink = document.getElementById('forgotPasswordLink');
         const resetModal = document.getElementById('resetModal');
         const sendResetBtn = document.getElementById('sendResetBtn');
@@ -604,6 +751,7 @@
             }
         });
 
+        // БУРГЕР-МЕНЮ
         const menuToggle = document.getElementById('menuToggle');
         const navLinks = document.getElementById('navLinks');
         if (menuToggle && navLinks) {
