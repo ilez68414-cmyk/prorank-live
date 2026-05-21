@@ -1,4 +1,3 @@
-// header.js — универсальная шапка для всех страниц
 import { getAuth, onAuthStateChanged, signOut } from "firebase/auth";
 import { getFirestore, doc, getDoc } from "firebase/firestore";
 import { initializeApp } from "firebase/app";
@@ -16,18 +15,21 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-// Получаем имя текущей страницы
 function getCurrentPage() {
     const path = window.location.pathname;
     const page = path.split('/').pop();
     return page || 'index.html';
 }
 
-// Добавляем класс active к ссылке, если она совпадает с текущей страницей
 function setActiveLink(links, currentPage) {
+    const currentPath = currentPage.split('?')[0];
     links.forEach(link => {
         const href = link.getAttribute('href');
-        if (href === currentPage) {
+        if (!href) return;
+        const hrefPath = href.split('?')[0];
+        if (hrefPath === 'index.html' && (currentPath === '' || currentPath === 'index.html')) {
+            link.classList.add('active');
+        } else if (hrefPath === currentPath) {
             link.classList.add('active');
         } else {
             link.classList.remove('active');
@@ -36,40 +38,58 @@ function setActiveLink(links, currentPage) {
 }
 
 async function initHeader() {
+    const navLinks = document.getElementById('navLinks');
+    if (!navLinks) return;
+
     const user = auth.currentUser;
     let isPartner = false;
     let userId = null;
-    let userDoc = null;
-    
+
     if (user) {
         userId = user.uid;
-        userDoc = await getDoc(doc(db, "fighters", userId));
-        isPartner = userDoc.data()?.isPartner === true;
+        try {
+            const userDoc = await getDoc(doc(db, "fighters", userId));
+            isPartner = userDoc.data()?.isPartner === true;
+        } catch (err) {
+            console.error('Ошибка загрузки пользователя:', err);
+        }
     }
-    
-    const navLinks = document.getElementById('navLinks');
-    if (!navLinks) return;
-    
+
     const currentPage = getCurrentPage();
-    
+
+    // Функция для обновления активной ссылки и обработчика выхода
+    function updateActiveAndLogout() {
+        const links = navLinks.querySelectorAll('a');
+        setActiveLink(links, currentPage);
+        
+        const logoutLink = document.getElementById('logoutLink');
+        if (logoutLink) {
+            const newLogout = logoutLink.cloneNode(true);
+            logoutLink.parentNode.replaceChild(newLogout, logoutLink);
+            newLogout.addEventListener('click', async (e) => {
+                e.preventDefault();
+                await signOut(auth);
+                window.location.href = 'index.html';
+            });
+        }
+    }
+
+    // Если навигация уже есть (например, chats.html), просто обновляем
+    if (navLinks.children.length > 0) {
+        updateActiveAndLogout();
+        return;
+    }
+
+    // Создаём навигацию с нуля
     if (user && isPartner) {
-        // Шапка для партнёра (авторизован)
         navLinks.innerHTML = `
             <a href="index.html"><i class="fas fa-home"></i> Главная</a>
             <a href="shop.html"><i class="fas fa-store"></i> Магазин</a>
             <a href="partner-dashboard.html"><i class="fas fa-tachometer-alt"></i> Кабинет</a>
             <a href="#" id="logoutLink"><i class="fas fa-sign-out-alt"></i> Выйти</a>
         `;
-        document.getElementById('logoutLink')?.addEventListener('click', async (e) => {
-            e.preventDefault();
-            await signOut(auth);
-            window.location.href = 'index.html';
-        });
-        const links = document.querySelectorAll('#navLinks a');
-        setActiveLink(links, currentPage);
     } 
     else if (user && !isPartner) {
-        // Шапка для бойца (авторизован)
         navLinks.innerHTML = `
             <a href="index.html"><i class="fas fa-home"></i> Главная</a>
             <a href="rating.html"><i class="fas fa-chart-line"></i> Рейтинг</a>
@@ -81,16 +101,8 @@ async function initHeader() {
             <a href="profile.html?id=${userId}" id="profileLink"><i class="fas fa-user"></i> Мой профиль</a>
             <a href="#" id="logoutLink"><i class="fas fa-sign-out-alt"></i> Выйти</a>
         `;
-        document.getElementById('logoutLink')?.addEventListener('click', async (e) => {
-            e.preventDefault();
-            await signOut(auth);
-            window.location.href = 'index.html';
-        });
-        const links = document.querySelectorAll('#navLinks a');
-        setActiveLink(links, currentPage);
     } 
     else {
-        // Шапка для неавторизованного пользователя
         navLinks.innerHTML = `
             <a href="index.html"><i class="fas fa-home"></i> Главная</a>
             <a href="rating.html"><i class="fas fa-chart-line"></i> Рейтинг</a>
@@ -100,12 +112,11 @@ async function initHeader() {
             <a href="challenges.html"><i class="fas fa-fist-raised"></i> Вызовы</a>
             <a href="login.html"><i class="fas fa-sign-in-alt"></i> Войти</a>
         `;
-        const links = document.querySelectorAll('#navLinks a');
-        setActiveLink(links, currentPage);
     }
+
+    updateActiveAndLogout();
 }
 
-// Запускаем при загрузке страницы
 document.addEventListener('DOMContentLoaded', () => {
     onAuthStateChanged(auth, async () => {
         await initHeader();
