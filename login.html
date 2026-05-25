@@ -500,17 +500,17 @@
     </div>
 
     <script type="importmap">
-        {
-            "imports": {
-                "firebase/app": "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js",
-                "firebase/firestore": "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js",
-                "firebase/auth": "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js"
-            }
+    {
+        "imports": {
+            "firebase/app": "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js",
+            "firebase/firestore": "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js",
+            "firebase/auth": "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js"
         }
-    </script>
-    <script type="module">
+    }
+</script>
+<script type="module">
     import { initializeApp } from "firebase/app";
-    import { getFirestore, doc, setDoc, updateDoc, getDoc, collection, addDoc, serverTimestamp } from "firebase/firestore";
+    import { getFirestore, doc, setDoc, updateDoc, getDoc, collection, addDoc, serverTimestamp, query, where, getDocs } from "firebase/firestore";
     import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendPasswordResetEmail } from "firebase/auth";
 
     const firebaseConfig = {
@@ -542,7 +542,6 @@
     const loginFormDiv = document.getElementById('loginFormContainer');
     const registerFormDiv = document.getElementById('registerFormContainer');
 
-    // Функция переключения табов
     function switchToLogin() {
         loginTab.classList.add('active');
         registerTab.classList.remove('active');
@@ -572,12 +571,10 @@
             fighterFields.classList.remove('hidden');
             partnerFields.classList.add('hidden');
             if (roleHintSpan) roleHintSpan.innerHTML = '🥊 Боец — участвует в рейтинге, вызывает на спарринги, общается в чатах.';
-            // Делаем поля бойца обязательными
             if (document.getElementById('userName')) document.getElementById('userName').required = true;
             if (document.getElementById('userCity')) document.getElementById('userCity').required = true;
             if (document.getElementById('userWeightClass')) document.getElementById('userWeightClass').required = true;
             if (document.getElementById('userSport')) document.getElementById('userSport').required = true;
-            // Убираем обязательность полей партнёра
             if (document.getElementById('partnerStoreName')) document.getElementById('partnerStoreName').required = false;
             if (document.getElementById('partnerStoreDesc')) document.getElementById('partnerStoreDesc').required = false;
             if (document.getElementById('partnerStoreUrl')) document.getElementById('partnerStoreUrl').required = false;
@@ -585,12 +582,10 @@
             fighterFields.classList.add('hidden');
             partnerFields.classList.remove('hidden');
             if (roleHintSpan) roleHintSpan.innerHTML = '🏪 Партнёр — продаёт экипировку, получает 90% от продаж. После регистрации отправьте заявку на одобрение.';
-            // Убираем обязательность полей бойца
             if (document.getElementById('userName')) document.getElementById('userName').required = false;
             if (document.getElementById('userCity')) document.getElementById('userCity').required = false;
             if (document.getElementById('userWeightClass')) document.getElementById('userWeightClass').required = false;
             if (document.getElementById('userSport')) document.getElementById('userSport').required = false;
-            // Делаем поля партнёра обязательными
             if (document.getElementById('partnerStoreName')) document.getElementById('partnerStoreName').required = true;
             if (document.getElementById('partnerStoreDesc')) document.getElementById('partnerStoreDesc').required = true;
             if (document.getElementById('partnerStoreUrl')) document.getElementById('partnerStoreUrl').required = true;
@@ -600,7 +595,7 @@
     registerRole.addEventListener('change', updateRoleFields);
     updateRoleFields();
 
-    // АВТОМАТИЧЕСКОЕ ПЕРЕКЛЮЧЕНИЕ ПО ПАРАМЕТРУ ?role
+    // Автоматическое переключение по параметру ?role
     if (roleParam === 'partner') {
         switchToRegister();
         if (registerRole) {
@@ -630,10 +625,23 @@
             }
 
             try {
-                const userCred = await createUserWithEmailAndPassword(auth, email, password);
-                const uid = userCred.user.uid;
+                // Сначала проверяем, нет ли уже заявки с таким email
+                const existingRequest = await getDocs(query(
+                    collection(db, "partner_requests"),
+                    where("contactEmail", "==", email),
+                    where("status", "in", ["pending", "approved"])
+                ));
+                
+                if (!existingRequest.empty) {
+                    alert("Заявка с таким email уже существует. Дождитесь обработки.");
+                    return;
+                }
 
                 if (role === 'fighter') {
+                    // Регистрация бойца
+                    const userCred = await createUserWithEmailAndPassword(auth, email, password);
+                    const uid = userCred.user.uid;
+                    
                     const name = document.getElementById('userName').value.trim();
                     const city = document.getElementById('userCity').value;
                     const weightClass = document.getElementById('userWeightClass').value;
@@ -641,10 +649,12 @@
 
                     if (name.split(' ').length < 2) {
                         alert("Введите имя и фамилию");
+                        await userCred.user.delete();
                         return;
                     }
 
                     await setDoc(doc(db, "fighters", uid), {
+                        uid: uid,
                         name, email, city, sport, weightClass: weightClass,
                         weight: parseInt(weightClass.split(' ')[0]) || 70,
                         frs: 50, wins: 0, losses: 0, finishes: 0,
@@ -652,6 +662,7 @@
                         freeChallenges: 3, purchasedChallenges: 0,
                         referralCount: 0, referralBonus: 0,
                         referredBy: referrerId || null,
+                        isPartner: false,
                         createdAt: new Date()
                     });
                     
@@ -683,6 +694,7 @@
                         return;
                     }
 
+                    // Создаём заявку (НЕ создаём аккаунт в Auth)
                     await addDoc(collection(db, "partner_requests"), {
                         storeName: storeName,
                         storeUrl: storeUrl,
@@ -690,30 +702,15 @@
                         contactName: storeName,
                         contactEmail: email,
                         contactTelegram: null,
-                        userId: uid,
+                        userId: null,
                         products: [],
+                        password: password, // СОХРАНЯЕМ ПАРОЛЬ ДЛЯ ПОСЛЕДУЮЩЕГО СОЗДАНИЯ АККАУНТА
                         status: 'pending',
                         createdAt: serverTimestamp()
                     });
 
-                    await setDoc(doc(db, "fighters", uid), {
-                        name: storeName,
-                        email: email,
-                        city: '—',
-                        sport: '—',
-                        weightClass: '—',
-                        frs: 0,
-                        wins: 0, losses: 0, finishes: 0,
-                        bio: "",
-                        avatar: "Avatar.png",
-                        freeChallenges: 0,
-                        purchasedChallenges: 0,
-                        isPartner: true,
-                        createdAt: new Date()
-                    });
-
-                    alert("Заявка на партнёрство отправлена! После одобрения вы сможете добавлять товары.");
-                    window.location.href = `index.html`;
+                    alert("✅ Заявка на партнёрство отправлена! После одобрения вы получите письмо и сможете войти.");
+                    window.location.href = 'index.html';
                 }
             } catch (err) {
                 if (err.code === 'auth/email-already-in-use') {
@@ -725,24 +722,63 @@
         });
     }
 
-    // ВХОД
+    // ВХОД — ИСПРАВЛЕНА ЛОГИКА
     const loginForm = document.getElementById('loginForm');
     if (loginForm) {
         loginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const email = document.getElementById('loginEmail').value;
             const password = document.getElementById('loginPassword').value;
+            const messageDiv = document.getElementById('loginMessage');
+            
             try {
+                // Сначала проверяем, есть ли заявка с таким email и статусом pending
+                const pendingRequest = await getDocs(query(
+                    collection(db, "partner_requests"),
+                    where("contactEmail", "==", email),
+                    where("status", "==", "pending")
+                ));
+
+                if (!pendingRequest.empty) {
+                    messageDiv.innerText = "⏳ Ваша заявка ещё не одобрена. Дождитесь подтверждения.";
+                    return;
+                }
+
+                // Пытаемся войти в Firebase Auth
                 const userCred = await signInWithEmailAndPassword(auth, email, password);
-                const userDoc = await getDoc(doc(db, "fighters", userCred.user.uid));
-                if (userDoc.exists() && userDoc.data().isPartner) {
+                const uid = userCred.user.uid;
+                
+                // Получаем документ fighters
+                const fighterDoc = await getDoc(doc(db, "fighters", uid));
+                
+                let isPartner = false;
+                
+                if (fighterDoc.exists()) {
+                    isPartner = fighterDoc.data().isPartner === true;
+                } else {
+                    // Если нет в fighters, проверяем наличие в коллекции partners
+                    const partnerQuery = await getDocs(query(collection(db, "partners"), where("email", "==", email)));
+                    if (!partnerQuery.empty()) {
+                        isPartner = true;
+                    }
+                }
+                
+                if (isPartner) {
                     window.location.href = 'partner-dashboard.html';
                 } else {
-                    window.location.href = `profile.html?id=${userCred.user.uid}`;
+                    window.location.href = `profile.html?id=${uid}`;
                 }
             } catch (err) {
-                const msgDiv = document.getElementById('loginMessage');
-                if (msgDiv) msgDiv.innerText = "Неверный email или пароль";
+                console.error("Login error:", err);
+                if (err.code === 'auth/user-not-found') {
+                    messageDiv.innerText = "Пользователь не найден. Возможно, ваша заявка ещё не одобрена.";
+                } else if (err.code === 'auth/wrong-password') {
+                    messageDiv.innerText = "Неверный пароль";
+                } else if (err.code === 'auth/invalid-credential') {
+                    messageDiv.innerText = "Неверный email или пароль. Если вы партнёр — дождитесь одобрения заявки.";
+                } else {
+                    messageDiv.innerText = "Ошибка входа: " + err.message;
+                }
             }
         });
     }

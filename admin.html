@@ -478,259 +478,222 @@
         }
     </script>
     <script type="module">
-        import { initializeApp } from "firebase/app";
-        import { getFirestore, collection, getDocs, doc, updateDoc, query, orderBy, deleteDoc, increment, addDoc, getDoc, where, setDoc, serverTimestamp } from "firebase/firestore";
-        import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "firebase/auth";
-        import { getStorage, ref, uploadBytes, getDownloadURL, deleteObject } from "firebase/storage";
+    import { initializeApp } from "firebase/app";
+    import { getFirestore, collection, getDocs, doc, updateDoc, query, orderBy, deleteDoc, increment, addDoc, getDoc, where, setDoc, serverTimestamp } from "firebase/firestore";
+    import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut, createUserWithEmailAndPassword } from "firebase/auth";
+    import { getStorage, ref, uploadBytes, getDownloadURL, deleteObject } from "firebase/storage";
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyDUGYJY7pX7q02MS5SACMIIQXpjpQ97mPw",
-            authDomain: "proranklive.firebaseapp.com",
-            projectId: "proranklive",
-            storageBucket: "proranklive.firebasestorage.app",
-            messagingSenderId: "716836144015",
-            appId: "1:716836144015:web:f1575147750608d0f881fa"
-        };
+    const firebaseConfig = {
+        apiKey: "AIzaSyDUGYJY7pX7q02MS5SACMIIQXpjpQ97mPw",
+        authDomain: "proranklive.firebaseapp.com",
+        projectId: "proranklive",
+        storageBucket: "proranklive.firebasestorage.app",
+        messagingSenderId: "716836144015",
+        appId: "1:716836144015:web:f1575147750608d0f881fa"
+    };
 
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-        const auth = getAuth(app);
-        const storage = getStorage(app);
-        const BOT_TOKEN = '8527160088:AAGc2311QFkp6F7-Jx5k8MJfqlpvbueSl5E';
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
+    const storage = getStorage(app);
+    const BOT_TOKEN = '8527160088:AAGc2311QFkp6F7-Jx5k8MJfqlpvbueSl5E';
 
-        let allFighters = [];
-        let currentAdminEmail = null;
+    let allFighters = [];
+    let currentAdminEmail = null;
 
-        async function logAction(action, targetId, details) {
-            if (!currentAdminEmail) return;
-            try {
-                await addDoc(collection(db, "adminLogs"), {
-                    admin: currentAdminEmail,
-                    action: action,
-                    targetId: targetId || null,
-                    details: details || '',
-                    timestamp: serverTimestamp()
+    async function logAction(action, targetId, details) {
+        if (!currentAdminEmail) return;
+        try {
+            await addDoc(collection(db, "adminLogs"), {
+                admin: currentAdminEmail,
+                action: action,
+                targetId: targetId || null,
+                details: details || '',
+                timestamp: serverTimestamp()
+            });
+        } catch(e) { console.error(e); }
+    }
+
+    async function loadStats() {
+        const fightersSnap = await getDocs(collection(db, "fighters"));
+        const fightsSnap = await getDocs(collection(db, "fights"));
+        const challengesSnap = await getDocs(collection(db, "challenges"));
+        const partnersSnap = await getDocs(collection(db, "partners"));
+        const requestsSnap = await getDocs(query(collection(db, "partner_requests"), where("status", "==", "pending")));
+        
+        let premiumCount = 0;
+        let bannedCount = 0;
+        fightersSnap.forEach(doc => { 
+            if (doc.data().premium) premiumCount++; 
+            if (doc.data().banned) bannedCount++;
+        });
+        
+        document.getElementById('statFighters').innerText = fightersSnap.size;
+        document.getElementById('statBanned').innerText = bannedCount;
+        document.getElementById('statFights').innerText = fightsSnap.size;
+        document.getElementById('statChallenges').innerText = challengesSnap.size;
+        document.getElementById('statPremium').innerText = premiumCount;
+        document.getElementById('statPartners').innerText = partnersSnap.size;
+        document.getElementById('statRequests').innerText = requestsSnap.size;
+    }
+
+    async function loadFighters() {
+        const tbody = document.getElementById('adminTableBody');
+        try {
+            const q = query(collection(db, "fighters"), orderBy("frs", "desc"));
+            const snapshot = await getDocs(q);
+            allFighters = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            renderFighters(allFighters);
+            loadFightersForSelect();
+            loadFightersForDeleteSelect();
+        } catch(err) {
+            console.error(err);
+            tbody.innerHTML = '<tr><td colspan="11">Ошибка загрузки</td></tr>';
+        }
+    }
+
+    function renderFighters(fighters) {
+        const tbody = document.getElementById('adminTableBody');
+        tbody.innerHTML = '';
+        fighters.forEach(f => {
+            const row = tbody.insertRow();
+            const isBanned = f.banned === true;
+            row.innerHTML = `
+                <td><strong>${escapeHtml(f.name || 'Боец')}</strong><br><small>${escapeHtml(f.email || '')}</small></td>
+                <td>${escapeHtml(f.sport || '—')}</td>
+                <td>${escapeHtml(f.city || '—')}</td>
+                <td>${f.frs || 0}</td>
+                <td>${f.wins || 0}</td>
+                <td>${f.losses || 0}</td>
+                <td>${f.finishes || 0}</td>
+                <td>${f.telegramId || '—'}</td>
+                <td>${f.premium ? '✅' : '❌'}</td>
+                <td>${isBanned ? '<span class="banned-badge">🔒 Забанен</span>' : '✅ Активен'}</td>
+                <td class="points-control">
+                    <button onclick="window.changePoints('${f.id}', 100)">+100</button>
+                    <button onclick="window.changePoints('${f.id}', 10)">+10</button>
+                    <button onclick="window.changePoints('${f.id}', 1)">+1</button>
+                    <button class="danger" onclick="window.changePoints('${f.id}', -1)">-1</button>
+                    <button class="danger" onclick="window.changePoints('${f.id}', -10)">-10</button>
+                    <button class="danger" onclick="window.changePoints('${f.id}', -100)">-100</button>
+                    ${!isBanned ? `<button class="danger" onclick="window.banFighter('${f.id}')">🔨 Бан</button>` : `<button onclick="window.unbanFighter('${f.id}')">🔓 Разбан</button>`}
+                    <button onclick="window.resetRecord('${f.id}')">🔄 Сброс</button>
+                    <button class="danger" onclick="window.deleteAccount('${f.id}')">🗑️ Удалить</button>
+                </td>
+            `;
+        });
+    }
+
+    window.changePoints = async (uid, delta) => {
+        const fighter = allFighters.find(f => f.id === uid);
+        if (!fighter) return;
+        const newFRS = (fighter.frs || 0) + delta;
+        await updateDoc(doc(db, "fighters", uid), { frs: Math.max(0, newFRS) });
+        await logAction('change_points', uid, `Изменил FRS на ${delta}`);
+        loadFighters();
+        loadStats();
+    };
+
+    window.banFighter = async (uid) => {
+        if (!confirm('Заблокировать бойца? Он не сможет вызывать других и участвовать в рейтинге')) return;
+        await updateDoc(doc(db, "fighters", uid), { banned: true, banReason: 'Нарушение правил', bannedAt: new Date() });
+        await logAction('ban_fighter', uid, 'Заблокировал бойца');
+        loadFighters();
+        loadStats();
+        alert('✅ Боец заблокирован');
+    };
+
+    window.unbanFighter = async (uid) => {
+        await updateDoc(doc(db, "fighters", uid), { banned: false, banReason: null, bannedAt: null });
+        await logAction('unban_fighter', uid, 'Разблокировал бойца');
+        loadFighters();
+        loadStats();
+        alert('✅ Боец разблокирован');
+    };
+
+    window.resetRecord = async (uid) => {
+        if (!confirm('СБРОСИТЬ рекорд бойца? Победы, поражения и финиши станут 0.')) return;
+        await updateDoc(doc(db, "fighters", uid), { wins: 0, losses: 0, finishes: 0 });
+        await logAction('reset_record', uid, 'Сбросил рекорд');
+        loadFighters();
+        alert('✅ Рекорд сброшен');
+    };
+
+    window.deleteAccount = async (uid) => {
+        if (!confirm('УДАЛИТЬ аккаунт бойца? Это действие НЕОБРАТИМО!')) return;
+        let code = prompt('Введите "УДАЛИТЬ" для подтверждения');
+        if (code !== 'УДАЛИТЬ') { alert('Операция отменена'); return; }
+        try {
+            const challengesSnap = await getDocs(query(collection(db, "challenges"), where("fromUserId", "==", uid)));
+            for (const docSnap of challengesSnap) await deleteDoc(doc(db, "challenges", docSnap.id));
+            const challengesToSnap = await getDocs(query(collection(db, "challenges"), where("toUserId", "==", uid)));
+            for (const docSnap of challengesToSnap) await deleteDoc(doc(db, "challenges", docSnap.id));
+            const chatsSnap = await getDocs(query(collection(db, "chats"), where("participants", "array-contains", uid)));
+            for (const docSnap of chatsSnap) await deleteDoc(doc(db, "chats", docSnap.id));
+            const likesSnap = await getDocs(query(collection(db, "likes"), where("fighterId", "==", uid)));
+            for (const docSnap of likesSnap) await deleteDoc(doc(db, "likes", docSnap.id));
+            const userAchSnap = await getDocs(query(collection(db, "userAchievements"), where("userId", "==", uid)));
+            for (const docSnap of userAchSnap) await deleteDoc(doc(db, "userAchievements", docSnap.id));
+            await deleteDoc(doc(db, "fighters", uid));
+            await logAction('delete_account', uid, 'Удалил аккаунт');
+            loadFighters();
+            loadStats();
+            alert('✅ Аккаунт удалён');
+        } catch (err) { alert('Ошибка: ' + err.message); }
+    };
+
+    async function loadFightersForSelect() {
+        const snapshot = await getDocs(collection(db, "fighters"));
+        const select1 = document.getElementById('fighterSelect1');
+        const select2 = document.getElementById('fighterSelect2');
+        if (!select1 || !select2) return;
+        select1.innerHTML = '<option value="">Выбери победителя</option>';
+        select2.innerHTML = '<option value="">Выбери проигравшего</option>';
+        snapshot.forEach(doc => {
+            const fighter = doc.data();
+            if (fighter.banned) return;
+            const option1 = document.createElement('option');
+            option1.value = doc.id;
+            option1.textContent = fighter.name || 'Боец';
+            const option2 = option1.cloneNode(true);
+            select1.appendChild(option1);
+            select2.appendChild(option2);
+        });
+    }
+
+    async function loadFightersForDeleteSelect() {
+        const snapshot = await getDocs(collection(db, "fighters"));
+        const select = document.getElementById('deleteFightsForFighter');
+        if (!select) return;
+        select.innerHTML = '<option value="">-- Все бойцы --</option>';
+        snapshot.forEach(doc => {
+            const fighter = doc.data();
+            select.innerHTML += `<option value="${doc.id}">${fighter.name || 'Боец'} (${fighter.city || '—'})</option>`;
+        });
+    }
+
+    window.deleteFights = async () => {
+        const fighterId = document.getElementById('deleteFightsForFighter')?.value;
+        const confirmMsg = fighterId ? 'Удалить ВСЮ историю боёв этого бойца? Это затронет его личную статистику.' : 'Удалить ВСЕ бои из системы? Это НЕОБРАТИМО!';
+        if (!confirm(confirmMsg)) return;
+        
+        const btn = document.getElementById('deleteFightsBtn');
+        if (btn) { btn.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> Удаление...'; btn.disabled = true; }
+        
+        try {
+            if (fighterId) {
+                const asWinner = await getDocs(query(collection(db, "fights"), where("winnerId", "==", fighterId)));
+                const asLoser = await getDocs(query(collection(db, "fights"), where("loserId", "==", fighterId)));
+                const allFights = [...asWinner.docs, ...asLoser.docs];
+                const uniqueIds = [...new Map(allFights.map(doc => [doc.id, doc])).values()];
+                for (const docSnap of uniqueIds) {
+                    await deleteDoc(doc(db, "fights", docSnap.id));
+                }
+                await updateDoc(doc(db, "fighters", fighterId), {
+                    wins: 0, losses: 0, finishes: 0, lastFightDate: null
                 });
-            } catch(e) { console.error(e); }
-        }
-
-        async function loadStats() {
-            const fightersSnap = await getDocs(collection(db, "fighters"));
-            const fightsSnap = await getDocs(collection(db, "fights"));
-            const challengesSnap = await getDocs(collection(db, "challenges"));
-            const partnersSnap = await getDocs(collection(db, "partners"));
-            const requestsSnap = await getDocs(query(collection(db, "partner_requests"), where("status", "==", "pending")));
-            
-            let premiumCount = 0;
-            let bannedCount = 0;
-            fightersSnap.forEach(doc => { 
-                if (doc.data().premium) premiumCount++; 
-                if (doc.data().banned) bannedCount++;
-            });
-            
-            document.getElementById('statFighters').innerText = fightersSnap.size;
-            document.getElementById('statBanned').innerText = bannedCount;
-            document.getElementById('statFights').innerText = fightsSnap.size;
-            document.getElementById('statChallenges').innerText = challengesSnap.size;
-            document.getElementById('statPremium').innerText = premiumCount;
-            document.getElementById('statPartners').innerText = partnersSnap.size;
-            document.getElementById('statRequests').innerText = requestsSnap.size;
-        }
-
-        async function loadFighters() {
-            const tbody = document.getElementById('adminTableBody');
-            try {
-                const q = query(collection(db, "fighters"), orderBy("frs", "desc"));
-                const snapshot = await getDocs(q);
-                allFighters = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                renderFighters(allFighters);
-                loadFightersForSelect();
-                loadFightersForDeleteSelect();
-            } catch(err) {
-                console.error(err);
-                tbody.innerHTML = '<tr><td colspan="11">Ошибка загрузки</td></tr>';
-            }
-        }
-
-        function renderFighters(fighters) {
-            const tbody = document.getElementById('adminTableBody');
-            tbody.innerHTML = '';
-            fighters.forEach(f => {
-                const row = tbody.insertRow();
-                const isBanned = f.banned === true;
-                row.innerHTML = `
-                    <td><strong>${escapeHtml(f.name || 'Боец')}</strong><br><small>${escapeHtml(f.email || '')}</small></td>
-                    <td>${escapeHtml(f.sport || '—')}</td>
-                    <td>${escapeHtml(f.city || '—')}</td>
-                    <td>${f.frs || 0}</td>
-                    <td>${f.wins || 0}</td>
-                    <td>${f.losses || 0}</td>
-                    <td>${f.finishes || 0}</td>
-                    <td>${f.telegramId || '—'}</td>
-                    <td>${f.premium ? '✅' : '❌'}</td>
-                    <td>${isBanned ? '<span class="banned-badge">🔒 Забанен</span>' : '✅ Активен'}</td>
-                    <td class="points-control">
-                        <button onclick="window.changePoints('${f.id}', 100)">+100</button>
-                        <button onclick="window.changePoints('${f.id}', 10)">+10</button>
-                        <button onclick="window.changePoints('${f.id}', 1)">+1</button>
-                        <button class="danger" onclick="window.changePoints('${f.id}', -1)">-1</button>
-                        <button class="danger" onclick="window.changePoints('${f.id}', -10)">-10</button>
-                        <button class="danger" onclick="window.changePoints('${f.id}', -100)">-100</button>
-                        ${!isBanned ? `<button class="danger" onclick="window.banFighter('${f.id}')">🔨 Бан</button>` : `<button onclick="window.unbanFighter('${f.id}')">🔓 Разбан</button>`}
-                        <button onclick="window.resetRecord('${f.id}')">🔄 Сброс</button>
-                        <button class="danger" onclick="window.deleteAccount('${f.id}')">🗑️ Удалить</button>
-                    </td>
-                `;
-            });
-        }
-
-        window.changePoints = async (uid, delta) => {
-            const fighter = allFighters.find(f => f.id === uid);
-            if (!fighter) return;
-            const newFRS = (fighter.frs || 0) + delta;
-            await updateDoc(doc(db, "fighters", uid), { frs: Math.max(0, newFRS) });
-            await logAction('change_points', uid, `Изменил FRS на ${delta}`);
-            loadFighters();
-            loadStats();
-        };
-
-        window.banFighter = async (uid) => {
-            if (!confirm('Заблокировать бойца? Он не сможет вызывать других и участвовать в рейтинге')) return;
-            await updateDoc(doc(db, "fighters", uid), { banned: true, banReason: 'Нарушение правил', bannedAt: new Date() });
-            await logAction('ban_fighter', uid, 'Заблокировал бойца');
-            loadFighters();
-            loadStats();
-            alert('✅ Боец заблокирован');
-        };
-
-        window.unbanFighter = async (uid) => {
-            await updateDoc(doc(db, "fighters", uid), { banned: false, banReason: null, bannedAt: null });
-            await logAction('unban_fighter', uid, 'Разблокировал бойца');
-            loadFighters();
-            loadStats();
-            alert('✅ Боец разблокирован');
-        };
-
-        window.resetRecord = async (uid) => {
-            if (!confirm('СБРОСИТЬ рекорд бойца? Победы, поражения и финиши станут 0.')) return;
-            await updateDoc(doc(db, "fighters", uid), { wins: 0, losses: 0, finishes: 0 });
-            await logAction('reset_record', uid, 'Сбросил рекорд');
-            loadFighters();
-            alert('✅ Рекорд сброшен');
-        };
-
-        window.deleteAccount = async (uid) => {
-            if (!confirm('УДАЛИТЬ аккаунт бойца? Это действие НЕОБРАТИМО!')) return;
-            let code = prompt('Введите "УДАЛИТЬ" для подтверждения');
-            if (code !== 'УДАЛИТЬ') { alert('Операция отменена'); return; }
-            try {
-                const challengesSnap = await getDocs(query(collection(db, "challenges"), where("fromUserId", "==", uid)));
-                for (const docSnap of challengesSnap) await deleteDoc(doc(db, "challenges", docSnap.id));
-                const challengesToSnap = await getDocs(query(collection(db, "challenges"), where("toUserId", "==", uid)));
-                for (const docSnap of challengesToSnap) await deleteDoc(doc(db, "challenges", docSnap.id));
-                const chatsSnap = await getDocs(query(collection(db, "chats"), where("participants", "array-contains", uid)));
-                for (const docSnap of chatsSnap) await deleteDoc(doc(db, "chats", docSnap.id));
-                const likesSnap = await getDocs(query(collection(db, "likes"), where("fighterId", "==", uid)));
-                for (const docSnap of likesSnap) await deleteDoc(doc(db, "likes", docSnap.id));
-                const userAchSnap = await getDocs(query(collection(db, "userAchievements"), where("userId", "==", uid)));
-                for (const docSnap of userAchSnap) await deleteDoc(doc(db, "userAchievements", docSnap.id));
-                await deleteDoc(doc(db, "fighters", uid));
-                await logAction('delete_account', uid, 'Удалил аккаунт');
-                loadFighters();
-                loadStats();
-                alert('✅ Аккаунт удалён');
-            } catch (err) { alert('Ошибка: ' + err.message); }
-        };
-
-        async function loadFightersForSelect() {
-            const snapshot = await getDocs(collection(db, "fighters"));
-            const select1 = document.getElementById('fighterSelect1');
-            const select2 = document.getElementById('fighterSelect2');
-            if (!select1 || !select2) return;
-            select1.innerHTML = '<option value="">Выбери победителя</option>';
-            select2.innerHTML = '<option value="">Выбери проигравшего</option>';
-            snapshot.forEach(doc => {
-                const fighter = doc.data();
-                if (fighter.banned) return;
-                const option1 = document.createElement('option');
-                option1.value = doc.id;
-                option1.textContent = fighter.name || 'Боец';
-                const option2 = option1.cloneNode(true);
-                select1.appendChild(option1);
-                select2.appendChild(option2);
-            });
-        }
-
-        async function loadFightersForDeleteSelect() {
-            const snapshot = await getDocs(collection(db, "fighters"));
-            const select = document.getElementById('deleteFightsForFighter');
-            if (!select) return;
-            select.innerHTML = '<option value="">-- Все бойцы --</option>';
-            snapshot.forEach(doc => {
-                const fighter = doc.data();
-                select.innerHTML += `<option value="${doc.id}">${fighter.name || 'Боец'} (${fighter.city || '—'})</option>`;
-            });
-        }
-
-        window.deleteFights = async () => {
-            const fighterId = document.getElementById('deleteFightsForFighter')?.value;
-            const confirmMsg = fighterId ? 'Удалить ВСЮ историю боёв этого бойца? Это затронет его личную статистику.' : 'Удалить ВСЕ бои из системы? Это НЕОБРАТИМО!';
-            if (!confirm(confirmMsg)) return;
-            
-            const btn = document.getElementById('deleteFightsBtn');
-            if (btn) { btn.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> Удаление...'; btn.disabled = true; }
-            
-            try {
-                if (fighterId) {
-                    const asWinner = await getDocs(query(collection(db, "fights"), where("winnerId", "==", fighterId)));
-                    const asLoser = await getDocs(query(collection(db, "fights"), where("loserId", "==", fighterId)));
-                    const allFights = [...asWinner.docs, ...asLoser.docs];
-                    const uniqueIds = [...new Map(allFights.map(doc => [doc.id, doc])).values()];
-                    for (const docSnap of uniqueIds) {
-                        await deleteDoc(doc(db, "fights", docSnap.id));
-                    }
-                    await updateDoc(doc(db, "fighters", fighterId), {
-                        wins: 0, losses: 0, finishes: 0, lastFightDate: null
-                    });
-                    alert(`✅ Удалено ${uniqueIds.length} боёв для бойца`);
-                } else {
-                    const querySnapshot = await getDocs(collection(db, "fights"));
-                    for (const docSnap of querySnapshot.docs) {
-                        await deleteDoc(doc(db, "fights", docSnap.id));
-                    }
-                    const fightersSnap = await getDocs(collection(db, "fighters"));
-                    for (const docSnap of fightersSnap.docs) {
-                        await updateDoc(doc(db, "fighters", docSnap.id), {
-                            wins: 0, losses: 0, finishes: 0, lastFightDate: null
-                        });
-                    }
-                    alert(`✅ Удалено ${querySnapshot.size} боёв, статистика всех бойцов обнулена`);
-                }
-                
-                await logAction('delete_fights', fighterId || 'all', 'Удалил историю боёв');
-                loadFighters();
-                loadStats();
-                const resultDiv = document.getElementById('deleteFightsResult');
-                if (resultDiv) {
-                    resultDiv.innerHTML = '<span style="color:green;">✅ Бои удалены</span>';
-                    setTimeout(() => { resultDiv.innerHTML = ''; }, 3000);
-                }
-            } catch (err) {
-                alert('Ошибка: ' + err.message);
-            } finally {
-                if (btn) { btn.innerHTML = '<i class="fas fa-trash"></i> Удалить историю боёв'; btn.disabled = false; }
-            }
-        };
-
-        window.deleteAllFights = async () => {
-            if (!confirm('УДАЛИТЬ ВСЕ БОИ? Это действие НЕОБРАТИМО! Статистика всех бойцов обнулится.')) return;
-            let code = prompt('Введите "УДАЛИТЬ ВСЕ" для подтверждения');
-            if (code !== 'УДАЛИТЬ ВСЕ') { alert('Операция отменена'); return; }
-            
-            const btn = document.getElementById('deleteAllFightsBtn');
-            if (btn) { btn.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> Удаление...'; btn.disabled = true; }
-            
-            try {
+                alert(`✅ Удалено ${uniqueIds.length} боёв для бойца`);
+            } else {
                 const querySnapshot = await getDocs(collection(db, "fights"));
                 for (const docSnap of querySnapshot.docs) {
                     await deleteDoc(doc(db, "fights", docSnap.id));
@@ -741,430 +704,567 @@
                         wins: 0, losses: 0, finishes: 0, lastFightDate: null
                     });
                 }
-                await logAction('delete_all_fights', null, 'Удалил все бои');
                 alert(`✅ Удалено ${querySnapshot.size} боёв, статистика всех бойцов обнулена`);
-                loadFighters();
-                loadStats();
-            } catch (err) {
-                alert('Ошибка: ' + err.message);
-            } finally {
-                if (btn) { btn.innerHTML = '<i class="fas fa-trash-alt"></i> Удалить ВСЕ бои'; btn.disabled = false; }
-            }
-        };
-
-        document.getElementById('addFightBtn')?.addEventListener('click', async () => {
-            const winnerId = document.getElementById('fighterSelect1').value;
-            const loserId = document.getElementById('fighterSelect2').value;
-            const isFinish = document.getElementById('finishCheckbox').checked;
-            if (!winnerId || !loserId) { alert('Выберите обоих бойцов'); return; }
-            if (winnerId === loserId) { alert('Нельзя выбрать одного бойца дважды'); return; }
-            try {
-                const winnerRef = doc(db, "fighters", winnerId);
-                const loserRef = doc(db, "fighters", loserId);
-                const winnerSnap = await getDoc(winnerRef);
-                const loserSnap = await getDoc(loserRef);
-                const winnerName = winnerSnap.data()?.name || 'Боец';
-                const loserName = loserSnap.data()?.name || 'Боец';
-                const sport = winnerSnap.data()?.sport || '—';
-                await updateDoc(winnerRef, { wins: increment(1), finishes: increment(isFinish ? 1 : 0), lastFightDate: new Date() });
-                await updateDoc(loserRef, { losses: increment(1), lastFightDate: new Date() });
-                await addDoc(collection(db, "fights"), { winnerId, winnerName, loserId, loserName, isFinish, sport, date: serverTimestamp() });
-                await logAction('add_fight', `${winnerId}_${loserId}`, `${winnerName} победил ${loserName}`);
-                document.getElementById('fightMessage').innerHTML = '<span style="color:green;">✅ Бой добавлен!</span>';
-                loadFighters();
-                loadStats();
-            } catch (error) { alert('Ошибка: ' + error.message); }
-        });
-
-        async function loadPartners() {
-            const snapshot = await getDocs(collection(db, "partners"));
-            const tbody = document.getElementById('partnersTableBody');
-            if (!tbody) return;
-            if (snapshot.empty) {
-                tbody.innerHTML = '<tr><td colspan="4">Нет магазинов</td></tr>';
-                return;
-            }
-            let html = '';
-            snapshot.forEach(docSnap => {
-                const p = docSnap.data();
-                html += `<tr>
-                    <td><strong>${escapeHtml(p.name)}</strong></td>
-                    <td>${escapeHtml(p.description)}</td>
-                    <td>${p.discount || '—'}</td>
-                    <td><button class="btn btn-danger" onclick="window.deletePartner('${docSnap.id}')"><i class="fas fa-trash"></i> Удалить</button></td>
-                </tr>`;
-            });
-            tbody.innerHTML = html;
-        }
-
-        window.deletePartner = async (id) => {
-            if (!confirm('Удалить магазин?')) return;
-            await deleteDoc(doc(db, "partners", id));
-            await logAction('delete_partner', id, 'Удалил магазин');
-            loadPartners();
-            loadStats();
-        };
-
-        document.getElementById('addPartnerBtn')?.addEventListener('click', async () => {
-            const name = document.getElementById('partnerName').value;
-            const url = document.getElementById('partnerUrl').value;
-            const description = document.getElementById('partnerDesc').value;
-            const discount = document.getElementById('partnerDiscount').value;
-            const icon = document.getElementById('partnerIcon').value || 'fa-store';
-            if (!name || !url) { alert('Заполните название и ссылку'); return; }
-            await addDoc(collection(db, "partners"), {
-                name, url, description, discount, icon,
-                createdAt: serverTimestamp()
-            });
-            await logAction('add_partner', null, `Добавил магазин ${name}`);
-            document.getElementById('partnerName').value = '';
-            document.getElementById('partnerUrl').value = '';
-            document.getElementById('partnerDesc').value = '';
-            document.getElementById('partnerDiscount').value = '';
-            alert('✅ Магазин добавлен');
-            loadPartners();
-            loadStats();
-        });
-
-        async function loadRequests() {
-            const snapshot = await getDocs(query(collection(db, "partner_requests"), orderBy("createdAt", "desc")));
-            const container = document.getElementById('requestsList');
-            if (snapshot.empty) {
-                container.innerHTML = '<div class="request-item">Нет заявок</div>';
-                return;
-            }
-            let html = '';
-            for (const docSnap of snapshot.docs) {
-                const r = docSnap.data();
-                const date = r.createdAt?.toDate().toLocaleString() || '—';
-                html += `
-                    <div class="request-item">
-                        <div><strong>${escapeHtml(r.storeName)}</strong><br><small>${escapeHtml(r.contactName)} | ${escapeHtml(r.contactEmail)}</small></div>
-                        <div>${escapeHtml(r.storeDescription?.substring(0, 100))}...</div>
-                        <div><strong>📦 Товаров: ${r.products?.length || 0}</strong></div>
-                        <div>
-                            ${r.status === 'pending' ? `
-                                <button class="btn btn-success" onclick="window.approveRequest('${docSnap.id}')"><i class="fas fa-check"></i> Одобрить</button>
-                                <button class="btn btn-danger" onclick="window.rejectRequest('${docSnap.id}')"><i class="fas fa-times"></i> Отклонить</button>
-                            ` : `<span style="color:${r.status === 'approved' ? '#16a34a' : '#dc2626'}">${r.status === 'approved' ? '✅ Одобрено' : '❌ Отклонено'}</span>`}
-                        </div>
-                    </div>
-                `;
-            }
-            container.innerHTML = html;
-        }
-
-        window.approveRequest = async (requestId) => {
-            const requestRef = doc(db, "partner_requests", requestId);
-            const requestSnap = await getDoc(requestRef);
-            const r = requestSnap.data();
-            if (!r) return;
-            
-            const partnerRef = await addDoc(collection(db, "partners"), {
-                name: r.storeName,
-                url: r.storeUrl,
-                description: r.storeDescription,
-                discount: null,
-                icon: "fa-store",
-                createdAt: serverTimestamp()
-            });
-            
-            if (r.products && r.products.length > 0) {
-                for (const product of r.products) {
-                    await addDoc(collection(db, "products"), {
-                        name: product.name,
-                        price: product.price,
-                        desc: product.desc,
-                        image: product.image || null,
-                        partnerId: partnerRef.id,
-                        partnerName: r.storeName,
-                        createdAt: serverTimestamp()
-                    });
-                }
             }
             
-            await updateDoc(requestRef, { status: 'approved' });
-            await logAction('approve_partner', requestId, `Одобрил заявку ${r.storeName} с ${r.products?.length || 0} товарами`);
-            loadRequests();
-            loadPartners();
+            await logAction('delete_fights', fighterId || 'all', 'Удалил историю боёв');
+            loadFighters();
             loadStats();
-            alert(`✅ Магазин "${r.storeName}" добавлен на витрину с ${r.products?.length || 0} товарами`);
-        };
-
-        window.rejectRequest = async (requestId) => {
-            await updateDoc(doc(db, "partner_requests", requestId), { status: 'rejected' });
-            await logAction('reject_partner', requestId, 'Отклонил заявку');
-            loadRequests();
-            alert('❌ Заявка отклонена');
-        };
-
-        async function loadChallengesForAdmin() {
-            const statusFilter = document.getElementById('challengeStatusFilter')?.value || 'all';
-            let q;
-            if (statusFilter === 'all') q = query(collection(db, "challenges"), orderBy("createdAt", "desc"));
-            else q = query(collection(db, "challenges"), where("status", "==", statusFilter), orderBy("createdAt", "desc"));
-            const snapshot = await getDocs(q);
-            const container = document.getElementById('challengesList');
-            if (snapshot.empty) { container.innerHTML = '<div class="challenge-item">Нет вызовов</div>'; return; }
-            let html = '';
-            snapshot.forEach(docSnap => {
-                const c = docSnap.data();
-                const date = c.createdAt?.toDate().toLocaleString() || '—';
-                html += `<div class="challenge-item">
-                    <span><strong>${escapeHtml(c.fromName)}</strong> → <strong>${escapeHtml(c.toName)}</strong></span>
-                    <span>Статус: ${c.status}</span>
-                    <span>${date}</span>
-                    <button class="btn btn-warning" onclick="window.updateChallengeStatusAdmin('${docSnap.id}', 'cancelled')">Отменить</button>
-                </div>`;
-            });
-            container.innerHTML = html;
-        }
-
-        window.updateChallengeStatusAdmin = async (challengeId, newStatus) => {
-            await updateDoc(doc(db, "challenges", challengeId), { status: newStatus });
-            await logAction('update_challenge', challengeId, `Изменил статус на ${newStatus}`);
-            loadChallengesForAdmin();
-        };
-
-        document.getElementById('clearAllChallengesBtn')?.addEventListener('click', async () => {
-            if (!confirm('Удалить ВСЕ вызовы?')) return;
-            const snapshot = await getDocs(collection(db, "challenges"));
-            for (const docSnap of snapshot.docs) {
-                await deleteDoc(doc(db, "challenges", docSnap.id));
+            const resultDiv = document.getElementById('deleteFightsResult');
+            if (resultDiv) {
+                resultDiv.innerHTML = '<span style="color:green;">✅ Бои удалены</span>';
+                setTimeout(() => { resultDiv.innerHTML = ''; }, 3000);
             }
-            await logAction('clear_challenges', null, 'Очистил все вызовы');
-            loadChallengesForAdmin();
+        } catch (err) {
+            alert('Ошибка: ' + err.message);
+        } finally {
+            if (btn) { btn.innerHTML = '<i class="fas fa-trash"></i> Удалить историю боёв'; btn.disabled = false; }
+        }
+    };
+
+    window.deleteAllFights = async () => {
+        if (!confirm('УДАЛИТЬ ВСЕ БОИ? Это действие НЕОБРАТИМО! Статистика всех бойцов обнулится.')) return;
+        let code = prompt('Введите "УДАЛИТЬ ВСЕ" для подтверждения');
+        if (code !== 'УДАЛИТЬ ВСЕ') { alert('Операция отменена'); return; }
+        
+        const btn = document.getElementById('deleteAllFightsBtn');
+        if (btn) { btn.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> Удаление...'; btn.disabled = true; }
+        
+        try {
+            const querySnapshot = await getDocs(collection(db, "fights"));
+            for (const docSnap of querySnapshot.docs) {
+                await deleteDoc(doc(db, "fights", docSnap.id));
+            }
+            const fightersSnap = await getDocs(collection(db, "fighters"));
+            for (const docSnap of fightersSnap.docs) {
+                await updateDoc(doc(db, "fighters", docSnap.id), {
+                    wins: 0, losses: 0, finishes: 0, lastFightDate: null
+                });
+            }
+            await logAction('delete_all_fights', null, 'Удалил все бои');
+            alert(`✅ Удалено ${querySnapshot.size} боёв, статистика всех бойцов обнулена`);
+            loadFighters();
             loadStats();
-            alert('✅ Вызовы удалены');
-        });
-
-        async function loadAdminHistory() {
-            const adminFilter = document.getElementById('historyAdminFilter')?.value || '';
-            let q;
-            if (adminFilter) q = query(collection(db, "adminLogs"), where("admin", "==", adminFilter), orderBy("timestamp", "desc"), limit(100));
-            else q = query(collection(db, "adminLogs"), orderBy("timestamp", "desc"), limit(100));
-            const snapshot = await getDocs(q);
-            const container = document.getElementById('historyList');
-            if (snapshot.empty) { container.innerHTML = '<div class="history-item">Нет записей</div>'; return; }
-            let html = '';
-            snapshot.forEach(docSnap => {
-                const log = docSnap.data();
-                const date = log.timestamp?.toDate().toLocaleString() || '—';
-                html += `<div class="history-item">
-                    <span><strong>${escapeHtml(log.admin)}</strong></span>
-                    <span>${escapeHtml(log.action)}</span>
-                    <span>${escapeHtml(log.details || '')}</span>
-                    <span>${date}</span>
-                </div>`;
-            });
-            container.innerHTML = html;
+        } catch (err) {
+            alert('Ошибка: ' + err.message);
+        } finally {
+            if (btn) { btn.innerHTML = '<i class="fas fa-trash-alt"></i> Удалить ВСЕ бои'; btn.disabled = false; }
         }
+    };
 
-        document.getElementById('clearHistoryBtn')?.addEventListener('click', async () => {
-            if (!confirm('Удалить ВСЮ историю?')) return;
-            const snapshot = await getDocs(collection(db, "adminLogs"));
-            for (const docSnap of snapshot.docs) {
-                await deleteDoc(doc(db, "adminLogs", docSnap.id));
-            }
-            await logAction('clear_history', null, 'Очистил историю');
-            loadAdminHistory();
-            alert('✅ История очищена');
+    document.getElementById('addFightBtn')?.addEventListener('click', async () => {
+        const winnerId = document.getElementById('fighterSelect1').value;
+        const loserId = document.getElementById('fighterSelect2').value;
+        const isFinish = document.getElementById('finishCheckbox').checked;
+        if (!winnerId || !loserId) { alert('Выберите обоих бойцов'); return; }
+        if (winnerId === loserId) { alert('Нельзя выбрать одного бойца дважды'); return; }
+        try {
+            const winnerRef = doc(db, "fighters", winnerId);
+            const loserRef = doc(db, "fighters", loserId);
+            const winnerSnap = await getDoc(winnerRef);
+            const loserSnap = await getDoc(loserRef);
+            const winnerName = winnerSnap.data()?.name || 'Боец';
+            const loserName = loserSnap.data()?.name || 'Боец';
+            const sport = winnerSnap.data()?.sport || '—';
+            await updateDoc(winnerRef, { wins: increment(1), finishes: increment(isFinish ? 1 : 0), lastFightDate: new Date() });
+            await updateDoc(loserRef, { losses: increment(1), lastFightDate: new Date() });
+            await addDoc(collection(db, "fights"), { winnerId, winnerName, loserId, loserName, isFinish, sport, date: serverTimestamp() });
+            await logAction('add_fight', `${winnerId}_${loserId}`, `${winnerName} победил ${loserName}`);
+            document.getElementById('fightMessage').innerHTML = '<span style="color:green;">✅ Бой добавлен!</span>';
+            loadFighters();
+            loadStats();
+        } catch (error) { alert('Ошибка: ' + error.message); }
+    });
+
+    async function loadPartners() {
+        const snapshot = await getDocs(collection(db, "partners"));
+        const tbody = document.getElementById('partnersTableBody');
+        if (!tbody) return;
+        if (snapshot.empty) {
+            tbody.innerHTML = '<tr><td colspan="4">Нет магазинов</td></tr>';
+            return;
+        }
+        let html = '';
+        snapshot.forEach(docSnap => {
+            const p = docSnap.data();
+            html += `<tr>
+                <td><strong>${escapeHtml(p.name)}</strong></td>
+                <td>${escapeHtml(p.description)}</td>
+                <td>${p.discount || '—'}</td>
+                <td><button class="btn btn-danger" onclick="window.deletePartner('${docSnap.id}')"><i class="fas fa-trash"></i> Удалить</button></td>
+            </tr>`;
         });
+        tbody.innerHTML = html;
+    }
 
-        document.getElementById('sendBroadcastBtn')?.addEventListener('click', async () => {
-            const target = document.getElementById('broadcastTarget').value;
-            const subject = document.getElementById('broadcastSubject').value;
-            const message = document.getElementById('broadcastMessage').value;
-            if (!subject || !message) { alert('Заполните тему и сообщение'); return; }
-            let fightersSnapshot;
-            if (target === 'all') fightersSnapshot = await getDocs(collection(db, "fighters"));
-            else if (target === 'premium') fightersSnapshot = await getDocs(query(collection(db, "fighters"), where("premium", "==", true)));
-            else fightersSnapshot = await getDocs(query(collection(db, "fighters"), where("telegramId", "!=", null)));
-            let sent = 0;
-            for (const docSnap of fightersSnapshot.docs) {
-                const telegramId = docSnap.data().telegramId;
-                if (telegramId) {
+    window.deletePartner = async (partnerId) => {
+        if (!confirm('Удалить магазин? Это удалит все товары и фото. Действие необратимо!')) return;
+        
+        try {
+            const productsSnap = await getDocs(query(collection(db, "products"), where("partnerId", "==", partnerId)));
+            
+            for (const productDoc of productsSnap.docs) {
+                const product = productDoc.data();
+                if (product.image && product.image.includes('firebasestorage')) {
                     try {
-                        await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ chat_id: telegramId, text: `📢 *${subject}*\n\n${message}`, parse_mode: 'Markdown' })
-                        });
-                        sent++;
-                    } catch(e) { console.error(e); }
+                        const imageRef = ref(storage, product.image);
+                        await deleteObject(imageRef);
+                    } catch(e) { console.warn('Не удалось удалить фото:', e); }
+                }
+                await deleteDoc(doc(db, "products", productDoc.id));
+            }
+            
+            await deleteDoc(doc(db, "partners", partnerId));
+            
+            await logAction('delete_partner', partnerId, `Удалил магазин и ${productsSnap.size} товаров`);
+            loadPartners();
+            loadStats();
+            alert(`✅ Магазин удалён вместе с ${productsSnap.size} товарами`);
+        } catch (err) {
+            console.error('Ошибка при удалении:', err);
+            alert('Ошибка при удалении: ' + err.message);
+        }
+    };
+
+    document.getElementById('addPartnerBtn')?.addEventListener('click', async () => {
+        const name = document.getElementById('partnerName').value;
+        const url = document.getElementById('partnerUrl').value;
+        const description = document.getElementById('partnerDesc').value;
+        const discount = document.getElementById('partnerDiscount').value;
+        const icon = document.getElementById('partnerIcon').value || 'fa-store';
+        if (!name || !url) { alert('Заполните название и ссылку'); return; }
+        await addDoc(collection(db, "partners"), {
+            name, url, description, discount, icon,
+            createdAt: serverTimestamp()
+        });
+        await logAction('add_partner', null, `Добавил магазин ${name}`);
+        document.getElementById('partnerName').value = '';
+        document.getElementById('partnerUrl').value = '';
+        document.getElementById('partnerDesc').value = '';
+        document.getElementById('partnerDiscount').value = '';
+        alert('✅ Магазин добавлен');
+        loadPartners();
+        loadStats();
+    });
+
+    async function loadRequests() {
+        const snapshot = await getDocs(query(collection(db, "partner_requests"), orderBy("createdAt", "desc")));
+        const container = document.getElementById('requestsList');
+        if (snapshot.empty) {
+            container.innerHTML = '<div class="request-item">Нет заявок</div>';
+            return;
+        }
+        let html = '';
+        for (const docSnap of snapshot.docs) {
+            const r = docSnap.data();
+            const date = r.createdAt?.toDate().toLocaleString() || '—';
+            html += `
+                <div class="request-item">
+                    <div><strong>${escapeHtml(r.storeName)}</strong><br><small>${escapeHtml(r.contactName)} | ${escapeHtml(r.contactEmail)}</small></div>
+                    <div>${escapeHtml(r.storeDescription?.substring(0, 100))}...</div>
+                    <div><strong>📦 Товаров: ${r.products?.length || 0}</strong></div>
+                    <div>
+                        ${r.status === 'pending' ? `
+                            <button class="btn btn-success" onclick="window.approveRequest('${docSnap.id}')"><i class="fas fa-check"></i> Одобрить</button>
+                            <button class="btn btn-danger" onclick="window.rejectRequest('${docSnap.id}')"><i class="fas fa-times"></i> Отклонить</button>
+                        ` : `<span style="color:${r.status === 'approved' ? '#16a34a' : '#dc2626'}">${r.status === 'approved' ? '✅ Одобрено' : '❌ Отклонено'}</span>`}
+                    </div>
+                </div>
+            `;
+        }
+        container.innerHTML = html;
+    }
+
+    // ===== ИСПРАВЛЕННАЯ ФУНКЦИЯ ОДОБРЕНИЯ ЗАЯВКИ =====
+    window.approveRequest = async (requestId) => {
+        const requestRef = doc(db, "partner_requests", requestId);
+        const requestSnap = await getDoc(requestRef);
+        const r = requestSnap.data();
+        if (!r) return;
+        
+        try {
+            let userUid = null;
+            
+            // Проверяем, существует ли уже пользователь в Authentication (по email)
+            // Сначала проверяем в коллекции fighters
+            const existingUserQuery = await getDocs(query(collection(db, "fighters"), where("email", "==", r.contactEmail)));
+            
+            if (!existingUserQuery.empty) {
+                // Пользователь уже существует, обновляем его статус
+                userUid = existingUserQuery.docs[0].id;
+                await updateDoc(doc(db, "fighters", userUid), { 
+                    isPartner: true,
+                    name: r.storeName
+                });
+                alert(`✅ Пользователь с email ${r.contactEmail} уже существует. Обновлён статус партнёра.`);
+            } else {
+                // СОЗДАЁМ АККАУНТ В FIREBASE AUTHENTICATION
+                // Используем пароль из заявки (сохранённый при регистрации)
+                const partnerPassword = r.password || Math.random().toString(36).slice(-10);
+                
+                try {
+                    const userCred = await createUserWithEmailAndPassword(auth, r.contactEmail, partnerPassword);
+                    userUid = userCred.user.uid;
+                    
+                    // СОЗДАЁМ ПРОФИЛЬ В КОЛЛЕКЦИИ fighters
+                    await setDoc(doc(db, "fighters", userUid), {
+                        uid: userUid,
+                        name: r.storeName,
+                        email: r.contactEmail,
+                        city: '—',
+                        sport: '—',
+                        weightClass: '—',
+                        frs: 0,
+                        wins: 0,
+                        losses: 0,
+                        finishes: 0,
+                        bio: "",
+                        avatar: "Avatar.png",
+                        freeChallenges: 0,
+                        purchasedChallenges: 0,
+                        isPartner: true,
+                        createdAt: new Date()
+                    });
+                    
+                    alert(`✅ Аккаунт создан!\n\nEmail: ${r.contactEmail}\nПароль: ${partnerPassword}\n\nСохраните пароль!`);
+                } catch (authError) {
+                    if (authError.code === 'auth/email-already-in-use') {
+                        // Email уже используется в Auth, но нет в fighters
+                        alert(`⚠️ Email ${r.contactEmail} уже зарегистрирован в системе, но профиль не найден.\nПользователь сможет войти со своим паролем, статус партнёра будет обновлён.`);
+                        
+                        // Пытаемся найти пользователя в Auth (нужно будет войти через signIn)
+                        // В этом случае просто отмечаем, что нужно обновить существующий профиль
+                        // Но без UID мы не можем обновить fighters
+                        // Поэтому лучше попросить админа проверить вручную
+                        alert('Требуется ручное вмешательство: найдите пользователя в списке бойцов и поставьте галочку "Партнёр"');
+                        return;
+                    }
+                    throw authError;
                 }
             }
-            await logAction('broadcast', null, `Рассылка "${subject}" отправлена ${sent} пользователям`);
-            document.getElementById('broadcastResult').innerHTML = `<span style="color:green;">✅ Отправлено ${sent} сообщений</span>`;
-        });
-
-        document.getElementById('recalculateFRSBtn')?.addEventListener('click', async () => {
-            if (!confirm("Пересчитать FRS для всех бойцов?")) return;
-            const btn = document.getElementById('recalculateFRSBtn');
-            btn.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> Пересчёт...';
-            btn.disabled = true;
-            try {
-                const fightersSnapshot = await getDocs(collection(db, "fighters"));
-                const now = Date.now();
-                const monthMs = 30 * 24 * 60 * 60 * 1000;
-                for (const docSnap of fightersSnapshot.docs) {
-                    const f = docSnap.data();
-                    const monthsInactive = f.lastFightDate ? Math.floor((now - f.lastFightDate.toDate()) / monthMs) : 0;
-                    const frs = (f.wins || 0) * 100 + (f.finishes || 0) * 50 + ((f.viewsLast30Days || 0) / 100) + ((f.subscribers || 0) / 10) - (monthsInactive * 25) + (f.premium ? 5 : 0);
-                    await updateDoc(doc(db, "fighters", docSnap.id), { frs: Math.max(0, frs) });
-                }
-                alert("✅ FRS пересчитан!");
-                loadFighters();
-                await logAction('recalculate_frs', null, 'Пересчитал FRS');
-            } catch (error) { alert("Ошибка: " + error.message); }
-            finally { btn.innerHTML = '<i class="fas fa-calculator"></i> Пересчитать FRS'; btn.disabled = false; }
-        });
-
-        document.getElementById('searchFighter')?.addEventListener('input', (e) => {
-            const term = e.target.value.toLowerCase();
-            const filtered = allFighters.filter(f => f.name?.toLowerCase().includes(term) || f.email?.toLowerCase().includes(term));
-            renderFighters(filtered);
-        });
-
-        // Загрузка комиссий
-        async function loadCommissions() {
-            const period = document.getElementById('commissionPeriod')?.value || 'month';
-            const container = document.getElementById('commissionsList');
-            if (!container) return;
-            container.innerHTML = '<div class="commission-item"><i class="fas fa-spinner fa-pulse"></i> Загрузка...</div>';
             
-            try {
-                const ordersSnap = await getDocs(collection(db, "orders"));
-                const partnersSnap = await getDocs(collection(db, "partners"));
+            if (userUid) {
+                // СОЗДАЁМ МАГАЗИН В КОЛЛЕКЦИИ partners
+                const partnerRef = await addDoc(collection(db, "partners"), {
+                    name: r.storeName,
+                    url: r.storeUrl,
+                    description: r.storeDescription,
+                    discount: null,
+                    icon: "fa-store",
+                    email: r.contactEmail,
+                    userId: userUid,
+                    createdAt: serverTimestamp()
+                });
                 
-                const now = new Date();
-                let startDate = null, endDate = null;
-                if (period === 'month') {
-                    startDate = new Date(now.getFullYear(), now.getMonth(), 1);
-                } else if (period === 'prev_month') {
-                    startDate = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-                    endDate = new Date(now.getFullYear(), now.getMonth(), 0);
+                // ДОБАВЛЯЕМ ТОВАРЫ ИЗ ЗАЯВКИ
+                if (r.products && r.products.length > 0) {
+                    for (const product of r.products) {
+                        await addDoc(collection(db, "products"), {
+                            name: product.name,
+                            price: product.price,
+                            desc: product.desc,
+                            image: product.image || null,
+                            partnerId: partnerRef.id,
+                            partnerName: r.storeName,
+                            createdAt: serverTimestamp()
+                        });
+                    }
+                    alert(`✅ Добавлено ${r.products.length} товаров`);
                 }
                 
-                const partnerCommission = {};
+                // ОБНОВЛЯЕМ СТАТУС ЗАЯВКИ
+                await updateDoc(requestRef, { 
+                    status: 'approved',
+                    userId: userUid,
+                    approvedAt: serverTimestamp()
+                });
                 
-                for (const orderDoc of ordersSnap.docs) {
-                    const order = orderDoc.data();
-                    if (order.status !== 'completed') continue;
-                    
-                    const orderDate = order.createdAt?.toDate();
-                    if (startDate && orderDate < startDate) continue;
-                    if (endDate && orderDate > endDate) continue;
-                    
-                    // Ищем партнёра по названию товара
-                    for (const partnerDoc of partnersSnap.docs) {
-                        const partner = partnerDoc.data();
-                        const productsSnap = await getDocs(query(collection(db, "products"), where("partnerId", "==", partnerDoc.id)));
-                        for (const productDoc of productsSnap.docs) {
-                            const product = productDoc.data();
-                            if (order.productName === product.name) {
-                                const commission = order.price * 0.1;
-                                if (!partnerCommission[partnerDoc.id]) {
-                                    partnerCommission[partnerDoc.id] = { name: partner.name, total: 0, orders: [] };
-                                }
-                                partnerCommission[partnerDoc.id].total += commission;
-                                partnerCommission[partnerDoc.id].orders.push({ price: order.price, commission, date: orderDate });
+                await logAction('approve_partner', requestId, `Одобрил заявку ${r.storeName} с ${r.products?.length || 0} товарами`);
+            }
+            
+            loadRequests();
+            loadPartners();
+            loadStats();
+            
+        } catch (error) {
+            console.error('Ошибка при одобрении:', error);
+            alert(`❌ Ошибка: ${error.message}\n\nПопробуйте ещё раз или свяжитесь с разработчиком.`);
+        }
+    };
+
+    window.rejectRequest = async (requestId) => {
+        if (!confirm('Отклонить заявку?')) return;
+        await updateDoc(doc(db, "partner_requests", requestId), { status: 'rejected' });
+        await logAction('reject_partner', requestId, 'Отклонил заявку');
+        loadRequests();
+        alert('❌ Заявка отклонена');
+    };
+
+    async function loadChallengesForAdmin() {
+        const statusFilter = document.getElementById('challengeStatusFilter')?.value || 'all';
+        let q;
+        if (statusFilter === 'all') q = query(collection(db, "challenges"), orderBy("createdAt", "desc"));
+        else q = query(collection(db, "challenges"), where("status", "==", statusFilter), orderBy("createdAt", "desc"));
+        const snapshot = await getDocs(q);
+        const container = document.getElementById('challengesList');
+        if (snapshot.empty) { container.innerHTML = '<div class="challenge-item">Нет вызовов</div>'; return; }
+        let html = '';
+        snapshot.forEach(docSnap => {
+            const c = docSnap.data();
+            const date = c.createdAt?.toDate().toLocaleString() || '—';
+            html += `<div class="challenge-item">
+                <span><strong>${escapeHtml(c.fromName)}</strong> → <strong>${escapeHtml(c.toName)}</strong></span>
+                <span>Статус: ${c.status}</span>
+                <span>${date}</span>
+                <button class="btn btn-warning" onclick="window.updateChallengeStatusAdmin('${docSnap.id}', 'cancelled')">Отменить</button>
+            </div>`;
+        });
+        container.innerHTML = html;
+    }
+
+    window.updateChallengeStatusAdmin = async (challengeId, newStatus) => {
+        await updateDoc(doc(db, "challenges", challengeId), { status: newStatus });
+        await logAction('update_challenge', challengeId, `Изменил статус на ${newStatus}`);
+        loadChallengesForAdmin();
+    };
+
+    document.getElementById('clearAllChallengesBtn')?.addEventListener('click', async () => {
+        if (!confirm('Удалить ВСЕ вызовы?')) return;
+        const snapshot = await getDocs(collection(db, "challenges"));
+        for (const docSnap of snapshot.docs) {
+            await deleteDoc(doc(db, "challenges", docSnap.id));
+        }
+        await logAction('clear_challenges', null, 'Очистил все вызовы');
+        loadChallengesForAdmin();
+        loadStats();
+        alert('✅ Вызовы удалены');
+    });
+
+    async function loadAdminHistory() {
+        const adminFilter = document.getElementById('historyAdminFilter')?.value || '';
+        let q;
+        if (adminFilter) q = query(collection(db, "adminLogs"), where("admin", "==", adminFilter), orderBy("timestamp", "desc"), limit(100));
+        else q = query(collection(db, "adminLogs"), orderBy("timestamp", "desc"), limit(100));
+        const snapshot = await getDocs(q);
+        const container = document.getElementById('historyList');
+        if (snapshot.empty) { container.innerHTML = '<div class="history-item">Нет записей</div>'; return; }
+        let html = '';
+        snapshot.forEach(docSnap => {
+            const log = docSnap.data();
+            const date = log.timestamp?.toDate().toLocaleString() || '—';
+            html += `<div class="history-item">
+                <span><strong>${escapeHtml(log.admin)}</strong></span>
+                <span>${escapeHtml(log.action)}</span>
+                <span>${escapeHtml(log.details || '')}</span>
+                <span>${date}</span>
+            </div>`;
+        });
+        container.innerHTML = html;
+    }
+
+    document.getElementById('clearHistoryBtn')?.addEventListener('click', async () => {
+        if (!confirm('Удалить ВСЮ историю?')) return;
+        const snapshot = await getDocs(collection(db, "adminLogs"));
+        for (const docSnap of snapshot.docs) {
+            await deleteDoc(doc(db, "adminLogs", docSnap.id));
+        }
+        await logAction('clear_history', null, 'Очистил историю');
+        loadAdminHistory();
+        alert('✅ История очищена');
+    });
+
+    document.getElementById('sendBroadcastBtn')?.addEventListener('click', async () => {
+        const target = document.getElementById('broadcastTarget').value;
+        const subject = document.getElementById('broadcastSubject').value;
+        const message = document.getElementById('broadcastMessage').value;
+        if (!subject || !message) { alert('Заполните тему и сообщение'); return; }
+        let fightersSnapshot;
+        if (target === 'all') fightersSnapshot = await getDocs(collection(db, "fighters"));
+        else if (target === 'premium') fightersSnapshot = await getDocs(query(collection(db, "fighters"), where("premium", "==", true)));
+        else fightersSnapshot = await getDocs(query(collection(db, "fighters"), where("telegramId", "!=", null)));
+        let sent = 0;
+        for (const docSnap of fightersSnapshot.docs) {
+            const telegramId = docSnap.data().telegramId;
+            if (telegramId) {
+                try {
+                    await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ chat_id: telegramId, text: `📢 *${subject}*\n\n${message}`, parse_mode: 'Markdown' })
+                    });
+                    sent++;
+                } catch(e) { console.error(e); }
+            }
+        }
+        await logAction('broadcast', null, `Рассылка "${subject}" отправлена ${sent} пользователям`);
+        document.getElementById('broadcastResult').innerHTML = `<span style="color:green;">✅ Отправлено ${sent} сообщений</span>`;
+    });
+
+    document.getElementById('recalculateFRSBtn')?.addEventListener('click', async () => {
+        if (!confirm("Пересчитать FRS для всех бойцов?")) return;
+        const btn = document.getElementById('recalculateFRSBtn');
+        btn.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> Пересчёт...';
+        btn.disabled = true;
+        try {
+            const fightersSnapshot = await getDocs(collection(db, "fighters"));
+            const now = Date.now();
+            const monthMs = 30 * 24 * 60 * 60 * 1000;
+            for (const docSnap of fightersSnapshot.docs) {
+                const f = docSnap.data();
+                const monthsInactive = f.lastFightDate ? Math.floor((now - f.lastFightDate.toDate()) / monthMs) : 0;
+                const frs = (f.wins || 0) * 100 + (f.finishes || 0) * 50 + ((f.viewsLast30Days || 0) / 100) + ((f.subscribers || 0) / 10) - (monthsInactive * 25) + (f.premium ? 5 : 0);
+                await updateDoc(doc(db, "fighters", docSnap.id), { frs: Math.max(0, frs) });
+            }
+            alert("✅ FRS пересчитан!");
+            loadFighters();
+            await logAction('recalculate_frs', null, 'Пересчитал FRS');
+        } catch (error) { alert("Ошибка: " + error.message); }
+        finally { btn.innerHTML = '<i class="fas fa-calculator"></i> Пересчитать FRS'; btn.disabled = false; }
+    });
+
+    document.getElementById('searchFighter')?.addEventListener('input', (e) => {
+        const term = e.target.value.toLowerCase();
+        const filtered = allFighters.filter(f => f.name?.toLowerCase().includes(term) || f.email?.toLowerCase().includes(term));
+        renderFighters(filtered);
+    });
+
+    async function loadCommissions() {
+        const period = document.getElementById('commissionPeriod')?.value || 'month';
+        const container = document.getElementById('commissionsList');
+        if (!container) return;
+        container.innerHTML = '<div class="commission-item"><i class="fas fa-spinner fa-pulse"></i> Загрузка...</div>';
+        
+        try {
+            const ordersSnap = await getDocs(collection(db, "orders"));
+            const partnersSnap = await getDocs(collection(db, "partners"));
+            
+            const now = new Date();
+            let startDate = null, endDate = null;
+            if (period === 'month') {
+                startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+            } else if (period === 'prev_month') {
+                startDate = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+                endDate = new Date(now.getFullYear(), now.getMonth(), 0);
+            }
+            
+            const partnerCommission = {};
+            
+            for (const orderDoc of ordersSnap.docs) {
+                const order = orderDoc.data();
+                if (order.status !== 'completed') continue;
+                
+                const orderDate = order.createdAt?.toDate();
+                if (startDate && orderDate < startDate) continue;
+                if (endDate && orderDate > endDate) continue;
+                
+                for (const partnerDoc of partnersSnap.docs) {
+                    const partner = partnerDoc.data();
+                    const productsSnap = await getDocs(query(collection(db, "products"), where("partnerId", "==", partnerDoc.id)));
+                    for (const productDoc of productsSnap.docs) {
+                        const product = productDoc.data();
+                        if (order.productName === product.name) {
+                            const commission = order.price * 0.1;
+                            if (!partnerCommission[partnerDoc.id]) {
+                                partnerCommission[partnerDoc.id] = { name: partner.name, total: 0, orders: [] };
                             }
+                            partnerCommission[partnerDoc.id].total += commission;
+                            partnerCommission[partnerDoc.id].orders.push({ price: order.price, commission, date: orderDate });
                         }
                     }
                 }
-                
-                if (Object.keys(partnerCommission).length === 0) {
-                    container.innerHTML = '<div class="commission-item">Нет комиссий за выбранный период</div>';
-                    return;
-                }
-                
-                let html = '';
-                let grandTotal = 0;
-                for (const [id, data] of Object.entries(partnerCommission)) {
-                    grandTotal += data.total;
-                    html += `
-                        <div class="commission-item">
-                            <div><strong>${escapeHtml(data.name)}</strong><br><small>${data.orders.length} продаж</small></div>
-                            <div class="commission-total">${data.total.toFixed(2)} ₽ (комиссия 10%)</div>
-                        </div>
-                    `;
-                }
-                html += `<div class="commission-item" style="background: #fbbf24; color: #000; margin-top: 8px;"><strong>ИТОГО К ВЫПЛАТЕ:</strong> ${grandTotal.toFixed(2)} ₽</div>`;
-                container.innerHTML = html;
-            } catch (err) {
-                console.error('Ошибка загрузки комиссий:', err);
-                container.innerHTML = '<div class="commission-item">Ошибка загрузки</div>';
             }
+            
+            if (Object.keys(partnerCommission).length === 0) {
+                container.innerHTML = '<div class="commission-item">Нет комиссий за выбранный период</div>';
+                return;
+            }
+            
+            let html = '';
+            let grandTotal = 0;
+            for (const [id, data] of Object.entries(partnerCommission)) {
+                grandTotal += data.total;
+                html += `
+                    <div class="commission-item">
+                        <div><strong>${escapeHtml(data.name)}</strong><br><small>${data.orders.length} продаж</small></div>
+                        <div class="commission-total">${data.total.toFixed(2)} ₽ (комиссия 10%)</div>
+                    </div>
+                `;
+            }
+            html += `<div class="commission-item" style="background: #fbbf24; color: #000; margin-top: 8px;"><strong>ИТОГО К ВЫПЛАТЕ:</strong> ${grandTotal.toFixed(2)} ₽</div>`;
+            container.innerHTML = html;
+        } catch (err) {
+            console.error('Ошибка загрузки комиссий:', err);
+            container.innerHTML = '<div class="commission-item">Ошибка загрузки</div>';
         }
+    }
 
-        function escapeHtml(str) {
-            if (!str) return '';
-            return str.replace(/[&<>]/g, function(m) {
-                if (m === '&') return '&amp;';
-                if (m === '<') return '&lt;';
-                if (m === '>') return '&gt;';
-                return m;
-            });
+    function escapeHtml(str) {
+        if (!str) return '';
+        return str.replace(/[&<>]/g, function(m) {
+            if (m === '&') return '&amp;';
+            if (m === '<') return '&lt;';
+            if (m === '>') return '&gt;';
+            return m;
+        });
+    }
+
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+            btn.classList.add('active');
+            document.getElementById(`tab-${btn.dataset.tab}`).classList.add('active');
+            if (btn.dataset.tab === 'fighters') loadFighters();
+            if (btn.dataset.tab === 'partners') loadPartners();
+            if (btn.dataset.tab === 'requests') loadRequests();
+            if (btn.dataset.tab === 'challenges') loadChallengesForAdmin();
+            if (btn.dataset.tab === 'history') loadAdminHistory();
+            if (btn.dataset.tab === 'commissions') loadCommissions();
+        });
+    });
+
+    document.getElementById('refreshChallengesBtn')?.addEventListener('click', () => loadChallengesForAdmin());
+    document.getElementById('refreshHistoryBtn')?.addEventListener('click', () => loadAdminHistory());
+    document.getElementById('refreshCommissionsBtn')?.addEventListener('click', () => loadCommissions());
+
+    document.getElementById('deleteFightsBtn')?.addEventListener('click', window.deleteFights);
+    document.getElementById('deleteAllFightsBtn')?.addEventListener('click', window.deleteAllFights);
+
+    window.login = async function() {
+        const email = document.getElementById('adminEmail').value;
+        const password = document.getElementById('adminPassword').value;
+        try {
+            const userCred = await signInWithEmailAndPassword(auth, email, password);
+            currentAdminEmail = email;
+            document.getElementById('loginSection').classList.add('hidden');
+            document.getElementById('adminPanel').classList.remove('hidden');
+            loadStats();
+            loadFighters();
+            loadPartners();
+            loadRequests();
+            loadCommissions();
+        } catch (error) {
+            document.getElementById('loginMessage').innerText = "Ошибка входа";
         }
+    };
 
-        document.querySelectorAll('.tab-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-                document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
-                btn.classList.add('active');
-                document.getElementById(`tab-${btn.dataset.tab}`).classList.add('active');
-                if (btn.dataset.tab === 'fighters') loadFighters();
-                if (btn.dataset.tab === 'partners') loadPartners();
-                if (btn.dataset.tab === 'requests') loadRequests();
-                if (btn.dataset.tab === 'challenges') loadChallengesForAdmin();
-                if (btn.dataset.tab === 'history') loadAdminHistory();
-                if (btn.dataset.tab === 'commissions') loadCommissions();
-            });
-        });
+    document.getElementById('adminLogoutBtn')?.addEventListener('click', async () => {
+        await signOut(auth);
+        window.location.reload();
+    });
 
-        document.getElementById('refreshChallengesBtn')?.addEventListener('click', () => loadChallengesForAdmin());
-        document.getElementById('refreshHistoryBtn')?.addEventListener('click', () => loadAdminHistory());
-        document.getElementById('refreshCommissionsBtn')?.addEventListener('click', () => loadCommissions());
-
-        document.getElementById('deleteFightsBtn')?.addEventListener('click', window.deleteFights);
-        document.getElementById('deleteAllFightsBtn')?.addEventListener('click', window.deleteAllFights);
-
-        window.login = async function() {
-            const email = document.getElementById('adminEmail').value;
-            const password = document.getElementById('adminPassword').value;
-            try {
-                const userCred = await signInWithEmailAndPassword(auth, email, password);
-                currentAdminEmail = email;
-                document.getElementById('loginSection').classList.add('hidden');
-                document.getElementById('adminPanel').classList.remove('hidden');
-                loadStats();
-                loadFighters();
-                loadPartners();
-                loadRequests();
-                loadCommissions();
-            } catch (error) {
-                document.getElementById('loginMessage').innerText = "Ошибка входа";
-            }
-        };
-
-        document.getElementById('adminLogoutBtn')?.addEventListener('click', async () => {
-            await signOut(auth);
-            window.location.reload();
-        });
-
-        onAuthStateChanged(auth, (user) => {
-            if (user) {
-                currentAdminEmail = user.email;
-                document.getElementById('loginSection').classList.add('hidden');
-                document.getElementById('adminPanel').classList.remove('hidden');
-                loadStats();
-                loadFighters();
-                loadPartners();
-                loadRequests();
-                loadCommissions();
-            }
-        });
+    onAuthStateChanged(auth, (user) => {
+        if (user) {
+            currentAdminEmail = user.email;
+            document.getElementById('loginSection').classList.add('hidden');
+            document.getElementById('adminPanel').classList.remove('hidden');
+            loadStats();
+            loadFighters();
+            loadPartners();
+            loadRequests();
+            loadCommissions();
+        }
+    });
     </script>
 </body>
 </html>
