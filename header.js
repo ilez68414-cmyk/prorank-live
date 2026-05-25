@@ -114,6 +114,7 @@ async function initHeader() {
     // Генерация навигации
     if (isDesktop) {
         if (user && isPartner) {
+            // ДЛЯ ПАРТНЁРА — убираем раздел "Сообщество", профиль ведёт в partner-dashboard
             navLinks.innerHTML = `
                 <a href="index.html"><i class="fas fa-home"></i> Главная</a>
                 <a href="rating.html"><i class="fas fa-chart-line"></i> Рейтинг</a>
@@ -132,18 +133,11 @@ async function initHeader() {
                         <a href="equipment.html"><i class="fas fa-tshirt"></i> Экипировка</a>
                     </div>
                 </div>
-                <div class="dropdown" data-section="community">
-                    <button class="dropbtn"><i class="fas fa-users"></i> Сообщество <i class="fas fa-chevron-down"></i></button>
-                    <div class="dropdown-content">
-                        <a href="chats.html"><i class="fas fa-comments"></i> Чаты</a>
-                        <a href="challenges.html"><i class="fas fa-fist-raised"></i> Вызовы</a>
-                    </div>
-                </div>
                 <div class="user-menu">
                     <img src="${user.photoURL || 'Avatar.png'}" class="user-avatar" onerror="this.src='Avatar.png'">
                     <div class="user-dropdown">
                         <span class="user-name">${escapeHtml(userName)}</span>
-                        <a href="partner-dashboard.html"><i class="fas fa-tachometer-alt"></i> Кабинет</a>
+                        <a href="partner-dashboard.html"><i class="fas fa-tachometer-alt"></i> Кабинет партнёра</a>
                         <a href="#" id="logoutLink"><i class="fas fa-sign-out-alt"></i> Выйти</a>
                     </div>
                 </div>
@@ -217,7 +211,31 @@ async function initHeader() {
     } 
     else {
         // Мобильная версия
-        if (user) {
+        if (user && isPartner) {
+            // ДЛЯ ПАРТНЁРА на мобилке — убираем Сообщество, профиль ведёт в partner-dashboard
+            navLinks.innerHTML = `
+                <a href="index.html"><i class="fas fa-home"></i> Главная</a>
+                <a href="rating.html"><i class="fas fa-chart-line"></i> Рейтинг</a>
+                <div class="mobile-submenu">
+                    <span class="mobile-submenu-trigger"><i class="fas fa-trophy"></i> Соревнования <i class="fas fa-chevron-right"></i></span>
+                    <div class="mobile-submenu-content">
+                        <a href="leagues.html"><i class="fas fa-trophy"></i> Лиги</a>
+                        <a href="rules.html"><i class="fas fa-book"></i> Правила</a>
+                        <a href="halls.html"><i class="fas fa-building"></i> Клубы</a>
+                    </div>
+                </div>
+                <div class="mobile-submenu">
+                    <span class="mobile-submenu-trigger"><i class="fas fa-store"></i> Магазин <i class="fas fa-chevron-right"></i></span>
+                    <div class="mobile-submenu-content">
+                        <a href="shop.html"><i class="fas fa-gem"></i> Товары</a>
+                        <a href="equipment.html"><i class="fas fa-tshirt"></i> Экипировка</a>
+                    </div>
+                </div>
+                <a href="partner-dashboard.html"><i class="fas fa-tachometer-alt"></i> Кабинет партнёра</a>
+                <a href="#" id="logoutLink"><i class="fas fa-sign-out-alt"></i> Выйти</a>
+            `;
+        }
+        else if (user && !isPartner) {
             navLinks.innerHTML = `
                 <a href="index.html"><i class="fas fa-home"></i> Главная</a>
                 <a href="rating.html"><i class="fas fa-chart-line"></i> Рейтинг</a>
