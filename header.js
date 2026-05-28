@@ -35,13 +35,11 @@ function setActiveLink(links, currentPage) {
     });
 }
 
-// Инициализация бургер-меню (вынесена отдельно)
 function initBurger() {
     const menuToggle = document.getElementById('menuToggle');
     const navLinks = document.getElementById('navLinks');
     
     if (menuToggle && navLinks) {
-        // Удаляем старый обработчик, если был
         const newToggle = menuToggle.cloneNode(true);
         menuToggle.parentNode.replaceChild(newToggle, menuToggle);
         
@@ -53,7 +51,6 @@ function initBurger() {
     }
 }
 
-// Инициализация мобильных подменю
 function initMobileSubmenus() {
     document.querySelectorAll('.mobile-submenu-trigger').forEach(trigger => {
         const newTrigger = trigger.cloneNode(true);
@@ -103,7 +100,6 @@ async function initHeader() {
         }
     }
 
-    // Если навигация уже есть — просто обновляем и выходим
     if (navLinks.children.length > 0) {
         updateActiveAndLogout();
         initBurger();
@@ -114,7 +110,7 @@ async function initHeader() {
     // Генерация навигации
     if (isDesktop) {
         if (user && isPartner) {
-            // ДЛЯ ПАРТНЁРА — убираем раздел "Сообщество", профиль ведёт в partner-dashboard
+            // ДЛЯ ПАРТНЁРА
             navLinks.innerHTML = `
                 <a href="index.html"><i class="fas fa-home"></i> Главная</a>
                 <a href="rating.html"><i class="fas fa-chart-line"></i> Рейтинг</a>
@@ -129,8 +125,8 @@ async function initHeader() {
                 <div class="dropdown" data-section="shop">
                     <button class="dropbtn"><i class="fas fa-store"></i> Магазин <i class="fas fa-chevron-down"></i></button>
                     <div class="dropdown-content">
-                        <a href="shop.html"><i class="fas fa-gem"></i> Товары</a>
-                        <a href="equipment.html"><i class="fas fa-tshirt"></i> Экипировка</a>
+                        <a href="shop.html"><i class="fas fa-gem"></i> Премиум и вызовы</a>
+                        <a href="catalog.html"><i class="fas fa-boxes"></i> Каталог товаров</a>
                     </div>
                 </div>
                 <div class="user-menu">
@@ -144,6 +140,7 @@ async function initHeader() {
             `;
         } 
         else if (user && !isPartner) {
+            // ДЛЯ БОЙЦА
             navLinks.innerHTML = `
                 <a href="index.html"><i class="fas fa-home"></i> Главная</a>
                 <a href="rating.html"><i class="fas fa-chart-line"></i> Рейтинг</a>
@@ -158,8 +155,8 @@ async function initHeader() {
                 <div class="dropdown" data-section="shop">
                     <button class="dropbtn"><i class="fas fa-store"></i> Магазин <i class="fas fa-chevron-down"></i></button>
                     <div class="dropdown-content">
-                        <a href="shop.html"><i class="fas fa-gem"></i> Товары</a>
-                        <a href="equipment.html"><i class="fas fa-tshirt"></i> Экипировка</a>
+                        <a href="shop.html"><i class="fas fa-gem"></i> Премиум и вызовы</a>
+                        <a href="catalog.html"><i class="fas fa-boxes"></i> Каталог товаров</a>
                     </div>
                 </div>
                 <div class="dropdown" data-section="community">
@@ -180,6 +177,7 @@ async function initHeader() {
             `;
         } 
         else {
+            // НЕ АВТОРИЗОВАН
             navLinks.innerHTML = `
                 <a href="index.html"><i class="fas fa-home"></i> Главная</a>
                 <a href="rating.html"><i class="fas fa-chart-line"></i> Рейтинг</a>
@@ -194,8 +192,8 @@ async function initHeader() {
                 <div class="dropdown" data-section="shop">
                     <button class="dropbtn"><i class="fas fa-store"></i> Магазин <i class="fas fa-chevron-down"></i></button>
                     <div class="dropdown-content">
-                        <a href="shop.html"><i class="fas fa-gem"></i> Товары</a>
-                        <a href="equipment.html"><i class="fas fa-tshirt"></i> Экипировка</a>
+                        <a href="shop.html"><i class="fas fa-gem"></i> Премиум и вызовы</a>
+                        <a href="catalog.html"><i class="fas fa-boxes"></i> Каталог товаров</a>
                     </div>
                 </div>
                 <div class="dropdown" data-section="community">
@@ -210,9 +208,8 @@ async function initHeader() {
         }
     } 
     else {
-        // Мобильная версия
+        // МОБИЛЬНАЯ ВЕРСИЯ (упрощённо, без магазинов)
         if (user && isPartner) {
-            // ДЛЯ ПАРТНЁРА на мобилке — убираем Сообщество, профиль ведёт в partner-dashboard
             navLinks.innerHTML = `
                 <a href="index.html"><i class="fas fa-home"></i> Главная</a>
                 <a href="rating.html"><i class="fas fa-chart-line"></i> Рейтинг</a>
@@ -227,11 +224,11 @@ async function initHeader() {
                 <div class="mobile-submenu">
                     <span class="mobile-submenu-trigger"><i class="fas fa-store"></i> Магазин <i class="fas fa-chevron-right"></i></span>
                     <div class="mobile-submenu-content">
-                        <a href="shop.html"><i class="fas fa-gem"></i> Товары</a>
-                        <a href="equipment.html"><i class="fas fa-tshirt"></i> Экипировка</a>
+                        <a href="shop.html"><i class="fas fa-gem"></i> Премиум и вызовы</a>
+                        <a href="catalog.html"><i class="fas fa-boxes"></i> Каталог</a>
                     </div>
                 </div>
-                <a href="partner-dashboard.html"><i class="fas fa-tachometer-alt"></i> Кабинет партнёра</a>
+                <a href="partner-dashboard.html"><i class="fas fa-tachometer-alt"></i> Кабинет</a>
                 <a href="#" id="logoutLink"><i class="fas fa-sign-out-alt"></i> Выйти</a>
             `;
         }
@@ -250,8 +247,8 @@ async function initHeader() {
                 <div class="mobile-submenu">
                     <span class="mobile-submenu-trigger"><i class="fas fa-store"></i> Магазин <i class="fas fa-chevron-right"></i></span>
                     <div class="mobile-submenu-content">
-                        <a href="shop.html"><i class="fas fa-gem"></i> Товары</a>
-                        <a href="equipment.html"><i class="fas fa-tshirt"></i> Экипировка</a>
+                        <a href="shop.html"><i class="fas fa-gem"></i> Премиум и вызовы</a>
+                        <a href="catalog.html"><i class="fas fa-boxes"></i> Каталог</a>
                     </div>
                 </div>
                 <div class="mobile-submenu">
@@ -261,7 +258,7 @@ async function initHeader() {
                         <a href="challenges.html"><i class="fas fa-fist-raised"></i> Вызовы</a>
                     </div>
                 </div>
-                <a href="profile.html?id=${userId}"><i class="fas fa-user"></i> Мой профиль</a>
+                <a href="profile.html?id=${userId}"><i class="fas fa-user"></i> Профиль</a>
                 <a href="#" id="logoutLink"><i class="fas fa-sign-out-alt"></i> Выйти</a>
             `;
         } 
@@ -280,8 +277,8 @@ async function initHeader() {
                 <div class="mobile-submenu">
                     <span class="mobile-submenu-trigger"><i class="fas fa-store"></i> Магазин <i class="fas fa-chevron-right"></i></span>
                     <div class="mobile-submenu-content">
-                        <a href="shop.html"><i class="fas fa-gem"></i> Товары</a>
-                        <a href="equipment.html"><i class="fas fa-tshirt"></i> Экипировка</a>
+                        <a href="shop.html"><i class="fas fa-gem"></i> Премиум и вызовы</a>
+                        <a href="catalog.html"><i class="fas fa-boxes"></i> Каталог</a>
                     </div>
                 </div>
                 <div class="mobile-submenu">
@@ -307,14 +304,12 @@ function escapeHtml(str) {
     return str.replace(/[&<>]/g, m => m === '&' ? '&amp;' : m === '<' ? '&lt;' : '&gt;');
 }
 
-// Запуск после полной загрузки DOM
 document.addEventListener('DOMContentLoaded', () => {
     onAuthStateChanged(auth, async () => {
         await initHeader();
     });
 });
 
-// При ресайзе окна — пересоздаём навигацию
 window.addEventListener('resize', () => {
     const navLinks = document.getElementById('navLinks');
     if (navLinks) {

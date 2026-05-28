@@ -433,18 +433,29 @@
             </div>
 
             <div id="tab-add" class="tab-pane">
-                <div class="admin-form">
-                    <div class="form-row">
-                        <div class="form-group"><label><i class="fas fa-tag"></i> Название товара *</label><input type="text" id="newProductName" placeholder="Например: Перчатки для ММА"></div>
-                        <div class="form-group"><label><i class="fas fa-ruble-sign"></i> Цена (₽) *</label><input type="number" id="newProductPrice" placeholder="1000"></div>
-                    </div>
-                    <div class="form-group"><label><i class="fas fa-align-left"></i> Описание</label><textarea id="newProductDesc" rows="3" placeholder="Подробное описание товара..."></textarea></div>
-                    <div class="form-group"><label><i class="fas fa-image"></i> Фото товара</label><input type="file" id="newProductImage" accept="image/jpeg,image/png,image/webp"></div>
-                    <div id="imagePreview" style="margin-bottom: 20px;"></div>
-                    <button id="addProductBtn" class="btn-primary"><i class="fas fa-plus"></i> Добавить товар</button>
-                    <div id="addResult" style="margin-top:12px;"></div>
-                </div>
+    <div class="admin-form">
+        <div class="form-row">
+            <div class="form-group"><label><i class="fas fa-tag"></i> Название товара *</label><input type="text" id="newProductName" placeholder="Например: Перчатки для ММА"></div>
+            <div class="form-group"><label><i class="fas fa-ruble-sign"></i> Цена (₽) *</label><input type="number" id="newProductPrice" placeholder="1000"></div>
+        </div>
+        <div class="form-row">
+            <div class="form-group"><label><i class="fas fa-category"></i> Категория *</label>
+                <select id="newProductCategory">
+                    <option value="equipment">🥊 Экипировка</option>
+                    <option value="sportpit">💪 Спорт-пит</option>
+                    <option value="clothing">👕 Одежда</option>
+                    <option value="accessories">🎯 Аксессуары</option>
+                </select>
             </div>
+            <div class="form-group"></div>
+        </div>
+        <div class="form-group"><label><i class="fas fa-align-left"></i> Описание</label><textarea id="newProductDesc" rows="3" placeholder="Подробное описание товара..."></textarea></div>
+        <div class="form-group"><label><i class="fas fa-image"></i> Фото товара</label><input type="file" id="newProductImage" accept="image/jpeg,image/png,image/webp"></div>
+        <div id="imagePreview" style="margin-bottom: 20px;"></div>
+        <button id="addProductBtn" class="btn-primary"><i class="fas fa-plus"></i> Добавить товар</button>
+        <div id="addResult" style="margin-top:12px;"></div>
+    </div>
+</div>
 
             <div id="tab-edit-shop" class="tab-pane">
                 <div class="admin-form">
@@ -749,41 +760,44 @@
             const name = document.getElementById('newProductName').value.trim();
             const price = parseInt(document.getElementById('newProductPrice').value);
             const desc = document.getElementById('newProductDesc').value;
+            const category = document.getElementById('newProductCategory').value;
             const file = document.getElementById('newProductImage').files[0];
-            
-            if (!name || !price) { alert('Заполните название и цену'); return; }
+    
+             if (!name || !price) { alert('Заполните название и цену'); return; }
+            if (!category) { alert('Выберите категорию товара'); return; }
             if (price <= 0) { alert('Цена должна быть больше 0'); return; }
-            
+    
             const addBtn = document.getElementById('addProductBtn');
             addBtn.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> Добавление...';
             addBtn.disabled = true;
-            
-            try {
-                let imageUrl = null;
-                if (file) {
-                    imageUrl = await uploadToCloudinary(file);
-                }
-                await addDoc(collection(db, "products"), {
-                    name, price, desc, image: imageUrl,
-                    partnerId: partnerDocId,
-                    partnerName: currentPartner?.name || 'Магазин',
-                    createdAt: new Date()
-                });
-                alert('✅ Товар добавлен!');
-                document.getElementById('newProductName').value = '';
-                document.getElementById('newProductPrice').value = '';
-                document.getElementById('newProductDesc').value = '';
-                document.getElementById('newProductImage').value = '';
-                document.getElementById('imagePreview').innerHTML = '';
-                loadPartnerProducts();
-                updateStatsAndChart();
-            } catch (err) {
-                alert('Ошибка загрузки фото: ' + err.message);
-            } finally {
-                addBtn.innerHTML = '<i class="fas fa-plus"></i> Добавить товар';
-                addBtn.disabled = false;
-            }
+    
+    try {
+        let imageUrl = null;
+        if (file) {
+            imageUrl = await uploadToCloudinary(file);
+        }
+        await addDoc(collection(db, "products"), {
+            name, price, desc, image: imageUrl, category,
+            partnerId: partnerDocId,
+            partnerName: currentPartner?.name || 'Магазин',
+            createdAt: new Date()
         });
+        alert('✅ Товар добавлен!');
+        document.getElementById('newProductName').value = '';
+        document.getElementById('newProductPrice').value = '';
+        document.getElementById('newProductDesc').value = '';
+        document.getElementById('newProductImage').value = '';
+        document.getElementById('imagePreview').innerHTML = '';
+        document.getElementById('newProductCategory').value = 'equipment';
+        loadPartnerProducts();
+        updateStatsAndChart();
+    } catch (err) {
+        alert('Ошибка: ' + err.message);
+    } finally {
+        addBtn.innerHTML = '<i class="fas fa-plus"></i> Добавить товар';
+        addBtn.disabled = false;
+    }
+});
 
         document.getElementById('newProductImage')?.addEventListener('change', (e) => {
             const file = e.target.files[0];
