@@ -7,7 +7,6 @@
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700;14..32,800;14..32,900&display=swap" rel="stylesheet">
-    <!-- Chart.js для графиков -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -62,7 +61,6 @@
         .page-header h1 { font-size: 2rem; font-weight: 800; background: linear-gradient(135deg, #fff, #fbbf24); background-clip: text; color: transparent; }
         .page-header p { color: #aaa; margin-top: 8px; }
 
-        /* Статистика */
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -141,7 +139,6 @@
         .tab-pane.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* Товары */
         .products-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
@@ -169,7 +166,6 @@
         .btn-delete { background: #dc2626; color: white; }
         .btn-delete:hover { background: #b91c1c; }
 
-        /* Формы */
         .admin-form {
             background: rgba(15,15,15,0.7);
             backdrop-filter: blur(8px);
@@ -197,10 +193,7 @@
             font-family: inherit;
             transition: 0.2s;
         }
-        .form-group textarea {
-            border-radius: 24px;
-            resize: vertical;
-        }
+        .form-group textarea { border-radius: 24px; resize: vertical; }
         .form-group input:focus, .form-group textarea:focus, .form-group select:focus {
             outline: none;
             border-color: #fbbf24;
@@ -232,7 +225,6 @@
             transition: 0.1s;
         }
 
-        /* Заказы */
         .orders-list { display: flex; flex-direction: column; gap: 16px; }
         .order-card {
             background: rgba(15,15,15,0.7);
@@ -254,14 +246,11 @@
             font-size: 0.75rem;
             font-weight: 600;
         }
-        .status-new { background: #f59e0b; color: #000; }
-        .status-paid { background: #3b82f6; color: #fff; }
-        .status-shipped { background: #8b5cf6; color: #fff; }
         .status-completed { background: #10b981; color: #fff; }
         .order-amount { font-size: 1.2rem; font-weight: 800; color: #fbbf24; }
         .order-commission { font-size: 0.7rem; color: #888; }
 
-        /* Инфо о магазине */
+        /* Обновлённый блок информации о магазине с возможностью загрузки логотипа */
         .shop-info-card {
             background: rgba(15,15,15,0.7);
             backdrop-filter: blur(8px);
@@ -275,15 +264,38 @@
             align-items: center;
         }
         .shop-avatar {
-            width: 80px;
-            height: 80px;
+            width: 100px;
+            height: 100px;
             background: linear-gradient(135deg, #fbbf24, #b8860b);
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 2.5rem;
+            font-size: 3rem;
             color: #000;
+            cursor: pointer;
+            overflow: hidden;
+            position: relative;
+            transition: opacity 0.2s;
+        }
+        .shop-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .shop-avatar:hover::after {
+            content: '✏️';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            border-radius: 50%;
         }
         .shop-details { flex: 1; }
         .shop-details h2 { margin-bottom: 8px; }
@@ -325,18 +337,16 @@
             .container { padding: 0 16px; }
             .dashboard-tabs { flex-direction: column; }
             .stats-grid { grid-template-columns: 1fr 1fr; }
-            .product-card { margin-bottom: 16px; }
-            .order-card { flex-direction: column; text-align: center; }
+            .chart-container { text-align: center; }
             .footer-inner { flex-direction: column; text-align: center; }
             .shop-info-card { flex-direction: column; text-align: center; }
-            .chart-container { text-align: center; }
+            .shop-avatar { margin: 0 auto; }
         }
         ::-webkit-scrollbar { width: 5px; }
         ::-webkit-scrollbar-track { background: #1a1a1a; }
         ::-webkit-scrollbar-thumb { background: #fbbf24; border-radius: 10px; }
         .icon-gold { color: #fbbf24; }
         
-        /* Модальное окно */
         .modal {
             display: none;
             position: fixed;
@@ -378,18 +388,14 @@
         </div>
 
         <div id="partnerContent" style="display: none;">
-            <!-- Блок информации о магазине -->
             <div id="shopInfoCard" class="shop-info-card"></div>
 
-            <!-- Статистика -->
             <div class="stats-grid" id="statsGrid">
                 <div class="stat-card"><i class="fas fa-box"></i><div class="value" id="statProducts">0</div><div class="label">Товаров</div></div>
                 <div class="stat-card"><i class="fas fa-shopping-cart"></i><div class="value" id="statOrders">0</div><div class="label">Продаж</div></div>
                 <div class="stat-card"><i class="fas fa-ruble-sign"></i><div class="value" id="statRevenue">0 ₽</div><div class="label">Выручка</div><div class="sub">90% вам: <span id="statYourShare">0 ₽</span></div></div>
-                <div class="stat-card"><i class="fas fa-chart-line"></i><div class="value" id="statAvgPrice">0 ₽</div><div class="label">Средний чек</div></div>
             </div>
 
-            <!-- График продаж -->
             <div class="chart-container">
                 <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; margin-bottom: 20px;">
                     <h3 style="margin: 0;"><i class="fas fa-chart-line"></i> Продажи</h3>
@@ -433,7 +439,7 @@
                         <div class="form-group"><label><i class="fas fa-ruble-sign"></i> Цена (₽) *</label><input type="number" id="newProductPrice" placeholder="1000"></div>
                     </div>
                     <div class="form-group"><label><i class="fas fa-align-left"></i> Описание</label><textarea id="newProductDesc" rows="3" placeholder="Подробное описание товара..."></textarea></div>
-                    <div class="form-group"><label><i class="fas fa-image"></i> Фото товара</label><input type="file" id="newProductImage" accept="image/*"></div>
+                    <div class="form-group"><label><i class="fas fa-image"></i> Фото товара</label><input type="file" id="newProductImage" accept="image/jpeg,image/png,image/webp"></div>
                     <div id="imagePreview" style="margin-bottom: 20px;"></div>
                     <button id="addProductBtn" class="btn-primary"><i class="fas fa-plus"></i> Добавить товар</button>
                     <div id="addResult" style="margin-top:12px;"></div>
@@ -488,7 +494,6 @@
         </div>
     </footer>
 
-    <!-- Модальное окно для редактирования товара -->
     <div id="editModal" class="modal">
         <div class="modal-content">
             <h3><i class="fas fa-edit"></i> Редактировать товар</h3>
@@ -507,17 +512,15 @@
             "imports": {
                 "firebase/app": "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js",
                 "firebase/firestore": "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js",
-                "firebase/auth": "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js",
-                "firebase/storage": "https://www.gstatic.com/firebasejs/11.0.2/firebase-storage.js"
+                "firebase/auth": "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js"
             }
         }
     </script>
     <script type="module" src="header.js"></script>
     <script type="module">
         import { initializeApp } from "firebase/app";
-        import { getFirestore, collection, getDocs, query, where, orderBy, addDoc, updateDoc, deleteDoc, doc, getDoc, setDoc } from "firebase/firestore";
+        import { getFirestore, collection, getDocs, query, where, orderBy, addDoc, updateDoc, deleteDoc, doc, getDoc } from "firebase/firestore";
         import { getAuth, onAuthStateChanged } from "firebase/auth";
-        import { getStorage, ref, uploadBytes, getDownloadURL, deleteObject } from "firebase/storage";
 
         const firebaseConfig = {
             apiKey: "AIzaSyDUGYJY7pX7q02MS5SACMIIQXpjpQ97mPw",
@@ -531,7 +534,10 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
         const auth = getAuth(app);
-        const storage = getStorage(app);
+
+        // Cloudinary настройки (те же, что и для аватарок)
+        const CLOUD_NAME = 'dbv7bfkgy';
+        const UPLOAD_PRESET = 'prorank_avatars';
 
         let currentUser = null;
         let currentPartner = null;
@@ -540,14 +546,57 @@
         let currentEditProductId = null;
         let allOrders = [];
 
-        // Загрузка информации о магазине
+        // Загрузка фото в Cloudinary
+        async function uploadToCloudinary(file) {
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('upload_preset', UPLOAD_PRESET);
+            
+            const response = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, {
+                method: 'POST',
+                body: formData
+            });
+            
+            const data = await response.json();
+            if (data.secure_url) {
+                return data.secure_url.replace('/upload/', '/upload/w_300,h_300,c_fill,f_auto,q_auto/');
+            } else {
+                throw new Error(data.error?.message || 'Ошибка загрузки фото');
+            }
+        }
+
+        // Загрузка логотипа магазина
+        async function uploadShopLogo(file) {
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('upload_preset', UPLOAD_PRESET);
+            
+            const response = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, {
+                method: 'POST',
+                body: formData
+            });
+            
+            const data = await response.json();
+            if (data.secure_url) {
+                return data.secure_url.replace('/upload/', '/upload/w_200,h_200,c_fill,f_auto,q_auto/');
+            } else {
+                throw new Error(data.error?.message || 'Ошибка загрузки логотипа');
+            }
+        }
+
+        // Отображение информации о магазине (с логотипом)
         async function loadShopInfo() {
             if (!partnerDocId) return;
             const shopDoc = await getDoc(doc(db, "partners", partnerDocId));
             if (shopDoc.exists()) {
                 const data = shopDoc.data();
+                const logoHtml = data.logo 
+                    ? `<img src="${data.logo}" alt="Логотип" onerror="this.style.display='none';this.nextSibling.style.display='flex'">`
+                    : '';
                 document.getElementById('shopInfoCard').innerHTML = `
-                    <div class="shop-avatar"><i class="fas fa-store"></i></div>
+                    <div class="shop-avatar" id="shopAvatarBtn">
+                        ${logoHtml || '<i class="fas fa-store"></i>'}
+                    </div>
                     <div class="shop-details">
                         <h2>${escapeHtml(data.name || 'Магазин')}</h2>
                         <p><i class="fas fa-link"></i> ${data.url ? `<a href="${data.url}" target="_blank" style="color:#fbbf24;">${data.url}</a>` : '—'}</p>
@@ -556,6 +605,42 @@
                         ${data.discount ? `<p><i class="fas fa-tag"></i> Промокод: <strong style="color:#fbbf24;">${data.discount}</strong></p>` : ''}
                     </div>
                 `;
+                
+                // Настройка загрузки логотипа
+                const avatarBtn = document.getElementById('shopAvatarBtn');
+                if (avatarBtn) {
+                    avatarBtn.style.cursor = 'pointer';
+                    const fileInput = document.createElement('input');
+                    fileInput.type = 'file';
+                    fileInput.accept = 'image/jpeg,image/png,image/webp';
+                    fileInput.style.display = 'none';
+                    document.body.appendChild(fileInput);
+                    
+                    avatarBtn.addEventListener('click', () => {
+                        fileInput.click();
+                    });
+                    
+                    fileInput.addEventListener('change', async (e) => {
+                        const file = e.target.files[0];
+                        if (!file) return;
+                        if (file.size > 5 * 1024 * 1024) {
+                            alert('❌ Файл больше 5MB');
+                            return;
+                        }
+                        
+                        avatarBtn.style.opacity = '0.5';
+                        try {
+                            const logoUrl = await uploadShopLogo(file);
+                            await updateDoc(doc(db, "partners", partnerDocId), { logo: logoUrl });
+                            loadShopInfo();
+                            alert('✅ Логотип обновлён!');
+                        } catch (err) {
+                            alert('❌ Ошибка: ' + err.message);
+                        }
+                        avatarBtn.style.opacity = '1';
+                        fileInput.value = '';
+                    });
+                }
                 
                 // Заполняем форму редактирования
                 document.getElementById('shopName').value = data.name || '';
@@ -566,23 +651,20 @@
             }
         }
 
-        // Обновление информации о магазине
         document.getElementById('updateShopBtn')?.addEventListener('click', async () => {
             if (!partnerDocId) return;
-            const updateData = {
+            await updateDoc(doc(db, "partners", partnerDocId), {
                 name: document.getElementById('shopName').value,
                 url: document.getElementById('shopUrl').value,
                 description: document.getElementById('shopDesc').value,
                 phone: document.getElementById('shopPhone').value,
                 discount: document.getElementById('shopDiscount').value
-            };
-            await updateDoc(doc(db, "partners", partnerDocId), updateData);
+            });
             document.getElementById('updateShopResult').innerHTML = '<span style="color:green;">✅ Информация обновлена!</span>';
             setTimeout(() => { document.getElementById('updateShopResult').innerHTML = ''; }, 3000);
             loadShopInfo();
         });
 
-        // Загрузка товаров
         async function loadPartnerProducts() {
             const container = document.getElementById('productsList');
             if (!partnerDocId) {
@@ -616,7 +698,6 @@
                 }
                 container.innerHTML = html;
 
-                // Обработчики редактирования (через модалку)
                 document.querySelectorAll('.btn-edit').forEach(btn => {
                     btn.addEventListener('click', () => {
                         currentEditProductId = btn.dataset.id;
@@ -630,13 +711,6 @@
                 document.querySelectorAll('.btn-delete').forEach(btn => {
                     btn.addEventListener('click', async () => {
                         if (confirm('Удалить товар? Это действие нельзя отменить.')) {
-                            const imageUrl = btn.dataset.image;
-                            if (imageUrl && imageUrl.includes('firebasestorage')) {
-                                try {
-                                    const imageRef = ref(storage, imageUrl);
-                                    await deleteObject(imageRef);
-                                } catch(e) { console.warn('Не удалось удалить фото:', e); }
-                            }
                             await deleteDoc(doc(db, "products", btn.dataset.id));
                             loadPartnerProducts();
                             updateStatsAndChart();
@@ -649,7 +723,6 @@
             }
         }
 
-        // Сохранение редактирования
         document.getElementById('saveEditBtn')?.addEventListener('click', async () => {
             if (!currentEditProductId) return;
             const newName = document.getElementById('editProductName').value;
@@ -670,7 +743,7 @@
             document.getElementById('editModal').style.display = 'none';
         });
 
-        // Добавление товара
+        // Добавление товара через Cloudinary
         document.getElementById('addProductBtn')?.addEventListener('click', async () => {
             if (!partnerDocId) { alert('Вы не являетесь партнёром'); return; }
             const name = document.getElementById('newProductName').value.trim();
@@ -688,9 +761,7 @@
             try {
                 let imageUrl = null;
                 if (file) {
-                    const storageRef = ref(storage, `products/${partnerDocId}/${Date.now()}_${file.name}`);
-                    await uploadBytes(storageRef, file);
-                    imageUrl = await getDownloadURL(storageRef);
+                    imageUrl = await uploadToCloudinary(file);
                 }
                 await addDoc(collection(db, "products"), {
                     name, price, desc, image: imageUrl,
@@ -707,14 +778,13 @@
                 loadPartnerProducts();
                 updateStatsAndChart();
             } catch (err) {
-                alert('Ошибка: ' + err.message);
+                alert('Ошибка загрузки фото: ' + err.message);
             } finally {
                 addBtn.innerHTML = '<i class="fas fa-plus"></i> Добавить товар';
                 addBtn.disabled = false;
             }
         });
 
-        // Предпросмотр фото
         document.getElementById('newProductImage')?.addEventListener('change', (e) => {
             const file = e.target.files[0];
             const preview = document.getElementById('imagePreview');
@@ -729,7 +799,6 @@
             }
         });
 
-        // Загрузка заказов и статистики
         async function loadPartnerOrdersAndStats() {
             if (!partnerDocId) return;
             try {
@@ -754,13 +823,10 @@
                 document.getElementById('statOrders').innerText = orders.length;
                 document.getElementById('statRevenue').innerHTML = `${totalRevenue.toLocaleString()} ₽`;
                 document.getElementById('statYourShare').innerHTML = `${(totalRevenue * 0.9).toLocaleString()} ₽`;
-                const avgPrice = orders.length > 0 ? totalRevenue / orders.length : 0;
-                document.getElementById('statAvgPrice').innerHTML = `${avgPrice.toFixed(0)} ₽`;
                 
-                // Отображение заказов
                 const ordersContainer = document.getElementById('partnerOrdersList');
                 if (orders.length === 0) {
-                    ordersContainer.innerHTML = '<div class="empty-state"><i class="fas fa-shopping-cart"></i><p>Пока нет заказов</p><p style="font-size:0.8rem;">Когда покупатели оформят заказы, они появятся здесь</p></div>';
+                    ordersContainer.innerHTML = '<div class="empty-state"><i class="fas fa-shopping-cart"></i><p>Пока нет заказов</p></div>';
                 } else {
                     let ordersHtml = '';
                     for (const order of orders) {
@@ -780,17 +846,13 @@
                     ordersContainer.innerHTML = ordersHtml;
                 }
                 
-                // Обновляем график (по умолчанию "Всё время")
                 updateChart('all');
-                
-                return { totalRevenue, ordersCount: orders.length };
             } catch (err) {
                 console.error(err);
                 document.getElementById('partnerOrdersList').innerHTML = '<div class="empty-state">Ошибка загрузки заказов</div>';
             }
         }
 
-        // Обновление графика
         async function updateChart(period) {
             if (!allOrders.length) {
                 if (salesChart) salesChart.destroy();
@@ -820,7 +882,6 @@
                 filteredOrders = allOrders.filter(o => o.createdAt && o.createdAt.toDate() >= startDate);
             }
             
-            // Статистика за период
             const periodRevenue = filteredOrders.reduce((sum, o) => sum + o.price, 0);
             const periodOrdersCount = filteredOrders.length;
             const periodAvgPrice = periodOrdersCount > 0 ? periodRevenue / periodOrdersCount : 0;
@@ -829,7 +890,6 @@
             document.getElementById('chartTotalRevenue').innerHTML = `${periodRevenue.toLocaleString()} ₽`;
             document.getElementById('chartAvgPrice').innerHTML = `${periodAvgPrice.toFixed(0)} ₽`;
             
-            // Собираем данные для графика по дням
             const dailySales = {};
             
             let dateRangeStart, dateRangeEnd;
@@ -837,7 +897,6 @@
                 dateRangeStart = new Date(startDate);
                 dateRangeEnd = new Date();
             } else {
-                // Всё время — от первого заказа до сегодня
                 const oldestOrder = [...allOrders].sort((a, b) => a.createdAt?.toDate() - b.createdAt?.toDate())[0];
                 dateRangeStart = oldestOrder?.createdAt?.toDate() || new Date();
                 dateRangeStart.setHours(0, 0, 0, 0);
@@ -847,13 +906,11 @@
             const daysCount = Math.ceil((dateRangeEnd - dateRangeStart) / (1000 * 60 * 60 * 24)) + 1;
             document.getElementById('chartDaysCount').innerHTML = daysCount;
             
-            // Заполняем все дни периода нулями
             for (let d = new Date(dateRangeStart); d <= dateRangeEnd; d.setDate(d.getDate() + 1)) {
                 const dateStr = d.toISOString().split('T')[0];
                 dailySales[dateStr] = 0;
             }
             
-            // Добавляем продажи
             filteredOrders.forEach(o => {
                 if (o.createdAt) {
                     const dateStr = o.createdAt.toDate().toISOString().split('T')[0];
@@ -864,7 +921,6 @@
             const labels = Object.keys(dailySales).sort();
             const data = labels.map(l => dailySales[l]);
             
-            // Форматируем подписи для графика (если много дней, показываем каждые N дней)
             let formattedLabels = labels.map(l => l.slice(5));
             if (labels.length > 31) {
                 const step = Math.ceil(labels.length / 15);
@@ -908,13 +964,11 @@
             });
         }
 
-        // Обработчики кнопок периода
         document.querySelectorAll('.period-btn').forEach(btn => {
             btn.addEventListener('click', () => {
                 document.querySelectorAll('.period-btn').forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
-                const period = btn.dataset.period;
-                updateChart(period);
+                updateChart(btn.dataset.period);
             });
         });
 
@@ -924,7 +978,6 @@
 
         function escapeHtml(str) { if (!str) return ''; return String(str).replace(/[&<>]/g, m => m === '&' ? '&amp;' : m === '<' ? '&lt;' : '&gt;'); }
 
-        // Табы
         document.querySelectorAll('.tab-btn').forEach(btn => {
             btn.addEventListener('click', () => {
                 document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -936,12 +989,10 @@
             });
         });
 
-        // Бургер-меню
         const menuToggle = document.getElementById('menuToggle');
         const navLinks = document.getElementById('navLinks');
         if (menuToggle && navLinks) menuToggle.addEventListener('click', () => navLinks.classList.toggle('show'));
 
-        // Авторизация
         onAuthStateChanged(auth, async (user) => {
             const pendingDiv = document.getElementById('pendingStatus');
             const partnerContent = document.getElementById('partnerContent');
