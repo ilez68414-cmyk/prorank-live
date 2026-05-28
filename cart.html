@@ -21,6 +21,8 @@
         }
         .gold-top { position: fixed; top: 0; left: 0; width: 100%; height: 3px; background: linear-gradient(90deg, #fbbf24, #ffdd88, #fbbf24, #b8860b); z-index: 1001; }
         .container { max-width: 1200px; margin: 0 auto; padding: 0 24px; position: relative; z-index: 2; }
+        
+        /* Шапка */
         .navbar {
             display: flex;
             justify-content: space-between;
@@ -43,6 +45,27 @@
             color: transparent;
         }
         .logo span { background: linear-gradient(135deg, #fbbf24, #ffdd77); background-clip: text; color: transparent; }
+        .balance-indicator {
+            background: #111;
+            border: 1px solid rgba(251,191,36,0.5);
+            border-radius: 60px;
+            padding: 7px 18px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 700;
+            font-size: 0.9rem;
+        }
+        .balance-count { color: #fbbf24; }
+        .balance-plus {
+            background: rgba(251,191,36,0.15);
+            border: none;
+            color: #fbbf24;
+            cursor: pointer;
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+        }
         .menu-toggle { display: none; background: rgba(251,191,36,0.1); border: 1px solid #fbbf24; color: #fbbf24; font-size: 1.6rem; cursor: pointer; padding: 8px 14px; border-radius: 12px; }
         .nav-links {
             display: flex;
@@ -53,22 +76,246 @@
             border-radius: 60px;
             border: 1px solid rgba(251,191,36,0.2);
         }
-        .nav-links a { color: #ddd; text-decoration: none; font-size: 0.9rem; font-weight: 500; padding: 8px 18px; border-radius: 40px; transition: all 0.2s; display: inline-flex; align-items: center; gap: 8px; }
+        .nav-links a { color: #ddd; text-decoration: none; font-size: 0.9rem; font-weight: 500; padding: 8px 18px; border-radius: 40px; transition: all 0.2s; }
         .nav-links a i { margin-right: 8px; color: #fbbf24; }
         .nav-links a:hover { color: #fbbf24; }
-        .page-header { text-align: center; padding: 40px 20px 20px; }
-        .page-header h1 { font-size: 2rem; font-weight: 800; background: linear-gradient(135deg, #fff, #fbbf24); background-clip: text; color: transparent; }
-        .cart-items { background: rgba(15,15,15,0.7); border-radius: 28px; padding: 20px; margin: 20px 0; }
-        .cart-item { display: flex; justify-content: space-between; align-items: center; padding: 16px; border-bottom: 1px solid rgba(255,255,255,0.1); flex-wrap: wrap; gap: 12px; }
+
+        /* Хлебные крошки */
+        .breadcrumb {
+            margin: 20px 0 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+            font-size: 0.85rem;
+        }
+        .breadcrumb a {
+            color: #aaa;
+            text-decoration: none;
+            transition: 0.2s;
+        }
+        .breadcrumb a:hover { color: #fbbf24; }
+        .breadcrumb span { color: #fbbf24; }
+        .back-btn {
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(251,191,36,0.3);
+            color: #fff;
+            padding: 8px 16px;
+            border-radius: 40px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: 0.2s;
+        }
+        .back-btn:hover {
+            background: rgba(251,191,36,0.2);
+            color: #fbbf24;
+        }
+
+        .page-header {
+            text-align: center;
+            padding: 20px 20px 20px;
+        }
+        .page-header h1 { font-size: 1.8rem; font-weight: 800; background: linear-gradient(135deg, #fff, #fbbf24); background-clip: text; color: transparent; }
+
+        /* Корзина */
+        .cart-items {
+            background: rgba(15,15,15,0.7);
+            border-radius: 28px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .cart-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            flex-wrap: wrap;
+            gap: 12px;
+        }
         .cart-item:last-child { border-bottom: none; }
-        .btn-remove { background: #dc2626; color: white; border: none; padding: 6px 16px; border-radius: 30px; cursor: pointer; }
-        .cart-total { background: linear-gradient(135deg, #fbbf24, #e5a500); color: #000; border-radius: 28px; padding: 20px; text-align: center; margin: 20px 0; }
-        .cart-total strong { font-size: 1.3rem; }
-        .btn-checkout { background: #16a34a; color: white; width: 100%; padding: 16px; border-radius: 60px; font-weight: 700; font-size: 1rem; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; }
-        .empty-state { text-align: center; padding: 60px; color: #888; }
-        .main-footer { background: #0a0a0a; border-top: 1px solid rgba(251,191,36,0.15); margin-top: 60px; padding: 40px 0 24px; }
-        .footer-content { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 32px; }
-        .footer-bottom { text-align: center; margin-top: 32px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.05); font-size: 0.65rem; color: #555; }
+        .cart-item-info {
+            flex: 1;
+        }
+        .cart-item-name {
+            font-weight: 700;
+            font-size: 1rem;
+        }
+        .cart-item-price {
+            color: #fbbf24;
+            font-weight: 600;
+            margin-top: 4px;
+        }
+        .cart-item-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .item-quantity {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .quantity-btn {
+            background: rgba(251,191,36,0.15);
+            border: 1px solid rgba(251,191,36,0.3);
+            color: #fbbf24;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-weight: 700;
+            transition: 0.1s;
+        }
+        .quantity-btn:active { transform: scale(0.95); }
+        .item-count {
+            font-weight: 600;
+            min-width: 30px;
+            text-align: center;
+        }
+        .btn-remove {
+            background: #dc2626;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .btn-remove:active { transform: scale(0.96); }
+
+        .cart-total {
+            background: linear-gradient(135deg, #fbbf24, #e5a500);
+            color: #000;
+            border-radius: 28px;
+            padding: 24px;
+            margin: 20px 0;
+            text-align: center;
+        }
+        .cart-total .total-amount {
+            font-size: 2rem;
+            font-weight: 800;
+        }
+        .cart-total .commission {
+            font-size: 0.8rem;
+            margin-top: 8px;
+            opacity: 0.8;
+        }
+        .btn-checkout {
+            background: #16a34a;
+            color: white;
+            width: 100%;
+            padding: 16px;
+            border-radius: 60px;
+            font-weight: 700;
+            font-size: 1rem;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: 0.1s;
+        }
+        .btn-checkout:active { transform: scale(0.97); }
+        .empty-state {
+            text-align: center;
+            padding: 60px;
+            color: #888;
+        }
+        .empty-state a {
+            color: #fbbf24;
+            text-decoration: none;
+        }
+
+        /* Модалка оформления */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.85);
+            backdrop-filter: blur(8px);
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+        }
+        .modal-content {
+            background: #151515;
+            border-radius: 28px;
+            padding: 28px;
+            width: 90%;
+            max-width: 480px;
+            border: 1px solid rgba(251,191,36,0.3);
+        }
+        .modal-content h3 {
+            color: #fbbf24;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .form-group {
+            margin-bottom: 16px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 6px;
+            color: #aaa;
+            font-size: 0.8rem;
+        }
+        .form-group input, .form-group textarea {
+            width: 100%;
+            padding: 12px 16px;
+            background: #1a1a1a;
+            border: 1px solid rgba(251,191,36,0.25);
+            color: #fff;
+            border-radius: 40px;
+            font-size: 0.9rem;
+        }
+        .form-group textarea {
+            border-radius: 20px;
+            resize: vertical;
+        }
+        .modal-buttons {
+            display: flex;
+            gap: 12px;
+            margin-top: 20px;
+        }
+        .modal-buttons button {
+            flex: 1;
+            padding: 12px;
+            border-radius: 40px;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+        }
+        .btn-submit { background: #fbbf24; color: #000; }
+        .btn-cancel { background: #333; color: #fff; }
+
+        .main-footer {
+            background: #0a0a0a;
+            border-top: 1px solid rgba(251,191,36,0.15);
+            margin-top: 60px;
+            padding: 40px 0 24px;
+        }
+        .footer-inner { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 32px; margin-bottom: 32px; }
+        .footer-logo .logo { font-size: 1.3rem; display: inline-block; }
+        .footer-logo p { font-size: 0.7rem; color: #777; margin-top: 6px; }
+        .footer-social { display: flex; gap: 20px; }
+        .social-icon { color: #aaa; font-size: 1.3rem; transition: 0.2s; }
+        .social-icon:hover { color: #fbbf24; }
+        .footer-links { display: flex; gap: 24px; flex-wrap: wrap; }
+        .footer-links a { color: #888; text-decoration: none; font-size: 0.75rem; }
+        .footer-links a:hover { color: #fbbf24; }
+        .footer-bottom { text-align: center; padding-top: 24px; border-top: 1px solid rgba(255,255,255,0.05); font-size: 0.65rem; color: #555; }
+
         @media (max-width: 768px) {
             .navbar { padding: 12px 18px; }
             .menu-toggle { display: block; }
@@ -76,7 +323,10 @@
             .nav-links.show { display: flex; }
             .nav-links a { width: 100%; text-align: center; padding: 12px; }
             .container { padding: 0 16px; }
-            .footer-content { flex-direction: column; text-align: center; }
+            .cart-item { flex-direction: column; text-align: center; }
+            .cart-item-actions { justify-content: center; }
+            .footer-inner { flex-direction: column; text-align: center; }
+            .breadcrumb { justify-content: center; }
         }
         ::-webkit-scrollbar { width: 5px; }
         ::-webkit-scrollbar-track { background: #1a1a1a; }
@@ -89,47 +339,96 @@
 
     <header class="navbar">
         <div class="logo" onclick="window.location='index.html'">PRO<span>RANK</span></div>
+        <div class="balance-indicator" id="balanceIndicator" style="display: none;">
+            <i class="fas fa-crosshairs"></i>
+            <span class="balance-count" id="headerChallengesCount">0</span>
+            <button class="balance-plus" id="balancePlusBtn">+</button>
+        </div>
         <button class="menu-toggle" id="menuToggle">☰</button>
-        <nav class="nav-links" id="navLinks">
-            <a href="index.html"><i class="fas fa-home"></i> Главная</a>
-            <a href="rating.html"><i class="fas fa-chart-line"></i> Рейтинг</a>
-            <a href="leagues.html"><i class="fas fa-trophy"></i> Лиги</a>
-            <a href="rules.html"><i class="fas fa-book"></i> Правила</a>
-            <a href="shop.html"><i class="fas fa-store"></i> Магазин</a>
-            <a href="challenges.html"><i class="fas fa-fist-raised"></i> Вызовы</a>
-            <a href="cart.html"><i class="fas fa-shopping-cart"></i> Корзина</a>
-            <a href="login.html" id="profileLoginBtn"><i class="fas fa-sign-in-alt"></i> Войти</a>
-        </nav>
+        <nav class="nav-links" id="navLinks"></nav>
     </header>
 
     <main class="container">
+        <!-- Хлебные крошки и кнопка назад -->
+        <div class="breadcrumb">
+            <button class="back-btn" id="backBtn"><i class="fas fa-arrow-left"></i> Назад</button>
+            <span>/</span>
+            <a href="catalog.html">Каталог</a>
+            <span>/</span>
+            <span>Корзина</span>
+        </div>
+
         <div class="page-header">
             <h1><i class="fas fa-shopping-cart"></i> Корзина</h1>
         </div>
+
         <div id="cartItems" class="cart-items"><div class="empty-state"><i class="fas fa-spinner fa-pulse"></i> Загрузка...</div></div>
         <div id="cartTotal" class="cart-total" style="display: none;"></div>
         <button id="checkoutBtn" class="btn-checkout" style="display: none;"><i class="fas fa-credit-card"></i> Оформить заказ</button>
     </main>
 
+    <!-- Модалка оформления заказа -->
+    <div id="checkoutModal" class="modal">
+        <div class="modal-content">
+            <h3><i class="fas fa-truck"></i> Оформление заказа</h3>
+            <div class="form-group">
+                <label>Ваше имя</label>
+                <input type="text" id="orderName" placeholder="Иван Иванов">
+            </div>
+            <div class="form-group">
+                <label>Телефон</label>
+                <input type="tel" id="orderPhone" placeholder="+7 999 123-45-67">
+            </div>
+            <div class="form-group">
+                <label>Адрес доставки</label>
+                <textarea id="orderAddress" rows="2" placeholder="Город, улица, дом, квартира"></textarea>
+            </div>
+            <div class="form-group">
+                <label>Комментарий к заказу (необязательно)</label>
+                <textarea id="orderComment" rows="2" placeholder="Пожелания по доставке..."></textarea>
+            </div>
+            <div class="modal-buttons">
+                <button id="submitOrderBtn" class="btn-submit"><i class="fas fa-check"></i> Подтвердить</button>
+                <button id="cancelOrderBtn" class="btn-cancel">Отмена</button>
+            </div>
+        </div>
+    </div>
+
     <footer class="main-footer">
         <div class="container">
-            <div class="footer-content">
-                <div class="footer-logo"><div class="logo">PRO<span>RANK</span></div><p>Рейтинг любительского спорта</p></div>
-                <div class="footer-about"><h4>О проекте</h4><p>Платформа для спортсменов-любителей</p></div>
-                <div class="footer-links"><h4>Навигация</h4><a href="index.html">Главная</a><a href="rating.html">Рейтинг</a><a href="login.html">Вход</a></div>
+            <div class="footer-inner">
+                <div class="footer-logo">
+                    <div class="logo">PRO<span>RANK</span></div>
+                    <p>Рейтинг спортсменов</p>
+                </div>
+                <div class="footer-social">
+                    <a href="#" target="_blank" class="social-icon"><i class="fab fa-telegram"></i></a>
+                    <a href="#" target="_blank" class="social-icon"><i class="fab fa-vk"></i></a>
+                    <a href="#" target="_blank" class="social-icon"><i class="fab fa-youtube"></i></a>
+                    <a href="#" target="_blank" class="social-icon"><i class="fab fa-instagram"></i></a>
+                </div>
+                <div class="footer-links">
+                    <a href="about.html">О проекте</a>
+                    <a href="privacy.html">Конфиденциальность</a>
+                    <a href="disclaimer.html">Дисклеймер</a>
+                </div>
             </div>
-            <div class="footer-bottom"><p>&copy; 2026 PRORANK</p></div>
+            <div class="footer-bottom">
+                <p>© 2026 PRORANK</p>
+            </div>
         </div>
     </footer>
-<script type="importmap">
-    {
-        "imports": {
-            "firebase/app": "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js",
-            "firebase/firestore": "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js",
-            "firebase/auth": "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js"
+
+    <script type="importmap">
+        {
+            "imports": {
+                "firebase/app": "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js",
+                "firebase/firestore": "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js",
+                "firebase/auth": "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js"
+            }
         }
-    }
-</script>
+    </script>
+    <script type="module" src="header.js"></script>
     <script type="module">
         import { initializeApp } from "firebase/app";
         import { getAuth, onAuthStateChanged } from "firebase/auth";
@@ -148,6 +447,21 @@
         const db = getFirestore(app);
         const auth = getAuth(app);
         let currentUser = null;
+        let currentUserData = null;
+
+        async function updateHeaderBalance() {
+            const user = auth.currentUser;
+            const balanceDiv = document.getElementById('balanceIndicator');
+            const balanceCount = document.getElementById('headerChallengesCount');
+            if (!user || !balanceDiv) return;
+            try {
+                const userDoc = await getDoc(doc(db, "fighters", user.uid));
+                const data = userDoc.data();
+                const total = (data.freeChallenges || 0) + (data.purchasedChallenges || 0);
+                balanceCount.innerText = total;
+                balanceDiv.style.display = 'flex';
+            } catch (err) { console.error(err); }
+        }
 
         function loadCart() {
             const cart = JSON.parse(localStorage.getItem('cart') || '[]');
@@ -156,71 +470,217 @@
             const checkoutBtn = document.getElementById('checkoutBtn');
             
             if (cart.length === 0) {
-                container.innerHTML = '<div class="empty-state"><i class="fas fa-shopping-cart"></i><p>Корзина пуста</p><p><a href="equipment.html" style="color:#fbbf24;">Перейти в каталог →</a></p></div>';
+                container.innerHTML = '<div class="empty-state"><i class="fas fa-shopping-cart"></i><p>Корзина пуста</p><p><a href="catalog.html">Перейти в каталог →</a></p></div>';
                 totalDiv.style.display = 'none';
                 checkoutBtn.style.display = 'none';
                 return;
             }
             
+            // Группировка одинаковых товаров
+            const grouped = {};
+            cart.forEach(item => {
+                const key = item.id || item.name;
+                if (grouped[key]) {
+                    grouped[key].quantity++;
+                } else {
+                    grouped[key] = { ...item, quantity: 1 };
+                }
+            });
+            
             let html = '';
             let total = 0;
-            cart.forEach((item, idx) => {
-                total += item.price;
+            const items = Object.values(grouped);
+            
+            items.forEach((item, idx) => {
+                const itemTotal = item.price * item.quantity;
+                total += itemTotal;
                 html += `
-                    <div class="cart-item">
-                        <div><strong>${escapeHtml(item.name)}</strong><br><small>${item.price} ₽</small></div>
-                        <button class="btn-remove" data-index="${idx}"><i class="fas fa-trash"></i> Удалить</button>
+                    <div class="cart-item" data-idx="${idx}" data-item-id="${item.id || item.name}">
+                        <div class="cart-item-info">
+                            <div class="cart-item-name">${escapeHtml(item.name)}</div>
+                            <div class="cart-item-price">${item.price} ₽</div>
+                        </div>
+                        <div class="cart-item-actions">
+                            <div class="item-quantity">
+                                <button class="quantity-btn dec" data-idx="${idx}">-</button>
+                                <span class="item-count">${item.quantity}</span>
+                                <button class="quantity-btn inc" data-idx="${idx}">+</button>
+                            </div>
+                            <button class="btn-remove" data-idx="${idx}"><i class="fas fa-trash"></i> Удалить</button>
+                        </div>
                     </div>
                 `;
             });
             container.innerHTML = html;
             totalDiv.style.display = 'block';
-            totalDiv.innerHTML = `<strong>Итого: ${total} ₽</strong><br><small>Комиссия PRORANK: ${Math.floor(total * 0.1)} ₽ (10%)</small>`;
+            const commission = Math.floor(total * 0.1);
+            totalDiv.innerHTML = `
+                <div class="total-amount">${total.toLocaleString()} ₽</div>
+                <div class="commission">Комиссия PRORANK (10%): ${commission.toLocaleString()} ₽</div>
+                <div style="margin-top: 8px; font-size: 0.9rem;">К получению: ${(total - commission).toLocaleString()} ₽</div>
+            `;
             checkoutBtn.style.display = 'block';
             
+            // Обработчики количества
+            document.querySelectorAll('.quantity-btn.dec').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const idx = parseInt(btn.dataset.idx);
+                    let cart = JSON.parse(localStorage.getItem('cart') || '[]');
+                    const itemId = document.querySelector(`.cart-item[data-idx="${idx}"]`).dataset.itemId;
+                    const itemIndex = cart.findIndex(i => (i.id || i.name) === itemId);
+                    if (itemIndex !== -1) {
+                        cart.splice(itemIndex, 1);
+                        localStorage.setItem('cart', JSON.stringify(cart));
+                        loadCart();
+                    }
+                });
+            });
+            document.querySelectorAll('.quantity-btn.inc').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const idx = parseInt(btn.dataset.idx);
+                    let cart = JSON.parse(localStorage.getItem('cart') || '[]');
+                    const itemId = document.querySelector(`.cart-item[data-idx="${idx}"]`).dataset.itemId;
+                    const itemIndex = cart.findIndex(i => (i.id || i.name) === itemId);
+                    if (itemIndex !== -1) {
+                        const newItem = { ...cart[itemIndex] };
+                        cart.push(newItem);
+                        localStorage.setItem('cart', JSON.stringify(cart));
+                        loadCart();
+                    }
+                });
+            });
             document.querySelectorAll('.btn-remove').forEach(btn => {
                 btn.addEventListener('click', () => {
+                    const idx = parseInt(btn.dataset.idx);
                     let cart = JSON.parse(localStorage.getItem('cart') || '[]');
-                    cart.splice(parseInt(btn.dataset.index), 1);
+                    const itemId = document.querySelector(`.cart-item[data-idx="${idx}"]`).dataset.itemId;
+                    cart = cart.filter(i => (i.id || i.name) !== itemId);
                     localStorage.setItem('cart', JSON.stringify(cart));
                     loadCart();
                 });
             });
         }
 
-        function escapeHtml(str) { if (!str) return ''; return str.replace(/[&<>]/g, m => m === '&' ? '&amp;' : m === '<' ? '&lt;' : '&gt;'); }
+        function escapeHtml(str) { if (!str) return ''; return String(str).replace(/[&<>]/g, m => m === '&' ? '&amp;' : m === '<' ? '&lt;' : '&gt;'); }
 
-        document.getElementById('checkoutBtn')?.addEventListener('click', async () => {
+        // Оформление заказа
+        const modal = document.getElementById('checkoutModal');
+        const checkoutBtn = document.getElementById('checkoutBtn');
+
+        checkoutBtn?.addEventListener('click', () => {
+            if (!currentUser) {
+                alert('Войдите в аккаунт для оформления заказа');
+                window.location.href = 'login.html';
+                return;
+            }
+            // Заполняем поля данными пользователя
+            if (currentUserData) {
+                document.getElementById('orderName').value = currentUserData.name || '';
+                document.getElementById('orderPhone').value = currentUserData.phone || '';
+            }
+            modal.style.display = 'flex';
+        });
+
+        document.getElementById('submitOrderBtn')?.addEventListener('click', async () => {
             const cart = JSON.parse(localStorage.getItem('cart') || '[]');
-            if (cart.length === 0) { alert('Корзина пуста'); return; }
-            if (!currentUser) { alert('Войдите в аккаунт для оформления заказа'); window.location.href = 'login.html'; return; }
+            if (cart.length === 0) { alert('Корзина пуста'); modal.style.display = 'none'; return; }
+            
+            const orderName = document.getElementById('orderName').value.trim();
+            const orderPhone = document.getElementById('orderPhone').value.trim();
+            const orderAddress = document.getElementById('orderAddress').value.trim();
+            const orderComment = document.getElementById('orderComment').value.trim();
+            
+            if (!orderName || !orderPhone || !orderAddress) {
+                alert('Заполните все обязательные поля');
+                return;
+            }
             
             const total = cart.reduce((sum, item) => sum + item.price, 0);
-            alert(`🔧 Демо-режим: Оформление заказа на сумму ${total} ₽\nКомиссия PRORANK: ${Math.floor(total * 0.1)} ₽\n\nПосле подключения ЮKassa здесь будет переход на оплату.`);
+            const commission = Math.floor(total * 0.1);
             
-            for (const item of cart) {
-                await addDoc(collection(db, "orders"), {
-                    userId: currentUser.uid,
-                    productName: item.name,
-                    price: item.price,
-                    status: 'pending',
-                    createdAt: serverTimestamp()
+            const btn = document.getElementById('submitOrderBtn');
+            btn.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> Оформление...';
+            btn.disabled = true;
+            
+            try {
+                // Группируем товары для заказа
+                const grouped = {};
+                cart.forEach(item => {
+                    const key = item.id || item.name;
+                    if (grouped[key]) {
+                        grouped[key].quantity++;
+                    } else {
+                        grouped[key] = { ...item, quantity: 1 };
+                    }
                 });
+                
+                // Создаём заказ в Firestore
+                for (const item of Object.values(grouped)) {
+                    await addDoc(collection(db, "orders"), {
+                        userId: currentUser.uid,
+                        userName: orderName,
+                        userPhone: orderPhone,
+                        userAddress: orderAddress,
+                        userComment: orderComment,
+                        productId: item.id || null,
+                        productName: item.name,
+                        price: item.price,
+                        quantity: item.quantity,
+                        totalPrice: item.price * item.quantity,
+                        commission: Math.floor(item.price * item.quantity * 0.1),
+                        partnerId: item.partnerId || null,
+                        partnerName: item.partnerName || null,
+                        status: 'new',
+                        createdAt: serverTimestamp()
+                    });
+                }
+                
+                localStorage.removeItem('cart');
+                alert('✅ Заказ оформлен! Партнёр свяжется с вами в ближайшее время.');
+                modal.style.display = 'none';
+                loadCart();
+            } catch (err) {
+                console.error('Ошибка:', err);
+                alert('❌ Ошибка при оформлении заказа');
+            } finally {
+                btn.innerHTML = '<i class="fas fa-check"></i> Подтвердить';
+                btn.disabled = false;
             }
-            localStorage.removeItem('cart');
-            alert('✅ Заказ оформлен!');
+        });
+
+        document.getElementById('cancelOrderBtn')?.addEventListener('click', () => {
+            modal.style.display = 'none';
+        });
+        
+        // Закрытие модалки по клику вне
+        window.addEventListener('click', (e) => {
+            if (e.target === modal) modal.style.display = 'none';
+        });
+
+        // Кнопка назад
+        document.getElementById('backBtn')?.addEventListener('click', () => {
+            window.history.back();
+        });
+
+        onAuthStateChanged(auth, async (user) => {
+            currentUser = user;
+            if (user) {
+                const userDoc = await getDoc(doc(db, "fighters", user.uid));
+                currentUserData = userDoc.data();
+                setTimeout(updateHeaderBalance, 1000);
+            } else {
+                const balanceDiv = document.getElementById('balanceIndicator');
+                if (balanceDiv) balanceDiv.style.display = 'none';
+            }
             loadCart();
         });
 
-        onAuthStateChanged(auth, (user) => { 
-            currentUser = user; 
-            const loginBtn = document.getElementById('profileLoginBtn');
-            if (user && loginBtn) { loginBtn.innerHTML = '<i class="fas fa-user"></i> Мой профиль'; loginBtn.href = `profile.html?id=${user.uid}`; }
-            else if (loginBtn) { loginBtn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Войти'; loginBtn.href = 'login.html'; }
-            loadCart(); 
-        });
+        const plusBtn = document.getElementById('balancePlusBtn');
+        if (plusBtn) plusBtn.onclick = () => window.location.href = 'shop.html';
 
-        document.getElementById('menuToggle')?.addEventListener('click', () => document.getElementById('navLinks')?.classList.toggle('show'));
+        const menuToggle = document.getElementById('menuToggle');
+        const navLinks = document.getElementById('navLinks');
+        if (menuToggle && navLinks) menuToggle.addEventListener('click', () => navLinks.classList.toggle('show'));
     </script>
 </body>
 </html>
