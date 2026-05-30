@@ -57,7 +57,7 @@
         .nav-links a i { margin-right: 8px; color: #fbbf24; }
         .nav-links a:hover { color: #fbbf24; }
 
-        .page-header { text-align: center; padding: 40px 20px 20px; }
+        .page-header { text-align: center; padding: 30px 20px 20px; }
         .page-header h1 { font-size: 2rem; font-weight: 800; background: linear-gradient(135deg, #fff, #fbbf24); background-clip: text; color: transparent; }
         .page-header p { color: #aaa; margin-top: 8px; }
 
@@ -89,6 +89,19 @@
             padding: 20px;
             margin-bottom: 32px;
             border: 1px solid rgba(251,191,36,0.2);
+        }
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+        .period-buttons {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
         }
         .period-btn {
             background: #1a1a1a;
@@ -158,7 +171,7 @@
         .product-info { padding: 16px; }
         .product-title { font-size: 1.1rem; font-weight: 700; margin-bottom: 8px; }
         .product-price { font-size: 1.3rem; font-weight: 800; color: #fbbf24; margin-bottom: 8px; }
-        .product-desc { font-size: 0.8rem; color: #aaa; margin-bottom: 16px; line-height: 1.4; }
+        .product-desc { font-size: 0.8rem; color: #aaa; margin-bottom: 16px; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
         .product-actions { display: flex; gap: 12px; }
         .btn-edit, .btn-delete { flex: 1; padding: 10px; border-radius: 40px; border: none; cursor: pointer; font-weight: 600; transition: 0.1s; display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
         .btn-edit { background: #3b82f6; color: white; }
@@ -231,26 +244,37 @@
             backdrop-filter: blur(8px);
             border-radius: 20px;
             padding: 20px;
+            margin-bottom: 16px;
             border: 1px solid rgba(251,191,36,0.15);
             display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 16px;
+            flex-direction: column;
+            gap: 12px;
         }
-        .order-info h4 { margin-bottom: 8px; }
+        .order-info { flex: 1; }
+        .order-info h4 { margin-bottom: 8px; color: #fbbf24; }
         .order-info p { color: #aaa; font-size: 0.8rem; margin: 4px 0; }
         .order-status {
+            display: inline-block;
+            width: fit-content;
             padding: 6px 16px;
             border-radius: 40px;
             font-size: 0.75rem;
             font-weight: 600;
         }
-        .status-completed { background: #10b981; color: #fff; }
         .order-amount { font-size: 1.2rem; font-weight: 800; color: #fbbf24; }
+        .btn-accept-order, .btn-ship-order {
+            background: #fbbf24;
+            color: #000;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 40px;
+            cursor: pointer;
+            font-weight: 600;
+            width: fit-content;
+        }
+        .btn-accept-order:active, .btn-ship-order:active { transform: scale(0.96); }
         .order-commission { font-size: 0.7rem; color: #888; }
 
-        /* Обновлённый блок информации о магазине с возможностью загрузки логотипа */
         .shop-info-card {
             background: rgba(15,15,15,0.7);
             backdrop-filter: blur(8px);
@@ -276,13 +300,8 @@
             cursor: pointer;
             overflow: hidden;
             position: relative;
-            transition: opacity 0.2s;
         }
-        .shop-avatar img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
+        .shop-avatar img { width: 100%; height: 100%; object-fit: cover; }
         .shop-avatar:hover::after {
             content: '✏️';
             position: absolute;
@@ -295,7 +314,6 @@
             align-items: center;
             justify-content: center;
             font-size: 2rem;
-            border-radius: 50%;
         }
         .shop-details { flex: 1; }
         .shop-details h2 { margin-bottom: 8px; }
@@ -316,37 +334,6 @@
         .pending-status h3 { margin-bottom: 12px; }
         .pending-status p { color: #aaa; margin-bottom: 24px; }
 
-        .main-footer { background: #0a0a0a; border-top: 1px solid rgba(251,191,36,0.15); margin-top: 60px; padding: 40px 0 24px; }
-        .footer-inner { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 32px; margin-bottom: 32px; }
-        .footer-logo .logo { font-size: 1.3rem; display: inline-block; }
-        .footer-logo p { font-size: 0.7rem; color: #777; margin-top: 6px; }
-        .footer-social { display: flex; gap: 20px; }
-        .social-icon { color: #aaa; font-size: 1.3rem; transition: 0.2s; }
-        .social-icon:hover { color: #fbbf24; }
-        .footer-links { display: flex; gap: 24px; flex-wrap: wrap; }
-        .footer-links a { color: #888; text-decoration: none; font-size: 0.75rem; }
-        .footer-links a:hover { color: #fbbf24; }
-        .footer-bottom { text-align: center; padding-top: 24px; border-top: 1px solid rgba(255,255,255,0.05); font-size: 0.65rem; color: #555; }
-
-        @media (max-width: 768px) {
-            .navbar { padding: 12px 18px; }
-            .menu-toggle { display: block; }
-            .nav-links { display: none; flex-direction: column; position: absolute; top: 68px; left: 18px; right: 18px; background: #0f0f0f; border-radius: 24px; padding: 20px; gap: 10px; border: 1px solid rgba(251,191,36,0.3); }
-            .nav-links.show { display: flex; }
-            .nav-links a { width: 100%; text-align: center; padding: 12px; }
-            .container { padding: 0 16px; }
-            .dashboard-tabs { flex-direction: column; }
-            .stats-grid { grid-template-columns: 1fr 1fr; }
-            .chart-container { text-align: center; }
-            .footer-inner { flex-direction: column; text-align: center; }
-            .shop-info-card { flex-direction: column; text-align: center; }
-            .shop-avatar { margin: 0 auto; }
-        }
-        ::-webkit-scrollbar { width: 5px; }
-        ::-webkit-scrollbar-track { background: #1a1a1a; }
-        ::-webkit-scrollbar-thumb { background: #fbbf24; border-radius: 10px; }
-        .icon-gold { color: #fbbf24; }
-        
         .modal {
             display: none;
             position: fixed;
@@ -370,6 +357,42 @@
         }
         .modal-content h3 { color: #fbbf24; margin-bottom: 20px; }
         .modal-buttons { display: flex; gap: 12px; margin-top: 20px; justify-content: flex-end; }
+
+        .main-footer {
+            background: #0a0a0a;
+            border-top: 1px solid rgba(251,191,36,0.15);
+            margin-top: 60px;
+            padding: 40px 0 24px;
+        }
+        .footer-inner { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 32px; margin-bottom: 32px; }
+        .footer-logo .logo { font-size: 1.3rem; display: inline-block; }
+        .footer-logo p { font-size: 0.7rem; color: #777; margin-top: 6px; }
+        .footer-social { display: flex; gap: 20px; }
+        .social-icon { color: #aaa; font-size: 1.3rem; transition: 0.2s; }
+        .social-icon:hover { color: #fbbf24; }
+        .footer-links { display: flex; gap: 24px; flex-wrap: wrap; }
+        .footer-links a { color: #888; text-decoration: none; font-size: 0.75rem; }
+        .footer-links a:hover { color: #fbbf24; }
+        .footer-bottom { text-align: center; padding-top: 24px; border-top: 1px solid rgba(255,255,255,0.05); font-size: 0.65rem; color: #555; }
+
+        @media (max-width: 768px) {
+            .navbar { padding: 12px 18px; }
+            .menu-toggle { display: block; }
+            .nav-links { display: none; flex-direction: column; position: absolute; top: 68px; left: 18px; right: 18px; background: #0f0f0f; border-radius: 24px; padding: 20px; gap: 10px; border: 1px solid rgba(251,191,36,0.3); z-index: 1000; }
+            .nav-links.show { display: flex; }
+            .nav-links a { width: 100%; text-align: center; padding: 12px; }
+            .container { padding: 0 16px; }
+            .stats-grid { grid-template-columns: 1fr 1fr; }
+            .dashboard-tabs { flex-direction: column; }
+            .products-grid { grid-template-columns: 1fr; }
+            .shop-info-card { flex-direction: column; text-align: center; }
+            .chart-header { flex-direction: column; }
+            .footer-inner { flex-direction: column; text-align: center; }
+        }
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-track { background: #1a1a1a; }
+        ::-webkit-scrollbar-thumb { background: #fbbf24; border-radius: 10px; }
+        .icon-gold { color: #fbbf24; }
     </style>
 </head>
 <body>
@@ -384,7 +407,7 @@
     <main class="container">
         <div class="page-header">
             <h1><i class="fas fa-store"></i> Кабинет партнёра</h1>
-            <p>Управляйте магазином, товарами и отслеживайте продажи</p>
+            <p>Управляйте магазином, товарами и отслеживайте заказы</p>
         </div>
 
         <div id="partnerContent" style="display: none;">
@@ -392,36 +415,29 @@
 
             <div class="stats-grid" id="statsGrid">
                 <div class="stat-card"><i class="fas fa-box"></i><div class="value" id="statProducts">0</div><div class="label">Товаров</div></div>
-                <div class="stat-card"><i class="fas fa-shopping-cart"></i><div class="value" id="statOrders">0</div><div class="label">Продаж</div></div>
-                <div class="stat-card"><i class="fas fa-ruble-sign"></i><div class="value" id="statRevenue">0 ₽</div><div class="label">Выручка</div><div class="sub">90% вам: <span id="statYourShare">0 ₽</span></div></div>
+                <div class="stat-card"><i class="fas fa-shopping-cart"></i><div class="value" id="statOrders">0</div><div class="label">Всего заказов</div></div>
+                <div class="stat-card"><i class="fas fa-ruble-sign"></i><div class="value" id="statRevenue">0 ₽</div><div class="label">Выплачено</div><div class="sub">90% вам: <span id="statYourShare">0 ₽</span></div></div>
+                <div class="stat-card"><i class="fas fa-clock"></i><div class="value" id="statPending">0 ₽</div><div class="label">В обработке</div><div class="sub">Ожидают подтверждения</div></div>
             </div>
 
             <div class="chart-container">
-                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; margin-bottom: 20px;">
-                    <h3 style="margin: 0;"><i class="fas fa-chart-line"></i> Продажи</h3>
-                    <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-                        <button class="period-btn" data-period="1">1 день</button>
+                <div class="chart-header">
+                    <div class="period-buttons">
                         <button class="period-btn" data-period="7">7 дней</button>
                         <button class="period-btn" data-period="14">14 дней</button>
-                        <button class="period-btn" data-period="30">1 месяц</button>
+                        <button class="period-btn" data-period="30">30 дней</button>
                         <button class="period-btn" data-period="90">3 месяца</button>
                         <button class="period-btn active" data-period="all">Всё время</button>
                     </div>
                 </div>
-                <canvas id="salesChart" style="max-height: 300px; width: 100%;"></canvas>
-                <div id="chartStats" style="display: flex; justify-content: space-between; margin-top: 16px; padding-top: 16px; border-top: 1px solid rgba(251,191,36,0.2); flex-wrap: wrap; gap: 12px;">
-                    <div><span style="color: #888;">📊 Всего продаж:</span> <strong style="color: #fbbf24;" id="chartTotalOrders">0</strong></div>
-                    <div><span style="color: #888;">💰 Выручка за период:</span> <strong style="color: #fbbf24;" id="chartTotalRevenue">0 ₽</strong></div>
-                    <div><span style="color: #888;">⭐ Средний чек:</span> <strong style="color: #fbbf24;" id="chartAvgPrice">0 ₽</strong></div>
-                    <div><span style="color: #888;">📅 Дней в периоде:</span> <strong style="color: #fbbf24;" id="chartDaysCount">0</strong></div>
-                </div>
+                <canvas id="salesChart"></canvas>
             </div>
 
             <div class="dashboard-tabs">
                 <button class="tab-btn active" data-tab="products"><i class="fas fa-box"></i> Мои товары</button>
                 <button class="tab-btn" data-tab="orders"><i class="fas fa-shopping-cart"></i> Заказы</button>
                 <button class="tab-btn" data-tab="add"><i class="fas fa-plus"></i> Добавить товар</button>
-                <button class="tab-btn" data-tab="edit-shop"><i class="fas fa-store"></i> Настройки магазина</button>
+                <button class="tab-btn" data-tab="edit-shop"><i class="fas fa-store"></i> Настройки</button>
             </div>
 
             <div id="tab-products" class="tab-pane active">
@@ -433,40 +449,42 @@
             </div>
 
             <div id="tab-add" class="tab-pane">
-    <div class="admin-form">
-        <div class="form-row">
-            <div class="form-group"><label><i class="fas fa-tag"></i> Название товара *</label><input type="text" id="newProductName" placeholder="Например: Перчатки для ММА"></div>
-            <div class="form-group"><label><i class="fas fa-ruble-sign"></i> Цена (₽) *</label><input type="number" id="newProductPrice" placeholder="1000"></div>
-        </div>
-        <div class="form-row">
-            <div class="form-group"><label><i class="fas fa-category"></i> Категория *</label>
-                <select id="newProductCategory">
-                    <option value="equipment">🥊 Экипировка</option>
-                    <option value="sportpit">💪 Спорт-пит</option>
-                    <option value="clothing">👕 Одежда</option>
-                    <option value="accessories">🎯 Аксессуары</option>
-                </select>
+                <div class="admin-form">
+                    <div class="form-row">
+                        <div class="form-group"><label><i class="fas fa-tag"></i> Название товара *</label><input type="text" id="newProductName" placeholder="Например: Перчатки для ММА"></div>
+                        <div class="form-group"><label><i class="fas fa-ruble-sign"></i> Цена (₽) *</label><input type="number" id="newProductPrice" placeholder="1000"></div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group"><label><i class="fas fa-category"></i> Категория *</label>
+                            <select id="newProductCategory">
+                                <option value="equipment">🥊 Экипировка</option>
+                                <option value="sportpit">💪 Спорт-пит</option>
+                                <option value="clothing">👕 Одежда</option>
+                                <option value="accessories">🎯 Аксессуары</option>
+                            </select>
+                        </div>
+                        <div class="form-group"></div>
+                    </div>
+                    <div class="form-group"><label><i class="fas fa-align-left"></i> Описание</label><textarea id="newProductDesc" rows="3" placeholder="Подробное описание товара..."></textarea></div>
+                    <div class="form-group"><label><i class="fas fa-image"></i> Фото товара</label><input type="file" id="newProductImage" accept="image/jpeg,image/png,image/webp"></div>
+                    <div id="imagePreview" style="margin-bottom: 20px;"></div>
+                    <button id="addProductBtn" class="btn-primary"><i class="fas fa-plus"></i> Добавить товар</button>
+                    <div id="addResult" style="margin-top:12px;"></div>
+                </div>
             </div>
-            <div class="form-group"></div>
-        </div>
-        <div class="form-group"><label><i class="fas fa-align-left"></i> Описание</label><textarea id="newProductDesc" rows="3" placeholder="Подробное описание товара..."></textarea></div>
-        <div class="form-group"><label><i class="fas fa-image"></i> Фото товара</label><input type="file" id="newProductImage" accept="image/jpeg,image/png,image/webp"></div>
-        <div id="imagePreview" style="margin-bottom: 20px;"></div>
-        <button id="addProductBtn" class="btn-primary"><i class="fas fa-plus"></i> Добавить товар</button>
-        <div id="addResult" style="margin-top:12px;"></div>
-    </div>
-</div>
 
             <div id="tab-edit-shop" class="tab-pane">
                 <div class="admin-form">
                     <div class="form-row">
-                        <div class="form-group"><label><i class="fas fa-store"></i> Название магазина</label><input type="text" id="shopName" placeholder="Название"></div>
-                        <div class="form-group"><label><i class="fas fa-link"></i> Сайт / Соцсети</label><input type="url" id="shopUrl" placeholder="https://..."></div>
+                        <div class="form-group"><label><i class="fas fa-store"></i> Название магазина</label><input type="text" id="shopName"></div>
+                        <div class="form-group"><label><i class="fas fa-link"></i> Сайт / Соцсети</label><input type="url" id="shopUrl"></div>
                     </div>
-                    <div class="form-group"><label><i class="fas fa-align-left"></i> Описание</label><textarea id="shopDesc" rows="3" placeholder="Расскажите о вашем магазине..."></textarea></div>
-                    <div class="form-group"><label><i class="fas fa-phone"></i> Телефон</label><input type="tel" id="shopPhone" placeholder="+7 999 123-45-67"></div>
-                    <div class="form-group"><label><i class="fas fa-percent"></i> Промокод / Скидка</label><input type="text" id="shopDiscount" placeholder="PRORANK10 - скидка 10%"></div>
-                    <button id="updateShopBtn" class="btn-primary"><i class="fas fa-save"></i> Сохранить изменения</button>
+                    <div class="form-group"><label><i class="fas fa-align-left"></i> Описание</label><textarea id="shopDesc" rows="3"></textarea></div>
+                    <div class="form-row">
+                        <div class="form-group"><label><i class="fas fa-phone"></i> Телефон</label><input type="tel" id="shopPhone"></div>
+                        <div class="form-group"><label><i class="fas fa-percent"></i> Промокод</label><input type="text" id="shopDiscount" placeholder="PRORANK10 - скидка 10%"></div>
+                    </div>
+                    <button id="updateShopBtn" class="btn-primary"><i class="fas fa-save"></i> Сохранить</button>
                     <div id="updateShopResult" style="margin-top:12px;"></div>
                 </div>
             </div>
@@ -479,6 +497,36 @@
             <a href="index.html" class="btn-primary" style="display: inline-block; width: auto; padding: 12px 32px; text-decoration: none;">Вернуться на главную</a>
         </div>
     </main>
+
+    <!-- Модалка для отправки заказа -->
+    <div id="shippingModal" class="modal">
+        <div class="modal-content">
+            <h3><i class="fas fa-truck"></i> Отправка заказа</h3>
+            <div class="form-group">
+                <label>Трек-номер</label>
+                <input type="text" id="shippingTrackingNumber" placeholder="Введите трек-номер для отслеживания">
+            </div>
+            <input type="hidden" id="shippingOrderId">
+            <div class="modal-buttons">
+                <button id="confirmShippingBtn" class="btn-primary">Подтвердить отправку</button>
+                <button id="cancelShippingBtn" class="btn-secondary">Отмена</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модалка для редактирования товара -->
+    <div id="editModal" class="modal">
+        <div class="modal-content">
+            <h3><i class="fas fa-edit"></i> Редактировать товар</h3>
+            <div class="form-group"><label>Название</label><input type="text" id="editProductName"></div>
+            <div class="form-group"><label>Цена (₽)</label><input type="number" id="editProductPrice"></div>
+            <div class="form-group"><label>Описание</label><textarea id="editProductDesc" rows="3"></textarea></div>
+            <div class="modal-buttons">
+                <button class="btn-secondary" id="closeModalBtn">Отмена</button>
+                <button class="btn-primary" id="saveEditBtn">Сохранить</button>
+            </div>
+        </div>
+    </div>
 
     <footer class="main-footer">
         <div class="container">
@@ -505,25 +553,13 @@
         </div>
     </footer>
 
-    <div id="editModal" class="modal">
-        <div class="modal-content">
-            <h3><i class="fas fa-edit"></i> Редактировать товар</h3>
-            <div class="form-group"><label>Название</label><input type="text" id="editProductName"></div>
-            <div class="form-group"><label>Цена (₽)</label><input type="number" id="editProductPrice"></div>
-            <div class="form-group"><label>Описание</label><textarea id="editProductDesc" rows="3"></textarea></div>
-            <div class="modal-buttons">
-                <button class="btn-secondary" id="closeModalBtn">Отмена</button>
-                <button class="btn-primary" id="saveEditBtn">Сохранить</button>
-            </div>
-        </div>
-    </div>
-
     <script type="importmap">
         {
             "imports": {
                 "firebase/app": "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js",
                 "firebase/firestore": "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js",
-                "firebase/auth": "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js"
+                "firebase/auth": "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js",
+                "firebase/storage": "https://www.gstatic.com/firebasejs/11.0.2/firebase-storage.js"
             }
         }
     </script>
@@ -532,6 +568,7 @@
         import { initializeApp } from "firebase/app";
         import { getFirestore, collection, getDocs, query, where, orderBy, addDoc, updateDoc, deleteDoc, doc, getDoc } from "firebase/firestore";
         import { getAuth, onAuthStateChanged } from "firebase/auth";
+        import { getStorage, ref, uploadBytes, getDownloadURL, deleteObject } from "firebase/storage";
 
         const firebaseConfig = {
             apiKey: "AIzaSyDUGYJY7pX7q02MS5SACMIIQXpjpQ97mPw",
@@ -545,8 +582,8 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
         const auth = getAuth(app);
+        const storage = getStorage(app);
 
-        // Cloudinary настройки (те же, что и для аватарок)
         const CLOUD_NAME = 'dbv7bfkgy';
         const UPLOAD_PRESET = 'prorank_avatars';
 
@@ -557,57 +594,34 @@
         let currentEditProductId = null;
         let allOrders = [];
 
-        // Загрузка фото в Cloudinary
         async function uploadToCloudinary(file) {
             const formData = new FormData();
             formData.append('file', file);
             formData.append('upload_preset', UPLOAD_PRESET);
-            
-            const response = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, {
-                method: 'POST',
-                body: formData
-            });
-            
+            const response = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, { method: 'POST', body: formData });
             const data = await response.json();
-            if (data.secure_url) {
-                return data.secure_url.replace('/upload/', '/upload/w_300,h_300,c_fill,f_auto,q_auto/');
-            } else {
-                throw new Error(data.error?.message || 'Ошибка загрузки фото');
-            }
+            if (data.secure_url) return data.secure_url.replace('/upload/', '/upload/w_300,h_300,c_fill,f_auto,q_auto/');
+            else throw new Error(data.error?.message || 'Ошибка загрузки фото');
         }
 
-        // Загрузка логотипа магазина
         async function uploadShopLogo(file) {
             const formData = new FormData();
             formData.append('file', file);
             formData.append('upload_preset', UPLOAD_PRESET);
-            
-            const response = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, {
-                method: 'POST',
-                body: formData
-            });
-            
+            const response = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, { method: 'POST', body: formData });
             const data = await response.json();
-            if (data.secure_url) {
-                return data.secure_url.replace('/upload/', '/upload/w_200,h_200,c_fill,f_auto,q_auto/');
-            } else {
-                throw new Error(data.error?.message || 'Ошибка загрузки логотипа');
-            }
+            if (data.secure_url) return data.secure_url.replace('/upload/', '/upload/w_200,h_200,c_fill,f_auto,q_auto/');
+            else throw new Error(data.error?.message || 'Ошибка загрузки логотипа');
         }
 
-        // Отображение информации о магазине (с логотипом)
         async function loadShopInfo() {
             if (!partnerDocId) return;
             const shopDoc = await getDoc(doc(db, "partners", partnerDocId));
             if (shopDoc.exists()) {
                 const data = shopDoc.data();
-                const logoHtml = data.logo 
-                    ? `<img src="${data.logo}" alt="Логотип" onerror="this.style.display='none';this.nextSibling.style.display='flex'">`
-                    : '';
+                const logoHtml = data.logo ? `<img src="${data.logo}" alt="Логотип" onerror="this.style.display='none'">` : '<i class="fas fa-store"></i>';
                 document.getElementById('shopInfoCard').innerHTML = `
-                    <div class="shop-avatar" id="shopAvatarBtn">
-                        ${logoHtml || '<i class="fas fa-store"></i>'}
-                    </div>
+                    <div class="shop-avatar" id="shopAvatarBtn">${logoHtml}</div>
                     <div class="shop-details">
                         <h2>${escapeHtml(data.name || 'Магазин')}</h2>
                         <p><i class="fas fa-link"></i> ${data.url ? `<a href="${data.url}" target="_blank" style="color:#fbbf24;">${data.url}</a>` : '—'}</p>
@@ -616,8 +630,6 @@
                         ${data.discount ? `<p><i class="fas fa-tag"></i> Промокод: <strong style="color:#fbbf24;">${data.discount}</strong></p>` : ''}
                     </div>
                 `;
-                
-                // Настройка загрузки логотипа
                 const avatarBtn = document.getElementById('shopAvatarBtn');
                 if (avatarBtn) {
                     avatarBtn.style.cursor = 'pointer';
@@ -626,34 +638,22 @@
                     fileInput.accept = 'image/jpeg,image/png,image/webp';
                     fileInput.style.display = 'none';
                     document.body.appendChild(fileInput);
-                    
-                    avatarBtn.addEventListener('click', () => {
-                        fileInput.click();
-                    });
-                    
+                    avatarBtn.addEventListener('click', () => fileInput.click());
                     fileInput.addEventListener('change', async (e) => {
                         const file = e.target.files[0];
                         if (!file) return;
-                        if (file.size > 5 * 1024 * 1024) {
-                            alert('❌ Файл больше 5MB');
-                            return;
-                        }
-                        
+                        if (file.size > 5 * 1024 * 1024) { alert('❌ Файл больше 5MB'); return; }
                         avatarBtn.style.opacity = '0.5';
                         try {
                             const logoUrl = await uploadShopLogo(file);
                             await updateDoc(doc(db, "partners", partnerDocId), { logo: logoUrl });
                             loadShopInfo();
                             alert('✅ Логотип обновлён!');
-                        } catch (err) {
-                            alert('❌ Ошибка: ' + err.message);
-                        }
+                        } catch (err) { alert('❌ Ошибка: ' + err.message); }
                         avatarBtn.style.opacity = '1';
                         fileInput.value = '';
                     });
                 }
-                
-                // Заполняем форму редактирования
                 document.getElementById('shopName').value = data.name || '';
                 document.getElementById('shopUrl').value = data.url || '';
                 document.getElementById('shopDesc').value = data.description || '';
@@ -678,23 +678,17 @@
 
         async function loadPartnerProducts() {
             const container = document.getElementById('productsList');
-            if (!partnerDocId) {
-                container.innerHTML = '<div class="empty-state"><i class="fas fa-store"></i><p>У вас пока нет товаров</p></div>';
-                return;
-            }
+            if (!partnerDocId) { container.innerHTML = '<div class="empty-state"><i class="fas fa-store"></i><p>У вас пока нет товаров</p></div>'; return; }
             try {
                 const q = query(collection(db, "products"), where("partnerId", "==", partnerDocId), orderBy("createdAt", "desc"));
                 const snapshot = await getDocs(q);
-                if (snapshot.empty) {
-                    container.innerHTML = '<div class="empty-state"><i class="fas fa-box-open"></i><p>У вас пока нет товаров</p><p style="font-size:0.8rem;">Добавьте первый товар во вкладке "Добавить товар"</p></div>';
-                    return;
-                }
+                if (snapshot.empty) { container.innerHTML = '<div class="empty-state"><i class="fas fa-box-open"></i><p>У вас пока нет товаров</p></div>'; return; }
                 let html = '';
                 for (const docSnap of snapshot.docs) {
                     const p = docSnap.data();
                     html += `
                         <div class="product-card">
-                            ${p.image ? `<img src="${p.image}" class="product-image" onerror="this.src='https://placehold.co/400x200/1a1a1a/fbbf24?text=No+Image'">` : '<div class="product-image" style="display:flex;align-items:center;justify-content:center;background:#1a1a1a;"><i class="fas fa-image" style="font-size: 4rem; color: #555;"></i></div>'}
+                            ${p.image ? `<img src="${p.image}" class="product-image" onerror="this.src='https://placehold.co/400x200/1a1a1a/fbbf24?text=No+Image'">` : '<div class="product-image" style="display:flex;align-items:center;justify-content:center;"><i class="fas fa-image" style="font-size: 4rem; color: #555;"></i></div>'}
                             <div class="product-info">
                                 <div class="product-title">${escapeHtml(p.name)}</div>
                                 <div class="product-price">${p.price.toLocaleString()} ₽</div>
@@ -708,7 +702,6 @@
                     `;
                 }
                 container.innerHTML = html;
-
                 document.querySelectorAll('.btn-edit').forEach(btn => {
                     btn.addEventListener('click', () => {
                         currentEditProductId = btn.dataset.id;
@@ -718,20 +711,17 @@
                         document.getElementById('editModal').style.display = 'flex';
                     });
                 });
-                
                 document.querySelectorAll('.btn-delete').forEach(btn => {
                     btn.addEventListener('click', async () => {
-                        if (confirm('Удалить товар? Это действие нельзя отменить.')) {
+                        if (confirm('Удалить товар?')) {
+                            if (btn.dataset.image && btn.dataset.image.includes('cloudinary')) { }
                             await deleteDoc(doc(db, "products", btn.dataset.id));
                             loadPartnerProducts();
                             updateStatsAndChart();
                         }
                     });
                 });
-            } catch (err) {
-                console.error(err);
-                container.innerHTML = '<div class="empty-state">Ошибка загрузки</div>';
-            }
+            } catch (err) { console.error(err); container.innerHTML = '<div class="empty-state">Ошибка загрузки</div>'; }
         }
 
         document.getElementById('saveEditBtn')?.addEventListener('click', async () => {
@@ -740,21 +730,14 @@
             const newPrice = parseInt(document.getElementById('editProductPrice').value);
             const newDesc = document.getElementById('editProductDesc').value;
             if (!newName || !newPrice) { alert('Заполните название и цену'); return; }
-            await updateDoc(doc(db, "products", currentEditProductId), { 
-                name: newName, 
-                price: newPrice, 
-                desc: newDesc 
-            });
+            await updateDoc(doc(db, "products", currentEditProductId), { name: newName, price: newPrice, desc: newDesc });
             document.getElementById('editModal').style.display = 'none';
             loadPartnerProducts();
             updateStatsAndChart();
         });
 
-        document.getElementById('closeModalBtn')?.addEventListener('click', () => {
-            document.getElementById('editModal').style.display = 'none';
-        });
+        document.getElementById('closeModalBtn')?.addEventListener('click', () => { document.getElementById('editModal').style.display = 'none'; });
 
-        // Добавление товара через Cloudinary
         document.getElementById('addProductBtn')?.addEventListener('click', async () => {
             if (!partnerDocId) { alert('Вы не являетесь партнёром'); return; }
             const name = document.getElementById('newProductName').value.trim();
@@ -762,55 +745,41 @@
             const desc = document.getElementById('newProductDesc').value;
             const category = document.getElementById('newProductCategory').value;
             const file = document.getElementById('newProductImage').files[0];
-    
-             if (!name || !price) { alert('Заполните название и цену'); return; }
-            if (!category) { alert('Выберите категорию товара'); return; }
+            if (!name || !price) { alert('Заполните название и цену'); return; }
             if (price <= 0) { alert('Цена должна быть больше 0'); return; }
-    
             const addBtn = document.getElementById('addProductBtn');
             addBtn.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> Добавление...';
             addBtn.disabled = true;
-    
-    try {
-        let imageUrl = null;
-        if (file) {
-            imageUrl = await uploadToCloudinary(file);
-        }
-        await addDoc(collection(db, "products"), {
-            name, price, desc, image: imageUrl, category,
-            partnerId: partnerDocId,
-            partnerName: currentPartner?.name || 'Магазин',
-            createdAt: new Date()
+            try {
+                let imageUrl = null;
+                if (file) imageUrl = await uploadToCloudinary(file);
+                await addDoc(collection(db, "products"), {
+                    name, price, desc, image: imageUrl, category,
+                    partnerId: partnerDocId,
+                    partnerName: currentPartner?.name || 'Магазин',
+                    createdAt: new Date()
+                });
+                alert('✅ Товар добавлен!');
+                document.getElementById('newProductName').value = '';
+                document.getElementById('newProductPrice').value = '';
+                document.getElementById('newProductDesc').value = '';
+                document.getElementById('newProductImage').value = '';
+                document.getElementById('imagePreview').innerHTML = '';
+                document.getElementById('newProductCategory').value = 'equipment';
+                loadPartnerProducts();
+                updateStatsAndChart();
+            } catch (err) { alert('Ошибка: ' + err.message); }
+            finally { addBtn.innerHTML = '<i class="fas fa-plus"></i> Добавить товар'; addBtn.disabled = false; }
         });
-        alert('✅ Товар добавлен!');
-        document.getElementById('newProductName').value = '';
-        document.getElementById('newProductPrice').value = '';
-        document.getElementById('newProductDesc').value = '';
-        document.getElementById('newProductImage').value = '';
-        document.getElementById('imagePreview').innerHTML = '';
-        document.getElementById('newProductCategory').value = 'equipment';
-        loadPartnerProducts();
-        updateStatsAndChart();
-    } catch (err) {
-        alert('Ошибка: ' + err.message);
-    } finally {
-        addBtn.innerHTML = '<i class="fas fa-plus"></i> Добавить товар';
-        addBtn.disabled = false;
-    }
-});
 
         document.getElementById('newProductImage')?.addEventListener('change', (e) => {
             const file = e.target.files[0];
             const preview = document.getElementById('imagePreview');
             if (file) {
                 const reader = new FileReader();
-                reader.onload = (event) => {
-                    preview.innerHTML = `<img src="${event.target.result}" style="max-width: 200px; border-radius: 16px; border: 1px solid #fbbf24;">`;
-                };
+                reader.onload = (event) => { preview.innerHTML = `<img src="${event.target.result}" style="max-width: 200px; border-radius: 16px; border: 1px solid #fbbf24;">`; };
                 reader.readAsDataURL(file);
-            } else {
-                preview.innerHTML = '';
-            }
+            } else { preview.innerHTML = ''; }
         });
 
         async function loadPartnerOrdersAndStats() {
@@ -818,25 +787,24 @@
             try {
                 const productsSnap = await getDocs(query(collection(db, "products"), where("partnerId", "==", partnerDocId)));
                 const productNames = productsSnap.docs.map(d => d.data().name);
-                
                 const ordersSnap = await getDocs(collection(db, "orders"));
                 let orders = [];
                 let totalRevenue = 0;
-                
+                let pendingRevenue = 0;
                 ordersSnap.forEach(orderDoc => {
                     const order = orderDoc.data();
-                    if (productNames.includes(order.productName) && order.status === 'completed') {
-                        orders.push(order);
-                        totalRevenue += order.price;
+                    if (productNames.includes(order.productName)) {
+                        orders.push({ id: orderDoc.id, ...order });
+                        if (order.status === 'completed') totalRevenue += (order.totalPrice || order.price);
+                        else if (order.status === 'shipped') pendingRevenue += (order.totalPrice || order.price);
                     }
                 });
-                
                 allOrders = orders;
-                
                 document.getElementById('statProducts').innerText = productsSnap.size;
                 document.getElementById('statOrders').innerText = orders.length;
                 document.getElementById('statRevenue').innerHTML = `${totalRevenue.toLocaleString()} ₽`;
                 document.getElementById('statYourShare').innerHTML = `${(totalRevenue * 0.9).toLocaleString()} ₽`;
+                document.getElementById('statPending').innerHTML = `${(pendingRevenue * 0.9).toLocaleString()} ₽`;
                 
                 const ordersContainer = document.getElementById('partnerOrdersList');
                 if (orders.length === 0) {
@@ -845,137 +813,101 @@
                     let ordersHtml = '';
                     for (const order of orders) {
                         const date = order.createdAt?.toDate().toLocaleString() || '—';
+                        const statusMap = {
+                            'new': { text: '🆕 Новый', color: '#f59e0b', showConfirm: true, showShip: false },
+                            'accepted': { text: '✅ Принят', color: '#3b82f6', showConfirm: false, showShip: true },
+                            'shipped': { text: '📦 Отправлен', color: '#8b5cf6', showConfirm: false, showShip: false, showTracking: true },
+                            'completed': { text: '🏆 Завершён', color: '#10b981', showConfirm: false, showShip: false }
+                        };
+                        const status = statusMap[order.status] || statusMap['new'];
                         ordersHtml += `
                             <div class="order-card">
                                 <div class="order-info">
                                     <h4>${escapeHtml(order.productName)}</h4>
-                                    <p><i class="fas fa-user"></i> ${escapeHtml(order.buyerName || 'Покупатель')}</p>
+                                    <p><i class="fas fa-user"></i> ${escapeHtml(order.userName || 'Покупатель')}</p>
+                                    <p><i class="fas fa-phone"></i> ${escapeHtml(order.userPhone || '—')}</p>
+                                    <p><i class="fas fa-map-marker-alt"></i> ${escapeHtml(order.userAddress || '—')}</p>
                                     <p><i class="fas fa-clock"></i> ${date}</p>
+                                    ${order.userComment ? `<p><i class="fas fa-comment"></i> ${escapeHtml(order.userComment)}</p>` : ''}
+                                    ${order.trackingNumber ? `<p><i class="fas fa-box"></i> Трек-номер: <strong>${escapeHtml(order.trackingNumber)}</strong></p>` : ''}
                                 </div>
-                                <div class="order-amount">${order.price.toLocaleString()} ₽</div>
-                                <div class="order-commission">Ваша комиссия (90%): ${(order.price * 0.9).toLocaleString()} ₽</div>
+                                <div class="order-amount">${(order.totalPrice || order.price).toLocaleString()} ₽</div>
+                                <div class="order-status" style="background: ${status.color};">${status.text}</div>
+                                ${status.showConfirm ? `<button class="btn-accept-order" data-order-id="${order.id}" style="background: #10b981;">✅ Принять заказ</button>` : ''}
+                                ${status.showShip ? `<button class="btn-ship-order" data-order-id="${order.id}" data-tracking="${order.trackingNumber || ''}" style="background: #fbbf24; color:#000;">📦 Отправить</button>` : ''}
+                                <div class="order-commission">Ваша комиссия (90%): ${Math.floor((order.totalPrice || order.price) * 0.9).toLocaleString()} ₽</div>
                             </div>
                         `;
                     }
                     ordersContainer.innerHTML = ordersHtml;
+                    
+                    document.querySelectorAll('.btn-accept-order').forEach(btn => {
+                        btn.addEventListener('click', async () => {
+                            const orderId = btn.dataset.orderId;
+                            await updateDoc(doc(db, "orders", orderId), { status: 'accepted', acceptedAt: new Date() });
+                            alert('✅ Заказ принят!');
+                            await loadPartnerOrdersAndStats();
+                        });
+                    });
+                    document.querySelectorAll('.btn-ship-order').forEach(btn => {
+                        btn.addEventListener('click', () => {
+                            document.getElementById('shippingOrderId').value = btn.dataset.orderId;
+                            document.getElementById('shippingTrackingNumber').value = '';
+                            document.getElementById('shippingModal').style.display = 'flex';
+                        });
+                    });
                 }
-                
                 updateChart('all');
-            } catch (err) {
-                console.error(err);
-                document.getElementById('partnerOrdersList').innerHTML = '<div class="empty-state">Ошибка загрузки заказов</div>';
-            }
+            } catch (err) { console.error(err); document.getElementById('partnerOrdersList').innerHTML = '<div class="empty-state">Ошибка загрузки</div>'; }
         }
+
+        async function submitShipping(orderId, trackingNumber) {
+            try {
+                await updateDoc(doc(db, "orders", orderId), { status: 'shipped', trackingNumber, shippedAt: new Date() });
+                alert(`✅ Заказ отправлен! Трек-номер: ${trackingNumber}`);
+                await loadPartnerOrdersAndStats();
+            } catch (err) { alert('❌ Ошибка при отправке'); }
+        }
+
+        document.getElementById('confirmShippingBtn')?.addEventListener('click', async () => {
+            const orderId = document.getElementById('shippingOrderId').value;
+            const trackingNumber = document.getElementById('shippingTrackingNumber').value.trim();
+            if (!trackingNumber) { alert('Введите трек-номер'); return; }
+            await submitShipping(orderId, trackingNumber);
+            document.getElementById('shippingModal').style.display = 'none';
+            document.getElementById('shippingTrackingNumber').value = '';
+        });
+        document.getElementById('cancelShippingBtn')?.addEventListener('click', () => {
+            document.getElementById('shippingModal').style.display = 'none';
+            document.getElementById('shippingTrackingNumber').value = '';
+        });
+        window.addEventListener('click', (e) => { if (e.target === document.getElementById('shippingModal')) document.getElementById('shippingModal').style.display = 'none'; });
 
         async function updateChart(period) {
             if (!allOrders.length) {
                 if (salesChart) salesChart.destroy();
                 const ctx = document.getElementById('salesChart').getContext('2d');
-                salesChart = new Chart(ctx, {
-                    type: 'line',
-                    data: { labels: [], datasets: [{ label: 'Выручка (₽)', data: [], borderColor: '#fbbf24' }] },
-                    options: { responsive: true }
-                });
-                document.getElementById('chartTotalOrders').innerText = '0';
-                document.getElementById('chartTotalRevenue').innerHTML = '0 ₽';
-                document.getElementById('chartAvgPrice').innerHTML = '0 ₽';
-                document.getElementById('chartDaysCount').innerHTML = '0';
+                salesChart = new Chart(ctx, { type: 'line', data: { labels: [], datasets: [{ label: 'Выручка (₽)', data: [], borderColor: '#fbbf24' }] }, options: { responsive: true } });
                 return;
             }
-
             let filteredOrders = [...allOrders];
             let startDate = null;
-            
-            if (period !== 'all') {
-                startDate = new Date();
-                startDate.setDate(startDate.getDate() - parseInt(period));
-                startDate.setHours(0, 0, 0, 0);
-            }
-            
-            if (startDate) {
-                filteredOrders = allOrders.filter(o => o.createdAt && o.createdAt.toDate() >= startDate);
-            }
-            
-            const periodRevenue = filteredOrders.reduce((sum, o) => sum + o.price, 0);
-            const periodOrdersCount = filteredOrders.length;
-            const periodAvgPrice = periodOrdersCount > 0 ? periodRevenue / periodOrdersCount : 0;
-            
-            document.getElementById('chartTotalOrders').innerText = periodOrdersCount;
-            document.getElementById('chartTotalRevenue').innerHTML = `${periodRevenue.toLocaleString()} ₽`;
-            document.getElementById('chartAvgPrice').innerHTML = `${periodAvgPrice.toFixed(0)} ₽`;
-            
+            if (period !== 'all') { startDate = new Date(); startDate.setDate(startDate.getDate() - parseInt(period)); startDate.setHours(0,0,0,0); }
+            if (startDate) filteredOrders = allOrders.filter(o => o.createdAt && o.createdAt.toDate() >= startDate);
+            const periodRevenue = filteredOrders.reduce((sum, o) => sum + (o.totalPrice || o.price), 0);
             const dailySales = {};
-            
             let dateRangeStart, dateRangeEnd;
-            if (startDate) {
-                dateRangeStart = new Date(startDate);
-                dateRangeEnd = new Date();
-            } else {
-                const oldestOrder = [...allOrders].sort((a, b) => a.createdAt?.toDate() - b.createdAt?.toDate())[0];
-                dateRangeStart = oldestOrder?.createdAt?.toDate() || new Date();
-                dateRangeStart.setHours(0, 0, 0, 0);
-                dateRangeEnd = new Date();
-            }
-            
-            const daysCount = Math.ceil((dateRangeEnd - dateRangeStart) / (1000 * 60 * 60 * 24)) + 1;
-            document.getElementById('chartDaysCount').innerHTML = daysCount;
-            
-            for (let d = new Date(dateRangeStart); d <= dateRangeEnd; d.setDate(d.getDate() + 1)) {
-                const dateStr = d.toISOString().split('T')[0];
-                dailySales[dateStr] = 0;
-            }
-            
-            filteredOrders.forEach(o => {
-                if (o.createdAt) {
-                    const dateStr = o.createdAt.toDate().toISOString().split('T')[0];
-                    if (dailySales[dateStr] !== undefined) dailySales[dateStr] += o.price;
-                }
-            });
-            
+            if (startDate) { dateRangeStart = new Date(startDate); dateRangeEnd = new Date(); }
+            else { const oldestOrder = [...allOrders].sort((a,b) => a.createdAt?.toDate() - b.createdAt?.toDate())[0]; dateRangeStart = oldestOrder?.createdAt?.toDate() || new Date(); dateRangeStart.setHours(0,0,0,0); dateRangeEnd = new Date(); }
+            for (let d = new Date(dateRangeStart); d <= dateRangeEnd; d.setDate(d.getDate() + 1)) { const dateStr = d.toISOString().split('T')[0]; dailySales[dateStr] = 0; }
+            filteredOrders.forEach(o => { if (o.createdAt) { const dateStr = o.createdAt.toDate().toISOString().split('T')[0]; if (dailySales[dateStr] !== undefined) dailySales[dateStr] += (o.totalPrice || o.price); } });
             const labels = Object.keys(dailySales).sort();
             const data = labels.map(l => dailySales[l]);
-            
             let formattedLabels = labels.map(l => l.slice(5));
-            if (labels.length > 31) {
-                const step = Math.ceil(labels.length / 15);
-                formattedLabels = labels.map((l, i) => i % step === 0 ? l.slice(5) : '');
-            }
-            
+            if (labels.length > 31) { const step = Math.ceil(labels.length / 15); formattedLabels = labels.map((l, i) => i % step === 0 ? l.slice(5) : ''); }
             if (salesChart) salesChart.destroy();
             const ctx = document.getElementById('salesChart').getContext('2d');
-            salesChart = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: formattedLabels,
-                    datasets: [{
-                        label: 'Выручка (₽)',
-                        data: data,
-                        borderColor: '#fbbf24',
-                        backgroundColor: 'rgba(251, 191, 36, 0.1)',
-                        fill: true,
-                        tension: 0.4,
-                        pointBackgroundColor: '#fbbf24',
-                        pointBorderColor: '#fff',
-                        pointRadius: labels.length > 60 ? 2 : 4,
-                        pointHoverRadius: 6
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: true,
-                    plugins: {
-                        legend: { labels: { color: '#fff' } },
-                        tooltip: { callbacks: { label: (ctx) => `${ctx.raw.toLocaleString()} ₽` } }
-                    },
-                    scales: {
-                        y: { 
-                            grid: { color: 'rgba(255,255,255,0.1)' }, 
-                            ticks: { color: '#fff', callback: (v) => v.toLocaleString() + ' ₽' }
-                        },
-                        x: { grid: { display: false }, ticks: { color: '#aaa', maxRotation: 45, autoSkip: true } }
-                    }
-                }
-            });
+            salesChart = new Chart(ctx, { type: 'line', data: { labels: formattedLabels, datasets: [{ label: 'Выручка (₽)', data, borderColor: '#fbbf24', backgroundColor: 'rgba(251,191,36,0.1)', fill: true, tension: 0.4 }] }, options: { responsive: true } });
         }
 
         document.querySelectorAll('.period-btn').forEach(btn => {
@@ -986,9 +918,7 @@
             });
         });
 
-        async function updateStatsAndChart() {
-            await loadPartnerOrdersAndStats();
-        }
+        async function updateStatsAndChart() { await loadPartnerOrdersAndStats(); }
 
         function escapeHtml(str) { if (!str) return ''; return String(str).replace(/[&<>]/g, m => m === '&' ? '&amp;' : m === '<' ? '&lt;' : '&gt;'); }
 
@@ -1003,18 +933,12 @@
             });
         });
 
-        const menuToggle = document.getElementById('menuToggle');
-        const navLinks = document.getElementById('navLinks');
-        if (menuToggle && navLinks) menuToggle.addEventListener('click', () => navLinks.classList.toggle('show'));
-
         onAuthStateChanged(auth, async (user) => {
             const pendingDiv = document.getElementById('pendingStatus');
             const partnerContent = document.getElementById('partnerContent');
-            
             if (user) {
                 currentUser = user;
                 const partnersSnap = await getDocs(query(collection(db, "partners"), where("email", "==", user.email)));
-                
                 if (!partnersSnap.empty) {
                     currentPartner = partnersSnap.docs[0].data();
                     partnerDocId = partnersSnap.docs[0].id;
@@ -1025,19 +949,15 @@
                     await loadPartnerOrdersAndStats();
                 } else {
                     const requestsSnap = await getDocs(query(collection(db, "partner_requests"), where("contactEmail", "==", user.email)));
-                    if (!requestsSnap.empty) {
-                        pendingDiv.style.display = 'block';
-                        partnerContent.style.display = 'none';
-                    } else {
-                        pendingDiv.style.display = 'block';
-                        partnerContent.style.display = 'none';
-                        document.querySelector('#pendingStatus p').innerHTML = 'Вы не зарегистрированы как партнёр. <a href="login.html?role=partner" style="color:#fbbf24;">Подать заявку →</a>';
-                    }
+                    if (!requestsSnap.empty) { pendingDiv.style.display = 'block'; partnerContent.style.display = 'none'; }
+                    else { pendingDiv.style.display = 'block'; partnerContent.style.display = 'none'; document.querySelector('#pendingStatus p').innerHTML = 'Вы не зарегистрированы как партнёр. <a href="login.html?role=partner" style="color:#fbbf24;">Подать заявку →</a>'; }
                 }
-            } else {
-                window.location.href = 'login.html';
-            }
+            } else { window.location.href = 'login.html'; }
         });
+
+        const menuToggle = document.getElementById('menuToggle');
+        const navLinks = document.getElementById('navLinks');
+        if (menuToggle && navLinks) menuToggle.addEventListener('click', () => navLinks.classList.toggle('show'));
     </script>
 </body>
 </html>

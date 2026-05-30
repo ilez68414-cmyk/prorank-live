@@ -63,6 +63,29 @@ function initMobileSubmenus() {
     });
 }
 
+// Функция обновления баланса вызовов (скрывается для партнёров)
+async function updateHeaderBalance() {
+    const user = auth.currentUser;
+    const balanceDiv = document.getElementById('balanceIndicator');
+    const balanceCount = document.getElementById('headerChallengesCount');
+    if (!user || !balanceDiv) return;
+    
+    try {
+        const userDoc = await getDoc(doc(db, "fighters", user.uid));
+        const data = userDoc.data();
+        
+        // ЕСЛИ ПОЛЬЗОВАТЕЛЬ — ПАРТНЁР, СКРЫВАЕМ ИНДИКАТОР ВЫЗОВОВ
+        if (data?.isPartner === true) {
+            balanceDiv.style.display = 'none';
+            return;
+        }
+        
+        const total = (data.freeChallenges || 0) + (data.purchasedChallenges || 0);
+        balanceCount.innerText = total;
+        balanceDiv.style.display = 'flex';
+    } catch (err) { console.error(err); }
+}
+
 async function initHeader() {
     const navLinks = document.getElementById('navLinks');
     if (!navLinks) return;
@@ -78,6 +101,8 @@ async function initHeader() {
             const userDoc = await getDoc(doc(db, "fighters", userId));
             isPartner = userDoc.data()?.isPartner === true;
             userName = userDoc.data()?.name || 'Боец';
+            // Обновляем индикатор баланса после получения данных о пользователе
+            setTimeout(updateHeaderBalance, 100);
         } catch (err) { console.error(err); }
     }
 
@@ -208,7 +233,7 @@ async function initHeader() {
         }
     } 
     else {
-        // МОБИЛЬНАЯ ВЕРСИЯ (упрощённо, без магазинов)
+        // МОБИЛЬНАЯ ВЕРСИЯ
         if (user && isPartner) {
             navLinks.innerHTML = `
                 <a href="index.html"><i class="fas fa-home"></i> Главная</a>
@@ -319,3 +344,6 @@ window.addEventListener('resize', () => {
         });
     }
 });
+
+// Экспортируем функцию для использования в других файлах
+window.updateHeaderBalance = updateHeaderBalance;
