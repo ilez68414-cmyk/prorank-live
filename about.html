@@ -2,13 +2,16 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=yes">
+    <meta name="theme-color" content="#fbbf24">
+    <meta name="description" content="О проекте PRORANK — рейтинговая платформа для спортсменов-любителей">
     <title>О проекте | PRORANK</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700;14..32,800;14..32,900&display=swap" rel="stylesheet">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
+        
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
             background: radial-gradient(ellipse at 30% 40%, rgba(251, 191, 36, 0.15) 0%, transparent 60%),
@@ -16,11 +19,34 @@
                         linear-gradient(135deg, #1a1a1a 0%, #0f0f0f 40%, #1a1a1a 100%);
             background-attachment: fixed;
             color: #fff;
-            line-height: 1.4;
+            line-height: 1.5;
             min-height: 100vh;
+            display: flex;
+            flex-direction: column;
         }
-        .gold-top { position: fixed; top: 0; left: 0; width: 100%; height: 3px; background: linear-gradient(90deg, #fbbf24, #ffdd88, #fbbf24, #b8860b); z-index: 1001; }
-        .container { max-width: 1200px; margin: 0 auto; padding: 0 24px; position: relative; z-index: 2; }
+        
+        main { flex: 1; }
+        
+        .gold-top { 
+            position: fixed; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 3px; 
+            background: linear-gradient(90deg, #fbbf24, #ffdd88, #fbbf24, #b8860b); 
+            z-index: 1001; 
+        }
+        
+        .container { 
+            max-width: 1000px; 
+            margin: 0 auto; 
+            padding: 0 24px; 
+            position: relative; 
+            z-index: 2;
+            width: 100%;
+        }
+        
+        /* Шапка */
         .navbar {
             display: flex;
             justify-content: space-between;
@@ -33,6 +59,7 @@
             top: 0;
             z-index: 1000;
         }
+        
         .logo {
             font-size: 1.8rem;
             font-weight: 800;
@@ -42,7 +69,13 @@
             background-clip: text;
             color: transparent;
         }
-        .logo span { background: linear-gradient(135deg, #fbbf24, #ffdd77); background-clip: text; color: transparent; }
+        
+        .logo span {
+            background: linear-gradient(135deg, #fbbf24, #ffdd77);
+            background-clip: text;
+            color: transparent;
+        }
+        
         .menu-toggle {
             display: none;
             background: rgba(251,191,36,0.1);
@@ -52,7 +85,10 @@
             cursor: pointer;
             padding: 8px 14px;
             border-radius: 12px;
+            min-height: 44px;
+            min-width: 44px;
         }
+        
         .nav-links {
             display: flex;
             gap: 6px;
@@ -62,95 +98,317 @@
             border-radius: 60px;
             border: 1px solid rgba(251,191,36,0.2);
         }
-        .nav-links a { color: #ddd; text-decoration: none; font-size: 0.9rem; font-weight: 500; padding: 8px 18px; border-radius: 40px; transition: all 0.2s; }
+        
+        .nav-links a { 
+            color: #ddd; 
+            text-decoration: none; 
+            font-size: 0.9rem; 
+            font-weight: 500; 
+            padding: 8px 18px; 
+            border-radius: 40px; 
+            transition: all 0.2s;
+        }
+        
         .nav-links a i { margin-right: 8px; color: #fbbf24; }
-        .nav-links a:hover { color: #fbbf24; }
+        .nav-links a:hover { color: #fbbf24; background: rgba(251,191,36,0.1); }
         
-        .page-header { text-align: center; padding: 50px 20px 30px; }
-        .page-header h1 { font-size: 2.2rem; font-weight: 800; background: linear-gradient(135deg, #fff, #fbbf24); background-clip: text; color: transparent; }
-        .page-header p { color: #aaa; margin-top: 12px; font-size: 1rem; }
+        /* Заголовок */
+        .page-header { 
+            text-align: center; 
+            padding: 40px 20px 20px;
+        }
         
+        .page-header h1 { 
+            font-size: clamp(1.6rem, 5vw, 2rem); 
+            font-weight: 700; 
+            background: linear-gradient(135deg, #fff, #fbbf24); 
+            background-clip: text; 
+            color: transparent;
+        }
+        
+        .page-header p { 
+            color: #aaa; 
+            margin-top: 8px; 
+            font-size: clamp(0.85rem, 3vw, 0.95rem);
+        }
+        
+        /* Статистика */
         .stats-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 24px;
-            margin: 40px 0;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            margin: 30px 0;
         }
-        .stat-card {
-            background: rgba(15,15,15,0.7);
-            backdrop-filter: blur(8px);
-            border-radius: 24px;
-            padding: 28px 20px;
-            text-align: center;
-            border: 1px solid rgba(251,191,36,0.15);
-        }
-        .stat-card i { font-size: 2.5rem; color: #fbbf24; margin-bottom: 12px; display: inline-block; }
-        .stat-card h3 { font-size: 1.8rem; font-weight: 800; color: #fbbf24; margin-bottom: 4px; }
-        .stat-card p { color: #aaa; font-size: 0.85rem; }
         
-        .content-card {
-            background: rgba(15,15,15,0.7);
-            backdrop-filter: blur(8px);
-            border-radius: 28px;
-            padding: 32px;
-            margin: 20px 0;
-            border: 1px solid rgba(251,191,36,0.2);
+        .stat-card {
+            background: rgba(15,15,15,0.6);
+            border-radius: 20px;
+            padding: 20px 12px;
+            text-align: center;
+            border: 1px solid rgba(251,191,36,0.1);
+            transition: all 0.2s;
         }
+        
+        .stat-card:hover {
+            border-color: rgba(251,191,36,0.3);
+            transform: translateY(-2px);
+        }
+        
+        .stat-card i { 
+            font-size: 1.8rem; 
+            color: #fbbf24; 
+            margin-bottom: 8px; 
+        }
+        
+        .stat-card h3 { 
+            font-size: 1.5rem; 
+            font-weight: 700; 
+            color: #fbbf24; 
+            margin-bottom: 4px;
+        }
+        
+        .stat-card p { 
+            color: #aaa; 
+            font-size: 0.75rem;
+        }
+        
+        /* Контент */
+        .content-card {
+            background: rgba(15,15,15,0.6);
+            border-radius: 24px;
+            padding: 28px;
+            margin: 20px 0;
+            border: 1px solid rgba(251,191,36,0.1);
+        }
+        
         .content-card h2 {
             color: #fbbf24;
-            margin-bottom: 20px;
-            font-size: 1.3rem;
+            margin-bottom: 16px;
+            font-size: 1.2rem;
+            font-weight: 600;
             display: flex;
             align-items: center;
             gap: 10px;
         }
+        
+        .content-card h2 i {
+            font-size: 1.1rem;
+        }
+        
         .content-card p {
             color: #ccc;
-            line-height: 1.7;
+            line-height: 1.6;
             margin-bottom: 20px;
+            font-size: 0.9rem;
         }
+        
         .feature-list {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 16px;
-            margin: 24px 0;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin: 20px 0;
         }
+        
         .feature-item {
             background: rgba(0,0,0,0.3);
-            border-radius: 20px;
-            padding: 16px;
+            border-radius: 16px;
+            padding: 12px 16px;
             display: flex;
             align-items: center;
             gap: 12px;
+            transition: all 0.2s;
         }
-        .feature-item i { font-size: 1.5rem; color: #fbbf24; }
-        .feature-item span { font-weight: 500; }
         
-        .main-footer { background: #0a0a0a; border-top: 1px solid rgba(251,191,36,0.15); margin-top: 60px; padding: 40px 0 24px; }
-        .footer-inner { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 32px; margin-bottom: 32px; }
-        .footer-logo .logo { font-size: 1.3rem; display: inline-block; }
-        .footer-logo p { font-size: 0.7rem; color: #777; margin-top: 6px; }
-        .footer-social { display: flex; gap: 20px; }
-        .social-icon { color: #aaa; font-size: 1.3rem; transition: 0.2s; }
-        .social-icon:hover { color: #fbbf24; }
-        .footer-links { display: flex; gap: 24px; flex-wrap: wrap; }
-        .footer-links a { color: #888; text-decoration: none; font-size: 0.75rem; }
-        .footer-links a:hover { color: #fbbf24; }
-        .footer-bottom { text-align: center; padding-top: 24px; border-top: 1px solid rgba(255,255,255,0.05); font-size: 0.65rem; color: #555; }
+        .feature-item:hover {
+            background: rgba(0,0,0,0.5);
+            transform: translateX(3px);
+        }
         
+        .feature-item i { 
+            font-size: 1.2rem; 
+            color: #fbbf24; 
+            width: 28px;
+        }
+        
+        .feature-item span { 
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+        
+        .contacts-list {
+            background: rgba(0,0,0,0.3);
+            border-radius: 16px;
+            padding: 16px 20px;
+            margin-top: 10px;
+        }
+        
+        .contacts-list p {
+            margin-bottom: 8px;
+            font-size: 0.85rem;
+        }
+        
+        .contacts-list p:last-child {
+            margin-bottom: 0;
+        }
+        
+        .contacts-list strong {
+            color: #fbbf24;
+            font-weight: 600;
+        }
+        
+        /* Подвал */
+        .main-footer {
+            background: #0a0a0a;
+            border-top: 1px solid rgba(251,191,36,0.15);
+            margin-top: 60px;
+            padding: 40px 0 24px;
+        }
+        
+        .footer-inner {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 24px;
+            margin-bottom: 24px;
+        }
+        
+        .footer-logo .logo {
+            font-size: 1.2rem;
+            display: inline-block;
+        }
+        
+        .footer-logo p {
+            font-size: 0.65rem;
+            color: #777;
+            margin-top: 4px;
+        }
+        
+        .footer-social {
+            display: flex;
+            gap: 16px;
+        }
+        
+        .social-icon {
+            color: #aaa;
+            font-size: 1.2rem;
+            transition: 0.2s;
+        }
+        
+        .social-icon:hover {
+            color: #fbbf24;
+        }
+        
+        .footer-links {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .footer-links a {
+            color: #888;
+            text-decoration: none;
+            font-size: 0.7rem;
+            transition: 0.2s;
+        }
+        
+        .footer-links a:hover {
+            color: #fbbf24;
+        }
+        
+        .footer-bottom {
+            text-align: center;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255,255,255,0.05);
+            font-size: 0.6rem;
+            color: #555;
+        }
+        
+        /* Адаптив */
         @media (max-width: 768px) {
-            .navbar { padding: 12px 18px; }
-            .menu-toggle { display: block; }
-            .nav-links { display: none; flex-direction: column; position: absolute; top: 68px; left: 18px; right: 18px; background: #0f0f0f; border-radius: 24px; padding: 20px; gap: 10px; border: 1px solid rgba(251,191,36,0.3); z-index: 1000; }
-            .nav-links.show { display: flex; }
-            .nav-links a { width: 100%; text-align: center; padding: 12px; }
-            .container { padding: 0 16px; }
-            .stats-grid { gap: 16px; }
-            .footer-inner { flex-direction: column; text-align: center; }
+            .navbar {
+                padding: 12px 18px;
+            }
+            .menu-toggle {
+                display: block;
+            }
+            .nav-links {
+                display: none;
+                flex-direction: column;
+                position: absolute;
+                top: 68px;
+                left: 18px;
+                right: 18px;
+                background: #0f0f0f;
+                border-radius: 20px;
+                padding: 16px;
+                gap: 8px;
+                border: 1px solid rgba(251,191,36,0.3);
+                z-index: 1000;
+            }
+            .nav-links.show {
+                display: flex;
+            }
+            .nav-links a {
+                width: 100%;
+                text-align: center;
+                padding: 10px;
+            }
+            .container {
+                padding: 0 16px;
+            }
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 12px;
+            }
+            .stat-card {
+                padding: 16px 12px;
+            }
+            .stat-card h3 {
+                font-size: 1.3rem;
+            }
+            .feature-list {
+                grid-template-columns: 1fr;
+                gap: 8px;
+            }
+            .content-card {
+                padding: 20px;
+            }
+            .footer-inner {
+                flex-direction: column;
+                text-align: center;
+                gap: 16px;
+            }
         }
-        ::-webkit-scrollbar { width: 5px; }
-        ::-webkit-scrollbar-track { background: #1a1a1a; }
-        ::-webkit-scrollbar-thumb { background: #fbbf24; border-radius: 10px; }
+        
+        @media (max-width: 480px) {
+            .stats-grid {
+                gap: 10px;
+            }
+            .stat-card h3 {
+                font-size: 1.1rem;
+            }
+            .stat-card i {
+                font-size: 1.4rem;
+            }
+            .content-card h2 {
+                font-size: 1rem;
+            }
+            .content-card p {
+                font-size: 0.85rem;
+            }
+        }
+        
+        ::-webkit-scrollbar {
+            width: 4px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #1a1a1a;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #fbbf24;
+            border-radius: 10px;
+        }
         .icon-gold { color: #fbbf24; }
     </style>
 </head>
@@ -159,7 +417,7 @@
 
     <header class="navbar">
         <div class="logo" onclick="window.location='index.html'">PRO<span>RANK</span></div>
-        <button class="menu-toggle" id="menuToggle">☰</button>
+        <button class="menu-toggle" id="menuToggle"><i class="fas fa-bars"></i></button>
         <nav class="nav-links" id="navLinks"></nav>
     </header>
 
@@ -194,7 +452,7 @@
 
         <div class="content-card">
             <h2><i class="fas fa-star icon-gold"></i> Что такое PRORANK?</h2>
-            <p>PRORANK — это первая в России рейтинговая платформа для спортсменов-любителей в единоборствах. Мы создаём честную систему оценки, где твои достижения напрямую влияют на место в рейтинге.</p>
+            <p>PRORANK — это рейтинговая платформа для спортсменов-любителей в единоборствах. Мы создаём честную систему оценки, где твои достижения напрямую влияют на место в рейтинге.</p>
             
             <h2><i class="fas fa-bullseye"></i> Наша миссия</h2>
             <p>Дать возможность каждому спортсмену-любителю заявить о себе, найти достойных соперников и получить признание в своём городе и за его пределами. Мы хотим сделать любительский спорт прозрачным и конкурентным.</p>
@@ -213,7 +471,11 @@
             <p>Для любителей ММА, бокса и борьбы, которые хотят расти, соревноваться и получать обратную связь от сообщества. А также для залов и тренеров, которые ищут новых учеников.</p>
             
             <h2><i class="fas fa-envelope"></i> Контакты</h2>
-            <p>По всем вопросам: <strong>info@prorank.ru</strong><br>Предложения о сотрудничестве: <strong>partners@prorank.ru</strong><br>Техническая поддержка: <strong>support@prorank.ru</strong></p>
+            <div class="contacts-list">
+                <p><i class="fas fa-envelope icon-gold"></i> <strong>info@prorank.ru</strong> — общие вопросы</p>
+                <p><i class="fas fa-handshake icon-gold"></i> <strong>partners@prorank.ru</strong> — сотрудничество</p>
+                <p><i class="fas fa-headset icon-gold"></i> <strong>support@prorank.ru</strong> — техподдержка</p>
+            </div>
         </div>
     </main>
 
@@ -253,10 +515,19 @@
     </script>
     <script type="module" src="header.js"></script>
     <script>
+        // Бургер-меню
         const menuToggle = document.getElementById('menuToggle');
         const navLinks = document.getElementById('navLinks');
         if (menuToggle && navLinks) {
-            menuToggle.addEventListener('click', () => navLinks.classList.toggle('show'));
+            menuToggle.addEventListener('click', () => {
+                navLinks.classList.toggle('show');
+            });
+            
+            navLinks.querySelectorAll('a').forEach(link => {
+                link.addEventListener('click', () => {
+                    navLinks.classList.remove('show');
+                });
+            });
         }
     </script>
 </body>

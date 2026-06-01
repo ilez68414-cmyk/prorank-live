@@ -2,8 +2,10 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Рейтинг | PRORANK</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=yes">
+    <meta name="theme-color" content="#fbbf24">
+    <meta name="description" content="Рейтинг спортсменов PRORANK — топ бойцов по версиям, лиги, достижения и статистика">
+    <title>Рейтинг спортсменов | PRORANK</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700;14..32,800;14..32,900&display=swap" rel="stylesheet">
@@ -22,6 +24,13 @@
             background-attachment: fixed;
             color: #fff;
             line-height: 1.4;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        main {
+            flex: 1;
         }
 
         .gold-top {
@@ -40,6 +49,7 @@
             padding: 0 28px;
             position: relative;
             z-index: 2;
+            width: 100%;
         }
 
         /* ===== ШАПКА ===== */
@@ -54,6 +64,7 @@
             position: sticky;
             top: 0;
             z-index: 1000;
+            transition: all 0.3s ease;
         }
 
         .logo {
@@ -62,13 +73,17 @@
             letter-spacing: -0.5px;
             cursor: pointer;
             background: linear-gradient(135deg, #ffffff, #fbbf24);
-            -webkit-background-clip: text;
             background-clip: text;
             color: transparent;
+            transition: transform 0.2s ease;
         }
+
+        .logo:hover {
+            transform: scale(1.02);
+        }
+
         .logo span {
             background: linear-gradient(135deg, #fbbf24, #ffdd77);
-            -webkit-background-clip: text;
             background-clip: text;
             color: transparent;
         }
@@ -84,22 +99,36 @@
             font-weight: 700;
             font-size: 0.9rem;
             box-shadow: 0 0 10px rgba(251,191,36,0.1);
+            transition: all 0.2s ease;
         }
+
+        .balance-indicator:hover {
+            border-color: #fbbf24;
+            box-shadow: 0 0 15px rgba(251,191,36,0.2);
+        }
+
         .balance-count {
             color: #fbbf24;
             font-size: 1.1rem;
         }
+
         .balance-plus {
             background: rgba(251,191,36,0.15);
             border: none;
             color: #fbbf24;
             cursor: pointer;
-            width: 26px;
-            height: 26px;
+            width: 28px;
+            height: 28px;
             border-radius: 50%;
             font-weight: bold;
-            transition: 0.1s;
+            transition: all 0.2s ease;
         }
+
+        .balance-plus:hover {
+            background: rgba(251,191,36,0.3);
+            transform: scale(1.05);
+        }
+
         .balance-plus:active {
             background: #fbbf24;
             color: #000;
@@ -115,6 +144,18 @@
             cursor: pointer;
             padding: 8px 14px;
             border-radius: 12px;
+            transition: all 0.2s ease;
+            min-height: 44px;
+            min-width: 44px;
+        }
+
+        .menu-toggle:hover {
+            background: rgba(251,191,36,0.2);
+            transform: scale(1.02);
+        }
+
+        .menu-toggle:active {
+            transform: scale(0.95);
         }
 
         .nav-links {
@@ -126,6 +167,7 @@
             border-radius: 60px;
             border: 1px solid rgba(251,191,36,0.2);
         }
+
         .nav-links a {
             color: #ddd;
             text-decoration: none;
@@ -133,36 +175,50 @@
             font-weight: 500;
             padding: 8px 18px;
             border-radius: 40px;
-            transition: all 0.2s;
+            transition: all 0.2s ease;
         }
+
         .nav-links a i {
             margin-right: 8px;
             color: #fbbf24;
+            transition: transform 0.2s ease;
         }
+
         .nav-links a:hover {
             color: #fbbf24;
-            background: transparent;
-            text-shadow: 0 0 6px rgba(251,191,36,0.4);
+            background: rgba(251,191,36,0.1);
+            transform: translateY(-2px);
+        }
+
+        .nav-links a:hover i {
+            transform: scale(1.1);
         }
 
         /* ===== HERO ===== */
         .hero {
             text-align: center;
             padding: 50px 20px 30px;
+            animation: fadeInUp 0.6s ease;
         }
+
         .hero h1 {
-            font-size: 2.2rem;
+            font-size: clamp(1.6rem, 5vw, 2.2rem);
             font-weight: 800;
             background: linear-gradient(135deg, #fff, #fbbf24);
-            -webkit-background-clip: text;
             background-clip: text;
             color: transparent;
         }
+
         .hero h1 i {
             background: none;
-            -webkit-background-clip: unset;
             background-clip: unset;
             color: #fbbf24;
+        }
+
+        .hero p {
+            color: #aaa;
+            margin-top: 12px;
+            font-size: clamp(0.8rem, 3vw, 0.95rem);
         }
 
         /* ===== ФИЛЬТРЫ ===== */
@@ -173,10 +229,18 @@
             padding: 24px;
             margin-bottom: 30px;
             border: 1px solid rgba(251,191,36,0.15);
+            transition: all 0.3s ease;
         }
+
+        .filters-section:hover {
+            border-color: rgba(251,191,36,0.3);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
         .search-container {
             margin-bottom: 20px;
         }
+
         #rankSearch {
             width: 100%;
             padding: 14px 20px;
@@ -185,23 +249,27 @@
             color: #fff;
             border-radius: 60px;
             font-size: 0.95rem;
-            transition: 0.2s;
+            transition: all 0.2s ease;
         }
+
         #rankSearch:focus {
             outline: none;
             border-color: #fbbf24;
             box-shadow: 0 0 10px rgba(251,191,36,0.2);
         }
+
         .filters-row {
             display: flex;
             gap: 20px;
             flex-wrap: wrap;
             margin-bottom: 20px;
         }
+
         .filter-group {
             flex: 1;
             min-width: 180px;
         }
+
         .filter-group label {
             display: block;
             font-size: 0.75rem;
@@ -209,6 +277,7 @@
             margin-bottom: 6px;
             font-weight: 600;
         }
+
         .filter-group select {
             width: 100%;
             padding: 10px 16px;
@@ -218,12 +287,24 @@
             border-radius: 40px;
             font-size: 0.85rem;
             cursor: pointer;
+            transition: all 0.2s ease;
         }
+
+        .filter-group select:hover {
+            border-color: rgba(251,191,36,0.5);
+        }
+
+        .filter-group select:focus {
+            outline: none;
+            border-color: #fbbf24;
+        }
+
         .sport-filters {
             display: flex;
             gap: 12px;
             flex-wrap: wrap;
         }
+
         .filter-btn {
             background: #1a1a1a;
             border: 1px solid rgba(251,191,36,0.2);
@@ -231,26 +312,39 @@
             padding: 8px 20px;
             border-radius: 40px;
             cursor: pointer;
-            transition: 0.15s;
+            transition: all 0.2s ease;
             font-size: 0.85rem;
             font-weight: 500;
             display: inline-flex;
             align-items: center;
             gap: 8px;
+            min-height: 42px;
         }
+
         .filter-btn i {
             color: #fbbf24;
+            transition: transform 0.2s ease;
         }
+
+        .filter-btn:hover {
+            transform: translateY(-2px);
+            border-color: rgba(251,191,36,0.5);
+            background: rgba(251,191,36,0.05);
+        }
+
+        .filter-btn:active {
+            transform: translateY(0) scale(0.97);
+        }
+
         .filter-btn.active {
             background: #fbbf24;
             color: #000;
             border-color: #fbbf24;
+            box-shadow: 0 0 10px rgba(251,191,36,0.3);
         }
+
         .filter-btn.active i {
             color: #000;
-        }
-        .filter-btn:active {
-            transform: scale(0.96);
         }
 
         /* ===== ТАБЛИЦА ===== */
@@ -259,16 +353,20 @@
             border-radius: 28px;
             overflow-x: auto;
             border: 1px solid rgba(251,191,36,0.15);
+            transition: all 0.3s ease;
         }
+
         .rating-table {
             width: 100%;
             border-collapse: collapse;
             min-width: 600px;
         }
+
         .rating-table thead tr {
             background: #0f0f0f;
             border-bottom: 2px solid #fbbf24;
         }
+
         .rating-table th {
             padding: 16px 12px;
             text-align: left;
@@ -278,57 +376,90 @@
             background: #0f0f0f;
             letter-spacing: 0.3px;
         }
+
         .rating-table th i {
             margin-right: 8px;
             color: #fbbf24;
         }
+
         .rating-table td {
             padding: 14px 12px;
             border-bottom: 1px solid rgba(255,255,255,0.05);
             vertical-align: middle;
         }
+
         .rating-table tbody tr {
             cursor: pointer;
-            transition: 0.1s;
+            transition: all 0.2s ease;
         }
+
+        .rating-table tbody tr:hover {
+            background: rgba(251,191,36,0.05);
+            transform: translateX(3px);
+        }
+
         .rating-table tbody tr:active {
-            background: #1f1f1f;
+            transform: scale(0.99);
         }
+
         .rating-table tbody tr.gold {
-            background: linear-gradient(90deg, rgba(251,191,36,0.1), rgba(251,191,36,0.02));
+            background: linear-gradient(90deg, rgba(251,191,36,0.12), rgba(251,191,36,0.02));
             border-left: 3px solid #fbbf24;
         }
+
         .rating-table tbody tr.silver {
             background: linear-gradient(90deg, rgba(192,192,192,0.08), transparent);
             border-left: 3px solid #C0C0C0;
         }
+
         .rating-table tbody tr.bronze {
             background: linear-gradient(90deg, rgba(205,127,50,0.08), transparent);
             border-left: 3px solid #CD7F32;
         }
+
         .rank-number {
             font-size: 1.3rem;
             font-weight: 800;
             color: #fbbf24;
         }
-        .gold .rank-number { color: #fbbf24; text-shadow: 0 0 5px rgba(251,191,36,0.5); }
+
+        .gold .rank-number { 
+            color: #fbbf24; 
+            text-shadow: 0 0 8px rgba(251,191,36,0.5);
+            animation: pulse 2s infinite;
+        }
+        
         .silver .rank-number { color: #C0C0C0; }
         .bronze .rank-number { color: #CD7F32; }
+
+        @keyframes pulse {
+            0%, 100% { text-shadow: 0 0 5px rgba(251,191,36,0.3); }
+            50% { text-shadow: 0 0 15px rgba(251,191,36,0.8); }
+        }
+
         .avatar-thumb {
             width: 44px;
             height: 44px;
             border-radius: 50%;
             object-fit: cover;
             border: 2px solid #fbbf24;
+            transition: all 0.2s ease;
         }
+
+        .rating-table tbody tr:hover .avatar-thumb {
+            transform: scale(1.05);
+            border-color: #ffdd77;
+        }
+
         .fighter-name {
             font-weight: 700;
             font-size: 0.95rem;
             display: flex;
             align-items: center;
-            gap: 6px;
+            gap: 8px;
             flex-wrap: wrap;
         }
+
         .fighter-sport {
             font-size: 0.7rem;
             color: #aaa;
@@ -337,13 +468,69 @@
             gap: 4px;
             margin-top: 4px;
         }
+
         .city-cell {
             font-size: 0.85rem;
         }
+
+        .city-cell i {
+            margin-right: 4px;
+        }
+
         .frs-cell {
             font-weight: 800;
             color: #fbbf24;
             font-size: 1rem;
+        }
+
+        .league-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 0.7rem;
+            padding: 2px 8px;
+            border-radius: 20px;
+            background: rgba(0,0,0,0.5);
+        }
+
+        /* СТАТИСТИКА */
+        .stats-banner {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 16px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: rgba(15,15,15,0.5);
+            backdrop-filter: blur(8px);
+            border-radius: 20px;
+            padding: 16px;
+            text-align: center;
+            border: 1px solid rgba(251,191,36,0.15);
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-3px);
+            border-color: rgba(251,191,36,0.4);
+        }
+
+        .stat-card i {
+            font-size: 1.8rem;
+            color: #fbbf24;
+            margin-bottom: 8px;
+        }
+
+        .stat-card .stat-value {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: #fbbf24;
+        }
+
+        .stat-card .stat-label {
+            font-size: 0.7rem;
+            color: #888;
         }
 
         /* ===== ПОДВАЛ ===== */
@@ -353,6 +540,7 @@
             margin-top: 60px;
             padding: 48px 0 24px;
         }
+
         .footer-inner {
             display: flex;
             justify-content: space-between;
@@ -360,39 +548,51 @@
             gap: 32px;
             margin-bottom: 32px;
         }
+
         .footer-logo .logo {
             font-size: 1.3rem;
             display: inline-block;
         }
+
         .footer-logo p {
             font-size: 0.75rem;
             color: #777;
             margin-top: 8px;
         }
+
         .footer-social {
             display: flex;
             gap: 20px;
         }
+
         .social-icon {
             color: #aaa;
             font-size: 1.4rem;
-            transition: 0.2s;
+            transition: all 0.2s ease;
         }
+
         .social-icon:hover {
             color: #fbbf24;
+            transform: translateY(-3px);
         }
+
         .footer-links {
             display: flex;
             gap: 24px;
+            flex-wrap: wrap;
         }
+
         .footer-links a {
             color: #aaa;
             text-decoration: none;
             font-size: 0.8rem;
+            transition: color 0.2s ease;
         }
+
         .footer-links a:hover {
             color: #fbbf24;
         }
+
         .footer-bottom {
             text-align: center;
             padding-top: 24px;
@@ -401,16 +601,37 @@
             color: #666;
         }
 
+        /* АНИМАЦИИ */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        /* АДАПТИВ */
         @media (max-width: 768px) {
             .container {
                 padding: 0 18px;
             }
+            
             .navbar {
                 padding: 12px 18px;
             }
+            
             .menu-toggle {
                 display: block;
             }
+            
             .nav-links {
                 display: none;
                 flex-direction: column;
@@ -423,29 +644,38 @@
                 padding: 20px;
                 gap: 10px;
                 border: 1px solid rgba(251,191,36,0.3);
+                backdrop-filter: blur(20px);
             }
+            
             .nav-links.show {
                 display: flex;
+                animation: fadeIn 0.2s ease;
             }
+            
             .nav-links a {
                 width: 100%;
                 text-align: center;
                 padding: 12px;
             }
+            
             .hero h1 {
                 font-size: 1.6rem;
             }
+            
             .filters-row {
                 flex-direction: column;
                 gap: 12px;
             }
+            
             .avatar-thumb {
                 width: 36px;
                 height: 36px;
             }
+            
             .fighter-name {
                 font-size: 0.85rem;
             }
+            
             .footer-inner {
                 flex-direction: column;
                 text-align: center;
@@ -453,19 +683,61 @@
             }
         }
 
+        @media (max-width: 480px) {
+            .stats-banner {
+                grid-template-columns: 1fr;
+                gap: 12px;
+            }
+            
+            .sport-filters {
+                justify-content: center;
+            }
+            
+            .filter-btn {
+                padding: 6px 14px;
+                font-size: 0.75rem;
+            }
+            
+            .rank-number {
+                font-size: 1rem;
+            }
+            
+            .rating-table th, .rating-table td {
+                padding: 10px 8px;
+            }
+        }
+
         ::-webkit-scrollbar {
             width: 5px;
             height: 5px;
         }
+        
         ::-webkit-scrollbar-track {
             background: #1a1a1a;
         }
+        
         ::-webkit-scrollbar-thumb {
             background: #fbbf24;
             border-radius: 10px;
         }
+        
         .icon-gold { color: #fbbf24; }
         .icon-red { color: #ff5555; }
+        
+        /* Лоадер */
+        .loading-spinner {
+            display: inline-block;
+            width: 24px;
+            height: 24px;
+            border: 2px solid rgba(251,191,36,0.3);
+            border-top-color: #fbbf24;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
     </style>
 </head>
 <body>
@@ -478,14 +750,39 @@
             <span class="balance-count" id="headerChallengesCount">0</span>
             <button class="balance-plus" id="balancePlusBtn">+</button>
         </div>
-        <button class="menu-toggle" id="menuToggle">☰</button>
+        <button class="menu-toggle" id="menuToggle"><i class="fas fa-bars"></i></button>
         <nav class="nav-links" id="navLinks"></nav>
     </header>
 
     <main class="container">
         <section class="hero">
             <h1><i class="fas fa-chart-line"></i> Рейтинг спортсменов</h1>
+            <p>Топ бойцов по версии PRORANK | Лиги | Достижения | Статистика</p>
         </section>
+
+        <!-- Блок статистики -->
+        <div class="stats-banner" id="statsBanner">
+            <div class="stat-card">
+                <i class="fas fa-users"></i>
+                <div class="stat-value" id="totalFighters">0</div>
+                <div class="stat-label">Всего бойцов</div>
+            </div>
+            <div class="stat-card">
+                <i class="fas fa-star"></i>
+                <div class="stat-value" id="topFrs">0</div>
+                <div class="stat-label">Максимум FRS</div>
+            </div>
+            <div class="stat-card">
+                <i class="fas fa-city"></i>
+                <div class="stat-value" id="totalCities">0</div>
+                <div class="stat-label">Городов</div>
+            </div>
+            <div class="stat-card">
+                <i class="fas fa-trophy"></i>
+                <div class="stat-value" id="totalLeagues">6</div>
+                <div class="stat-label">Лиг</div>
+            </div>
+        </div>
 
         <div class="filters-section">
             <div class="search-container">
@@ -535,7 +832,7 @@
                     </tr>
                 </thead>
                 <tbody id="ratingTableBody">
-                    <tr><td colspan="5"><i class="fas fa-spinner fa-pulse"></i> Загрузка...</td></tr>
+                    <tr><td colspan="5" style="text-align: center;"><div class="loading-spinner"></div> Загрузка...</td></tr>
                 </tbody>
             </table>
         </div>
@@ -558,6 +855,7 @@
                     <a href="about.html">О проекте</a>
                     <a href="privacy.html">Конфиденциальность</a>
                     <a href="disclaimer.html">Дисклеймер</a>
+                    <a href="contacts.html">Контакты</a>
                 </div>
             </div>
             <div class="footer-bottom">
@@ -619,53 +917,84 @@
                 const total = (data.freeChallenges || 0) + (data.purchasedChallenges || 0);
                 balanceCount.innerText = total;
                 balanceDiv.style.display = 'flex';
-            } catch (err) { console.error(err); }
+            } catch (err) { 
+                console.error(err);
+                balanceDiv.style.display = 'none';
+            }
+        }
+
+        function updateStats(fighters) {
+            if (!fighters.length) return;
+            
+            const totalFighters = fighters.length;
+            const maxFrs = Math.max(...fighters.map(f => f.frs || 0));
+            const uniqueCities = [...new Set(fighters.map(f => f.city).filter(c => c && c !== 'all'))];
+            
+            document.getElementById('totalFighters').innerText = totalFighters;
+            document.getElementById('topFrs').innerText = maxFrs;
+            document.getElementById('totalCities').innerText = uniqueCities.length;
         }
 
         async function loadFighters() {
             const tbody = document.getElementById('ratingTableBody');
-            tbody.innerHTML = '<tr><td colspan="5"><i class="fas fa-spinner fa-pulse"></i> Загрузка...</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="5" style="text-align: center;"><div class="loading-spinner"></div> Загрузка...</td></tr>';
+            
             try {
                 const q = query(collection(db, "fighters"), orderBy("frs", "desc"));
                 const snapshot = await getDocs(q);
                 
-                // ИСПРАВЛЕНИЕ: фильтруем партнёров (исключаем isPartner === true)
+                // Исключаем партнёров
                 allFighters = snapshot.docs
                     .map(doc => ({ id: doc.id, ...doc.data() }))
                     .filter(fighter => fighter.isPartner !== true);
                 
+                // Заполняем города
                 const cities = [...new Set(allFighters.map(f => f.city).filter(c => c && c !== 'all'))];
                 const citySelect = document.getElementById('citySelect');
                 citySelect.innerHTML = '<option value="all">Все города</option>';
-                cities.forEach(city => {
+                cities.sort().forEach(city => {
                     const option = document.createElement('option');
                     option.value = city;
                     option.textContent = city;
                     citySelect.appendChild(option);
                 });
                 
+                updateStats(allFighters);
                 applyFilters();
             } catch (error) {
                 console.error("Ошибка загрузки:", error);
-                tbody.innerHTML = '<tr><td colspan="5"><i class="fas fa-exclamation-triangle"></i> Ошибка загрузки. Проверьте интернет.</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align: center;"><i class="fas fa-exclamation-triangle"></i> Ошибка загрузки. Проверьте интернет.</td></tr>';
             }
         }
 
         function applyFilters() {
             let filtered = [...allFighters];
-            if (currentCity !== 'all') filtered = filtered.filter(f => f.city === currentCity);
-            if (currentWeightClass !== 'all') filtered = filtered.filter(f => f.weightClass === currentWeightClass);
-            if (currentSport !== 'all') filtered = filtered.filter(f => f.sport === currentSport);
+            
+            if (currentCity !== 'all') {
+                filtered = filtered.filter(f => f.city === currentCity);
+            }
+            
+            if (currentWeightClass !== 'all') {
+                filtered = filtered.filter(f => f.weightClass === currentWeightClass);
+            }
+            
+            if (currentSport !== 'all') {
+                filtered = filtered.filter(f => f.sport === currentSport);
+            }
+            
+            updateStats(filtered);
             renderTable(filtered);
         }
 
         function renderTable(fighters) {
             const tbody = document.getElementById('ratingTableBody');
             tbody.innerHTML = '';
+            
             if (fighters.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="5"><i class="fas fa-info-circle"></i> Нет бойцов по выбранным фильтрам</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align: center;"><i class="fas fa-info-circle"></i> Нет бойцов по выбранным фильтрам</td></tr>';
                 return;
             }
+            
             let rank = 1;
             fighters.forEach(f => {
                 const row = tbody.insertRow();
@@ -676,7 +1005,9 @@
                 row.className = medalClass;
                 
                 row.insertCell(0).innerHTML = `<span class="rank-number">${rank}</span>`;
-                row.insertCell(1).innerHTML = `<img src="${f.avatar || 'Avatar.png'}" class="avatar-thumb" onerror="this.src='Avatar.png'">`;
+                
+                const avatarUrl = f.avatar && f.avatar !== 'Avatar.png' ? f.avatar : 'https://placehold.co/100x100/1a1a1a/fbbf24?text=' + (f.name?.charAt(0) || '?');
+                row.insertCell(1).innerHTML = `<img src="${avatarUrl}" class="avatar-thumb" onerror="this.src='https://placehold.co/100x100/1a1a1a/fbbf24?text=?'">`;
                 
                 const league = getLeague(f.frs || 0);
                 const leagueIcon = `<i class="fas ${league.icon}" style="color:${league.color}; font-size:0.8rem;"></i>`;
@@ -684,14 +1015,16 @@
                 
                 row.insertCell(2).innerHTML = `
                     <div class="fighter-name">
-                        <strong>${f.name || 'Боец'}</strong> ${leagueIcon}
+                        <strong>${escapeHtml(f.name || 'Боец')}</strong> 
+                        <span class="league-badge">${leagueIcon} ${league.name}</span>
                     </div>
                     <div class="fighter-sport">
-                        <i class="fas ${sportIcon}"></i> ${f.sport || ''}
+                        <i class="fas ${sportIcon}"></i> ${f.sport || 'Не указан'}
                     </div>
                 `;
-                row.insertCell(3).innerHTML = `<span class="city-cell"><i class="fas fa-location-dot" style="color:#fbbf24; font-size:0.7rem;"></i> ${f.city || '—'}</span>`;
-                row.insertCell(4).innerHTML = `<span class="frs-cell"><i class="fas fa-star"></i> ${f.frs || 0}</span>`;
+                row.insertCell(3).innerHTML = `<span class="city-cell"><i class="fas fa-location-dot"></i> ${f.city || '—'}</span>`;
+                row.insertCell(4).innerHTML = `<span class="frs-cell"><i class="fas fa-star"></i> ${(f.frs || 0).toLocaleString()}</span>`;
+                
                 row.onclick = () => window.location.href = `profile.html?id=${f.id}`;
                 rank++;
             });
@@ -703,6 +1036,28 @@
                 else btn.classList.remove('active');
             });
         }
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            return String(str).replace(/[&<>]/g, m => m === '&' ? '&amp;' : m === '<' ? '&lt;' : '&gt;');
+        }
+
+        // Поиск с debounce для производительности
+        let searchTimeout;
+        document.getElementById('rankSearch').addEventListener('input', function() {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                const term = this.value.toLowerCase().trim();
+                const rows = document.querySelectorAll('#ratingTableBody tr');
+                rows.forEach(row => {
+                    const nameCell = row.cells[2];
+                    if (nameCell) {
+                        const name = nameCell.innerText.toLowerCase();
+                        row.style.display = name.includes(term) ? '' : 'none';
+                    }
+                });
+            }, 300);
+        });
 
         document.getElementById('citySelect').addEventListener('change', (e) => {
             currentCity = e.target.value;
@@ -721,18 +1076,6 @@
                 applyFilters();
             });
         });
-        
-        document.getElementById('rankSearch').addEventListener('keyup', function() {
-            const term = this.value.toLowerCase().trim();
-            const rows = document.querySelectorAll('#ratingTableBody tr');
-            rows.forEach(row => {
-                const nameCell = row.cells[2];
-                if (nameCell) {
-                    const name = nameCell.innerText.toLowerCase();
-                    row.style.display = name.includes(term) ? '' : 'none';
-                }
-            });
-        });
 
         onAuthStateChanged(auth, (user) => {
             if (user) {
@@ -746,11 +1089,22 @@
         const plusBtn = document.getElementById('balancePlusBtn');
         if (plusBtn) plusBtn.onclick = () => window.location.href = 'shop.html';
         
+        // Бургер-меню
+        const menuToggle = document.getElementById('menuToggle');
+        const navLinks = document.getElementById('navLinks');
+        if (menuToggle && navLinks) {
+            menuToggle.addEventListener('click', () => {
+                navLinks.classList.toggle('show');
+            });
+            
+            navLinks.querySelectorAll('a').forEach(link => {
+                link.addEventListener('click', () => {
+                    navLinks.classList.remove('show');
+                });
+            });
+        }
+        
         loadFighters();
-
-        document.getElementById('menuToggle').addEventListener('click', () => {
-            document.getElementById('navLinks').classList.toggle('show');
-        });
     </script>
 </body>
 </html>

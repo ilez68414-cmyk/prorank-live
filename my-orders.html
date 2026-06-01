@@ -1,0 +1,832 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=yes">
+    <meta name="theme-color" content="#fbbf24">
+    <meta name="description" content="Мои заказы на PRORANK — отслеживайте статус и историю покупок">
+    <title>Мои заказы | PRORANK</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700;14..32,800;14..32,900&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: radial-gradient(ellipse at 30% 40%, rgba(251, 191, 36, 0.15) 0%, transparent 60%),
+                        radial-gradient(ellipse at 70% 80%, rgba(251, 191, 36, 0.08) 0%, transparent 50%),
+                        linear-gradient(135deg, #1a1a1a 0%, #0f0f0f 40%, #1a1a1a 100%);
+            background-attachment: fixed;
+            color: #fff;
+            line-height: 1.5;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        main { flex: 1; }
+        
+        .gold-top { 
+            position: fixed; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 3px; 
+            background: linear-gradient(90deg, #fbbf24, #ffdd88, #fbbf24, #b8860b); 
+            z-index: 1001; 
+        }
+        
+        .container { 
+            max-width: 1000px; 
+            margin: 0 auto; 
+            padding: 0 24px; 
+            position: relative; 
+            z-index: 2;
+            width: 100%;
+        }
+        
+        /* Шапка */
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 32px;
+            background: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(16px);
+            border-bottom: 1px solid rgba(251, 191, 36, 0.25);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+        
+        .logo {
+            font-size: 1.8rem;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            cursor: pointer;
+            background: linear-gradient(135deg, #ffffff, #fbbf24);
+            background-clip: text;
+            color: transparent;
+        }
+        
+        .logo span {
+            background: linear-gradient(135deg, #fbbf24, #ffdd77);
+            background-clip: text;
+            color: transparent;
+        }
+        
+        .balance-indicator {
+            background: #111;
+            border: 1px solid rgba(251, 191, 36, 0.5);
+            border-radius: 60px;
+            padding: 7px 18px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 700;
+            font-size: 0.9rem;
+        }
+        
+        .balance-count { color: #fbbf24; }
+        
+        .balance-plus {
+            background: rgba(251,191,36,0.15);
+            border: none;
+            color: #fbbf24;
+            cursor: pointer;
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+        }
+        
+        .menu-toggle {
+            display: none;
+            background: rgba(251,191,36,0.1);
+            border: 1px solid #fbbf24;
+            color: #fbbf24;
+            font-size: 1.6rem;
+            cursor: pointer;
+            padding: 8px 14px;
+            border-radius: 12px;
+            min-height: 44px;
+            min-width: 44px;
+        }
+        
+        .nav-links {
+            display: flex;
+            gap: 6px;
+            background: rgba(15,15,15,0.7);
+            backdrop-filter: blur(12px);
+            padding: 5px 14px;
+            border-radius: 60px;
+            border: 1px solid rgba(251,191,36,0.2);
+        }
+        
+        .nav-links a { 
+            color: #ddd; 
+            text-decoration: none; 
+            font-size: 0.9rem; 
+            font-weight: 500; 
+            padding: 8px 18px; 
+            border-radius: 40px; 
+            transition: all 0.2s;
+        }
+        
+        .nav-links a i { margin-right: 8px; color: #fbbf24; }
+        .nav-links a:hover { color: #fbbf24; background: rgba(251,191,36,0.1); }
+        
+        /* Заголовок */
+        .page-header { 
+            text-align: center; 
+            padding: 40px 20px 20px;
+        }
+        
+        .page-header h1 { 
+            font-size: clamp(1.6rem, 5vw, 2rem); 
+            font-weight: 700; 
+            background: linear-gradient(135deg, #fff, #fbbf24); 
+            background-clip: text; 
+            color: transparent;
+        }
+        
+        .page-header p { 
+            color: #aaa; 
+            margin-top: 8px; 
+            font-size: clamp(0.85rem, 3vw, 0.95rem);
+        }
+        
+        /* Табы */
+        .orders-tabs {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 24px;
+            background: rgba(15,15,15,0.5);
+            padding: 6px;
+            border-radius: 60px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        
+        .tab-btn {
+            background: none;
+            border: none;
+            color: #aaa;
+            padding: 10px 24px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 600;
+            border-radius: 40px;
+            transition: all 0.2s;
+            min-height: 44px;
+        }
+        
+        .tab-btn i { margin-right: 6px; }
+        
+        .tab-btn:hover {
+            background: rgba(251,191,36,0.1);
+            color: #fbbf24;
+        }
+        
+        .tab-btn.active {
+            background: #fbbf24;
+            color: #000;
+        }
+        
+        .tab-pane {
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        .tab-pane.active {
+            display: block;
+        }
+        
+        /* Карточки заказов */
+        .orders-list {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            margin-bottom: 30px;
+        }
+        
+        .order-card {
+            background: rgba(15,15,15,0.6);
+            border-radius: 20px;
+            padding: 20px;
+            border: 1px solid rgba(251,191,36,0.1);
+            transition: all 0.2s;
+        }
+        
+        .order-card:hover {
+            border-color: rgba(251,191,36,0.3);
+            transform: translateX(3px);
+        }
+        
+        .order-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 12px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+        }
+        
+        .order-number {
+            font-weight: 700;
+            color: #fbbf24;
+            font-size: 0.9rem;
+        }
+        
+        .order-date {
+            font-size: 0.7rem;
+            color: #888;
+        }
+        
+        .order-status {
+            padding: 4px 12px;
+            border-radius: 30px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+        
+        .status-new { background: #f59e0b; color: #000; }
+        .status-accepted { background: #3b82f6; color: #fff; }
+        .status-shipped { background: #8b5cf6; color: #fff; }
+        .status-completed { background: #10b981; color: #fff; }
+        .status-rejected { background: #dc2626; color: #fff; }
+        
+        .order-items {
+            margin: 12px 0;
+        }
+        
+        .order-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        
+        .order-item:last-child {
+            border-bottom: none;
+        }
+        
+        .item-name {
+            font-size: 0.85rem;
+        }
+        
+        .item-price {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #fbbf24;
+        }
+        
+        .order-total {
+            text-align: right;
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid rgba(255,255,255,0.08);
+        }
+        
+        .order-total span {
+            font-size: 1rem;
+            font-weight: 700;
+            color: #fbbf24;
+        }
+        
+        .order-footer {
+            margin-top: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        
+        .tracking-info {
+            font-size: 0.7rem;
+            color: #aaa;
+        }
+        
+        .tracking-info i {
+            color: #fbbf24;
+            margin-right: 4px;
+        }
+        
+        .repeat-order-btn {
+            background: #fbbf24;
+            color: #000;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 30px;
+            font-weight: 600;
+            font-size: 0.75rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            min-height: 38px;
+        }
+        
+        .repeat-order-btn:hover {
+            background: #ffdd44;
+            transform: translateY(-2px);
+        }
+        
+        .cancel-order-btn {
+            background: #dc2626;
+            color: #fff;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 30px;
+            font-weight: 600;
+            font-size: 0.75rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            min-height: 38px;
+        }
+        
+        .cancel-order-btn:hover {
+            background: #b91c1c;
+            transform: translateY(-2px);
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 60px;
+            color: #888;
+        }
+        
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: 16px;
+            color: #555;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #888;
+        }
+        
+        /* Подвал */
+        .main-footer {
+            background: #0a0a0a;
+            border-top: 1px solid rgba(251,191,36,0.15);
+            margin-top: 60px;
+            padding: 40px 0 24px;
+        }
+        
+        .footer-inner {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 24px;
+            margin-bottom: 24px;
+        }
+        
+        .footer-logo .logo {
+            font-size: 1.2rem;
+            display: inline-block;
+        }
+        
+        .footer-logo p {
+            font-size: 0.65rem;
+            color: #777;
+            margin-top: 4px;
+        }
+        
+        .footer-social {
+            display: flex;
+            gap: 16px;
+        }
+        
+        .social-icon {
+            color: #aaa;
+            font-size: 1.2rem;
+            transition: 0.2s;
+        }
+        
+        .social-icon:hover {
+            color: #fbbf24;
+        }
+        
+        .footer-links {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .footer-links a {
+            color: #888;
+            text-decoration: none;
+            font-size: 0.7rem;
+            transition: 0.2s;
+        }
+        
+        .footer-links a:hover {
+            color: #fbbf24;
+        }
+        
+        .footer-bottom {
+            text-align: center;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255,255,255,0.05);
+            font-size: 0.6rem;
+            color: #555;
+        }
+        
+        /* Анимации */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        /* Адаптив */
+        @media (max-width: 768px) {
+            .navbar {
+                padding: 12px 18px;
+            }
+            .menu-toggle {
+                display: block;
+            }
+            .nav-links {
+                display: none;
+                flex-direction: column;
+                position: absolute;
+                top: 68px;
+                left: 18px;
+                right: 18px;
+                background: #0f0f0f;
+                border-radius: 20px;
+                padding: 16px;
+                gap: 8px;
+                border: 1px solid rgba(251,191,36,0.3);
+                z-index: 1000;
+            }
+            .nav-links.show {
+                display: flex;
+            }
+            .nav-links a {
+                width: 100%;
+                text-align: center;
+                padding: 10px;
+            }
+            .container {
+                padding: 0 16px;
+            }
+            .order-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .order-footer {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .repeat-order-btn, .cancel-order-btn {
+                width: 100%;
+                justify-content: center;
+            }
+            .footer-inner {
+                flex-direction: column;
+                text-align: center;
+                gap: 16px;
+            }
+        }
+        
+        ::-webkit-scrollbar {
+            width: 4px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #1a1a1a;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #fbbf24;
+            border-radius: 10px;
+        }
+        .icon-gold { color: #fbbf24; }
+        
+        .loading-spinner {
+            display: inline-block;
+            width: 24px;
+            height: 24px;
+            border: 2px solid rgba(251,191,36,0.3);
+            border-top-color: #fbbf24;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="gold-top"></div>
+
+    <header class="navbar">
+        <div class="logo" onclick="window.location='index.html'">PRO<span>RANK</span></div>
+        <div class="balance-indicator" id="balanceIndicator" style="display: none;">
+            <i class="fas fa-crosshairs"></i>
+            <span class="balance-count" id="headerChallengesCount">0</span>
+            <button class="balance-plus" id="balancePlusBtn">+</button>
+        </div>
+        <button class="menu-toggle" id="menuToggle"><i class="fas fa-bars"></i></button>
+        <nav class="nav-links" id="navLinks"></nav>
+    </header>
+
+    <main class="container">
+        <div class="page-header">
+            <h1><i class="fas fa-box"></i> Мои заказы</h1>
+            <p>Отслеживайте статус и историю покупок</p>
+        </div>
+
+        <div class="orders-tabs">
+            <button class="tab-btn active" data-tab="active"><i class="fas fa-clock"></i> Активные</button>
+            <button class="tab-btn" data-tab="history"><i class="fas fa-history"></i> История</button>
+        </div>
+
+        <div id="activeOrders" class="tab-pane active">
+            <div id="activeOrdersList" class="orders-list">
+                <div class="loading"><div class="loading-spinner"></div> Загрузка...</div>
+            </div>
+        </div>
+
+        <div id="historyOrders" class="tab-pane">
+            <div id="historyOrdersList" class="orders-list">
+                <div class="loading"><div class="loading-spinner"></div> Загрузка...</div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="main-footer">
+        <div class="container">
+            <div class="footer-inner">
+                <div class="footer-logo">
+                    <div class="logo">PRO<span>RANK</span></div>
+                    <p>Рейтинг спортсменов-любителей</p>
+                </div>
+                <div class="footer-social">
+                    <a href="#" target="_blank" class="social-icon"><i class="fab fa-telegram"></i></a>
+                    <a href="#" target="_blank" class="social-icon"><i class="fab fa-vk"></i></a>
+                    <a href="#" target="_blank" class="social-icon"><i class="fab fa-youtube"></i></a>
+                    <a href="#" target="_blank" class="social-icon"><i class="fab fa-instagram"></i></a>
+                </div>
+                <div class="footer-links">
+                    <a href="about.html">О проекте</a>
+                    <a href="privacy.html">Конфиденциальность</a>
+                    <a href="disclaimer.html">Дисклеймер</a>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>© 2026 PRORANK. Все права защищены.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script type="importmap">
+        {
+            "imports": {
+                "firebase/app": "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js",
+                "firebase/firestore": "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js",
+                "firebase/auth": "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js"
+            }
+        }
+    </script>
+    <script type="module" src="header.js"></script>
+    <script type="module">
+        import { initializeApp } from "firebase/app";
+        import { getFirestore, collection, getDocs, query, where, orderBy, doc, getDoc, updateDoc, deleteDoc } from "firebase/firestore";
+        import { getAuth, onAuthStateChanged } from "firebase/auth";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDUGYJY7pX7q02MS5SACMIIQXpjpQ97mPw",
+            authDomain: "proranklive.firebaseapp.com",
+            projectId: "proranklive",
+            storageBucket: "proranklive.firebasestorage.app",
+            messagingSenderId: "716836144015",
+            appId: "1:716836144015:web:f1575147750608d0f881fa"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+
+        let currentUser = null;
+        let activeTab = 'active';
+
+        async function updateHeaderBalance() {
+            const user = auth.currentUser;
+            const balanceDiv = document.getElementById('balanceIndicator');
+            const balanceCount = document.getElementById('headerChallengesCount');
+            if (!user || !balanceDiv) return;
+            try {
+                const userDoc = await getDoc(doc(db, "fighters", user.uid));
+                const data = userDoc.data();
+                const total = (data.freeChallenges || 0) + (data.purchasedChallenges || 0);
+                balanceCount.innerText = total;
+                balanceDiv.style.display = 'flex';
+            } catch (err) { 
+                console.error(err);
+                balanceDiv.style.display = 'none';
+            }
+        }
+
+        async function loadOrders() {
+            if (!currentUser) return;
+            
+            try {
+                const ordersQuery = query(
+                    collection(db, "orders"),
+                    where("userId", "==", currentUser.uid),
+                    orderBy("createdAt", "desc")
+                );
+                const snapshot = await getDocs(ordersQuery);
+                
+                const activeOrders = [];
+                const historyOrders = [];
+                const activeStatuses = ['new', 'accepted', 'shipped'];
+                
+                snapshot.forEach(docSnap => {
+                    const order = { id: docSnap.id, ...docSnap.data() };
+                    if (activeStatuses.includes(order.status)) {
+                        activeOrders.push(order);
+                    } else {
+                        historyOrders.push(order);
+                    }
+                });
+                
+                renderOrders('activeOrdersList', activeOrders);
+                renderOrders('historyOrdersList', historyOrders);
+            } catch (err) {
+                console.error('Ошибка загрузки заказов:', err);
+                document.getElementById('activeOrdersList').innerHTML = '<div class="empty-state"><i class="fas fa-exclamation-triangle"></i><p>Ошибка загрузки</p></div>';
+                document.getElementById('historyOrdersList').innerHTML = '<div class="empty-state"><i class="fas fa-exclamation-triangle"></i><p>Ошибка загрузки</p></div>';
+            }
+        }
+
+        function renderOrders(containerId, orders) {
+            const container = document.getElementById(containerId);
+            
+            if (orders.length === 0) {
+                const isEmptyActive = containerId === 'activeOrdersList';
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-inbox"></i>
+                        <p>${isEmptyActive ? 'У вас нет активных заказов' : 'У вас нет истории заказов'}</p>
+                        ${isEmptyActive ? '<p style="font-size: 0.8rem; margin-top: 8px;"><a href="catalog.html" style="color: #fbbf24;">Перейти в каталог →</a></p>' : ''}
+                    </div>
+                `;
+                return;
+            }
+            
+            let html = '';
+            orders.forEach(order => {
+                const date = order.createdAt?.toDate().toLocaleDateString() || '—';
+                const statusText = getStatusText(order.status);
+                const statusClass = `status-${order.status}`;
+                const totalPrice = order.totalPrice || order.price || 0;
+                const quantity = order.quantity || 1;
+                
+                html += `
+                    <div class="order-card" data-order-id="${order.id}">
+                        <div class="order-header">
+                            <span class="order-number"><i class="fas fa-receipt"></i> Заказ #${order.id.slice(0, 8)}</span>
+                            <span class="order-date"><i class="fas fa-calendar-alt"></i> ${date}</span>
+                            <span class="order-status ${statusClass}">${statusText}</span>
+                        </div>
+                        <div class="order-items">
+                            <div class="order-item">
+                                <span class="item-name">${escapeHtml(order.productName)} ${quantity > 1 ? `× ${quantity}` : ''}</span>
+                                <span class="item-price">${(order.price || 0).toLocaleString()} ₽</span>
+                            </div>
+                        </div>
+                        <div class="order-total">
+                            <span>Итого: ${totalPrice.toLocaleString()} ₽</span>
+                        </div>
+                        <div class="order-footer">
+                            ${order.trackingNumber ? `
+                                <div class="tracking-info">
+                                    <i class="fas fa-box"></i> Трек-номер: ${escapeHtml(order.trackingNumber)}
+                                </div>
+                            ` : '<div></div>'}
+                            <div style="display: flex; gap: 8px;">
+                                ${order.status === 'new' ? `
+                                    <button class="cancel-order-btn" data-order-id="${order.id}"><i class="fas fa-times"></i> Отменить</button>
+                                ` : ''}
+                                <button class="repeat-order-btn" data-product='${JSON.stringify({ id: order.productId, name: order.productName, price: order.price })}'><i class="fas fa-repeat"></i> Повторить</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+            
+            // Обработчики для кнопок "Повторить"
+            document.querySelectorAll(`#${containerId} .repeat-order-btn`).forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const product = JSON.parse(btn.dataset.product);
+                    if (product.id && product.name && product.price) {
+                        let cart = JSON.parse(localStorage.getItem('cart') || '[]');
+                        cart.push(product);
+                        localStorage.setItem('cart', JSON.stringify(cart));
+                        
+                        const originalText = btn.innerHTML;
+                        btn.innerHTML = '<i class="fas fa-check"></i> В корзине!';
+                        btn.style.background = '#10b981';
+                        setTimeout(() => {
+                            btn.innerHTML = originalText;
+                            btn.style.background = '#fbbf24';
+                        }, 1500);
+                    } else {
+                        alert('Товар временно недоступен для повторного заказа');
+                    }
+                });
+            });
+            
+            // Обработчики для кнопок "Отменить" (только для активных)
+            document.querySelectorAll(`#${containerId} .cancel-order-btn`).forEach(btn => {
+                btn.addEventListener('click', async (e) => {
+                    e.stopPropagation();
+                    const orderId = btn.dataset.orderId;
+                    if (confirm('Вы уверены, что хотите отменить этот заказ?')) {
+                        try {
+                            await updateDoc(doc(db, "orders", orderId), { status: 'rejected' });
+                            alert('✅ Заказ отменён');
+                            loadOrders();
+                        } catch (err) {
+                            console.error('Ошибка отмены:', err);
+                            alert('❌ Ошибка при отмене заказа');
+                        }
+                    }
+                });
+            });
+        }
+
+        function getStatusText(status) {
+            const statuses = {
+                'new': '🆕 Новый',
+                'accepted': '✅ Принят',
+                'shipped': '📦 Отправлен',
+                'completed': '✔️ Завершён',
+                'rejected': '❌ Отклонён'
+            };
+            return statuses[status] || status;
+        }
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            return String(str).replace(/[&<>]/g, m => m === '&' ? '&amp;' : m === '<' ? '&lt;' : '&gt;');
+        }
+
+        // Табы
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                
+                const tab = btn.dataset.tab;
+                document.querySelectorAll('.tab-pane').forEach(pane => pane.classList.remove('active'));
+                if (tab === 'active') {
+                    document.getElementById('activeOrders').classList.add('active');
+                } else {
+                    document.getElementById('historyOrders').classList.add('active');
+                }
+            });
+        });
+
+        onAuthStateChanged(auth, async (user) => {
+            currentUser = user;
+            if (user) {
+                setTimeout(updateHeaderBalance, 1000);
+                await loadOrders();
+            } else {
+                const balanceDiv = document.getElementById('balanceIndicator');
+                if (balanceDiv) balanceDiv.style.display = 'none';
+                document.getElementById('activeOrdersList').innerHTML = '<div class="empty-state"><i class="fas fa-lock"></i><p>Войдите, чтобы увидеть свои заказы</p></div>';
+                document.getElementById('historyOrdersList').innerHTML = '<div class="empty-state"><i class="fas fa-lock"></i><p>Войдите, чтобы увидеть свои заказы</p></div>';
+            }
+        });
+
+        const plusBtn = document.getElementById('balancePlusBtn');
+        if (plusBtn) plusBtn.onclick = () => window.location.href = 'shop.html';
+
+        const menuToggle = document.getElementById('menuToggle');
+        const navLinks = document.getElementById('navLinks');
+        if (menuToggle && navLinks) {
+            menuToggle.addEventListener('click', () => {
+                navLinks.classList.toggle('show');
+            });
+            
+            navLinks.querySelectorAll('a').forEach(link => {
+                link.addEventListener('click', () => {
+                    navLinks.classList.remove('show');
+                });
+            });
+        }
+    </script>
+</body>
+</html>

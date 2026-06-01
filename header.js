@@ -152,6 +152,7 @@ async function initHeader() {
                     <div class="dropdown-content">
                         <a href="shop.html"><i class="fas fa-gem"></i> Премиум и вызовы</a>
                         <a href="catalog.html"><i class="fas fa-boxes"></i> Каталог товаров</a>
+                        <a href="my-orders.html"><i class="fas fa-box"></i> Мои заказы</a>
                     </div>
                 </div>
                 <div class="user-menu">
@@ -182,6 +183,7 @@ async function initHeader() {
                     <div class="dropdown-content">
                         <a href="shop.html"><i class="fas fa-gem"></i> Премиум и вызовы</a>
                         <a href="catalog.html"><i class="fas fa-boxes"></i> Каталог товаров</a>
+                        <a href="my-orders.html"><i class="fas fa-box"></i> Мои заказы</a>
                     </div>
                 </div>
                 <div class="dropdown" data-section="community">
@@ -202,7 +204,7 @@ async function initHeader() {
             `;
         } 
         else {
-            // НЕ АВТОРИЗОВАН
+            // НЕ АВТОРИЗОВАН — ПОКАЗЫВАЕМ "Мои заказы" НО ПРИ КЛИКЕ КИДАЕТ НА ЛОГИН
             navLinks.innerHTML = `
                 <a href="index.html"><i class="fas fa-home"></i> Главная</a>
                 <a href="rating.html"><i class="fas fa-chart-line"></i> Рейтинг</a>
@@ -219,6 +221,7 @@ async function initHeader() {
                     <div class="dropdown-content">
                         <a href="shop.html"><i class="fas fa-gem"></i> Премиум и вызовы</a>
                         <a href="catalog.html"><i class="fas fa-boxes"></i> Каталог товаров</a>
+                        <a href="login.html"><i class="fas fa-box"></i> Мои заказы</a>
                     </div>
                 </div>
                 <div class="dropdown" data-section="community">
@@ -251,6 +254,7 @@ async function initHeader() {
                     <div class="mobile-submenu-content">
                         <a href="shop.html"><i class="fas fa-gem"></i> Премиум и вызовы</a>
                         <a href="catalog.html"><i class="fas fa-boxes"></i> Каталог</a>
+                        <a href="my-orders.html"><i class="fas fa-box"></i> Мои заказы</a>
                     </div>
                 </div>
                 <a href="partner-dashboard.html"><i class="fas fa-tachometer-alt"></i> Кабинет</a>
@@ -274,6 +278,7 @@ async function initHeader() {
                     <div class="mobile-submenu-content">
                         <a href="shop.html"><i class="fas fa-gem"></i> Премиум и вызовы</a>
                         <a href="catalog.html"><i class="fas fa-boxes"></i> Каталог</a>
+                        <a href="my-orders.html"><i class="fas fa-box"></i> Мои заказы</a>
                     </div>
                 </div>
                 <div class="mobile-submenu">
@@ -304,6 +309,7 @@ async function initHeader() {
                     <div class="mobile-submenu-content">
                         <a href="shop.html"><i class="fas fa-gem"></i> Премиум и вызовы</a>
                         <a href="catalog.html"><i class="fas fa-boxes"></i> Каталог</a>
+                        <a href="login.html"><i class="fas fa-box"></i> Мои заказы</a>
                     </div>
                 </div>
                 <div class="mobile-submenu">

@@ -2,7 +2,9 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=yes">
+    <meta name="theme-color" content="#fbbf24">
+    <meta name="description" content="Управляй вызовами на спарринг в PRORANK — принимай и отправляй вызовы другим бойцам">
     <title>Вызовы | PRORANK</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
@@ -22,6 +24,13 @@
             background-attachment: fixed;
             color: #fff;
             line-height: 1.4;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        main {
+            flex: 1;
         }
 
         .gold-top {
@@ -40,6 +49,7 @@
             padding: 0 24px;
             position: relative;
             z-index: 2;
+            width: 100%;
         }
 
         /* ===== ШАПКА ===== */
@@ -54,6 +64,7 @@
             position: sticky;
             top: 0;
             z-index: 1000;
+            transition: all 0.3s ease;
         }
 
         .logo {
@@ -64,7 +75,13 @@
             background: linear-gradient(135deg, #ffffff, #fbbf24);
             background-clip: text;
             color: transparent;
+            transition: transform 0.2s ease;
         }
+
+        .logo:hover {
+            transform: scale(1.02);
+        }
+
         .logo span {
             background: linear-gradient(135deg, #fbbf24, #ffdd77);
             background-clip: text;
@@ -81,22 +98,39 @@
             gap: 12px;
             font-weight: 700;
             font-size: 0.9rem;
+            transition: all 0.2s ease;
         }
+
+        .balance-indicator:hover {
+            border-color: #fbbf24;
+            box-shadow: 0 0 15px rgba(251,191,36,0.2);
+        }
+
         .balance-count {
             color: #fbbf24;
+            font-size: 1.1rem;
         }
+
         .balance-plus {
             background: rgba(251,191,36,0.15);
             border: none;
             color: #fbbf24;
             cursor: pointer;
-            width: 26px;
-            height: 26px;
+            width: 28px;
+            height: 28px;
             border-radius: 50%;
+            transition: all 0.2s ease;
         }
+
+        .balance-plus:hover {
+            background: rgba(251,191,36,0.3);
+            transform: scale(1.05);
+        }
+
         .balance-plus:active {
             background: #fbbf24;
             color: #000;
+            transform: scale(0.94);
         }
 
         .menu-toggle {
@@ -108,6 +142,18 @@
             cursor: pointer;
             padding: 8px 14px;
             border-radius: 12px;
+            transition: all 0.2s ease;
+            min-height: 44px;
+            min-width: 44px;
+        }
+
+        .menu-toggle:hover {
+            background: rgba(251,191,36,0.2);
+            transform: scale(1.02);
+        }
+
+        .menu-toggle:active {
+            transform: scale(0.95);
         }
 
         .nav-links {
@@ -119,6 +165,7 @@
             border-radius: 60px;
             border: 1px solid rgba(251,191,36,0.2);
         }
+
         .nav-links a {
             color: #ddd;
             text-decoration: none;
@@ -126,32 +173,50 @@
             font-weight: 500;
             padding: 8px 18px;
             border-radius: 40px;
-            transition: all 0.2s;
+            transition: all 0.2s ease;
         }
+
         .nav-links a i {
             margin-right: 8px;
             color: #fbbf24;
+            transition: transform 0.2s ease;
         }
+
         .nav-links a:hover {
             color: #fbbf24;
+            background: rgba(251,191,36,0.1);
+            transform: translateY(-2px);
+        }
+
+        .nav-links a:hover i {
+            transform: scale(1.1);
         }
 
         /* ===== ЗАГОЛОВОК ===== */
         .page-header {
             text-align: center;
             padding: 40px 20px 20px;
+            animation: fadeInUp 0.5s ease;
         }
+
         .page-header h1 {
-            font-size: 2rem;
+            font-size: clamp(1.6rem, 5vw, 2rem);
             font-weight: 800;
             background: linear-gradient(135deg, #fff, #fbbf24);
             background-clip: text;
             color: transparent;
         }
+
         .page-header h1 i {
             background: none;
             background-clip: unset;
             color: #fbbf24;
+        }
+
+        .page-header p {
+            color: #aaa;
+            margin-top: 12px;
+            font-size: clamp(0.8rem, 3vw, 0.9rem);
         }
 
         /* ===== ВЫЗОВЫ ===== */
@@ -162,7 +227,14 @@
             padding: 24px;
             margin-bottom: 24px;
             border: 1px solid rgba(251,191,36,0.15);
+            transition: all 0.3s ease;
+            animation: fadeInUp 0.5s ease 0.1s both;
         }
+
+        .challenges-section:hover {
+            border-color: rgba(251,191,36,0.3);
+        }
+
         .challenges-section h2 {
             font-size: 1.3rem;
             font-weight: 700;
@@ -172,23 +244,34 @@
             gap: 10px;
             color: #fbbf24;
         }
+
         .challenge-card {
             background: #1a1a1a;
             border-radius: 20px;
             padding: 18px;
             margin-bottom: 16px;
             border-left: 4px solid;
-            transition: 0.1s;
+            transition: all 0.2s ease;
+            cursor: pointer;
         }
+
+        .challenge-card:hover {
+            transform: translateX(5px);
+            background: #222;
+        }
+
         .challenge-card:active {
-            transform: scale(0.99);
+            transform: translateX(2px) scale(0.99);
         }
+
         .challenge-card.incoming {
             border-left-color: #fbbf24;
         }
+
         .challenge-card.outgoing {
             border-left-color: #8b5cf6;
         }
+
         .challenge-header {
             display: flex;
             justify-content: space-between;
@@ -197,6 +280,7 @@
             gap: 12px;
             margin-bottom: 10px;
         }
+
         .challenge-name {
             font-size: 1.1rem;
             font-weight: 700;
@@ -204,24 +288,29 @@
             align-items: center;
             gap: 10px;
         }
+
         .challenge-status {
             padding: 4px 12px;
             border-radius: 40px;
             font-size: 0.7rem;
             font-weight: 600;
         }
+
         .status-pending {
             background: #fbbf24;
             color: #000;
         }
+
         .status-accepted {
             background: #16a34a;
             color: #fff;
         }
+
         .status-rejected {
             background: #dc2626;
             color: #fff;
         }
+
         .challenge-details {
             color: #aaa;
             font-size: 0.8rem;
@@ -231,6 +320,7 @@
             gap: 12px;
             flex-wrap: wrap;
         }
+
         .challenge-message {
             background: #0f0f0f;
             padding: 10px 14px;
@@ -240,12 +330,14 @@
             font-size: 0.85rem;
             border-left: 2px solid #fbbf24;
         }
+
         .challenge-actions {
             display: flex;
             gap: 12px;
             margin-top: 12px;
             flex-wrap: wrap;
         }
+
         .btn-accept, .btn-reject, .btn-chat {
             padding: 8px 20px;
             border-radius: 40px;
@@ -256,28 +348,56 @@
             display: inline-flex;
             align-items: center;
             gap: 8px;
-            transition: 0.1s;
+            transition: all 0.2s ease;
+            min-height: 38px;
         }
+
         .btn-accept {
             background: #16a34a;
             color: white;
         }
+
+        .btn-accept:hover {
+            background: #15803d;
+            transform: translateY(-2px);
+        }
+
         .btn-reject {
             background: #dc2626;
             color: white;
         }
+
+        .btn-reject:hover {
+            background: #b91c1c;
+            transform: translateY(-2px);
+        }
+
         .btn-chat {
             background: #3b82f6;
             color: white;
         }
-        .btn-accept:active, .btn-reject:active, .btn-chat:active {
-            transform: scale(0.96);
+
+        .btn-chat:hover {
+            background: #2563eb;
+            transform: translateY(-2px);
         }
+
+        .btn-accept:active, .btn-reject:active, .btn-chat:active {
+            transform: translateY(0) scale(0.97);
+        }
+
         .empty-state {
             text-align: center;
             color: #888;
             padding: 40px 20px;
         }
+
+        .empty-state i {
+            font-size: 2.5rem;
+            margin-bottom: 12px;
+            color: #555;
+        }
+
         .loading {
             text-align: center;
             padding: 40px;
@@ -293,14 +413,25 @@
             margin: 20px 0 40px;
             text-align: center;
             border: 1px solid rgba(251,191,36,0.3);
+            transition: all 0.3s ease;
+            animation: fadeInUp 0.5s ease 0.2s both;
         }
+
+        .leagues-hint:hover {
+            border-color: rgba(251,191,36,0.5);
+            transform: translateY(-3px);
+        }
+
         .leagues-hint a {
             color: #fbbf24;
             text-decoration: none;
             font-weight: 600;
+            transition: all 0.2s ease;
         }
+
         .leagues-hint a:hover {
             text-decoration: underline;
+            transform: translateX(3px);
         }
 
         /* ===== ПОДВАЛ ===== */
@@ -310,57 +441,99 @@
             margin-top: 40px;
             padding: 40px 0 24px;
         }
-        .footer-content {
+
+        .footer-inner {
             display: flex;
             justify-content: space-between;
+            align-items: center;
             flex-wrap: wrap;
             gap: 32px;
+            margin-bottom: 32px;
         }
+
         .footer-logo .logo {
             font-size: 1.3rem;
             display: inline-block;
         }
+
         .footer-logo p {
             font-size: 0.7rem;
             color: #777;
             margin-top: 6px;
         }
-        .footer-about h4, .footer-links h4 {
-            color: #fbbf24;
-            font-size: 0.9rem;
-            margin-bottom: 12px;
+
+        .footer-social {
+            display: flex;
+            gap: 20px;
         }
-        .footer-about p {
-            font-size: 0.75rem;
-            color: #888;
-            max-width: 220px;
-        }
-        .footer-links a {
-            display: block;
+
+        .social-icon {
             color: #aaa;
+            font-size: 1.3rem;
+            transition: all 0.2s ease;
+        }
+
+        .social-icon:hover {
+            color: #fbbf24;
+            transform: translateY(-3px);
+        }
+
+        .footer-links {
+            display: flex;
+            gap: 24px;
+            flex-wrap: wrap;
+        }
+
+        .footer-links a {
+            color: #888;
             text-decoration: none;
             font-size: 0.75rem;
-            margin-bottom: 8px;
+            transition: color 0.2s ease;
         }
+
         .footer-links a:hover {
             color: #fbbf24;
         }
+
         .footer-bottom {
             text-align: center;
-            margin-top: 32px;
-            padding-top: 20px;
+            padding-top: 24px;
             border-top: 1px solid rgba(255,255,255,0.05);
             font-size: 0.65rem;
             color: #555;
         }
 
+        /* Анимации */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        /* Адаптив */
         @media (max-width: 768px) {
+            .container {
+                padding: 0 16px;
+            }
+            
             .navbar {
                 padding: 12px 18px;
             }
+            
             .menu-toggle {
                 display: block;
             }
+            
             .nav-links {
                 display: none;
                 flex-direction: column;
@@ -373,47 +546,103 @@
                 padding: 20px;
                 gap: 10px;
                 border: 1px solid rgba(251,191,36,0.3);
+                z-index: 1000;
+                backdrop-filter: blur(20px);
             }
+            
             .nav-links.show {
                 display: flex;
+                animation: fadeIn 0.2s ease;
             }
+            
             .nav-links a {
                 width: 100%;
                 text-align: center;
                 padding: 12px;
             }
-            .container {
-                padding: 0 16px;
-            }
+            
             .page-header h1 {
                 font-size: 1.6rem;
             }
+            
             .challenge-header {
                 flex-direction: column;
                 align-items: flex-start;
             }
-            .footer-content {
+            
+            .challenge-details {
+                font-size: 0.7rem;
+                gap: 8px;
+            }
+            
+            .challenge-name {
+                font-size: 0.95rem;
+            }
+            
+            .btn-accept, .btn-reject, .btn-chat {
+                padding: 6px 16px;
+                font-size: 0.75rem;
+                min-height: 36px;
+            }
+            
+            .footer-inner {
                 flex-direction: column;
                 text-align: center;
             }
-            .footer-about p {
-                margin: 0 auto;
+        }
+
+        @media (max-width: 480px) {
+            .challenges-section {
+                padding: 16px;
+            }
+            
+            .challenge-card {
+                padding: 14px;
+            }
+            
+            .challenge-name {
+                font-size: 0.85rem;
+            }
+            
+            .challenge-details {
+                font-size: 0.65rem;
+            }
+            
+            .challenge-message {
+                font-size: 0.75rem;
             }
         }
 
         ::-webkit-scrollbar {
             width: 5px;
         }
+        
         ::-webkit-scrollbar-track {
             background: #1a1a1a;
         }
+        
         ::-webkit-scrollbar-thumb {
             background: #fbbf24;
             border-radius: 10px;
         }
+        
         .icon-gold { color: #fbbf24; }
         .icon-red { color: #ff5555; }
         .icon-green { color: #16a34a; }
+        
+        .loading-spinner {
+            display: inline-block;
+            width: 24px;
+            height: 24px;
+            border: 2px solid rgba(251,191,36,0.3);
+            border-top-color: #fbbf24;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
     </style>
 </head>
 <body>
@@ -426,25 +655,24 @@
             <span class="balance-count" id="headerChallengesCount">0</span>
             <button class="balance-plus" id="balancePlusBtn">+</button>
         </div>
-        <button class="menu-toggle" id="menuToggle">☰</button>
-        <nav class="nav-links" id="navLinks">
-            
-        </nav>
+        <button class="menu-toggle" id="menuToggle"><i class="fas fa-bars"></i></button>
+        <nav class="nav-links" id="navLinks"></nav>
     </header>
 
     <main class="container">
         <div class="page-header">
             <h1><i class="fas fa-fist-raised"></i> Мои вызовы</h1>
+            <p>Принимай вызовы и становись сильнее!</p>
         </div>
 
         <div id="incomingSection" class="challenges-section">
             <h2><i class="fas fa-arrow-down icon-gold"></i> Входящие вызовы</h2>
-            <div id="incomingList" class="loading"><i class="fas fa-spinner fa-pulse"></i> Загрузка...</div>
+            <div id="incomingList"><div class="loading"><div class="loading-spinner"></div> Загрузка...</div></div>
         </div>
 
         <div id="outgoingSection" class="challenges-section">
             <h2><i class="fas fa-arrow-up icon-gold"></i> Исходящие вызовы</h2>
-            <div id="outgoingList" class="loading"><i class="fas fa-spinner fa-pulse"></i> Загрузка...</div>
+            <div id="outgoingList"><div class="loading"><div class="loading-spinner"></div> Загрузка...</div></div>
         </div>
 
         <div class="leagues-hint">
@@ -455,29 +683,31 @@
     </main>
 
     <footer class="main-footer">
-    <div class="container">
-        <div class="footer-inner">
-            <div class="footer-logo">
-                <div class="logo">PRO<span>RANK</span></div>
-                <p>Рейтинг спортсменов-любителей</p>
+        <div class="container">
+            <div class="footer-inner">
+                <div class="footer-logo">
+                    <div class="logo">PRO<span>RANK</span></div>
+                    <p>Рейтинг спортсменов-любителей</p>
+                </div>
+                <div class="footer-social">
+                    <a href="#" target="_blank" rel="noopener noreferrer" class="social-icon" aria-label="Telegram"><i class="fab fa-telegram"></i></a>
+                    <a href="#" target="_blank" rel="noopener noreferrer" class="social-icon" aria-label="VK"><i class="fab fa-vk"></i></a>
+                    <a href="#" target="_blank" rel="noopener noreferrer" class="social-icon" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
+                    <a href="#" target="_blank" rel="noopener noreferrer" class="social-icon" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+                </div>
+                <div class="footer-links">
+                    <a href="about.html">О проекте</a>
+                    <a href="privacy.html">Конфиденциальность</a>
+                    <a href="disclaimer.html">Дисклеймер</a>
+                    <a href="rules.html">Правила</a>
+                    <a href="leagues.html">Лиги</a>
+                </div>
             </div>
-            <div class="footer-social">
-                <a href="#" target="_blank" rel="noopener noreferrer" class="social-icon" aria-label="Telegram"><i class="fab fa-telegram"></i></a>
-                <a href="#" target="_blank" rel="noopener noreferrer" class="social-icon" aria-label="VK"><i class="fab fa-vk"></i></a>
-                <a href="#" target="_blank" rel="noopener noreferrer" class="social-icon" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
-                <a href="#" target="_blank" rel="noopener noreferrer" class="social-icon" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
-            </div>
-            <div class="footer-links">
-                <a href="about.html">О проекте</a>
-                <a href="privacy.html">Конфиденциальность</a>
-                <a href="disclaimer.html">Дисклеймер</a>
+            <div class="footer-bottom">
+                <p>© 2026 PRORANK. Все права защищены.</p>
             </div>
         </div>
-        <div class="footer-bottom">
-            <p>© 2026 PRORANK. Все права защищены.</p>
-        </div>
-    </div>
-</footer>
+    </footer>
 
     <script type="importmap">
         {
@@ -522,13 +752,16 @@
                 const total = (data.freeChallenges || 0) + (data.purchasedChallenges || 0);
                 balanceCount.innerText = total;
                 balanceDiv.style.display = 'flex';
-            } catch (err) { console.error(err); }
+            } catch (err) { 
+                console.error(err);
+                balanceDiv.style.display = 'none';
+            }
         }
 
         async function loadChallenges() {
             if (!currentUser) {
-                document.getElementById('incomingList').innerHTML = '<div class="empty-state"><i class="fas fa-lock icon-gold"></i> Войдите, чтобы видеть вызовы</div>';
-                document.getElementById('outgoingList').innerHTML = '<div class="empty-state"><i class="fas fa-lock icon-gold"></i> Войдите, чтобы видеть вызовы</div>';
+                document.getElementById('incomingList').innerHTML = '<div class="empty-state"><i class="fas fa-lock icon-gold"></i><p>Войдите, чтобы видеть вызовы</p></div>';
+                document.getElementById('outgoingList').innerHTML = '<div class="empty-state"><i class="fas fa-lock icon-gold"></i><p>Войдите, чтобы видеть вызовы</p></div>';
                 return;
             }
 
@@ -554,15 +787,15 @@
                 renderOutgoing(outgoingSnap.docs);
             } catch (err) {
                 console.error('Ошибка загрузки вызовов:', err);
-                document.getElementById('incomingList').innerHTML = '<div class="empty-state"><i class="fas fa-exclamation-triangle icon-red"></i> Ошибка загрузки</div>';
-                document.getElementById('outgoingList').innerHTML = '<div class="empty-state"><i class="fas fa-exclamation-triangle icon-red"></i> Ошибка загрузки</div>';
+                document.getElementById('incomingList').innerHTML = '<div class="empty-state"><i class="fas fa-exclamation-triangle icon-red"></i><p>Ошибка загрузки</p></div>';
+                document.getElementById('outgoingList').innerHTML = '<div class="empty-state"><i class="fas fa-exclamation-triangle icon-red"></i><p>Ошибка загрузки</p></div>';
             }
         }
 
         function renderIncoming(docs) {
             const container = document.getElementById('incomingList');
             if (docs.length === 0) {
-                container.innerHTML = '<div class="empty-state"><i class="fas fa-inbox"></i> Нет входящих вызовов</div>';
+                container.innerHTML = '<div class="empty-state"><i class="fas fa-inbox"></i><p>Нет входящих вызовов</p></div>';
                 return;
             }
 
@@ -579,8 +812,8 @@
                         <span class="challenge-status status-${challenge.status}">${getStatusText(challenge.status)}</span>
                     </div>
                     <div class="challenge-details">
-                        <i class="fas fa-weight-hanging"></i> Вес: ${challenge.fromWeight && challenge.fromWeight > 0 ? challenge.fromWeight + ' кг' : 'не указан'}
-                        <i class="fas fa-trophy"></i> Рейтинг: ${challenge.fromFrs || 0} FRS
+                        <span><i class="fas fa-weight-hanging"></i> Вес: ${challenge.fromWeight && challenge.fromWeight > 0 ? challenge.fromWeight + ' кг' : 'не указан'}</span>
+                        <span><i class="fas fa-trophy"></i> Рейтинг: ${challenge.fromFrs || 0} FRS</span>
                     </div>
                     ${challenge.message ? `<div class="challenge-message"><i class="fas fa-quote-left"></i> ${escapeHtml(challenge.message)}</div>` : ''}
                     ${challenge.status === 'pending' ? `
@@ -593,6 +826,7 @@
                         <div class="challenge-actions">
                             <button class="btn-chat" data-chat-id="${challenge.fromUserId}_${challenge.toUserId}"><i class="fas fa-comments"></i> Перейти в чат</button>
                         </div>
+                        <div class="challenge-details"><i class="fas fa-check-circle icon-green"></i> Вы приняли вызов! Обсудите детали в чате.</div>
                     ` : ''}
                 `;
                 container.appendChild(card);
@@ -614,7 +848,7 @@
         function renderOutgoing(docs) {
             const container = document.getElementById('outgoingList');
             if (docs.length === 0) {
-                container.innerHTML = '<div class="empty-state"><i class="fas fa-paper-plane"></i> Нет исходящих вызовов</div>';
+                container.innerHTML = '<div class="empty-state"><i class="fas fa-paper-plane"></i><p>Нет исходящих вызовов</p></div>';
                 return;
             }
 
@@ -631,8 +865,8 @@
                         <span class="challenge-status status-${challenge.status}">${getStatusText(challenge.status)}</span>
                     </div>
                     <div class="challenge-details">
-                        <i class="fas fa-weight-hanging"></i> Вес: ${challenge.toWeight && challenge.toWeight > 0 ? challenge.toWeight + ' кг' : 'не указан'}
-                        <i class="fas fa-trophy"></i> Рейтинг: ${challenge.toFrs || 0} FRS
+                        <span><i class="fas fa-weight-hanging"></i> Вес: ${challenge.toWeight && challenge.toWeight > 0 ? challenge.toWeight + ' кг' : 'не указан'}</span>
+                        <span><i class="fas fa-trophy"></i> Рейтинг: ${challenge.toFrs || 0} FRS</span>
                     </div>
                     ${challenge.message ? `<div class="challenge-message"><i class="fas fa-quote-left"></i> ${escapeHtml(challenge.message)}</div>` : ''}
                     ${challenge.status === 'accepted' ? `
@@ -724,23 +958,17 @@
             });
         }
 
-        const loginBtn = document.getElementById('profileLoginBtn');
-        
         onAuthStateChanged(auth, (user) => {
             currentUser = user;
             
-            if (user && loginBtn) {
-                loginBtn.innerHTML = '<i class="fas fa-user"></i> Мой профиль';
-                loginBtn.href = `profile.html?id=${user.uid}`;
+            if (user) {
                 updateHeaderBalance();
                 loadChallenges();
-            } else if (loginBtn) {
-                loginBtn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Войти';
-                loginBtn.href = 'login.html';
+            } else {
                 const balanceDiv = document.getElementById('balanceIndicator');
                 if (balanceDiv) balanceDiv.style.display = 'none';
-                document.getElementById('incomingList').innerHTML = '<div class="empty-state"><i class="fas fa-lock"></i> Войдите, чтобы видеть вызовы</div>';
-                document.getElementById('outgoingList').innerHTML = '<div class="empty-state"><i class="fas fa-lock"></i> Войдите, чтобы видеть вызовы</div>';
+                document.getElementById('incomingList').innerHTML = '<div class="empty-state"><i class="fas fa-lock"></i><p>Войдите, чтобы видеть вызовы</p></div>';
+                document.getElementById('outgoingList').innerHTML = '<div class="empty-state"><i class="fas fa-lock"></i><p>Войдите, чтобы видеть вызовы</p></div>';
             }
         });
 
@@ -750,7 +978,15 @@
         const menuToggle = document.getElementById('menuToggle');
         const navLinks = document.getElementById('navLinks');
         if (menuToggle && navLinks) {
-            menuToggle.addEventListener('click', () => navLinks.classList.toggle('show'));
+            menuToggle.addEventListener('click', () => {
+                navLinks.classList.toggle('show');
+            });
+            
+            navLinks.querySelectorAll('a').forEach(link => {
+                link.addEventListener('click', () => {
+                    navLinks.classList.remove('show');
+                });
+            });
         }
     </script>
 </body>
