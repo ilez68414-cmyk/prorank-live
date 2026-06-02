@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=yes">
     <meta name="theme-color" content="#fbbf24">
-    <meta name="description" content="Чат PRORANK — общайся с соперниками и договаривайся о спаррингах">
     <title>Чат | PRORANK</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
@@ -28,7 +27,6 @@
             overflow: hidden;
         }
 
-        /* Чат контейнер на весь экран */
         .chat-wrapper {
             height: 100vh;
             display: flex;
@@ -39,7 +37,6 @@
             backdrop-filter: blur(4px);
         }
 
-        /* Шапка чата */
         .chat-header {
             background: rgba(0, 0, 0, 0.85);
             backdrop-filter: blur(16px);
@@ -83,7 +80,6 @@
             color: #fbbf24;
         }
 
-        /* Область сообщений */
         .messages-area {
             flex: 1;
             overflow-y: auto;
@@ -104,7 +100,6 @@
             border-radius: 10px;
         }
 
-        /* Сообщения */
         .message {
             max-width: 80%;
             padding: 10px 16px;
@@ -152,7 +147,6 @@
             color: #000;
         }
         
-        /* Цитируемое сообщение (reply) */
         .reply-preview {
             background: rgba(0,0,0,0.3);
             border-left: 3px solid #fbbf24;
@@ -177,7 +171,6 @@
             background: rgba(0,0,0,0.2);
         }
         
-        /* Индикатор ответа в поле ввода */
         .reply-indicator {
             background: #1f1f2a;
             border-left: 3px solid #fbbf24;
@@ -228,7 +221,6 @@
             transform: scale(1.05);
         }
 
-        /* Контекстное меню */
         .message-menu {
             position: absolute;
             background: #2a2a35;
@@ -262,7 +254,6 @@
             width: 20px;
         }
 
-        /* Поле ввода */
         .chat-input-area {
             display: flex;
             flex-direction: column;
@@ -286,6 +277,7 @@
             font-size: 0.9rem;
             font-family: inherit;
             transition: all 0.2s ease;
+            min-height: 44px;
         }
         .chat-input-area input:focus {
             outline: none;
@@ -412,7 +404,8 @@
         let currentUser = null;
         let chatId = null;
         let unsubscribe = null;
-        let currentReplyTo = null; // { id, text, fromName }
+        let currentReplyTo = null;
+        let chatData = null;
 
         function goBack() {
             if (document.referrer && document.referrer.includes(window.location.host)) {
@@ -455,7 +448,7 @@
                 return;
             }
             
-            const chatData = chatSnap.data();
+            chatData = chatSnap.data();
             const participants = chatData.participants || [];
             
             if (!currentUser || !participants.includes(currentUser.uid)) {
@@ -464,9 +457,34 @@
                 return;
             }
             
+            // Получаем имя собеседника
             const otherId = participants.find(id => id !== currentUser.uid);
-            const otherName = chatData.participantNames?.[otherId] || 'Соперник';
-            document.getElementById('chatTitle').innerHTML = `${otherName}`;
+            let otherName = 'Соперник';
+            
+            if (otherId) {
+                // Проверяем, есть ли имя в participantNames
+                if (chatData.participantNames && chatData.participantNames[otherId]) {
+                    otherName = chatData.participantNames[otherId];
+                } else {
+                    // Пытаемся получить из коллекции fighters
+                    try {
+                        const fighterDoc = await getDoc(doc(db, "fighters", otherId));
+                        if (fighterDoc.exists()) {
+                            otherName = fighterDoc.data()?.name || 'Соперник';
+                        } else {
+                            // Пробуем получить из коллекции partners
+                            const partnerDoc = await getDoc(doc(db, "partners", otherId));
+                            if (partnerDoc.exists()) {
+                                otherName = partnerDoc.data()?.name || 'Продавец';
+                            }
+                        }
+                    } catch (err) {
+                        console.warn('Не удалось получить имя:', err);
+                    }
+                }
+            }
+            
+            document.getElementById('chatTitle').innerHTML = `${escapeHtml(otherName)}`;
             
             const messagesRef = collection(db, "chats", chatId, "messages");
             const q = query(messagesRef, orderBy("createdAt", "asc"));
@@ -513,7 +531,6 @@
                     messageDiv.appendChild(senderDiv);
                 }
                 
-                // Если есть ответ на сообщение
                 if (msg.replyTo) {
                     const replyDiv = document.createElement('div');
                     replyDiv.className = 'reply-preview';
@@ -541,27 +558,23 @@
             
             container.scrollTop = container.scrollHeight;
             
-            // Добавляем обработчики контекстного меню для сообщений
             document.querySelectorAll('.message').forEach(msgEl => {
                 msgEl.addEventListener('contextmenu', (e) => {
                     e.preventDefault();
                     e.stopPropagation();
                     
-                    // Удаляем существующее меню
                     const existingMenu = document.querySelector('.message-menu');
                     if (existingMenu) existingMenu.remove();
                     
                     const messageId = msgEl.dataset.messageId;
                     const messageText = msgEl.dataset.messageText;
                     const messageAuthor = msgEl.dataset.messageAuthor;
-                    const isOwnMessage = msgEl.classList.contains('own');
                     
                     const menu = document.createElement('div');
                     menu.className = 'message-menu';
                     menu.style.top = `${e.clientY}px`;
                     menu.style.left = `${e.clientX}px`;
                     
-                    // Кнопка "Ответить" для всех сообщений
                     const replyBtn = document.createElement('button');
                     replyBtn.innerHTML = '<i class="fas fa-reply"></i> Ответить';
                     replyBtn.addEventListener('click', () => {
@@ -570,7 +583,6 @@
                     });
                     menu.appendChild(replyBtn);
                     
-                    // Закрыть меню по клику вне
                     const closeMenu = (event) => {
                         if (!menu.contains(event.target)) {
                             menu.remove();
@@ -594,8 +606,18 @@
             
             if (!text || !currentUser || !chatId) return;
             
-            const userDoc = await getDoc(doc(db, "fighters", currentUser.uid));
-            const userName = userDoc.data()?.name || 'Боец';
+            let userName = 'Пользователь';
+            
+            // Пытаемся получить имя из fighters или partners
+            const fighterDoc = await getDoc(doc(db, "fighters", currentUser.uid));
+            if (fighterDoc.exists()) {
+                userName = fighterDoc.data()?.name || 'Боец';
+            } else {
+                const partnerDoc = await getDoc(doc(db, "partners", currentUser.uid));
+                if (partnerDoc.exists()) {
+                    userName = partnerDoc.data()?.name || 'Продавец';
+                }
+            }
             
             const messagesRef = collection(db, "chats", chatId, "messages");
             
@@ -606,7 +628,6 @@
                 createdAt: new Date()
             };
             
-            // Если есть ответ на сообщение
             if (currentReplyTo) {
                 messageData.replyTo = {
                     messageId: currentReplyTo.id,

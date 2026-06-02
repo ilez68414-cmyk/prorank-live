@@ -58,6 +58,7 @@
             position: sticky;
             top: 0;
             z-index: 1000;
+            transition: all 0.3s ease;
         }
         
         .logo {
@@ -68,13 +69,11 @@
             background: linear-gradient(135deg, #ffffff, #fbbf24);
             background-clip: text;
             color: transparent;
+            transition: transform 0.2s ease;
         }
         
-        .logo span {
-            background: linear-gradient(135deg, #fbbf24, #ffdd77);
-            background-clip: text;
-            color: transparent;
-        }
+        .logo:hover { transform: scale(1.02); }
+        .logo span { background: linear-gradient(135deg, #fbbf24, #ffdd77); background-clip: text; color: transparent; }
         
         .balance-indicator {
             background: #111;
@@ -86,32 +85,58 @@
             gap: 12px;
             font-weight: 700;
             font-size: 0.9rem;
+            transition: all 0.2s ease;
         }
         
-        .balance-count { color: #fbbf24; }
+        .balance-indicator:hover {
+            border-color: #fbbf24;
+            box-shadow: 0 0 15px rgba(251,191,36,0.2);
+        }
+        
+        .balance-count { color: #fbbf24; font-size: 1.1rem; }
         
         .balance-plus {
             background: rgba(251,191,36,0.15);
             border: none;
             color: #fbbf24;
             cursor: pointer;
-            width: 26px;
-            height: 26px;
+            width: 28px;
+            height: 28px;
             border-radius: 50%;
+            transition: all 0.2s ease;
         }
         
-        .menu-toggle {
-            display: none;
-            background: rgba(251,191,36,0.1);
-            border: 1px solid #fbbf24;
-            color: #fbbf24;
-            font-size: 1.6rem;
-            cursor: pointer;
-            padding: 8px 14px;
+        .balance-plus:hover {
+            background: rgba(251,191,36,0.3);
+            transform: scale(1.05);
+        }
+        
+        .balance-plus:active { 
+            background: #fbbf24; 
+            color: #000;
+            transform: scale(0.94);
+        }
+        
+        .menu-toggle { 
+            display: none; 
+            background: rgba(251,191,36,0.1); 
+            border: 1px solid #fbbf24; 
+            color: #fbbf24; 
+            font-size: 1.6rem; 
+            cursor: pointer; 
+            padding: 8px 14px; 
             border-radius: 12px;
+            transition: all 0.2s ease;
             min-height: 44px;
             min-width: 44px;
         }
+        
+        .menu-toggle:hover {
+            background: rgba(251,191,36,0.2);
+            transform: scale(1.02);
+        }
+        
+        .menu-toggle:active { transform: scale(0.95); }
         
         .nav-links {
             display: flex;
@@ -252,34 +277,45 @@
             font-weight: 600;
         }
         
-        .status-new { background: #f59e0b; color: #000; }
-        .status-accepted { background: #3b82f6; color: #fff; }
+        .status-pending { background: #f59e0b; color: #000; }
+        .status-paid { background: #3b82f6; color: #fff; }
         .status-shipped { background: #8b5cf6; color: #fff; }
         .status-completed { background: #10b981; color: #fff; }
+        .status-cancelled { background: #dc2626; color: #fff; }
         .status-rejected { background: #dc2626; color: #fff; }
         
-        .order-items {
-            margin: 12px 0;
+        .order-items-list {
+            margin: 10px 0;
         }
         
-        .order-item {
+        .order-item-row {
             display: flex;
             justify-content: space-between;
-            align-items: center;
             padding: 8px 0;
             border-bottom: 1px solid rgba(255,255,255,0.05);
+            font-size: 0.85rem;
         }
         
-        .order-item:last-child {
+        .order-item-row:last-child {
             border-bottom: none;
         }
         
-        .item-name {
-            font-size: 0.85rem;
+        .item-name-small {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        
+        .item-quantity-badge {
+            background: rgba(251,191,36,0.2);
+            padding: 2px 8px;
+            border-radius: 20px;
+            font-size: 0.65rem;
+            color: #fbbf24;
         }
         
         .item-price {
-            font-size: 0.85rem;
             font-weight: 600;
             color: #fbbf24;
         }
@@ -309,6 +345,9 @@
         .tracking-info {
             font-size: 0.7rem;
             color: #aaa;
+            padding: 8px 12px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 12px;
         }
         
         .tracking-info i {
@@ -316,10 +355,7 @@
             margin-right: 4px;
         }
         
-        .repeat-order-btn {
-            background: #fbbf24;
-            color: #000;
-            border: none;
+        .btn-confirm, .btn-cancel {
             padding: 8px 16px;
             border-radius: 30px;
             font-weight: 600;
@@ -329,27 +365,61 @@
             min-height: 38px;
         }
         
-        .repeat-order-btn:hover {
-            background: #ffdd44;
+        .btn-confirm {
+            background: #10b981;
+            color: #fff;
+        }
+        
+        .btn-confirm:hover {
+            background: #059669;
             transform: translateY(-2px);
         }
         
-        .cancel-order-btn {
+        .btn-cancel {
             background: #dc2626;
             color: #fff;
+        }
+        
+        .btn-cancel:hover {
+            background: #b91c1c;
+            transform: translateY(-2px);
+        }
+        
+        .clear-history-btn {
+            background: #dc2626;
+            color: white;
             border: none;
-            padding: 8px 16px;
-            border-radius: 30px;
+            padding: 8px 20px;
+            border-radius: 40px;
             font-weight: 600;
             font-size: 0.75rem;
             cursor: pointer;
             transition: all 0.2s;
             min-height: 38px;
+            margin-left: auto;
         }
         
-        .cancel-order-btn:hover {
+        .clear-history-btn:hover {
             background: #b91c1c;
             transform: translateY(-2px);
+        }
+        
+        .history-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        
+        .reject-reason {
+            font-size: 0.65rem;
+            color: #dc2626;
+            margin-top: 8px;
+            padding: 6px 10px;
+            background: rgba(220,38,38,0.1);
+            border-radius: 12px;
         }
         
         .empty-state {
@@ -362,6 +432,11 @@
             font-size: 3rem;
             margin-bottom: 16px;
             color: #555;
+        }
+        
+        .empty-state a {
+            color: #fbbf24;
+            text-decoration: none;
         }
         
         .loading {
@@ -485,9 +560,13 @@
                 flex-direction: column;
                 align-items: stretch;
             }
-            .repeat-order-btn, .cancel-order-btn {
+            .btn-confirm, .btn-cancel, .clear-history-btn {
                 width: 100%;
                 justify-content: center;
+            }
+            .history-header {
+                flex-direction: column;
+                align-items: stretch;
             }
             .footer-inner {
                 flex-direction: column;
@@ -578,6 +657,7 @@
                     <a href="about.html">О проекте</a>
                     <a href="privacy.html">Конфиденциальность</a>
                     <a href="disclaimer.html">Дисклеймер</a>
+                    <a href="rules.html">Правила</a>
                 </div>
             </div>
             <div class="footer-bottom">
@@ -615,7 +695,6 @@
         const auth = getAuth(app);
 
         let currentUser = null;
-        let activeTab = 'active';
 
         async function updateHeaderBalance() {
             const user = auth.currentUser;
@@ -647,7 +726,7 @@
                 
                 const activeOrders = [];
                 const historyOrders = [];
-                const activeStatuses = ['new', 'accepted', 'shipped'];
+                const activeStatuses = ['pending', 'paid', 'shipped'];
                 
                 snapshot.forEach(docSnap => {
                     const order = { id: docSnap.id, ...docSnap.data() };
@@ -658,8 +737,8 @@
                     }
                 });
                 
-                renderOrders('activeOrdersList', activeOrders);
-                renderOrders('historyOrdersList', historyOrders);
+                renderActiveOrders(activeOrders);
+                renderHistoryOrders(historyOrders);
             } catch (err) {
                 console.error('Ошибка загрузки заказов:', err);
                 document.getElementById('activeOrdersList').innerHTML = '<div class="empty-state"><i class="fas fa-exclamation-triangle"></i><p>Ошибка загрузки</p></div>';
@@ -667,18 +746,11 @@
             }
         }
 
-        function renderOrders(containerId, orders) {
-            const container = document.getElementById(containerId);
+        function renderActiveOrders(orders) {
+            const container = document.getElementById('activeOrdersList');
             
             if (orders.length === 0) {
-                const isEmptyActive = containerId === 'activeOrdersList';
-                container.innerHTML = `
-                    <div class="empty-state">
-                        <i class="fas fa-inbox"></i>
-                        <p>${isEmptyActive ? 'У вас нет активных заказов' : 'У вас нет истории заказов'}</p>
-                        ${isEmptyActive ? '<p style="font-size: 0.8rem; margin-top: 8px;"><a href="catalog.html" style="color: #fbbf24;">Перейти в каталог →</a></p>' : ''}
-                    </div>
-                `;
+                container.innerHTML = `<div class="empty-state"><i class="fas fa-inbox"></i><p>У вас нет активных заказов</p><p><a href="catalog.html" style="color: #fbbf24;">Перейти в каталог →</a></p></div>`;
                 return;
             }
             
@@ -687,36 +759,47 @@
                 const date = order.createdAt?.toDate().toLocaleDateString() || '—';
                 const statusText = getStatusText(order.status);
                 const statusClass = `status-${order.status}`;
-                const totalPrice = order.totalPrice || order.price || 0;
-                const quantity = order.quantity || 1;
+                
+                let itemsHtml = '';
+                if (order.items && order.items.length > 0) {
+                    itemsHtml = '<div class="order-items-list">';
+                    order.items.forEach(item => {
+                        itemsHtml += `
+                            <div class="order-item-row">
+                                <div class="item-name-small">
+                                    <span>${escapeHtml(item.productName)}</span>
+                                    ${item.quantity > 1 ? `<span class="item-quantity-badge">×${item.quantity}</span>` : ''}
+                                </div>
+                                <span class="item-price">${(item.price * item.quantity).toLocaleString()} ₽</span>
+                            </div>
+                        `;
+                    });
+                    itemsHtml += '</div>';
+                } else {
+                    // Старый формат (один товар)
+                    itemsHtml = `
+                        <div class="order-item-row">
+                            <span>${escapeHtml(order.productName)} ${order.quantity > 1 ? `× ${order.quantity}` : ''}</span>
+                            <span class="item-price">${(order.totalPrice || order.price || 0).toLocaleString()} ₽</span>
+                        </div>
+                    `;
+                }
                 
                 html += `
-                    <div class="order-card" data-order-id="${order.id}">
+                    <div class="order-card">
                         <div class="order-header">
                             <span class="order-number"><i class="fas fa-receipt"></i> Заказ #${order.id.slice(0, 8)}</span>
                             <span class="order-date"><i class="fas fa-calendar-alt"></i> ${date}</span>
                             <span class="order-status ${statusClass}">${statusText}</span>
                         </div>
-                        <div class="order-items">
-                            <div class="order-item">
-                                <span class="item-name">${escapeHtml(order.productName)} ${quantity > 1 ? `× ${quantity}` : ''}</span>
-                                <span class="item-price">${(order.price || 0).toLocaleString()} ₽</span>
-                            </div>
-                        </div>
+                        ${itemsHtml}
                         <div class="order-total">
-                            <span>Итого: ${totalPrice.toLocaleString()} ₽</span>
+                            <span>Итого: ${(order.totalPrice || 0).toLocaleString()} ₽</span>
                         </div>
                         <div class="order-footer">
-                            ${order.trackingNumber ? `
-                                <div class="tracking-info">
-                                    <i class="fas fa-box"></i> Трек-номер: ${escapeHtml(order.trackingNumber)}
-                                </div>
-                            ` : '<div></div>'}
+                            ${order.trackingNumber ? `<div class="tracking-info"><i class="fas fa-box"></i> Трек: ${escapeHtml(order.trackingNumber)}</div>` : '<div></div>'}
                             <div style="display: flex; gap: 8px;">
-                                ${order.status === 'new' ? `
-                                    <button class="cancel-order-btn" data-order-id="${order.id}"><i class="fas fa-times"></i> Отменить</button>
-                                ` : ''}
-                                <button class="repeat-order-btn" data-product='${JSON.stringify({ id: order.productId, name: order.productName, price: order.price })}'><i class="fas fa-repeat"></i> Повторить</button>
+                                ${renderActiveButtons(order)}
                             </div>
                         </div>
                     </div>
@@ -724,42 +807,157 @@
             });
             container.innerHTML = html;
             
-            // Обработчики для кнопок "Повторить"
-            document.querySelectorAll(`#${containerId} .repeat-order-btn`).forEach(btn => {
-                btn.addEventListener('click', (e) => {
+            attachActiveHandlers();
+        }
+
+        function renderHistoryOrders(orders) {
+            const container = document.getElementById('historyOrdersList');
+            
+            if (orders.length === 0) {
+                container.innerHTML = `<div class="empty-state"><i class="fas fa-history"></i><p>У вас нет истории заказов</p></div>`;
+                return;
+            }
+            
+            let html = `<div class="history-header"><h3><i class="fas fa-history"></i> История заказов</h3><button id="clearHistoryBtn" class="clear-history-btn"><i class="fas fa-trash"></i> Очистить историю</button></div>`;
+            
+            orders.forEach(order => {
+                const date = order.createdAt?.toDate().toLocaleDateString() || '—';
+                const statusText = getStatusText(order.status);
+                const statusClass = `status-${order.status}`;
+                
+                let itemsHtml = '';
+                if (order.items && order.items.length > 0) {
+                    itemsHtml = '<div class="order-items-list">';
+                    order.items.forEach(item => {
+                        itemsHtml += `
+                            <div class="order-item-row">
+                                <div class="item-name-small">
+                                    <span>${escapeHtml(item.productName)}</span>
+                                    ${item.quantity > 1 ? `<span class="item-quantity-badge">×${item.quantity}</span>` : ''}
+                                </div>
+                                <span class="item-price">${(item.price * item.quantity).toLocaleString()} ₽</span>
+                            </div>
+                        `;
+                    });
+                    itemsHtml += '</div>';
+                } else {
+                    itemsHtml = `
+                        <div class="order-item-row">
+                            <span>${escapeHtml(order.productName)} ${order.quantity > 1 ? `× ${order.quantity}` : ''}</span>
+                            <span class="item-price">${(order.totalPrice || order.price || 0).toLocaleString()} ₽</span>
+                        </div>
+                    `;
+                }
+                
+                html += `
+                    <div class="order-card">
+                        <div class="order-header">
+                            <span class="order-number"><i class="fas fa-receipt"></i> Заказ #${order.id.slice(0, 8)}</span>
+                            <span class="order-date"><i class="fas fa-calendar-alt"></i> ${date}</span>
+                            <span class="order-status ${statusClass}">${statusText}</span>
+                        </div>
+                        ${itemsHtml}
+                        <div class="order-total">
+                            <span>Итого: ${(order.totalPrice || 0).toLocaleString()} ₽</span>
+                        </div>
+                        <div class="order-footer">
+                            ${order.trackingNumber ? `<div class="tracking-info"><i class="fas fa-box"></i> Трек: ${escapeHtml(order.trackingNumber)}</div>` : '<div></div>'}
+                            <div>
+                                ${order.status === 'completed' ? '<span style="color:#10b981;"><i class="fas fa-check-circle"></i> Завершён</span>' : ''}
+                                ${order.status === 'cancelled' ? '<span style="color:#dc2626;"><i class="fas fa-ban"></i> Отменён</span>' : ''}
+                                ${order.status === 'rejected' ? '<span style="color:#dc2626;"><i class="fas fa-ban"></i> Отклонён продавцом</span>' : ''}
+                                ${order.rejectReason ? `<div class="reject-reason"><i class="fas fa-info-circle"></i> Причина: ${escapeHtml(order.rejectReason)}</div>` : ''}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+            
+            const clearBtn = document.getElementById('clearHistoryBtn');
+            if (clearBtn) {
+                clearBtn.addEventListener('click', async () => {
+                    if (confirm('Вы уверены, что хотите очистить всю историю заказов? Это действие нельзя отменить.')) {
+                        await clearOrderHistory();
+                    }
+                });
+            }
+        }
+
+        async function clearOrderHistory() {
+            if (!currentUser) return;
+            
+            try {
+                const ordersQuery = query(
+                    collection(db, "orders"),
+                    where("userId", "==", currentUser.uid),
+                    where("status", "in", ['completed', 'cancelled', 'rejected'])
+                );
+                const snapshot = await getDocs(ordersQuery);
+                
+                let deletedCount = 0;
+                for (const docSnap of snapshot.docs) {
+                    await deleteDoc(doc(db, "orders", docSnap.id));
+                    deletedCount++;
+                }
+                
+                alert(`✅ Удалено ${deletedCount} заказов из истории`);
+                await loadOrders();
+            } catch (err) {
+                console.error('Ошибка очистки:', err);
+                alert('❌ Ошибка при очистке истории');
+            }
+        }
+
+        function renderActiveButtons(order) {
+            const status = order.status;
+            
+            if (status === 'pending') {
+                return `<span style="color: #fbbf24;"><i class="fas fa-clock"></i> Ожидает оплаты...</span>
+                        <button class="btn-cancel" data-order-id="${order.id}"><i class="fas fa-times"></i> Отменить</button>`;
+            }
+            if (status === 'paid') {
+                return `<span style="color: #fbbf24;"><i class="fas fa-clock"></i> Ожидает отправки...</span>`;
+            }
+            if (status === 'shipped') {
+                return `<button class="btn-confirm" data-order-id="${order.id}"><i class="fas fa-check-circle"></i> Подтвердить получение</button>`;
+            }
+            return '';
+        }
+
+        function attachActiveHandlers() {
+            document.querySelectorAll('.btn-confirm').forEach(btn => {
+                btn.addEventListener('click', async (e) => {
                     e.stopPropagation();
-                    const product = JSON.parse(btn.dataset.product);
-                    if (product.id && product.name && product.price) {
-                        let cart = JSON.parse(localStorage.getItem('cart') || '[]');
-                        cart.push(product);
-                        localStorage.setItem('cart', JSON.stringify(cart));
-                        
-                        const originalText = btn.innerHTML;
-                        btn.innerHTML = '<i class="fas fa-check"></i> В корзине!';
-                        btn.style.background = '#10b981';
-                        setTimeout(() => {
-                            btn.innerHTML = originalText;
-                            btn.style.background = '#fbbf24';
-                        }, 1500);
-                    } else {
-                        alert('Товар временно недоступен для повторного заказа');
+                    const orderId = btn.dataset.orderId;
+                    if (confirm('Подтвердите получение товара? После этого заказ будет завершён.')) {
+                        try {
+                            await updateDoc(doc(db, "orders", orderId), { 
+                                status: 'completed',
+                                completedAt: new Date()
+                            });
+                            alert('✅ Спасибо за покупку! Заказ завершён.');
+                            loadOrders();
+                        } catch (err) {
+                            console.error('Ошибка:', err);
+                            alert('❌ Ошибка при подтверждении');
+                        }
                     }
                 });
             });
             
-            // Обработчики для кнопок "Отменить" (только для активных)
-            document.querySelectorAll(`#${containerId} .cancel-order-btn`).forEach(btn => {
+            document.querySelectorAll('.btn-cancel').forEach(btn => {
                 btn.addEventListener('click', async (e) => {
                     e.stopPropagation();
                     const orderId = btn.dataset.orderId;
-                    if (confirm('Вы уверены, что хотите отменить этот заказ?')) {
+                    if (confirm('Вы уверены, что хотите отменить заказ?')) {
                         try {
-                            await updateDoc(doc(db, "orders", orderId), { status: 'rejected' });
+                            await updateDoc(doc(db, "orders", orderId), { status: 'cancelled' });
                             alert('✅ Заказ отменён');
                             loadOrders();
                         } catch (err) {
-                            console.error('Ошибка отмены:', err);
-                            alert('❌ Ошибка при отмене заказа');
+                            console.error('Ошибка:', err);
+                            alert('❌ Ошибка при отмене');
                         }
                     }
                 });
@@ -768,10 +966,11 @@
 
         function getStatusText(status) {
             const statuses = {
-                'new': '🆕 Новый',
-                'accepted': '✅ Принят',
+                'pending': '⏳ Ожидает оплаты',
+                'paid': '✅ Оплачен',
                 'shipped': '📦 Отправлен',
                 'completed': '✔️ Завершён',
+                'cancelled': '❌ Отменён',
                 'rejected': '❌ Отклонён'
             };
             return statuses[status] || status;

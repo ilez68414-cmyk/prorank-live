@@ -230,12 +230,10 @@
         
         .cart-item {
             display: flex;
-            justify-content: space-between;
             align-items: center;
             padding: 16px;
             border-bottom: 1px solid rgba(255,255,255,0.1);
-            flex-wrap: wrap;
-            gap: 12px;
+            gap: 16px;
             transition: all 0.2s ease;
         }
         
@@ -247,17 +245,28 @@
         
         .cart-item:last-child { border-bottom: none; }
         
-        .cart-item-info { flex: 1; }
+        .cart-item-image {
+            width: 70px;
+            height: 70px;
+            min-width: 70px;
+            border-radius: 12px;
+            object-fit: cover;
+            background: #1a1a1a;
+        }
+        
+        .cart-item-info {
+            flex: 1;
+        }
         
         .cart-item-name {
             font-weight: 700;
-            font-size: 1rem;
+            font-size: 0.95rem;
+            margin-bottom: 4px;
         }
         
         .cart-item-price {
             color: #fbbf24;
             font-weight: 600;
-            margin-top: 4px;
             font-size: 0.85rem;
         }
         
@@ -277,8 +286,8 @@
             background: rgba(251,191,36,0.15);
             border: 1px solid rgba(251,191,36,0.3);
             color: #fbbf24;
-            width: 34px;
-            height: 34px;
+            width: 32px;
+            height: 32px;
             border-radius: 50%;
             cursor: pointer;
             font-weight: 700;
@@ -305,7 +314,7 @@
             padding: 8px 16px;
             border-radius: 30px;
             cursor: pointer;
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             display: flex;
             align-items: center;
             gap: 6px;
@@ -587,6 +596,7 @@
             .nav-links a { width: 100%; text-align: center; padding: 12px; }
             .container { padding: 0 16px; }
             .cart-item { flex-direction: column; text-align: center; }
+            .cart-item-image { width: 80px; height: 80px; }
             .cart-item-actions { justify-content: center; }
             .footer-inner { flex-direction: column; text-align: center; }
             .breadcrumb { justify-content: center; }
@@ -597,6 +607,7 @@
             .btn-checkout { padding: 14px; font-size: 0.9rem; }
             .quantity-btn { width: 30px; height: 30px; }
             .btn-remove { padding: 6px 12px; font-size: 0.7rem; }
+            .cart-item-image { width: 60px; height: 60px; }
         }
         
         ::-webkit-scrollbar { width: 5px; }
@@ -634,7 +645,6 @@
     </header>
 
     <main class="container">
-        <!-- Хлебные крошки и кнопка назад -->
         <div class="breadcrumb">
             <button class="back-btn" id="backBtn"><i class="fas fa-arrow-left"></i> Назад</button>
             <span>/</span>
@@ -783,8 +793,11 @@
             items.forEach((item, idx) => {
                 const itemTotal = item.price * item.quantity;
                 total += itemTotal;
+                const imageUrl = item.image || 'https://placehold.co/300x200/1a1a1a/fbbf24?text=No+Image';
+                
                 html += `
                     <div class="cart-item" data-idx="${idx}" data-item-id="${item.id || item.name}">
+                        <img src="${imageUrl}" class="cart-item-image" onerror="this.src='https://placehold.co/300x200/1a1a1a/fbbf24?text=No+Image'">
                         <div class="cart-item-info">
                             <div class="cart-item-name">${escapeHtml(item.name)}</div>
                             <div class="cart-item-price">${item.price.toLocaleString()} ₽</div>
@@ -865,7 +878,6 @@
                 window.location.href = 'login.html';
                 return;
             }
-            // Заполняем поля данными пользователя
             if (currentUserData) {
                 document.getElementById('orderName').value = currentUserData.name || '';
                 document.getElementById('orderPhone').value = currentUserData.phone || '';
@@ -893,7 +905,7 @@
             btn.disabled = true;
             
             try {
-                // Группируем товары для заказа
+                // Группируем товары
                 const grouped = {};
                 cart.forEach(item => {
                     const key = item.id || item.name;
@@ -904,29 +916,40 @@
                     }
                 });
                 
-                // Создаём заказ в Firestore
-                for (const item of Object.values(grouped)) {
-                    await addDoc(collection(db, "orders"), {
-                        userId: currentUser.uid,
-                        userName: orderName,
-                        userPhone: orderPhone,
-                        userAddress: orderAddress,
-                        userComment: orderComment,
-                        productId: item.id || null,
-                        productName: item.name,
-                        price: item.price,
-                        quantity: item.quantity,
-                        totalPrice: item.price * item.quantity,
-                        commission: Math.floor(item.price * item.quantity * 0.1),
-                        partnerId: item.partnerId || null,
-                        partnerName: item.partnerName || null,
-                        status: 'new',
-                        createdAt: serverTimestamp()
-                    });
-                }
+                // Создаём список товаров и собираем уникальные partnerId
+                const itemsList = Object.values(grouped).map(item => ({
+                    productId: item.id || null,
+                    productName: item.name,
+                    price: item.price,
+                    quantity: item.quantity,
+                    totalPrice: item.price * item.quantity,
+                    partnerId: item.partnerId || null,
+                    partnerName: item.partnerName || null,
+                    image: item.image || null
+                }));
+                
+                // Собираем уникальные partnerId для быстрого поиска продавцами
+                const uniquePartnerIds = [...new Set(itemsList.map(item => item.partnerId).filter(id => id))];
+                
+                const totalPrice = itemsList.reduce((sum, item) => sum + item.totalPrice, 0);
+                const commission = Math.floor(totalPrice * 0.1);
+                
+                await addDoc(collection(db, "orders"), {
+                    userId: currentUser.uid,
+                    userName: orderName,
+                    userPhone: orderPhone,
+                    userAddress: orderAddress,
+                    userComment: orderComment,
+                    items: itemsList,
+                    partnerIds: uniquePartnerIds, // <-- КЛЮЧЕВОЕ ПОЛЕ для поиска продавцами
+                    totalPrice: totalPrice,
+                    commission: commission,
+                    status: 'paid', // Сразу оплачен (для теста, потом заменишь на 'pending')
+                    createdAt: serverTimestamp()
+                });
                 
                 localStorage.removeItem('cart');
-                alert('✅ Заказ оформлен! Партнёр свяжется с вами в ближайшее время.');
+                alert('✅ Заказ оформлен! Продавец скоро свяжется с вами.');
                 modal.style.display = 'none';
                 loadCart();
             } catch (err) {
@@ -942,12 +965,10 @@
             modal.style.display = 'none';
         });
         
-        // Закрытие модалки по клику вне
         window.addEventListener('click', (e) => {
             if (e.target === modal) modal.style.display = 'none';
         });
 
-        // Кнопка назад
         document.getElementById('backBtn')?.addEventListener('click', () => {
             window.history.back();
         });
