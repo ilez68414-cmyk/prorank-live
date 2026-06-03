@@ -429,77 +429,118 @@
             document.getElementById('messageInput').focus();
         }
 
-        async function loadChat() {
-            const params = new URLSearchParams(window.location.search);
-            chatId = params.get('id');
-            
-            if (!chatId) {
-                document.getElementById('chatTitle').innerText = 'Чат не найден';
-                document.querySelector('.input-wrapper').style.display = 'none';
-                return;
-            }
+       async function loadChat() {
+    const params = new URLSearchParams(window.location.search);
+    chatId = params.get('id');
+    
+    console.log('Загрузка чата:', chatId);
+    
+    if (!chatId) {
+        document.getElementById('chatTitle').innerText = 'Чат не найден';
+        if (document.querySelector('.chat-input-area')) {
+            document.querySelector('.chat-input-area').style.display = 'none';
+        }
+        return;
+    }
 
-            const chatRef = doc(db, "chats", chatId);
-            const chatSnap = await getDoc(chatRef);
-            
-            if (!chatSnap.exists()) {
-                document.getElementById('chatTitle').innerText = 'Чат не найден';
-                document.querySelector('.input-wrapper').style.display = 'none';
-                return;
-            }
-            
-            chatData = chatSnap.data();
-            const participants = chatData.participants || [];
-            
-            if (!currentUser || !participants.includes(currentUser.uid)) {
-                document.getElementById('chatTitle').innerText = 'Нет доступа';
-                document.querySelector('.input-wrapper').style.display = 'none';
-                return;
-            }
-            
-            // Получаем имя собеседника
-            const otherId = participants.find(id => id !== currentUser.uid);
-            let otherName = 'Соперник';
-            
-            if (otherId) {
-                // Проверяем, есть ли имя в participantNames
-                if (chatData.participantNames && chatData.participantNames[otherId]) {
-                    otherName = chatData.participantNames[otherId];
+    const chatRef = doc(db, "chats", chatId);
+    const chatSnap = await getDoc(chatRef);
+    
+    if (!chatSnap.exists()) {
+        document.getElementById('chatTitle').innerText = 'Чат не найден';
+        if (document.querySelector('.chat-input-area')) {
+            document.querySelector('.chat-input-area').style.display = 'none';
+        }
+        return;
+    }
+    
+    const chatData = chatSnap.data();
+    const participants = chatData.participants || [];
+    
+    console.log('Участники чата:', participants);
+    console.log('Текущий пользователь:', currentUser?.uid);
+    console.log('Является участником:', participants.includes(currentUser?.uid));
+    
+    // Проверяем доступ - если пользователь не участник, показываем ошибку
+    if (!currentUser || !participants.includes(currentUser.uid)) {
+        document.getElementById('chatTitle').innerText = 'Нет доступа к чату';
+        if (document.querySelector('.chat-input-area')) {
+            document.querySelector('.chat-input-area').style.display = 'none';
+        }
+        document.getElementById('messagesArea').innerHTML = '<div class="empty-chat"><i class="fas fa-lock"></i><div>У вас нет доступа к этому чату</div></div>';
+        return;
+    }
+    
+    // Находим ID собеседника
+    const otherId = participants.find(id => id !== currentUser.uid);
+    console.log('ID собеседника:', otherId);
+    
+    if (otherId) {
+        // Пытаемся получить имя из participantNames или из БД
+        let otherName = 'Собеседник';
+        if (chatData.participantNames && chatData.participantNames[otherId]) {
+            otherName = chatData.participantNames[otherId];
+        } else {
+            // Ищем в fighters, потом в partners
+            try {
+                let userDoc = await getDoc(doc(db, "fighters", otherId));
+                if (userDoc.exists()) {
+                    otherName = userDoc.data()?.name || 'Боец';
                 } else {
-                    // Пытаемся получить из коллекции fighters
-                    try {
-                        const fighterDoc = await getDoc(doc(db, "fighters", otherId));
-                        if (fighterDoc.exists()) {
-                            otherName = fighterDoc.data()?.name || 'Соперник';
-                        } else {
-                            // Пробуем получить из коллекции partners
-                            const partnerDoc = await getDoc(doc(db, "partners", otherId));
-                            if (partnerDoc.exists()) {
-                                otherName = partnerDoc.data()?.name || 'Продавец';
-                            }
-                        }
-                    } catch (err) {
-                        console.warn('Не удалось получить имя:', err);
+                    userDoc = await getDoc(doc(db, "partners", otherId));
+                    if (userDoc.exists()) {
+                        otherName = userDoc.data()?.name || 'Продавец';
                     }
                 }
+            } catch (err) {
+                console.warn('Не удалось получить имя:', err);
+            }
+        }
+        document.getElementById('chatTitle').innerHTML = otherName;
+    }
+    
+    const messagesRef = collection(db, "chats", chatId, "messages");
+    const q = query(messagesRef, orderBy("createdAt", "asc"));
+    
+    if (unsubscribe) unsubscribe();
+    unsubscribe = onSnapshot(q, (snapshot) => {
+        const container = document.getElementById('messagesArea');
+        if (snapshot.empty) {
+            container.innerHTML = `
+                <div class="empty-chat">
+                    <i class="fas fa-comment-dots"></i>
+                    <div>💬 Напишите первое сообщение!</div>
+                </div>
+            `;
+            return;
+        }
+        
+        let html = '';
+        snapshot.forEach(doc => {
+            const msg = doc.data();
+            const isOwn = msg.from === currentUser?.uid;
+            
+            // Получаем имя отправителя для чужих сообщений
+            let senderName = '';
+            if (!isOwn && msg.fromName) {
+                senderName = `<div class="message-sender"><i class="fas fa-user"></i> ${escapeHtml(msg.fromName)}</div>`;
             }
             
-            document.getElementById('chatTitle').innerHTML = `${escapeHtml(otherName)}`;
-            
-            const messagesRef = collection(db, "chats", chatId, "messages");
-            const q = query(messagesRef, orderBy("createdAt", "asc"));
-            
-            if (unsubscribe) unsubscribe();
-            unsubscribe = onSnapshot(q, (snapshot) => {
-                const messages = [];
-                snapshot.forEach(doc => {
-                    messages.push({ id: doc.id, ...doc.data() });
-                });
-                renderMessages(messages);
-            });
-            
-            document.querySelector('.input-wrapper').style.display = 'flex';
-        }
+            html += `
+                <div class="message ${isOwn ? 'own' : 'other'}">
+                    ${senderName}
+                    <div>${escapeHtml(msg.text)}</div>
+                </div>
+            `;
+        });
+        container.innerHTML = html;
+        container.scrollTop = container.scrollHeight;
+    });
+    
+    if (document.querySelector('.chat-input-area')) {
+        document.querySelector('.chat-input-area').style.display = 'flex';
+    }
+}
 
         function renderMessages(messages) {
             const container = document.getElementById('messagesArea');
