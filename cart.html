@@ -46,7 +46,6 @@
             width: 100%;
         }
         
-        /* Шапка */
         .navbar {
             display: flex;
             justify-content: space-between;
@@ -162,7 +161,6 @@
         .nav-links a:hover { color: #fbbf24; background: rgba(251,191,36,0.1); transform: translateY(-2px); }
         .nav-links a:hover i { transform: scale(1.1); }
         
-        /* Хлебные крошки */
         .breadcrumb {
             margin: 20px 0 10px;
             display: flex;
@@ -218,7 +216,6 @@
             color: transparent; 
         }
         
-        /* Корзина */
         .cart-items {
             background: rgba(15,15,15,0.7);
             backdrop-filter: blur(8px);
@@ -406,7 +403,6 @@
             transform: translateX(2px);
         }
         
-        /* Модалка оформления */
         .modal {
             display: none;
             position: fixed;
@@ -471,6 +467,41 @@
             resize: vertical;
         }
         
+        .payment-options {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+            margin-top: 8px;
+        }
+        
+        .payment-option {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            background: #1a1a1a;
+            padding: 12px 20px;
+            border-radius: 40px;
+            border: 1px solid rgba(251,191,36,0.25);
+            transition: all 0.2s;
+        }
+        
+        .payment-option:hover {
+            border-color: rgba(251,191,36,0.5);
+            background: #222;
+        }
+        
+        .payment-option.selected {
+            border-color: #fbbf24;
+            background: rgba(251,191,36,0.1);
+        }
+        
+        .payment-option input {
+            width: auto;
+            margin: 0;
+            padding: 0;
+        }
+        
         .modal-buttons {
             display: flex;
             gap: 12px;
@@ -508,7 +539,6 @@
             transform: translateY(-2px);
         }
         
-        /* Подвал */
         .main-footer {
             background: #0a0a0a;
             border-top: 1px solid rgba(251,191,36,0.15);
@@ -545,7 +575,6 @@
         .footer-links a:hover { color: #fbbf24; }
         .footer-bottom { text-align: center; padding-top: 24px; border-top: 1px solid rgba(255,255,255,0.05); font-size: 0.65rem; color: #555; }
         
-        /* Анимации */
         @keyframes fadeInUp {
             from {
                 opacity: 0;
@@ -573,7 +602,6 @@
             }
         }
         
-        /* Адаптив */
         @media (max-width: 768px) {
             .navbar { padding: 12px 18px; }
             .menu-toggle { display: block; }
@@ -598,6 +626,7 @@
             .cart-item { flex-direction: column; text-align: center; }
             .cart-item-image { width: 80px; height: 80px; }
             .cart-item-actions { justify-content: center; }
+            .payment-options { justify-content: center; }
             .footer-inner { flex-direction: column; text-align: center; }
             .breadcrumb { justify-content: center; }
         }
@@ -608,6 +637,7 @@
             .quantity-btn { width: 30px; height: 30px; }
             .btn-remove { padding: 6px 12px; font-size: 0.7rem; }
             .cart-item-image { width: 60px; height: 60px; }
+            .payment-option { padding: 8px 16px; font-size: 0.8rem; }
         }
         
         ::-webkit-scrollbar { width: 5px; }
@@ -682,6 +712,17 @@
                 <label><i class="fas fa-comment"></i> Комментарий к заказу</label>
                 <textarea id="orderComment" rows="2" placeholder="Пожелания по доставке..."></textarea>
             </div>
+            <div class="form-group">
+                <label><i class="fas fa-credit-card"></i> Способ оплаты</label>
+                <div class="payment-options">
+                    <label class="payment-option selected">
+                        <input type="radio" name="paymentMethod" value="balance" checked> 💳 С баланса
+                    </label>
+                    <label class="payment-option">
+                        <input type="radio" name="paymentMethod" value="card"> 💰 Банковской картой
+                    </label>
+                </div>
+            </div>
             <div class="modal-buttons">
                 <button id="submitOrderBtn" class="btn-submit"><i class="fas fa-check"></i> Подтвердить</button>
                 <button id="cancelOrderBtn" class="btn-cancel"><i class="fas fa-times"></i> Отмена</button>
@@ -726,59 +767,207 @@
     </script>
     <script type="module" src="header.js"></script>
     <script type="module">
-        import { initializeApp } from "firebase/app";
-        import { getAuth, onAuthStateChanged } from "firebase/auth";
-        import { getFirestore, addDoc, collection, doc, getDoc, serverTimestamp } from "firebase/firestore";
+    import { initializeApp } from "firebase/app";
+    import { getAuth, onAuthStateChanged } from "firebase/auth";
+    import { getFirestore, addDoc, collection, doc, getDoc, serverTimestamp } from "firebase/firestore";
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyDUGYJY7pX7q02MS5SACMIIQXpjpQ97mPw",
-            authDomain: "proranklive.firebaseapp.com",
-            projectId: "proranklive",
-            storageBucket: "proranklive.firebasestorage.app",
-            messagingSenderId: "716836144015",
-            appId: "1:716836144015:web:f1575147750608d0f881fa"
-        };
+    const firebaseConfig = {
+        apiKey: "AIzaSyDUGYJY7pX7q02MS5SACMIIQXpjpQ97mPw",
+        authDomain: "proranklive.firebaseapp.com",
+        projectId: "proranklive",
+        storageBucket: "proranklive.firebasestorage.app",
+        messagingSenderId: "716836144015",
+        appId: "1:716836144015:web:f1575147750608d0f881fa"
+    };
 
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-        const auth = getAuth(app);
-        let currentUser = null;
-        let currentUserData = null;
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
+    let currentUser = null;
+    let currentUserData = null;
 
-        async function updateHeaderBalance() {
-            const user = auth.currentUser;
-            const balanceDiv = document.getElementById('balanceIndicator');
-            const balanceCount = document.getElementById('headerChallengesCount');
-            if (!user || !balanceDiv) return;
-            try {
-                const userDoc = await getDoc(doc(db, "fighters", user.uid));
-                const data = userDoc.data();
-                const total = (data.freeChallenges || 0) + (data.purchasedChallenges || 0);
-                balanceCount.innerText = total;
-                balanceDiv.style.display = 'flex';
-            } catch (err) { 
-                console.error(err);
-                balanceDiv.style.display = 'none';
-            }
+    async function updateHeaderBalance() {
+        const user = auth.currentUser;
+        const balanceDiv = document.getElementById('balanceIndicator');
+        const balanceCount = document.getElementById('headerChallengesCount');
+        if (!user || !balanceDiv) return;
+        try {
+            const userDoc = await getDoc(doc(db, "fighters", user.uid));
+            const data = userDoc.data();
+            const total = (data.freeChallenges || 0) + (data.purchasedChallenges || 0);
+            balanceCount.innerText = total;
+            balanceDiv.style.display = 'flex';
+        } catch (err) { 
+            console.error(err);
+            balanceDiv.style.display = 'none';
         }
+    }
 
-        function loadCart() {
-            const cart = JSON.parse(localStorage.getItem('cart') || '[]');
-            const container = document.getElementById('cartItems');
-            const totalDiv = document.getElementById('cartTotal');
-            const checkoutBtn = document.getElementById('checkoutBtn');
-            
-            if (cart.length === 0) {
-                container.innerHTML = '<div class="empty-state"><i class="fas fa-shopping-cart"></i><p>Корзина пуста</p><p><a href="catalog.html">Перейти в каталог →</a></p></div>';
-                totalDiv.style.display = 'none';
-                checkoutBtn.style.display = 'none';
-                return;
+    function loadCart() {
+        const cart = JSON.parse(localStorage.getItem('cart') || '[]');
+        const container = document.getElementById('cartItems');
+        const totalDiv = document.getElementById('cartTotal');
+        const checkoutBtn = document.getElementById('checkoutBtn');
+        
+        if (cart.length === 0) {
+            container.innerHTML = '<div class="empty-state"><i class="fas fa-shopping-cart"></i><p>Корзина пуста</p><p><a href="catalog.html">Перейти в каталог →</a></p></div>';
+            totalDiv.style.display = 'none';
+            checkoutBtn.style.display = 'none';
+            return;
+        }
+        
+        // Группировка одинаковых товаров
+        const grouped = {};
+        cart.forEach(item => {
+            const key = item.id;
+            if (grouped[key]) {
+                grouped[key].quantity++;
+            } else {
+                grouped[key] = { ...item, quantity: 1 };
             }
+        });
+        
+        let html = '';
+        let total = 0;
+        const items = Object.values(grouped);
+        
+        items.forEach((item, idx) => {
+            const itemTotal = item.price * item.quantity;
+            total += itemTotal;
+            const imageUrl = item.image || 'https://placehold.co/300x200/1a1a1a/fbbf24?text=No+Image';
             
-            // Группировка одинаковых товаров
+            html += `
+                <div class="cart-item" data-idx="${idx}" data-item-id="${item.id}">
+                    <img src="${imageUrl}" class="cart-item-image" onerror="this.src='https://placehold.co/300x200/1a1a1a/fbbf24?text=No+Image'">
+                    <div class="cart-item-info">
+                        <div class="cart-item-name">${escapeHtml(item.name)}</div>
+                        <div class="cart-item-price">${item.price.toLocaleString()} ₽</div>
+                        ${item.partnerName ? `<div style="font-size: 0.65rem; color: #fbbf24;"><i class="fas fa-store"></i> ${escapeHtml(item.partnerName)}</div>` : ''}
+                    </div>
+                    <div class="cart-item-actions">
+                        <div class="item-quantity">
+                            <button class="quantity-btn dec" data-idx="${idx}">-</button>
+                            <span class="item-count">${item.quantity}</span>
+                            <button class="quantity-btn inc" data-idx="${idx}">+</button>
+                        </div>
+                        <button class="btn-remove" data-idx="${idx}"><i class="fas fa-trash"></i> Удалить</button>
+                    </div>
+                </div>
+            `;
+        });
+        container.innerHTML = html;
+        totalDiv.style.display = 'block';
+        const commission = Math.floor(total * 0.1);
+        totalDiv.innerHTML = `
+            <div class="total-amount">${total.toLocaleString()} ₽</div>
+            <div class="commission">Комиссия PRORANK (10%): ${commission.toLocaleString()} ₽</div>
+            <div style="margin-top: 8px; font-size: 0.9rem;">💰 Продавец получит: ${(total - commission).toLocaleString()} ₽</div>
+        `;
+        checkoutBtn.style.display = 'block';
+        
+        // Обработчики кнопок
+        document.querySelectorAll('.quantity-btn.dec').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const idx = parseInt(btn.dataset.idx);
+                let cart = JSON.parse(localStorage.getItem('cart') || '[]');
+                const itemId = document.querySelector(`.cart-item[data-idx="${idx}"]`).dataset.itemId;
+                const itemIndex = cart.findIndex(i => i.id === itemId);
+                if (itemIndex !== -1) {
+                    cart.splice(itemIndex, 1);
+                    localStorage.setItem('cart', JSON.stringify(cart));
+                    loadCart();
+                }
+            });
+        });
+        document.querySelectorAll('.quantity-btn.inc').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const idx = parseInt(btn.dataset.idx);
+                let cart = JSON.parse(localStorage.getItem('cart') || '[]');
+                const itemId = document.querySelector(`.cart-item[data-idx="${idx}"]`).dataset.itemId;
+                const itemIndex = cart.findIndex(i => i.id === itemId);
+                if (itemIndex !== -1) {
+                    const newItem = { ...cart[itemIndex] };
+                    cart.push(newItem);
+                    localStorage.setItem('cart', JSON.stringify(cart));
+                    loadCart();
+                }
+            });
+        });
+        document.querySelectorAll('.btn-remove').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const idx = parseInt(btn.dataset.idx);
+                let cart = JSON.parse(localStorage.getItem('cart') || '[]');
+                const itemId = document.querySelector(`.cart-item[data-idx="${idx}"]`).dataset.itemId;
+                cart = cart.filter(i => i.id !== itemId);
+                localStorage.setItem('cart', JSON.stringify(cart));
+                loadCart();
+            });
+        });
+    }
+
+    function escapeHtml(str) { 
+        if (!str) return ''; 
+        return String(str).replace(/[&<>]/g, m => m === '&' ? '&amp;' : m === '<' ? '&lt;' : '&gt;'); 
+    }
+
+    function updatePaymentMethodUI() {
+        const options = document.querySelectorAll('.payment-option');
+        options.forEach(opt => {
+            const radio = opt.querySelector('input');
+            opt.classList.toggle('selected', radio.checked);
+        });
+    }
+
+    const modal = document.getElementById('checkoutModal');
+    const checkoutBtn = document.getElementById('checkoutBtn');
+
+    checkoutBtn?.addEventListener('click', () => {
+        if (!currentUser) {
+            alert('Войдите в аккаунт для оформления заказа');
+            window.location.href = 'login.html';
+            return;
+        }
+        if (currentUserData) {
+            document.getElementById('orderName').value = currentUserData.name || '';
+            document.getElementById('orderPhone').value = currentUserData.phone || '';
+        }
+        updatePaymentMethodUI();
+        modal.style.display = 'flex';
+    });
+
+    document.querySelectorAll('.payment-option').forEach(opt => {
+        opt.addEventListener('click', () => {
+            const radio = opt.querySelector('input');
+            radio.checked = true;
+            updatePaymentMethodUI();
+        });
+    });
+
+    document.getElementById('submitOrderBtn')?.addEventListener('click', async () => {
+        const cart = JSON.parse(localStorage.getItem('cart') || '[]');
+        if (cart.length === 0) { alert('Корзина пуста'); modal.style.display = 'none'; return; }
+        
+        const orderName = document.getElementById('orderName').value.trim();
+        const orderPhone = document.getElementById('orderPhone').value.trim();
+        const orderAddress = document.getElementById('orderAddress').value.trim();
+        const orderComment = document.getElementById('orderComment').value.trim();
+        const paymentMethod = document.querySelector('input[name="paymentMethod"]:checked')?.value || 'card';
+        
+        if (!orderName || !orderPhone || !orderAddress) {
+            alert('Заполните все обязательные поля');
+            return;
+        }
+        
+        const btn = document.getElementById('submitOrderBtn');
+        const originalText = btn.innerHTML;
+        btn.innerHTML = '<div class="loading-spinner"></div> Оформление...';
+        btn.disabled = true;
+        
+        try {
+            // Группируем товары
             const grouped = {};
             cart.forEach(item => {
-                const key = item.id || item.name;
+                const key = item.id;
                 if (grouped[key]) {
                     grouped[key].quantity++;
                 } else {
@@ -786,154 +975,61 @@
                 }
             });
             
-            let html = '';
-            let total = 0;
-            const items = Object.values(grouped);
+            // ✅ ВАЖНО: Сохраняем partnerId для каждого товара
+            const itemsList = Object.values(grouped).map(item => ({
+                productId: item.id,
+                productName: item.name,
+                price: item.price,
+                quantity: item.quantity,
+                totalPrice: item.price * item.quantity,
+                partnerId: item.partnerId || null,      // ← КЛЮЧЕВОЕ ПОЛЕ!
+                partnerName: item.partnerName || null,
+                image: item.image || null
+            }));
             
-            items.forEach((item, idx) => {
-                const itemTotal = item.price * item.quantity;
-                total += itemTotal;
-                const imageUrl = item.image || 'https://placehold.co/300x200/1a1a1a/fbbf24?text=No+Image';
+            const totalPrice = itemsList.reduce((sum, item) => sum + item.totalPrice, 0);
+            // Собираем уникальных продавцов в заказе
+            const uniquePartnerIds = [...new Set(itemsList.map(item => item.partnerId).filter(id => id && id !== 'null'))];
+            
+            console.log('📦 Создание заказа:', { itemsList, uniquePartnerIds, totalPrice });
+            
+            if (paymentMethod === 'balance') {
+                const { hasSufficientBalance, deductFunds, holdFunds } = await import('./wallet.js');
                 
-                html += `
-                    <div class="cart-item" data-idx="${idx}" data-item-id="${item.id || item.name}">
-                        <img src="${imageUrl}" class="cart-item-image" onerror="this.src='https://placehold.co/300x200/1a1a1a/fbbf24?text=No+Image'">
-                        <div class="cart-item-info">
-                            <div class="cart-item-name">${escapeHtml(item.name)}</div>
-                            <div class="cart-item-price">${item.price.toLocaleString()} ₽</div>
-                        </div>
-                        <div class="cart-item-actions">
-                            <div class="item-quantity">
-                                <button class="quantity-btn dec" data-idx="${idx}">-</button>
-                                <span class="item-count">${item.quantity}</span>
-                                <button class="quantity-btn inc" data-idx="${idx}">+</button>
-                            </div>
-                            <button class="btn-remove" data-idx="${idx}"><i class="fas fa-trash"></i> Удалить</button>
-                        </div>
-                    </div>
-                `;
-            });
-            container.innerHTML = html;
-            totalDiv.style.display = 'block';
-            const commission = Math.floor(total * 0.1);
-            totalDiv.innerHTML = `
-                <div class="total-amount">${total.toLocaleString()} ₽</div>
-                <div class="commission">Комиссия PRORANK (10%): ${commission.toLocaleString()} ₽</div>
-                <div style="margin-top: 8px; font-size: 0.9rem;">💰 К получению: ${(total - commission).toLocaleString()} ₽</div>
-            `;
-            checkoutBtn.style.display = 'block';
-            
-            // Обработчики количества
-            document.querySelectorAll('.quantity-btn.dec').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    const idx = parseInt(btn.dataset.idx);
-                    let cart = JSON.parse(localStorage.getItem('cart') || '[]');
-                    const itemId = document.querySelector(`.cart-item[data-idx="${idx}"]`).dataset.itemId;
-                    const itemIndex = cart.findIndex(i => (i.id || i.name) === itemId);
-                    if (itemIndex !== -1) {
-                        cart.splice(itemIndex, 1);
-                        localStorage.setItem('cart', JSON.stringify(cart));
-                        loadCart();
-                    }
-                });
-            });
-            document.querySelectorAll('.quantity-btn.inc').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    const idx = parseInt(btn.dataset.idx);
-                    let cart = JSON.parse(localStorage.getItem('cart') || '[]');
-                    const itemId = document.querySelector(`.cart-item[data-idx="${idx}"]`).dataset.itemId;
-                    const itemIndex = cart.findIndex(i => (i.id || i.name) === itemId);
-                    if (itemIndex !== -1) {
-                        const newItem = { ...cart[itemIndex] };
-                        cart.push(newItem);
-                        localStorage.setItem('cart', JSON.stringify(cart));
-                        loadCart();
-                    }
-                });
-            });
-            document.querySelectorAll('.btn-remove').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    const idx = parseInt(btn.dataset.idx);
-                    let cart = JSON.parse(localStorage.getItem('cart') || '[]');
-                    const itemId = document.querySelector(`.cart-item[data-idx="${idx}"]`).dataset.itemId;
-                    cart = cart.filter(i => (i.id || i.name) !== itemId);
-                    localStorage.setItem('cart', JSON.stringify(cart));
-                    loadCart();
-                });
-            });
-        }
-
-        function escapeHtml(str) { 
-            if (!str) return ''; 
-            return String(str).replace(/[&<>]/g, m => m === '&' ? '&amp;' : m === '<' ? '&lt;' : '&gt;'); 
-        }
-
-        // Оформление заказа
-        const modal = document.getElementById('checkoutModal');
-        const checkoutBtn = document.getElementById('checkoutBtn');
-
-        checkoutBtn?.addEventListener('click', () => {
-            if (!currentUser) {
-                alert('Войдите в аккаунт для оформления заказа');
-                window.location.href = 'login.html';
-                return;
-            }
-            if (currentUserData) {
-                document.getElementById('orderName').value = currentUserData.name || '';
-                document.getElementById('orderPhone').value = currentUserData.phone || '';
-            }
-            modal.style.display = 'flex';
-        });
-
-        document.getElementById('submitOrderBtn')?.addEventListener('click', async () => {
-            const cart = JSON.parse(localStorage.getItem('cart') || '[]');
-            if (cart.length === 0) { alert('Корзина пуста'); modal.style.display = 'none'; return; }
-            
-            const orderName = document.getElementById('orderName').value.trim();
-            const orderPhone = document.getElementById('orderPhone').value.trim();
-            const orderAddress = document.getElementById('orderAddress').value.trim();
-            const orderComment = document.getElementById('orderComment').value.trim();
-            
-            if (!orderName || !orderPhone || !orderAddress) {
-                alert('Заполните все обязательные поля');
-                return;
-            }
-            
-            const btn = document.getElementById('submitOrderBtn');
-            const originalText = btn.innerHTML;
-            btn.innerHTML = '<div class="loading-spinner"></div> Оформление...';
-            btn.disabled = true;
-            
-            try {
-                // Группируем товары
-                const grouped = {};
-                cart.forEach(item => {
-                    const key = item.id || item.name;
-                    if (grouped[key]) {
-                        grouped[key].quantity++;
-                    } else {
-                        grouped[key] = { ...item, quantity: 1 };
-                    }
+                const hasBalance = await hasSufficientBalance(currentUser.uid, totalPrice);
+                if (!hasBalance) {
+                    alert('❌ Недостаточно средств на балансе. Пополните баланс или выберите оплату картой.');
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                    return;
+                }
+                
+                // Создаём заказ со статусом "paid"
+                const orderRef = await addDoc(collection(db, "orders"), {
+                    userId: currentUser.uid,
+                    userName: orderName,
+                    userPhone: orderPhone,
+                    userAddress: orderAddress,
+                    userComment: orderComment,
+                    items: itemsList,
+                    partnerIds: uniquePartnerIds,
+                    totalPrice: totalPrice,
+                    commission: Math.floor(totalPrice * 0.1),
+                    paymentMethod: 'balance',
+                    status: 'paid',
+                    createdAt: serverTimestamp()
                 });
                 
-                // Создаём список товаров и собираем уникальные partnerId
-                const itemsList = Object.values(grouped).map(item => ({
-                    productId: item.id || null,
-                    productName: item.name,
-                    price: item.price,
-                    quantity: item.quantity,
-                    totalPrice: item.price * item.quantity,
-                    partnerId: item.partnerId || null,
-                    partnerName: item.partnerName || null,
-                    image: item.image || null
-                }));
+                // Списание с баланса покупателя
+                await deductFunds(currentUser.uid, totalPrice, orderRef.id);
+                // Заморозка средств (холд)
+                await holdFunds(currentUser.uid, totalPrice, orderRef.id);
                 
-                // Собираем уникальные partnerId для быстрого поиска продавцами
-                const uniquePartnerIds = [...new Set(itemsList.map(item => item.partnerId).filter(id => id))];
+                localStorage.removeItem('cart');
+                alert('✅ Заказ оформлен! Средства заморожены до получения товара.');
                 
-                const totalPrice = itemsList.reduce((sum, item) => sum + item.totalPrice, 0);
-                const commission = Math.floor(totalPrice * 0.1);
-                
+            } else {
+                // Оплата картой
                 await addDoc(collection(db, "orders"), {
                     userId: currentUser.uid,
                     userName: orderName,
@@ -941,67 +1037,71 @@
                     userAddress: orderAddress,
                     userComment: orderComment,
                     items: itemsList,
-                    partnerIds: uniquePartnerIds, // <-- КЛЮЧЕВОЕ ПОЛЕ для поиска продавцами
+                    partnerIds: uniquePartnerIds,
                     totalPrice: totalPrice,
-                    commission: commission,
-                    status: 'paid', // Сразу оплачен (для теста, потом заменишь на 'pending')
+                    commission: Math.floor(totalPrice * 0.1),
+                    paymentMethod: 'card',
+                    status: 'paid',
                     createdAt: serverTimestamp()
                 });
                 
                 localStorage.removeItem('cart');
                 alert('✅ Заказ оформлен! Продавец скоро свяжется с вами.');
-                modal.style.display = 'none';
-                loadCart();
-            } catch (err) {
-                console.error('Ошибка:', err);
-                alert('❌ Ошибка при оформлении заказа. Попробуйте позже.');
-            } finally {
-                btn.innerHTML = originalText;
-                btn.disabled = false;
             }
-        });
-
-        document.getElementById('cancelOrderBtn')?.addEventListener('click', () => {
+            
             modal.style.display = 'none';
+            loadCart();
+            
+        } catch (err) {
+            console.error('Ошибка:', err);
+            alert('❌ Ошибка при оформлении заказа. Попробуйте позже.');
+        } finally {
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+        }
+    });
+
+    document.getElementById('cancelOrderBtn')?.addEventListener('click', () => {
+        modal.style.display = 'none';
+    });
+    
+    window.addEventListener('click', (e) => {
+        if (e.target === modal) modal.style.display = 'none';
+    });
+
+    document.getElementById('backBtn')?.addEventListener('click', () => {
+        window.history.back();
+    });
+
+    onAuthStateChanged(auth, async (user) => {
+        currentUser = user;
+        if (user) {
+            const userDoc = await getDoc(doc(db, "fighters", user.uid));
+            currentUserData = userDoc.data();
+            setTimeout(updateHeaderBalance, 1000);
+        } else {
+            const balanceDiv = document.getElementById('balanceIndicator');
+            if (balanceDiv) balanceDiv.style.display = 'none';
+        }
+        loadCart();
+    });
+
+    const plusBtn = document.getElementById('balancePlusBtn');
+    if (plusBtn) plusBtn.onclick = () => window.location.href = 'shop.html';
+
+    const menuToggle = document.getElementById('menuToggle');
+    const navLinks = document.getElementById('navLinks');
+    if (menuToggle && navLinks) {
+        menuToggle.addEventListener('click', () => {
+            navLinks.classList.toggle('show');
         });
         
-        window.addEventListener('click', (e) => {
-            if (e.target === modal) modal.style.display = 'none';
-        });
-
-        document.getElementById('backBtn')?.addEventListener('click', () => {
-            window.history.back();
-        });
-
-        onAuthStateChanged(auth, async (user) => {
-            currentUser = user;
-            if (user) {
-                const userDoc = await getDoc(doc(db, "fighters", user.uid));
-                currentUserData = userDoc.data();
-                setTimeout(updateHeaderBalance, 1000);
-            } else {
-                const balanceDiv = document.getElementById('balanceIndicator');
-                if (balanceDiv) balanceDiv.style.display = 'none';
-            }
-            loadCart();
-        });
-
-        const plusBtn = document.getElementById('balancePlusBtn');
-        if (plusBtn) plusBtn.onclick = () => window.location.href = 'shop.html';
-
-        const menuToggle = document.getElementById('menuToggle');
-        const navLinks = document.getElementById('navLinks');
-        if (menuToggle && navLinks) {
-            menuToggle.addEventListener('click', () => {
-                navLinks.classList.toggle('show');
+        navLinks.querySelectorAll('a').forEach(link => {
+            link.addEventListener('click', () => {
+                navLinks.classList.remove('show');
             });
-            
-            navLinks.querySelectorAll('a').forEach(link => {
-                link.addEventListener('click', () => {
-                    navLinks.classList.remove('show');
-                });
-            });
-        }
-    </script>
+        });
+    }
+</script>
 </body>
 </html>

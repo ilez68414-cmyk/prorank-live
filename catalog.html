@@ -850,278 +850,219 @@
     </script>
     <script type="module" src="header.js"></script>
     <script type="module">
-        import { initializeApp } from "firebase/app";
-        import { getFirestore, collection, getDocs, doc, getDoc, addDoc, query, where, orderBy, deleteDoc } from "firebase/firestore";
-        import { getAuth, onAuthStateChanged } from "firebase/auth";
+    import { initializeApp } from "firebase/app";
+    import { getFirestore, collection, getDocs, doc, getDoc, addDoc, query, where, orderBy, deleteDoc } from "firebase/firestore";
+    import { getAuth, onAuthStateChanged } from "firebase/auth";
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyDUGYJY7pX7q02MS5SACMIIQXpjpQ97mPw",
-            authDomain: "proranklive.firebaseapp.com",
-            projectId: "proranklive",
-            storageBucket: "proranklive.firebasestorage.app",
-            messagingSenderId: "716836144015",
-            appId: "1:716836144015:web:f1575147750608d0f881fa"
-        };
+    const firebaseConfig = {
+        apiKey: "AIzaSyDUGYJY7pX7q02MS5SACMIIQXpjpQ97mPw",
+        authDomain: "proranklive.firebaseapp.com",
+        projectId: "proranklive",
+        storageBucket: "proranklive.firebasestorage.app",
+        messagingSenderId: "716836144015",
+        appId: "1:716836144015:web:f1575147750608d0f881fa"
+    };
 
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-        const auth = getAuth(app);
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
 
-        let allProducts = [];
-        let allPartners = [];
-        let currentUser = null;
-        let currentProduct = null;
-        let currentRating = 0;
+    let allProducts = [];
+    let allPartners = [];
+    let currentUser = null;
+    let currentProduct = null;
+    let currentRating = 0;
 
-        // Инициализация звездочек для рейтинга
-        function initStarsInput() {
-            const stars = document.querySelectorAll('#starsInput i');
-            stars.forEach(star => {
-                star.addEventListener('click', () => {
-                    const rating = parseInt(star.dataset.rating);
-                    currentRating = rating;
-                    stars.forEach((s, index) => {
-                        if (index < rating) {
-                            s.className = 'fas fa-star';
-                        } else {
-                            s.className = 'far fa-star';
-                        }
-                    });
-                });
-                
-                star.addEventListener('mouseenter', () => {
-                    const rating = parseInt(star.dataset.rating);
-                    stars.forEach((s, index) => {
-                        if (index < rating) {
-                            s.className = 'fas fa-star';
-                        } else {
-                            s.className = 'far fa-star';
-                        }
-                    });
-                });
+    // Инициализация звездочек для рейтинга
+    function initStarsInput() {
+        const stars = document.querySelectorAll('#starsInput i');
+        stars.forEach(star => {
+            star.removeEventListener('click', handleStarClick);
+            star.addEventListener('click', handleStarClick);
+            
+            star.removeEventListener('mouseenter', handleStarHover);
+            star.addEventListener('mouseenter', handleStarHover);
+        });
+        
+        const starsContainer = document.getElementById('starsInput');
+        starsContainer.removeEventListener('mouseleave', handleStarsLeave);
+        starsContainer.addEventListener('mouseleave', handleStarsLeave);
+    }
+    
+    function handleStarClick(e) {
+        const rating = parseInt(e.target.dataset.rating);
+        currentRating = rating;
+        updateStarsUI(rating);
+    }
+    
+    function handleStarHover(e) {
+        const rating = parseInt(e.target.dataset.rating);
+        updateStarsUI(rating);
+    }
+    
+    function handleStarsLeave() {
+        updateStarsUI(currentRating);
+    }
+    
+    function updateStarsUI(rating) {
+        const stars = document.querySelectorAll('#starsInput i');
+        stars.forEach((s, index) => {
+            if (index < rating) {
+                s.className = 'fas fa-star';
+            } else {
+                s.className = 'far fa-star';
+            }
+        });
+    }
+
+    async function updateHeaderBalance() {
+        const user = auth.currentUser;
+        const balanceDiv = document.getElementById('balanceIndicator');
+        const balanceCount = document.getElementById('headerChallengesCount');
+        if (!user || !balanceDiv) return;
+        try {
+            const userDoc = await getDoc(doc(db, "fighters", user.uid));
+            const data = userDoc.data();
+            const total = (data.freeChallenges || 0) + (data.purchasedChallenges || 0);
+            balanceCount.innerText = total;
+            balanceDiv.style.display = 'flex';
+        } catch (err) { console.error(err); }
+    }
+
+    function updateCartCount() {
+        const cart = JSON.parse(localStorage.getItem('cart') || '[]');
+        const cartCount = document.getElementById('cartCount');
+        if (cartCount) cartCount.innerText = cart.length;
+    }
+
+    async function loadPartners() {
+        try {
+            const snapshot = await getDocs(collection(db, "partners"));
+            allPartners = snapshot.docs.map(doc => ({ id: doc.id, name: doc.data().name }));
+            const partnerSelect = document.getElementById('partnerSelect');
+            partnerSelect.innerHTML = '<option value="all">🏪 Все магазины</option>';
+            allPartners.forEach(partner => {
+                const option = document.createElement('option');
+                option.value = partner.id;
+                option.textContent = partner.name;
+                partnerSelect.appendChild(option);
             });
+        } catch (err) {
+            console.error('Ошибка загрузки магазинов:', err);
+        }
+    }
+
+    async function loadProductReviews(productId) {
+        const reviewsList = document.getElementById('reviewsList');
+        try {
+            const reviewsQuery = query(
+                collection(db, "reviews"),
+                where("productId", "==", productId),
+                orderBy("createdAt", "desc")
+            );
+            const snapshot = await getDocs(reviewsQuery);
             
-            const starsContainer = document.getElementById('starsInput');
-            starsContainer.addEventListener('mouseleave', () => {
-                stars.forEach((s, index) => {
-                    if (index < currentRating) {
-                        s.className = 'fas fa-star';
-                    } else {
-                        s.className = 'far fa-star';
-                    }
-                });
-            });
-        }
-
-        async function updateHeaderBalance() {
-            const user = auth.currentUser;
-            const balanceDiv = document.getElementById('balanceIndicator');
-            const balanceCount = document.getElementById('headerChallengesCount');
-            if (!user || !balanceDiv) return;
-            try {
-                const userDoc = await getDoc(doc(db, "fighters", user.uid));
-                const data = userDoc.data();
-                const total = (data.freeChallenges || 0) + (data.purchasedChallenges || 0);
-                balanceCount.innerText = total;
-                balanceDiv.style.display = 'flex';
-            } catch (err) { console.error(err); }
-        }
-
-        function updateCartCount() {
-            const cart = JSON.parse(localStorage.getItem('cart') || '[]');
-            const cartCount = document.getElementById('cartCount');
-            if (cartCount) cartCount.innerText = cart.length;
-        }
-
-        async function loadPartners() {
-            try {
-                const snapshot = await getDocs(collection(db, "partners"));
-                allPartners = snapshot.docs.map(doc => ({ id: doc.id, name: doc.data().name }));
-                const partnerSelect = document.getElementById('partnerSelect');
-                partnerSelect.innerHTML = '<option value="all">🏪 Все магазины</option>';
-                allPartners.forEach(partner => {
-                    const option = document.createElement('option');
-                    option.value = partner.id;
-                    option.textContent = partner.name;
-                    partnerSelect.appendChild(option);
-                });
-            } catch (err) {
-                console.error('Ошибка загрузки магазинов:', err);
-            }
-        }
-
-        async function loadProductReviews(productId) {
-            const reviewsList = document.getElementById('reviewsList');
-            try {
-                const reviewsQuery = query(
-                    collection(db, "reviews"),
-                    where("productId", "==", productId),
-                    orderBy("createdAt", "desc")
-                );
-                const snapshot = await getDocs(reviewsQuery);
-                
-                if (snapshot.empty) {
-                    reviewsList.innerHTML = '<div class="empty-reviews">⭐ Нет отзывов. Будьте первым!</div>';
-                    return;
-                }
-                
-                let html = '';
-                snapshot.forEach(docSnap => {
-                    const review = docSnap.data();
-                    html += `
-                        <div class="review-item">
-                            <div class="review-header">
-                                <span class="review-author"><i class="fas fa-user"></i> ${escapeHtml(review.userName || 'Покупатель')}</span>
-                                <span class="review-stars">${'★'.repeat(review.rating)}${'☆'.repeat(5-review.rating)}</span>
-                                <span class="review-date">${review.createdAt?.toDate().toLocaleDateString() || '—'}</span>
-                            </div>
-                            <div class="review-text">${escapeHtml(review.text)}</div>
-                            ${review.reply ? `<div class="review-reply"><i class="fas fa-reply"></i> Продавец: ${escapeHtml(review.reply)}</div>` : ''}
-                        </div>
-                    `;
-                });
-                reviewsList.innerHTML = html;
-            } catch (err) {
-                console.error('Ошибка загрузки отзывов:', err);
-                reviewsList.innerHTML = '<div class="empty-reviews">Ошибка загрузки отзывов</div>';
-            }
-        }
-
-        async function getProductRating(productId) {
-            try {
-                const reviewsQuery = query(collection(db, "reviews"), where("productId", "==", productId));
-                const snapshot = await getDocs(reviewsQuery);
-                if (snapshot.empty) return { rating: 0, count: 0 };
-                
-                let sum = 0;
-                snapshot.forEach(docSnap => {
-                    sum += docSnap.data().rating;
-                });
-                const avg = sum / snapshot.size;
-                return { rating: avg, count: snapshot.size };
-            } catch (err) {
-                return { rating: 0, count: 0 };
-            }
-        }
-
-        async function loadProducts() {
-            const container = document.getElementById('productsGrid');
-            container.innerHTML = '<div class="loading"><i class="fas fa-spinner fa-pulse"></i> Загрузка...</div>';
-            try {
-                const snapshot = await getDocs(collection(db, "products"));
-                allProducts = [];
-                for (const docSnap of snapshot.docs) {
-                    const product = { id: docSnap.id, ...docSnap.data() };
-                    const ratingData = await getProductRating(product.id);
-                    product.rating = ratingData.rating;
-                    product.ratingCount = ratingData.count;
-                    allProducts.push(product);
-                }
-                applyFilters();
-            } catch (err) {
-                console.error('Ошибка загрузки товаров:', err);
-                container.innerHTML = '<div class="empty-state"><i class="fas fa-exclamation-triangle"></i> Ошибка загрузки</div>';
-            }
-        }
-
-        function applyFilters() {
-            let filtered = [...allProducts];
-            
-            const category = document.getElementById('categorySelect').value;
-            if (category !== 'all') {
-                filtered = filtered.filter(p => p.category === category);
-            }
-            
-            const partnerId = document.getElementById('partnerSelect').value;
-            if (partnerId !== 'all') {
-                filtered = filtered.filter(p => p.partnerId === partnerId);
-            }
-            
-            const searchTerm = document.getElementById('searchInput')?.value.toLowerCase() || '';
-            if (searchTerm) {
-                filtered = filtered.filter(p => p.name?.toLowerCase().includes(searchTerm) || p.desc?.toLowerCase().includes(searchTerm));
-            }
-            
-            const sort = document.getElementById('sortSelect')?.value || 'name';
-            if (sort === 'price_asc') filtered.sort((a, b) => (a.price || 0) - (b.price || 0));
-            else if (sort === 'price_desc') filtered.sort((a, b) => (b.price || 0) - (a.price || 0));
-            else if (sort === 'rating') filtered.sort((a, b) => (b.rating || 0) - (a.rating || 0));
-            else filtered.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
-            
-            renderProducts(filtered);
-        }
-
-        function renderProducts(products) {
-            const container = document.getElementById('productsGrid');
-            if (products.length === 0) {
-                container.innerHTML = '<div class="empty-state"><i class="fas fa-search"></i><p>Ничего не найдено</p></div>';
+            if (snapshot.empty) {
+                reviewsList.innerHTML = '<div class="empty-reviews">⭐ Нет отзывов. Будьте первым!</div>';
                 return;
             }
             
             let html = '';
-            products.forEach(product => {
-                const stars = '★'.repeat(Math.round(product.rating || 0)) + '☆'.repeat(5 - Math.round(product.rating || 0));
-                
-                let storeName = product.partnerName;
-                if (!storeName && product.partnerId) {
-                    const partner = allPartners.find(p => p.id === product.partnerId);
-                    storeName = partner ? partner.name : 'Магазин';
-                }
-                
+            snapshot.forEach(docSnap => {
+                const review = docSnap.data();
                 html += `
-                    <div class="product-card" data-product-id="${product.id}">
-                        ${product.image ? `<img src="${product.image}" class="product-image" onerror="this.src='https://placehold.co/300x200/1a1a1a/fbbf24?text=No+Image'">` : '<div class="product-image" style="display:flex;align-items:center;justify-content:center;"><i class="fas fa-image" style="font-size: 2rem; color: #555;"></i></div>'}
-                        <div class="product-title">${escapeHtml(product.name)}</div>
-                        <div class="product-rating">
-                            <span class="stars">${stars}</span>
-                            <span class="rating-count">(${product.ratingCount || 0})</span>
+                    <div class="review-item">
+                        <div class="review-header">
+                            <span class="review-author"><i class="fas fa-user"></i> ${escapeHtml(review.userName || 'Покупатель')}</span>
+                            <span class="review-stars">${'★'.repeat(review.rating)}${'☆'.repeat(5-review.rating)}</span>
+                            <span class="review-date">${review.createdAt?.toDate().toLocaleDateString() || '—'}</span>
                         </div>
-                        <div class="product-desc">${escapeHtml(product.desc?.substring(0, 60))}${product.desc?.length > 60 ? '...' : ''}</div>
-                        <div class="product-store"><i class="fas fa-store"></i> ${escapeHtml(storeName)}</div>
-                        <div class="product-price">${(product.price || 0).toLocaleString()} ₽</div>
-                        <button class="btn-add-to-cart" data-product='${JSON.stringify({ id: product.id, name: product.name, price: product.price, desc: product.desc, image: product.image })}'><i class="fas fa-cart-plus"></i> В корзину</button>
+                        <div class="review-text">${escapeHtml(review.text)}</div>
+                        ${review.reply ? `<div class="review-reply"><i class="fas fa-reply"></i> Продавец: ${escapeHtml(review.reply)}</div>` : ''}
                     </div>
                 `;
             });
-            container.innerHTML = html;
-            
-            document.querySelectorAll('.product-card').forEach(card => {
-                card.addEventListener('click', async (e) => {
-                    if (e.target.classList.contains('btn-add-to-cart')) return;
-                    const productId = card.dataset.productId;
-                    const product = allProducts.find(p => p.id === productId);
-                    if (product) await openProductModal(product);
-                });
-            });
-            
-            document.querySelectorAll('.btn-add-to-cart').forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    if (!currentUser) {
-                        alert('Войдите в аккаунт');
-                        window.location.href = 'login.html';
-                        return;
-                    }
-                    const product = JSON.parse(btn.dataset.product);
-                    let cart = JSON.parse(localStorage.getItem('cart') || '[]');
-                    cart.push(product);
-                    localStorage.setItem('cart', JSON.stringify(cart));
-                    updateCartCount();
-                    
-                    const originalText = btn.innerHTML;
-                    btn.innerHTML = '<i class="fas fa-check"></i> Добавлено!';
-                    btn.style.background = '#10b981';
-                    setTimeout(() => {
-                        btn.innerHTML = originalText;
-                        btn.style.background = '#3b82f6';
-                    }, 1200);
-                });
-            });
+            reviewsList.innerHTML = html;
+        } catch (err) {
+            console.error('Ошибка загрузки отзывов:', err);
+            reviewsList.innerHTML = '<div class="empty-reviews">Ошибка загрузки отзывов</div>';
         }
+    }
 
-        async function openProductModal(product) {
-            currentProduct = product;
-            const modal = document.getElementById('productModal');
+    async function getProductRating(productId) {
+        try {
+            const reviewsQuery = query(collection(db, "reviews"), where("productId", "==", productId));
+            const snapshot = await getDocs(reviewsQuery);
+            if (snapshot.empty) return { rating: 0, count: 0 };
+            
+            let sum = 0;
+            snapshot.forEach(docSnap => {
+                sum += docSnap.data().rating;
+            });
+            const avg = sum / snapshot.size;
+            return { rating: avg, count: snapshot.size };
+        } catch (err) {
+            return { rating: 0, count: 0 };
+        }
+    }
+
+    async function loadProducts() {
+        const container = document.getElementById('productsGrid');
+        container.innerHTML = '<div class="loading"><i class="fas fa-spinner fa-pulse"></i> Загрузка...</div>';
+        try {
+            const snapshot = await getDocs(collection(db, "products"));
+            allProducts = [];
+            for (const docSnap of snapshot.docs) {
+                const product = { id: docSnap.id, ...docSnap.data() };
+                const ratingData = await getProductRating(product.id);
+                product.rating = ratingData.rating;
+                product.ratingCount = ratingData.count;
+                allProducts.push(product);
+            }
+            applyFilters();
+        } catch (err) {
+            console.error('Ошибка загрузки товаров:', err);
+            container.innerHTML = '<div class="empty-state"><i class="fas fa-exclamation-triangle"></i> Ошибка загрузки</div>';
+        }
+    }
+
+    function applyFilters() {
+        let filtered = [...allProducts];
+        
+        const category = document.getElementById('categorySelect').value;
+        if (category !== 'all') {
+            filtered = filtered.filter(p => p.category === category);
+        }
+        
+        const partnerId = document.getElementById('partnerSelect').value;
+        if (partnerId !== 'all') {
+            filtered = filtered.filter(p => p.partnerId === partnerId);
+        }
+        
+        const searchTerm = document.getElementById('searchInput')?.value.toLowerCase() || '';
+        if (searchTerm) {
+            filtered = filtered.filter(p => p.name?.toLowerCase().includes(searchTerm) || p.desc?.toLowerCase().includes(searchTerm));
+        }
+        
+        const sort = document.getElementById('sortSelect')?.value || 'name';
+        if (sort === 'price_asc') filtered.sort((a, b) => (a.price || 0) - (b.price || 0));
+        else if (sort === 'price_desc') filtered.sort((a, b) => (b.price || 0) - (a.price || 0));
+        else if (sort === 'rating') filtered.sort((a, b) => (b.rating || 0) - (a.rating || 0));
+        else filtered.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+        
+        renderProducts(filtered);
+    }
+
+    function renderProducts(products) {
+        const container = document.getElementById('productsGrid');
+        if (products.length === 0) {
+            container.innerHTML = '<div class="empty-state"><i class="fas fa-search"></i><p>Ничего не найдено</p></div>';
+            return;
+        }
+        
+        let html = '';
+        products.forEach(product => {
+            const stars = '★'.repeat(Math.round(product.rating || 0)) + '☆'.repeat(5 - Math.round(product.rating || 0));
             
             let storeName = product.partnerName;
             if (!storeName && product.partnerId) {
@@ -1129,152 +1070,261 @@
                 storeName = partner ? partner.name : 'Магазин';
             }
             
-            document.getElementById('modalProductTitle').innerText = product.name;
-            document.getElementById('modalProductPrice').innerHTML = `${(product.price || 0).toLocaleString()} ₽`;
-            document.getElementById('modalProductDesc').innerText = product.desc || 'Описание отсутствует';
-            document.getElementById('modalProductStore').innerHTML = `<i class="fas fa-store"></i> ${escapeHtml(storeName)}`;
+            // ✅ ВАЖНО: Сохраняем ВСЕ данные товара для корзины, включая partnerId и partnerName
+            const productForCart = {
+                id: product.id,
+                name: product.name,
+                price: product.price,
+                image: product.image,
+                desc: product.desc || '',
+                partnerId: product.partnerId || null,
+                partnerName: storeName || null
+            };
             
-            const modalImage = document.getElementById('modalProductImage');
-            if (product.image) {
-                modalImage.src = product.image;
-                modalImage.style.display = 'block';
-            } else {
-                modalImage.style.display = 'none';
-            }
-            
-            await loadProductReviews(product.id);
-            
-            const reviewForm = document.getElementById('reviewForm');
-            if (currentUser) {
-                reviewForm.style.display = 'block';
-                currentRating = 0;
-                document.querySelectorAll('#starsInput i').forEach(star => star.className = 'far fa-star');
-                document.getElementById('reviewText').value = '';
-                initStarsInput();
-            } else {
-                reviewForm.style.display = 'none';
-            }
-            
-            modal.style.display = 'flex';
-        }
-
-        async function submitReview() {
-            if (!currentUser) {
-                alert('Войдите в аккаунт, чтобы оставить отзыв');
-                return;
-            }
-            
-            if (currentRating === 0) {
-                alert('Поставьте оценку товару');
-                return;
-            }
-            
-            const reviewText = document.getElementById('reviewText').value.trim();
-            if (!reviewText) {
-                alert('Напишите текст отзыва');
-                return;
-            }
-            
-            try {
-                const userDoc = await getDoc(doc(db, "fighters", currentUser.uid));
-                const userData = userDoc.data();
-                
-                await addDoc(collection(db, "reviews"), {
-                    productId: currentProduct.id,
-                    productName: currentProduct.name,
-                    partnerId: currentProduct.partnerId,
-                    userId: currentUser.uid,
-                    userName: userData?.name || currentUser.email?.split('@')[0] || 'Покупатель',
-                    rating: currentRating,
-                    text: reviewText,
-                    createdAt: new Date()
-                });
-                
-                alert('✅ Спасибо за отзыв!');
-                document.getElementById('reviewText').value = '';
-                currentRating = 0;
-                document.querySelectorAll('#starsInput i').forEach(star => star.className = 'far fa-star');
-                
-                await loadProductReviews(currentProduct.id);
-                
-                const ratingData = await getProductRating(currentProduct.id);
-                const productIndex = allProducts.findIndex(p => p.id === currentProduct.id);
-                if (productIndex !== -1) {
-                    allProducts[productIndex].rating = ratingData.rating;
-                    allProducts[productIndex].ratingCount = ratingData.count;
+            html += `
+                <div class="product-card" data-product-id="${product.id}">
+                    ${product.image ? `<img src="${product.image}" class="product-image" onerror="this.src='https://placehold.co/300x200/1a1a1a/fbbf24?text=No+Image'">` : '<div class="product-image" style="display:flex;align-items:center;justify-content:center;"><i class="fas fa-image" style="font-size: 2rem; color: #555;"></i></div>'}
+                    <div class="product-title">${escapeHtml(product.name)}</div>
+                    <div class="product-rating">
+                        <span class="stars">${stars}</span>
+                        <span class="rating-count">(${product.ratingCount || 0})</span>
+                    </div>
+                    <div class="product-desc">${escapeHtml(product.desc?.substring(0, 60))}${product.desc?.length > 60 ? '...' : ''}</div>
+                    <div class="product-store"><i class="fas fa-store"></i> ${escapeHtml(storeName)}</div>
+                    <div class="product-price">${(product.price || 0).toLocaleString()} ₽</div>
+                    <button class="btn-add-to-cart" data-product='${JSON.stringify(productForCart)}'><i class="fas fa-cart-plus"></i> В корзину</button>
+                </div>
+            `;
+        });
+        container.innerHTML = html;
+        
+        document.querySelectorAll('.product-card').forEach(card => {
+            card.addEventListener('click', async (e) => {
+                if (e.target.classList.contains('btn-add-to-cart')) return;
+                const productId = card.dataset.productId;
+                const product = allProducts.find(p => p.id === productId);
+                if (product) await openProductModal(product);
+            });
+        });
+        
+        // ✅ Исправленный обработчик добавления в корзину
+        document.querySelectorAll('.btn-add-to-cart').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                if (!currentUser) {
+                    alert('Войдите в аккаунт');
+                    window.location.href = 'login.html';
+                    return;
                 }
-                applyFilters();
                 
-            } catch (err) {
-                console.error('Ошибка при отправке отзыва:', err);
-                alert('Ошибка при отправке отзыва');
-            }
-        }
-
-        function resetFilters() {
-            document.getElementById('searchInput').value = '';
-            document.getElementById('categorySelect').value = 'all';
-            document.getElementById('partnerSelect').value = 'all';
-            document.getElementById('sortSelect').value = 'name';
-            applyFilters();
-        }
-
-        function escapeHtml(str) {
-            if (!str) return '';
-            return String(str).replace(/[&<>]/g, m => m === '&' ? '&amp;' : m === '<' ? '&lt;' : '&gt;');
-        }
-
-        document.getElementById('searchInput')?.addEventListener('input', applyFilters);
-        document.getElementById('categorySelect')?.addEventListener('change', applyFilters);
-        document.getElementById('partnerSelect')?.addEventListener('change', applyFilters);
-        document.getElementById('sortSelect')?.addEventListener('change', applyFilters);
-        document.getElementById('resetFiltersBtn')?.addEventListener('click', resetFilters);
-        document.getElementById('cartIcon')?.addEventListener('click', () => window.location.href = 'cart.html');
-        document.getElementById('closeModalBtn')?.addEventListener('click', () => {
-            document.getElementById('productModal').style.display = 'none';
-        });
-        document.getElementById('submitReviewBtn')?.addEventListener('click', submitReview);
-        
-        document.getElementById('productModal')?.addEventListener('click', (e) => {
-            if (e.target === document.getElementById('productModal')) {
-                document.getElementById('productModal').style.display = 'none';
-            }
-        });
-        
-        document.getElementById('modalAddToCartBtn')?.addEventListener('click', () => {
-            if (!currentUser) {
-                alert('Войдите в аккаунт');
-                window.location.href = 'login.html';
-                return;
-            }
-            if (currentProduct) {
+                // Получаем полные данные товара из data-product
+                const product = JSON.parse(btn.dataset.product);
+                
+                // Добавляем в корзину с сохранением всех полей
                 let cart = JSON.parse(localStorage.getItem('cart') || '[]');
-                cart.push({ id: currentProduct.id, name: currentProduct.name, price: currentProduct.price, desc: currentProduct.desc, image: currentProduct.image });
+                cart.push({
+                    id: product.id,
+                    name: product.name,
+                    price: product.price,
+                    image: product.image,
+                    desc: product.desc,
+                    partnerId: product.partnerId,      // ← КЛЮЧЕВОЕ!
+                    partnerName: product.partnerName   // ← Название магазина
+                });
                 localStorage.setItem('cart', JSON.stringify(cart));
                 updateCartCount();
-                alert('✅ Товар добавлен в корзину');
-            }
+                
+                const originalText = btn.innerHTML;
+                btn.innerHTML = '<i class="fas fa-check"></i> Добавлено!';
+                btn.style.background = '#10b981';
+                setTimeout(() => {
+                    btn.innerHTML = originalText;
+                    btn.style.background = '#3b82f6';
+                }, 1200);
+            });
         });
+    }
 
-        onAuthStateChanged(auth, async (user) => {
-            currentUser = user;
-            if (user) {
-                setTimeout(updateHeaderBalance, 1000);
-            } else {
-                const balanceDiv = document.getElementById('balanceIndicator');
-                if (balanceDiv) balanceDiv.style.display = 'none';
+    async function openProductModal(product) {
+        currentProduct = product;
+        const modal = document.getElementById('productModal');
+        
+        let storeName = product.partnerName;
+        if (!storeName && product.partnerId) {
+            const partner = allPartners.find(p => p.id === product.partnerId);
+            storeName = partner ? partner.name : 'Магазин';
+        }
+        
+        document.getElementById('modalProductTitle').innerText = product.name;
+        document.getElementById('modalProductPrice').innerHTML = `${(product.price || 0).toLocaleString()} ₽`;
+        document.getElementById('modalProductDesc').innerText = product.desc || 'Описание отсутствует';
+        document.getElementById('modalProductStore').innerHTML = `<i class="fas fa-store"></i> ${escapeHtml(storeName)}`;
+        
+        const modalImage = document.getElementById('modalProductImage');
+        if (product.image) {
+            modalImage.src = product.image;
+            modalImage.style.display = 'block';
+        } else {
+            modalImage.style.display = 'none';
+        }
+        
+        await loadProductReviews(product.id);
+        
+        const reviewForm = document.getElementById('reviewForm');
+        if (currentUser) {
+            reviewForm.style.display = 'block';
+            currentRating = 0;
+            updateStarsUI(0);
+            document.getElementById('reviewText').value = '';
+            initStarsInput();
+        } else {
+            reviewForm.style.display = 'none';
+        }
+        
+        modal.style.display = 'flex';
+    }
+
+    async function submitReview() {
+        if (!currentUser) {
+            alert('Войдите в аккаунт, чтобы оставить отзыв');
+            return;
+        }
+        
+        if (currentRating === 0) {
+            alert('Поставьте оценку товару');
+            return;
+        }
+        
+        const reviewText = document.getElementById('reviewText').value.trim();
+        if (!reviewText) {
+            alert('Напишите текст отзыва');
+            return;
+        }
+        
+        try {
+            const userDoc = await getDoc(doc(db, "fighters", currentUser.uid));
+            const userData = userDoc.data();
+            
+            await addDoc(collection(db, "reviews"), {
+                productId: currentProduct.id,
+                productName: currentProduct.name,
+                partnerId: currentProduct.partnerId,
+                userId: currentUser.uid,
+                userName: userData?.name || currentUser.email?.split('@')[0] || 'Покупатель',
+                rating: currentRating,
+                text: reviewText,
+                createdAt: new Date()
+            });
+            
+            alert('✅ Спасибо за отзыв!');
+            document.getElementById('reviewText').value = '';
+            currentRating = 0;
+            updateStarsUI(0);
+            
+            await loadProductReviews(currentProduct.id);
+            
+            const ratingData = await getProductRating(currentProduct.id);
+            const productIndex = allProducts.findIndex(p => p.id === currentProduct.id);
+            if (productIndex !== -1) {
+                allProducts[productIndex].rating = ratingData.rating;
+                allProducts[productIndex].ratingCount = ratingData.count;
             }
+            applyFilters();
+            
+        } catch (err) {
+            console.error('Ошибка при отправке отзыва:', err);
+            alert('Ошибка при отправке отзыва');
+        }
+    }
+
+    function resetFilters() {
+        document.getElementById('searchInput').value = '';
+        document.getElementById('categorySelect').value = 'all';
+        document.getElementById('partnerSelect').value = 'all';
+        document.getElementById('sortSelect').value = 'name';
+        applyFilters();
+    }
+
+    function escapeHtml(str) {
+        if (!str) return '';
+        return String(str).replace(/[&<>]/g, m => m === '&' ? '&amp;' : m === '<' ? '&lt;' : '&gt;');
+    }
+
+    // Event Listeners
+    document.getElementById('searchInput')?.addEventListener('input', applyFilters);
+    document.getElementById('categorySelect')?.addEventListener('change', applyFilters);
+    document.getElementById('partnerSelect')?.addEventListener('change', applyFilters);
+    document.getElementById('sortSelect')?.addEventListener('change', applyFilters);
+    document.getElementById('resetFiltersBtn')?.addEventListener('click', resetFilters);
+    document.getElementById('cartIcon')?.addEventListener('click', () => window.location.href = 'cart.html');
+    document.getElementById('closeModalBtn')?.addEventListener('click', () => {
+        document.getElementById('productModal').style.display = 'none';
+    });
+    document.getElementById('submitReviewBtn')?.addEventListener('click', submitReview);
+    
+    document.getElementById('productModal')?.addEventListener('click', (e) => {
+        if (e.target === document.getElementById('productModal')) {
+            document.getElementById('productModal').style.display = 'none';
+        }
+    });
+    
+    // ✅ Исправленный обработчик для кнопки "В корзину" в модальном окне
+    document.getElementById('modalAddToCartBtn')?.addEventListener('click', () => {
+        if (!currentUser) {
+            alert('Войдите в аккаунт');
+            window.location.href = 'login.html';
+            return;
+        }
+        if (currentProduct) {
+            let storeName = currentProduct.partnerName;
+            if (!storeName && currentProduct.partnerId) {
+                const partner = allPartners.find(p => p.id === currentProduct.partnerId);
+                storeName = partner ? partner.name : 'Магазин';
+            }
+            
+            let cart = JSON.parse(localStorage.getItem('cart') || '[]');
+            cart.push({ 
+                id: currentProduct.id, 
+                name: currentProduct.name, 
+                price: currentProduct.price, 
+                image: currentProduct.image,
+                desc: currentProduct.desc || '',
+                partnerId: currentProduct.partnerId || null,      // ← КЛЮЧЕВОЕ!
+                partnerName: storeName || null                     // ← Название магазина
+            });
+            localStorage.setItem('cart', JSON.stringify(cart));
             updateCartCount();
-            await loadPartners();
-            await loadProducts();
-        });
+            
+            const btn = document.getElementById('modalAddToCartBtn');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-check"></i> Добавлено!';
+            btn.style.background = '#10b981';
+            setTimeout(() => {
+                btn.innerHTML = originalText;
+                btn.style.background = '#3b82f6';
+            }, 1200);
+        }
+    });
 
-        const plusBtn = document.getElementById('balancePlusBtn');
-        if (plusBtn) plusBtn.onclick = () => window.location.href = 'shop.html';
+    onAuthStateChanged(auth, async (user) => {
+        currentUser = user;
+        if (user) {
+            setTimeout(updateHeaderBalance, 1000);
+        } else {
+            const balanceDiv = document.getElementById('balanceIndicator');
+            if (balanceDiv) balanceDiv.style.display = 'none';
+        }
+        updateCartCount();
+        await loadPartners();
+        await loadProducts();
+    });
 
-        const menuToggle = document.getElementById('menuToggle');
-        const navLinks = document.getElementById('navLinks');
-        if (menuToggle && navLinks) menuToggle.addEventListener('click', () => navLinks.classList.toggle('show'));
-    </script>
+    const plusBtn = document.getElementById('balancePlusBtn');
+    if (plusBtn) plusBtn.onclick = () => window.location.href = 'shop.html';
+
+    const menuToggle = document.getElementById('menuToggle');
+    const navLinks = document.getElementById('navLinks');
+    if (menuToggle && navLinks) menuToggle.addEventListener('click', () => navLinks.classList.toggle('show'));
+</script>
 </body>
 </html>

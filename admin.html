@@ -173,8 +173,9 @@
         .btn-success { background: #16a34a; color: #fff; }
         .btn-warning { background: #f59e0b; color: #fff; }
         .btn-secondary { background: #3b82f6; color: #fff; }
+        .btn-info { background: #8b5cf6; color: #fff; }
 
-        .fighters-list, .partners-list, .requests-list, .commissions-list {
+        .fighters-list, .partners-list, .requests-list, .commissions-list, .withdrawals-list {
             background: rgba(15,15,15,0.7);
             backdrop-filter: blur(8px);
             border-radius: 28px;
@@ -238,7 +239,7 @@
             border-radius: 60px;
         }
         .hidden { display: none; }
-        .challenge-item, .history-item, .request-item, .commission-item {
+        .challenge-item, .history-item, .request-item, .commission-item, .withdrawal-item {
             padding: 12px;
             border-bottom: 1px solid rgba(255,255,255,0.05);
             display: flex;
@@ -252,6 +253,10 @@
             font-weight: 800;
             color: #fbbf24;
         }
+        .status-pending { background: #f59e0b; color: #000; padding: 4px 12px; border-radius: 20px; font-size: 0.7rem; display: inline-block; }
+        .status-processing { background: #3b82f6; color: #fff; padding: 4px 12px; border-radius: 20px; font-size: 0.7rem; display: inline-block; }
+        .status-completed { background: #10b981; color: #fff; padding: 4px 12px; border-radius: 20px; font-size: 0.7rem; display: inline-block; }
+        .status-rejected { background: #dc2626; color: #fff; padding: 4px 12px; border-radius: 20px; font-size: 0.7rem; display: inline-block; }
 
         @media (max-width: 768px) {
             .admin-container {
@@ -304,6 +309,7 @@
                 <div class="stat-card"><div class="value" id="statPremium">0</div><div class="label">💎 Премиум</div></div>
                 <div class="stat-card"><div class="value" id="statPartners">0</div><div class="label">🏪 Магазинов</div></div>
                 <div class="stat-card"><div class="value" id="statRequests">0</div><div class="label">📋 Заявок</div></div>
+                <div class="stat-card"><div class="value" id="statPendingWithdrawals">0</div><div class="label">💸 Заявок на вывод</div></div>
             </div>
 
             <div class="admin-tabs">
@@ -315,9 +321,10 @@
                 <button class="tab-btn" data-tab="history"><i class="fas fa-history"></i> История</button>
                 <button class="tab-btn" data-tab="broadcast"><i class="fas fa-bullhorn"></i> Рассылка</button>
                 <button class="tab-btn" data-tab="commissions"><i class="fas fa-percent"></i> Комиссии</button>
+                <button class="tab-btn" data-tab="withdrawals"><i class="fas fa-money-bill-wave"></i> Выводы</button>
             </div>
 
-            <!-- Бойцы -->
+            <!-- Бойцы (без изменений) -->
             <div id="tab-fighters" class="tab-pane active">
                 <div class="admin-form">
                     <div class="form-row">
@@ -335,7 +342,7 @@
                 </div>
             </div>
 
-            <!-- Бои -->
+            <!-- Бои (без изменений) -->
             <div id="tab-fight" class="tab-pane">
                 <div class="admin-form">
                     <h3><i class="fas fa-fist-raised"></i> Добавить бой</h3>
@@ -369,7 +376,7 @@
                 </div>
             </div>
 
-            <!-- Магазины -->
+            <!-- Магазины (без изменений) -->
             <div id="tab-partners" class="tab-pane">
                 <div class="admin-form">
                     <h3><i class="fas fa-plus"></i> Добавить магазин</h3>
@@ -394,7 +401,7 @@
                 </div>
             </div>
 
-            <!-- Заявки -->
+            <!-- Заявки (без изменений) -->
             <div id="tab-requests" class="tab-pane">
                 <div class="admin-form">
                     <h3><i class="fas fa-envelope"></i> Заявки на партнёрство</h3>
@@ -402,7 +409,7 @@
                 </div>
             </div>
 
-            <!-- Вызовы -->
+            <!-- Вызовы (без изменений) -->
             <div id="tab-challenges" class="tab-pane">
                 <div class="admin-form">
                     <div class="form-row">
@@ -414,7 +421,7 @@
                 </div>
             </div>
 
-            <!-- История -->
+            <!-- История (без изменений) -->
             <div id="tab-history" class="tab-pane">
                 <div class="admin-form">
                     <div class="form-row">
@@ -426,7 +433,7 @@
                 </div>
             </div>
 
-            <!-- Рассылка -->
+            <!-- Рассылка (без изменений) -->
             <div id="tab-broadcast" class="tab-pane">
                 <div class="admin-form">
                     <h3><i class="fas fa-bullhorn"></i> Массовая рассылка</h3>
@@ -444,10 +451,10 @@
                 </div>
             </div>
 
-            <!-- Комиссии -->
+            <!-- Комиссии (обновлено) -->
             <div id="tab-commissions" class="tab-pane">
                 <div class="admin-form">
-                    <h3><i class="fas fa-percent"></i> Комиссии партнёрам (10%)</h3>
+                    <h3><i class="fas fa-percent"></i> Комиссии с продаж (10%)</h3>
                     <div class="form-row">
                         <div class="form-group">
                             <label>Период</label>
@@ -462,6 +469,37 @@
                         </div>
                     </div>
                     <div id="commissionsList" class="commissions-list">Загрузка...</div>
+                </div>
+            </div>
+
+            <!-- НОВАЯ ВКЛАДКА: ВЫВОДЫ СРЕДСТВ -->
+            <div id="tab-withdrawals" class="tab-pane">
+                <div class="admin-form">
+                    <h3><i class="fas fa-money-bill-wave"></i> Заявки на вывод средств</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Фильтр по статусу</label>
+                            <select id="withdrawalStatusFilter">
+                                <option value="all">Все</option>
+                                <option value="pending">⏳ Ожидают</option>
+                                <option value="processing">🔄 В обработке</option>
+                                <option value="completed">✅ Выполнены</option>
+                                <option value="rejected">❌ Отклонены</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <button id="refreshWithdrawalsBtn" class="btn btn-secondary"><i class="fas fa-sync-alt"></i> Обновить</button>
+                        </div>
+                    </div>
+                    <div id="withdrawalsList" class="withdrawals-list">Загрузка...</div>
+                </div>
+                <div class="admin-form">
+                    <h3><i class="fas fa-chart-line"></i> Статистика выводов</h3>
+                    <div id="withdrawalStats" class="stats-grid" style="grid-template-columns: repeat(3, 1fr); margin-bottom: 0;">
+                        <div class="stat-card"><div class="value" id="totalPendingAmount">0 ₽</div><div class="label">Ожидают вывода</div></div>
+                        <div class="stat-card"><div class="value" id="totalCompletedAmount">0 ₽</div><div class="label">Выведено всего</div></div>
+                        <div class="stat-card"><div class="value" id="totalRejectedAmount">0 ₽</div><div class="label">Отклонено</div></div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -520,6 +558,7 @@
         const challengesSnap = await getDocs(collection(db, "challenges"));
         const partnersSnap = await getDocs(collection(db, "partners"));
         const requestsSnap = await getDocs(query(collection(db, "partner_requests"), where("status", "==", "pending")));
+        const withdrawalsSnap = await getDocs(query(collection(db, "withdrawals"), where("status", "==", "pending")));
         
         let premiumCount = 0;
         let bannedCount = 0;
@@ -535,7 +574,159 @@
         document.getElementById('statPremium').innerText = premiumCount;
         document.getElementById('statPartners').innerText = partnersSnap.size;
         document.getElementById('statRequests').innerText = requestsSnap.size;
+        document.getElementById('statPendingWithdrawals').innerText = withdrawalsSnap.size;
     }
+
+    // ==================== НОВЫЕ ФУНКЦИИ ДЛЯ ВЫВОДОВ ====================
+    
+    async function loadWithdrawals() {
+        const statusFilter = document.getElementById('withdrawalStatusFilter')?.value || 'all';
+        const container = document.getElementById('withdrawalsList');
+        if (!container) return;
+        
+        try {
+            let q;
+            if (statusFilter === 'all') {
+                q = query(collection(db, "withdrawals"), orderBy("createdAt", "desc"));
+            } else {
+                q = query(collection(db, "withdrawals"), where("status", "==", statusFilter), orderBy("createdAt", "desc"));
+            }
+            const snapshot = await getDocs(q);
+            
+            if (snapshot.empty) {
+                container.innerHTML = '<div class="withdrawal-item">Нет заявок на вывод</div>';
+                await loadWithdrawalStats();
+                return;
+            }
+            
+            let html = '<table style="width:100%"><thead><tr><th>Дата</th><th>Продавец</th><th>Сумма</th><th>Метод</th><th>Реквизиты</th><th>Статус</th><th>Действия</th></tr></thead><tbody>';
+            
+            for (const docSnap of snapshot.docs) {
+                const w = docSnap.data();
+                const date = w.createdAt?.toDate().toLocaleString() || '—';
+                let partnerName = 'Продавец';
+                try {
+                    const partnerDoc = await getDoc(doc(db, "partners", w.partnerId));
+                    if (partnerDoc.exists()) partnerName = partnerDoc.data().name || 'Продавец';
+                } catch(e) {}
+                
+                const statusText = { 'pending': '⏳ Ожидает', 'processing': '🔄 В обработке', 'completed': '✅ Выполнен', 'rejected': '❌ Отклонён' }[w.status] || w.status;
+                const statusClass = `status-${w.status}`;
+                
+                html += `<tr>
+                    <td>${date}</td>
+                    <td>${escapeHtml(partnerName)}</td>
+                    <td style="color:#fbbf24; font-weight:700;">${w.amount.toLocaleString()} ₽</td>
+                    <td>${w.method === 'card' ? 'Карта' : 'Telegram'}</td>
+                    <td>${escapeHtml(w.details || '—')}</td>
+                    <td><span class="${statusClass}">${statusText}</span></td>
+                    <td>
+                        ${w.status === 'pending' ? `
+                            <button class="btn btn-success" onclick="window.approveWithdrawal('${docSnap.id}', ${w.amount}, '${w.partnerId}')" style="padding:4px 12px; margin:2px;"><i class="fas fa-check"></i> Подтвердить</button>
+                            <button class="btn btn-danger" onclick="window.rejectWithdrawal('${docSnap.id}')" style="padding:4px 12px; margin:2px;"><i class="fas fa-times"></i> Отклонить</button>
+                        ` : (w.status === 'processing' ? `<button class="btn btn-success" onclick="window.completeWithdrawal('${docSnap.id}', ${w.amount}, '${w.partnerId}')" style="padding:4px 12px;"><i class="fas fa-check"></i> Завершить</button>` : '')}
+                    </td>
+                </tr>`;
+            }
+            html += '</tbody></table>';
+            container.innerHTML = html;
+            await loadWithdrawalStats();
+        } catch (err) {
+            console.error('Ошибка загрузки выводов:', err);
+            container.innerHTML = '<div class="withdrawal-item">Ошибка загрузки</div>';
+        }
+    }
+
+    async function loadWithdrawalStats() {
+        const snapshot = await getDocs(collection(db, "withdrawals"));
+        let pendingTotal = 0;
+        let completedTotal = 0;
+        let rejectedTotal = 0;
+        
+        snapshot.forEach(doc => {
+            const w = doc.data();
+            if (w.status === 'pending') pendingTotal += w.amount;
+            if (w.status === 'completed') completedTotal += w.amount;
+            if (w.status === 'rejected') rejectedTotal += w.amount;
+        });
+        
+        document.getElementById('totalPendingAmount').innerHTML = `${pendingTotal.toLocaleString()} ₽`;
+        document.getElementById('totalCompletedAmount').innerHTML = `${completedTotal.toLocaleString()} ₽`;
+        document.getElementById('totalRejectedAmount').innerHTML = `${rejectedTotal.toLocaleString()} ₽`;
+    }
+
+    window.approveWithdrawal = async (withdrawalId, amount, partnerId) => {
+        if (!confirm(`Подтвердить вывод ${amount.toLocaleString()} ₽ продавцу?`)) return;
+        
+        try {
+            await updateDoc(doc(db, "withdrawals", withdrawalId), { 
+                status: 'processing',
+                processedAt: new Date()
+            });
+            await logAction('approve_withdrawal', withdrawalId, `Подтвердил вывод ${amount} ₽ продавцу ${partnerId}`);
+            alert('✅ Заявка переведена в статус "В обработке"');
+            loadWithdrawals();
+            loadStats();
+        } catch (err) {
+            alert('Ошибка: ' + err.message);
+        }
+    };
+
+    window.completeWithdrawal = async (withdrawalId, amount, partnerId) => {
+        if (!confirm(`Завершить выплату ${amount.toLocaleString()} ₽ продавцу? Средства будут списаны с баланса.`)) return;
+        
+        try {
+            await updateDoc(doc(db, "withdrawals", withdrawalId), { 
+                status: 'completed',
+                completedAt: new Date()
+            });
+            await logAction('complete_withdrawal', withdrawalId, `Завершил выплату ${amount} ₽ продавцу ${partnerId}`);
+            alert('✅ Вывод средств завершён');
+            loadWithdrawals();
+            loadStats();
+        } catch (err) {
+            alert('Ошибка: ' + err.message);
+        }
+    };
+
+    window.rejectWithdrawal = async (withdrawalId) => {
+        const reason = prompt('Укажите причину отклонения:');
+        if (!reason) return;
+        
+        if (!confirm('Отклонить заявку на вывод?')) return;
+        
+        try {
+            const withdrawalRef = doc(db, "withdrawals", withdrawalId);
+            const withdrawalSnap = await getDoc(withdrawalRef);
+            const withdrawal = withdrawalSnap.data();
+            
+            await updateDoc(withdrawalRef, { 
+                status: 'rejected',
+                rejectReason: reason,
+                processedAt: new Date()
+            });
+            
+            // Возвращаем средства на баланс продавца
+            const balanceRef = doc(db, "wallet_balances", withdrawal.partnerId);
+            const balanceDoc = await getDoc(balanceRef);
+            if (balanceDoc.exists()) {
+                await updateDoc(balanceRef, {
+                    available: (balanceDoc.data().available || 0) + withdrawal.amount,
+                    pendingWithdraw: (balanceDoc.data().pendingWithdraw || 0) - withdrawal.amount,
+                    updatedAt: new Date()
+                });
+            }
+            
+            await logAction('reject_withdrawal', withdrawalId, `Отклонил вывод ${withdrawal.amount} ₽. Причина: ${reason}`);
+            alert('❌ Заявка отклонена, средства возвращены на баланс');
+            loadWithdrawals();
+            loadStats();
+        } catch (err) {
+            alert('Ошибка: ' + err.message);
+        }
+    };
+
+    // ==================== ОСТАЛЬНЫЕ ФУНКЦИИ (БЕЗ ИЗМЕНЕНИЙ) ====================
 
     async function loadFighters() {
         const tbody = document.getElementById('adminTableBody');
@@ -802,7 +993,6 @@
         
         try {
             const productsSnap = await getDocs(query(collection(db, "products"), where("partnerId", "==", partnerId)));
-            
             for (const productDoc of productsSnap.docs) {
                 const product = productDoc.data();
                 if (product.image && product.image.includes('firebasestorage')) {
@@ -813,15 +1003,12 @@
                 }
                 await deleteDoc(doc(db, "products", productDoc.id));
             }
-            
             await deleteDoc(doc(db, "partners", partnerId));
-            
             await logAction('delete_partner', partnerId, `Удалил магазин и ${productsSnap.size} товаров`);
             loadPartners();
             loadStats();
             alert(`✅ Магазин удалён вместе с ${productsSnap.size} товарами`);
         } catch (err) {
-            console.error('Ошибка при удалении:', err);
             alert('Ошибка при удалении: ' + err.message);
         }
     };
@@ -875,7 +1062,6 @@
         container.innerHTML = html;
     }
 
-    // ===== ИСПРАВЛЕННАЯ ФУНКЦИЯ ОДОБРЕНИЯ ЗАЯВКИ =====
     window.approveRequest = async (requestId) => {
         const requestRef = doc(db, "partner_requests", requestId);
         const requestSnap = await getDoc(requestRef);
@@ -884,59 +1070,26 @@
         
         try {
             let userUid = null;
-            
-            // Проверяем, существует ли уже пользователь в Authentication (по email)
-            // Сначала проверяем в коллекции fighters
             const existingUserQuery = await getDocs(query(collection(db, "fighters"), where("email", "==", r.contactEmail)));
             
             if (!existingUserQuery.empty) {
-                // Пользователь уже существует, обновляем его статус
                 userUid = existingUserQuery.docs[0].id;
-                await updateDoc(doc(db, "fighters", userUid), { 
-                    isPartner: true,
-                    name: r.storeName
-                });
+                await updateDoc(doc(db, "fighters", userUid), { isPartner: true, name: r.storeName });
                 alert(`✅ Пользователь с email ${r.contactEmail} уже существует. Обновлён статус партнёра.`);
             } else {
-                // СОЗДАЁМ АККАУНТ В FIREBASE AUTHENTICATION
-                // Используем пароль из заявки (сохранённый при регистрации)
                 const partnerPassword = r.password || Math.random().toString(36).slice(-10);
-                
                 try {
                     const userCred = await createUserWithEmailAndPassword(auth, r.contactEmail, partnerPassword);
                     userUid = userCred.user.uid;
-                    
-                    // СОЗДАЁМ ПРОФИЛЬ В КОЛЛЕКЦИИ fighters
                     await setDoc(doc(db, "fighters", userUid), {
-                        uid: userUid,
-                        name: r.storeName,
-                        email: r.contactEmail,
-                        city: '—',
-                        sport: '—',
-                        weightClass: '—',
-                        frs: 0,
-                        wins: 0,
-                        losses: 0,
-                        finishes: 0,
-                        bio: "",
-                        avatar: "Avatar.png",
-                        freeChallenges: 0,
-                        purchasedChallenges: 0,
-                        isPartner: true,
-                        createdAt: new Date()
+                        uid: userUid, name: r.storeName, email: r.contactEmail, city: '—', sport: '—',
+                        weightClass: '—', frs: 0, wins: 0, losses: 0, finishes: 0, bio: "", avatar: "Avatar.png",
+                        freeChallenges: 0, purchasedChallenges: 0, isPartner: true, createdAt: new Date()
                     });
-                    
                     alert(`✅ Аккаунт создан!\n\nEmail: ${r.contactEmail}\nПароль: ${partnerPassword}\n\nСохраните пароль!`);
                 } catch (authError) {
                     if (authError.code === 'auth/email-already-in-use') {
-                        // Email уже используется в Auth, но нет в fighters
-                        alert(`⚠️ Email ${r.contactEmail} уже зарегистрирован в системе, но профиль не найден.\nПользователь сможет войти со своим паролем, статус партнёра будет обновлён.`);
-                        
-                        // Пытаемся найти пользователя в Auth (нужно будет войти через signIn)
-                        // В этом случае просто отмечаем, что нужно обновить существующий профиль
-                        // Но без UID мы не можем обновить fighters
-                        // Поэтому лучше попросить админа проверить вручную
-                        alert('Требуется ручное вмешательство: найдите пользователя в списке бойцов и поставьте галочку "Партнёр"');
+                        alert(`⚠️ Email ${r.contactEmail} уже зарегистрирован в системе, но профиль не найден.\nТребуется ручное вмешательство.`);
                         return;
                     }
                     throw authError;
@@ -944,51 +1097,28 @@
             }
             
             if (userUid) {
-                // СОЗДАЁМ МАГАЗИН В КОЛЛЕКЦИИ partners
                 const partnerRef = await addDoc(collection(db, "partners"), {
-                    name: r.storeName,
-                    url: r.storeUrl,
-                    description: r.storeDescription,
-                    discount: null,
-                    icon: "fa-store",
-                    email: r.contactEmail,
-                    userId: userUid,
-                    createdAt: serverTimestamp()
+                    name: r.storeName, url: r.storeUrl, description: r.storeDescription, discount: null,
+                    icon: "fa-store", email: r.contactEmail, userId: userUid, createdAt: serverTimestamp()
                 });
-                
-                // ДОБАВЛЯЕМ ТОВАРЫ ИЗ ЗАЯВКИ
                 if (r.products && r.products.length > 0) {
                     for (const product of r.products) {
                         await addDoc(collection(db, "products"), {
-                            name: product.name,
-                            price: product.price,
-                            desc: product.desc,
-                            image: product.image || null,
-                            partnerId: partnerRef.id,
-                            partnerName: r.storeName,
-                            createdAt: serverTimestamp()
+                            name: product.name, price: product.price, desc: product.desc,
+                            image: product.image || null, partnerId: partnerRef.id, partnerName: r.storeName, createdAt: serverTimestamp()
                         });
                     }
                     alert(`✅ Добавлено ${r.products.length} товаров`);
                 }
-                
-                // ОБНОВЛЯЕМ СТАТУС ЗАЯВКИ
-                await updateDoc(requestRef, { 
-                    status: 'approved',
-                    userId: userUid,
-                    approvedAt: serverTimestamp()
-                });
-                
+                await updateDoc(requestRef, { status: 'approved', userId: userUid, approvedAt: serverTimestamp() });
                 await logAction('approve_partner', requestId, `Одобрил заявку ${r.storeName} с ${r.products?.length || 0} товарами`);
             }
-            
             loadRequests();
             loadPartners();
             loadStats();
-            
         } catch (error) {
             console.error('Ошибка при одобрении:', error);
-            alert(`❌ Ошибка: ${error.message}\n\nПопробуйте ещё раз или свяжитесь с разработчиком.`);
+            alert(`❌ Ошибка: ${error.message}`);
         }
     };
 
@@ -1220,12 +1350,14 @@
             if (btn.dataset.tab === 'challenges') loadChallengesForAdmin();
             if (btn.dataset.tab === 'history') loadAdminHistory();
             if (btn.dataset.tab === 'commissions') loadCommissions();
+            if (btn.dataset.tab === 'withdrawals') loadWithdrawals();
         });
     });
 
     document.getElementById('refreshChallengesBtn')?.addEventListener('click', () => loadChallengesForAdmin());
     document.getElementById('refreshHistoryBtn')?.addEventListener('click', () => loadAdminHistory());
     document.getElementById('refreshCommissionsBtn')?.addEventListener('click', () => loadCommissions());
+    document.getElementById('refreshWithdrawalsBtn')?.addEventListener('click', () => loadWithdrawals());
 
     document.getElementById('deleteFightsBtn')?.addEventListener('click', window.deleteFights);
     document.getElementById('deleteAllFightsBtn')?.addEventListener('click', window.deleteAllFights);
@@ -1243,6 +1375,7 @@
             loadPartners();
             loadRequests();
             loadCommissions();
+            loadWithdrawals();
         } catch (error) {
             document.getElementById('loginMessage').innerText = "Ошибка входа";
         }
@@ -1263,6 +1396,7 @@
             loadPartners();
             loadRequests();
             loadCommissions();
+            loadWithdrawals();
         }
     });
     </script>

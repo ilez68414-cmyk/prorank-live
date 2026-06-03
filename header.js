@@ -135,24 +135,28 @@ async function initHeader() {
     // Генерация навигации
     if (isDesktop) {
         if (user && isPartner) {
-            // ДЛЯ ПАРТНЁРА
+            // ДЛЯ ПАРТНЁРА (десктоп)
             navLinks.innerHTML = `
                 <a href="index.html"><i class="fas fa-home"></i> Главная</a>
                 <a href="rating.html"><i class="fas fa-chart-line"></i> Рейтинг</a>
-                <div class="dropdown" data-section="compete">
-                    <button class="dropbtn"><i class="fas fa-trophy"></i> Соревнования <i class="fas fa-chevron-down"></i></button>
+                <div class="dropdown" data-section="messages">
+                    <button class="dropbtn"><i class="fas fa-comments"></i> Общение <i class="fas fa-chevron-down"></i></button>
                     <div class="dropdown-content">
-                        <a href="leagues.html"><i class="fas fa-trophy"></i> Лиги</a>
-                        <a href="rules.html"><i class="fas fa-book"></i> Правила</a>
+                        <a href="chats.html"><i class="fas fa-comments"></i> Чаты</a>
                         <a href="halls.html"><i class="fas fa-building"></i> Клубы</a>
                     </div>
                 </div>
                 <div class="dropdown" data-section="shop">
                     <button class="dropbtn"><i class="fas fa-store"></i> Магазин <i class="fas fa-chevron-down"></i></button>
                     <div class="dropdown-content">
-                        <a href="shop.html"><i class="fas fa-gem"></i> Премиум и вызовы</a>
                         <a href="catalog.html"><i class="fas fa-boxes"></i> Каталог товаров</a>
                         <a href="my-orders.html"><i class="fas fa-box"></i> Мои заказы</a>
+                    </div>
+                </div>
+                <div class="dropdown" data-section="finance">
+                    <button class="dropbtn"><i class="fas fa-wallet"></i> Финансы <i class="fas fa-chevron-down"></i></button>
+                    <div class="dropdown-content">
+                        <a href="wallet.html"><i class="fas fa-wallet"></i> Мой кошелёк</a>
                     </div>
                 </div>
                 <div class="user-menu">
@@ -166,7 +170,7 @@ async function initHeader() {
             `;
         } 
         else if (user && !isPartner) {
-            // ДЛЯ БОЙЦА
+            // ДЛЯ БОЙЦА (десктоп)
             navLinks.innerHTML = `
                 <a href="index.html"><i class="fas fa-home"></i> Главная</a>
                 <a href="rating.html"><i class="fas fa-chart-line"></i> Рейтинг</a>
@@ -184,6 +188,13 @@ async function initHeader() {
                         <a href="shop.html"><i class="fas fa-gem"></i> Премиум и вызовы</a>
                         <a href="catalog.html"><i class="fas fa-boxes"></i> Каталог товаров</a>
                         <a href="my-orders.html"><i class="fas fa-box"></i> Мои заказы</a>
+                    </div>
+                </div>
+                <div class="dropdown" data-section="finance">
+                    <button class="dropbtn"><i class="fas fa-wallet"></i> Финансы <i class="fas fa-chevron-down"></i></button>
+                    <div class="dropdown-content">
+                        <a href="buyer-wallet.html"><i class="fas fa-wallet"></i> Мой кошелёк</a>
+                        <a href="deposit.html"><i class="fas fa-plus-circle"></i> Пополнить баланс</a>
                     </div>
                 </div>
                 <div class="dropdown" data-section="community">
@@ -204,7 +215,7 @@ async function initHeader() {
             `;
         } 
         else {
-            // НЕ АВТОРИЗОВАН — ПОКАЗЫВАЕМ "Мои заказы" НО ПРИ КЛИКЕ КИДАЕТ НА ЛОГИН
+            // НЕ АВТОРИЗОВАН (десктоп)
             navLinks.innerHTML = `
                 <a href="index.html"><i class="fas fa-home"></i> Главная</a>
                 <a href="rating.html"><i class="fas fa-chart-line"></i> Рейтинг</a>
@@ -238,23 +249,28 @@ async function initHeader() {
     else {
         // МОБИЛЬНАЯ ВЕРСИЯ
         if (user && isPartner) {
+            // ДЛЯ ПАРТНЁРА (мобильная)
             navLinks.innerHTML = `
                 <a href="index.html"><i class="fas fa-home"></i> Главная</a>
                 <a href="rating.html"><i class="fas fa-chart-line"></i> Рейтинг</a>
                 <div class="mobile-submenu">
-                    <span class="mobile-submenu-trigger"><i class="fas fa-trophy"></i> Соревнования <i class="fas fa-chevron-right"></i></span>
+                    <span class="mobile-submenu-trigger"><i class="fas fa-comments"></i> Общение <i class="fas fa-chevron-right"></i></span>
                     <div class="mobile-submenu-content">
-                        <a href="leagues.html"><i class="fas fa-trophy"></i> Лиги</a>
-                        <a href="rules.html"><i class="fas fa-book"></i> Правила</a>
+                        <a href="chats.html"><i class="fas fa-comments"></i> Чаты</a>
                         <a href="halls.html"><i class="fas fa-building"></i> Клубы</a>
                     </div>
                 </div>
                 <div class="mobile-submenu">
                     <span class="mobile-submenu-trigger"><i class="fas fa-store"></i> Магазин <i class="fas fa-chevron-right"></i></span>
                     <div class="mobile-submenu-content">
-                        <a href="shop.html"><i class="fas fa-gem"></i> Премиум и вызовы</a>
                         <a href="catalog.html"><i class="fas fa-boxes"></i> Каталог</a>
                         <a href="my-orders.html"><i class="fas fa-box"></i> Мои заказы</a>
+                    </div>
+                </div>
+                <div class="mobile-submenu">
+                    <span class="mobile-submenu-trigger"><i class="fas fa-wallet"></i> Финансы <i class="fas fa-chevron-right"></i></span>
+                    <div class="mobile-submenu-content">
+                        <a href="wallet.html"><i class="fas fa-wallet"></i> Кошелёк</a>
                     </div>
                 </div>
                 <a href="partner-dashboard.html"><i class="fas fa-tachometer-alt"></i> Кабинет</a>
@@ -262,6 +278,7 @@ async function initHeader() {
             `;
         }
         else if (user && !isPartner) {
+            // ДЛЯ БОЙЦА (мобильная)
             navLinks.innerHTML = `
                 <a href="index.html"><i class="fas fa-home"></i> Главная</a>
                 <a href="rating.html"><i class="fas fa-chart-line"></i> Рейтинг</a>
@@ -279,6 +296,13 @@ async function initHeader() {
                         <a href="shop.html"><i class="fas fa-gem"></i> Премиум и вызовы</a>
                         <a href="catalog.html"><i class="fas fa-boxes"></i> Каталог</a>
                         <a href="my-orders.html"><i class="fas fa-box"></i> Мои заказы</a>
+                    </div>
+                </div>
+                <div class="mobile-submenu">
+                    <span class="mobile-submenu-trigger"><i class="fas fa-wallet"></i> Финансы <i class="fas fa-chevron-right"></i></span>
+                    <div class="mobile-submenu-content">
+                        <a href="buyer-wallet.html"><i class="fas fa-wallet"></i> Кошелёк</a>
+                        <a href="deposit.html"><i class="fas fa-plus-circle"></i> Пополнить</a>
                     </div>
                 </div>
                 <div class="mobile-submenu">
@@ -293,6 +317,7 @@ async function initHeader() {
             `;
         } 
         else {
+            // НЕ АВТОРИЗОВАН (мобильная)
             navLinks.innerHTML = `
                 <a href="index.html"><i class="fas fa-home"></i> Главная</a>
                 <a href="rating.html"><i class="fas fa-chart-line"></i> Рейтинг</a>

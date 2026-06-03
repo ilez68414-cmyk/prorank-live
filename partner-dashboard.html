@@ -9,7 +9,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700;14..32,800;14..32,900&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <style>
-        /* Все стили остаются без изменений из вашего файла */
         * { margin: 0; padding: 0; box-sizing: border-box; }
         
         body {
@@ -57,6 +56,7 @@
             position: sticky;
             top: 0;
             z-index: 1000;
+            transition: all 0.3s ease;
         }
         
         .logo {
@@ -67,9 +67,80 @@
             background: linear-gradient(135deg, #ffffff, #fbbf24);
             background-clip: text;
             color: transparent;
+            transition: transform 0.2s ease;
         }
         
+        .logo:hover { transform: scale(1.02); }
         .logo span { background: linear-gradient(135deg, #fbbf24, #ffdd77); background-clip: text; color: transparent; }
+        
+        /* Индикатор баланса в шапке */
+        .balance-indicator {
+            background: #111;
+            border: 1px solid rgba(251, 191, 36, 0.5);
+            border-radius: 60px;
+            padding: 7px 18px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 700;
+            font-size: 0.9rem;
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+        
+        .balance-indicator:hover {
+            border-color: #fbbf24;
+            box-shadow: 0 0 15px rgba(251,191,36,0.2);
+        }
+        
+        .balance-count { color: #fbbf24; font-size: 1.1rem; }
+        
+        .balance-plus {
+            background: rgba(251,191,36,0.15);
+            border: none;
+            color: #fbbf24;
+            cursor: pointer;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            transition: all 0.2s ease;
+        }
+        
+        .balance-plus:hover {
+            background: rgba(251,191,36,0.3);
+            transform: scale(1.05);
+        }
+        
+        .balance-plus:active { 
+            background: #fbbf24; 
+            color: #000;
+            transform: scale(0.94);
+        }
+        
+        /* Новый индикатор кошелька для партнёра */
+        .wallet-indicator {
+            background: rgba(251,191,36,0.1);
+            border: 1px solid rgba(251,191,36,0.3);
+            border-radius: 60px;
+            padding: 7px 18px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 700;
+            font-size: 0.85rem;
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+        
+        .wallet-indicator:hover {
+            background: rgba(251,191,36,0.2);
+            border-color: #fbbf24;
+        }
+        
+        .wallet-amount {
+            color: #fbbf24;
+            font-weight: 800;
+        }
         
         .menu-toggle {
             display: none;
@@ -80,9 +151,13 @@
             cursor: pointer;
             padding: 8px 14px;
             border-radius: 12px;
+            transition: all 0.2s ease;
             min-height: 44px;
             min-width: 44px;
         }
+        
+        .menu-toggle:hover { background: rgba(251,191,36,0.2); transform: scale(1.02); }
+        .menu-toggle:active { transform: scale(0.95); }
         
         .nav-links {
             display: flex;
@@ -101,15 +176,25 @@
             font-weight: 500; 
             padding: 8px 18px; 
             border-radius: 40px; 
-            transition: all 0.2s;
+            transition: all 0.2s ease;
         }
         
-        .nav-links a i { margin-right: 8px; color: #fbbf24; }
-        .nav-links a:hover { color: #fbbf24; background: rgba(251,191,36,0.1); }
+        .nav-links a i { 
+            margin-right: 8px; 
+            color: #fbbf24; 
+            transition: transform 0.2s ease;
+        }
+        
+        .nav-links a:hover { 
+            color: #fbbf24;
+            background: rgba(251,191,36,0.1);
+            transform: translateY(-2px);
+        }
         
         .page-header { 
             text-align: center; 
             padding: 30px 20px 20px; 
+            animation: fadeInUp 0.5s ease;
         }
         
         .page-header h1 { 
@@ -140,7 +225,7 @@
             padding: 16px 12px;
             text-align: center;
             border: 1px solid rgba(251,191,36,0.2);
-            transition: all 0.3s;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             cursor: default;
         }
         
@@ -151,9 +236,17 @@
             box-shadow: 0 10px 30px rgba(0,0,0,0.3);
         }
         
-        .stat-card i { font-size: 1.5rem; color: #fbbf24; margin-bottom: 8px; }
+        .stat-card i { 
+            font-size: 1.5rem; 
+            color: #fbbf24; 
+            margin-bottom: 8px;
+            transition: transform 0.2s ease;
+        }
+        
+        .stat-card:hover i { transform: scale(1.1); }
         .stat-card .value { font-size: 1.3rem; font-weight: 800; color: #fbbf24; }
         .stat-card .label { color: #888; font-size: 0.7rem; margin-top: 4px; }
+        .stat-card .sub { font-size: 0.6rem; color: #666; margin-top: 2px; }
         
         .chart-container {
             background: rgba(15,15,15,0.7);
@@ -162,6 +255,12 @@
             padding: 16px;
             margin-bottom: 24px;
             border: 1px solid rgba(251,191,36,0.2);
+            transition: all 0.3s ease;
+        }
+        
+        .chart-container:hover {
+            border-color: rgba(251,191,36,0.4);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
         }
         
         .chart-header {
@@ -186,11 +285,18 @@
             border-radius: 30px;
             cursor: pointer;
             font-size: 0.7rem;
-            transition: all 0.2s;
+            transition: all 0.2s ease;
+            min-height: 34px;
         }
         
-        .period-btn:hover { background: rgba(251,191,36,0.2); color: #fbbf24; }
-        .period-btn.active { background: #fbbf24; color: #000; }
+        .period-btn:hover { 
+            background: rgba(251,191,36,0.2); 
+            color: #fbbf24;
+            transform: translateY(-2px);
+        }
+        
+        .period-btn:active { transform: translateY(0); }
+        .period-btn.active { background: #fbbf24; color: #000; box-shadow: 0 0 10px rgba(251,191,36,0.5); }
         
         canvas { max-height: 250px; width: 100%; }
         
@@ -214,15 +320,18 @@
             font-size: 0.8rem;
             font-weight: 600;
             border-radius: 40px;
-            transition: all 0.2s;
+            transition: all 0.2s ease;
             display: inline-flex;
             align-items: center;
             gap: 6px;
             min-height: 44px;
         }
         
-        .tab-btn:hover { background: rgba(251,191,36,0.1); color: #fbbf24; }
-        .tab-btn.active { background: #fbbf24; color: #000; }
+        .tab-btn i { font-size: 0.85rem; transition: transform 0.2s ease; }
+        .tab-btn:hover { background: rgba(251,191,36,0.1); color: #fbbf24; transform: translateY(-2px); }
+        .tab-btn:hover i { transform: scale(1.1); }
+        .tab-btn:active { transform: translateY(0); }
+        .tab-btn.active { background: #fbbf24; color: #000; box-shadow: 0 2px 8px rgba(251,191,36,0.3); }
         
         .tab-pane { display: none; animation: fadeIn 0.3s ease; }
         .tab-pane.active { display: block; }
@@ -241,7 +350,7 @@
             border-radius: 20px;
             overflow: hidden;
             border: 1px solid rgba(251,191,36,0.15);
-            transition: all 0.3s;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             display: flex;
             flex-direction: row;
             align-items: center;
@@ -252,6 +361,7 @@
         .product-card:hover { 
             transform: translateY(-3px) scale(1.01); 
             box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+            border-color: rgba(251,191,36,0.4);
         }
         
         .product-image { 
@@ -275,7 +385,10 @@
         
         .product-image i { font-size: 2rem; color: #555; }
         
-        .product-info { flex: 1; padding: 0; }
+        .product-info { 
+            flex: 1;
+            padding: 0;
+        }
         
         .product-title { 
             font-size: 0.9rem; 
@@ -337,7 +450,7 @@
             align-items: center; 
             justify-content: center; 
             gap: 4px;
-            transition: all 0.2s;
+            transition: all 0.2s ease;
             min-height: 32px;
         }
         
@@ -345,13 +458,21 @@
         .btn-duplicate { background: #8b5cf6; color: white; }
         .btn-delete { background: #dc2626; color: white; }
         
-        .btn-edit:hover, .btn-duplicate:hover, .btn-delete:hover { transform: translateY(-2px); filter: brightness(1.1); }
+        .btn-edit:hover, .btn-duplicate:hover, .btn-delete:hover {
+            transform: translateY(-2px);
+            filter: brightness(1.1);
+        }
+        
+        .btn-edit:active, .btn-duplicate:active, .btn-delete:active {
+            transform: translateY(0) scale(0.97);
+        }
         
         @media (min-width: 640px) {
             .products-grid { grid-template-columns: repeat(2, 1fr); gap: 16px; }
             .product-card { flex-direction: column; padding: 16px; }
             .product-image { width: 100%; height: 160px; min-width: auto; }
             .product-info { width: 100%; }
+            .product-title { font-size: 0.95rem; }
             .stats-grid { grid-template-columns: repeat(3, 1fr); gap: 20px; }
             .stat-card { padding: 20px; }
             .stat-card i { font-size: 2rem; }
@@ -363,7 +484,25 @@
         @media (min-width: 1024px) {
             .stats-grid { grid-template-columns: repeat(6, 1fr); }
             .products-grid { grid-template-columns: repeat(3, 1fr); gap: 20px; }
+            .page-header h1 { font-size: 2rem; }
+            .dashboard-tabs { gap: 12px; }
+            .tab-btn { padding: 12px 20px; font-size: 0.95rem; }
+            .period-buttons { gap: 8px; }
+            .period-btn { padding: 6px 14px; font-size: 0.75rem; }
             .chart-header { flex-direction: row; justify-content: space-between; }
+            .footer-inner { flex-direction: row; justify-content: space-between; text-align: left; }
+            .footer-logo p { text-align: left; }
+        }
+        
+        @media (max-width: 640px) {
+            .products-grid { gap: 12px; }
+            .product-card { padding: 10px; gap: 10px; }
+            .product-image { width: 70px; height: 70px; min-width: 70px; }
+            .product-image i { font-size: 1.5rem; }
+            .product-title { font-size: 0.8rem; }
+            .product-price { font-size: 0.8rem; }
+            .product-desc { font-size: 0.6rem; }
+            .btn-edit, .btn-duplicate, .btn-delete { padding: 4px 8px; font-size: 0.6rem; min-height: 30px; }
         }
         
         @media (max-width: 768px) {
@@ -382,8 +521,9 @@
                 gap: 10px;
                 border: 1px solid rgba(251,191,36,0.3);
                 z-index: 1000;
+                backdrop-filter: blur(20px);
             }
-            .nav-links.show { display: flex; }
+            .nav-links.show { display: flex; animation: fadeIn 0.2s ease; }
             .nav-links a { width: 100%; text-align: center; padding: 12px; }
             .container { padding: 0 16px; }
         }
@@ -404,11 +544,17 @@
             border-radius: 30px;
             cursor: pointer;
             font-size: 0.7rem;
-            transition: all 0.2s;
+            transition: all 0.2s ease;
             min-height: 38px;
         }
         
-        .status-filter-btn:hover { background: rgba(251,191,36,0.2); color: #fbbf24; }
+        .status-filter-btn:hover {
+            background: rgba(251,191,36,0.2);
+            color: #fbbf24;
+            transform: translateY(-2px);
+        }
+        
+        .status-filter-btn:active { transform: translateY(0); }
         .status-filter-btn.active { background: #fbbf24; color: #000; }
         
         .order-card {
@@ -418,7 +564,7 @@
             padding: 16px;
             margin-bottom: 14px;
             border: 1px solid rgba(251,191,36,0.15);
-            transition: all 0.3s;
+            transition: all 0.3s ease;
         }
         
         .order-card:hover {
@@ -457,7 +603,7 @@
             cursor: pointer;
             font-weight: 600;
             font-size: 0.7rem;
-            transition: all 0.2s;
+            transition: all 0.2s ease;
             min-height: 38px;
         }
         
@@ -476,8 +622,10 @@
             border-radius: 20px;
             padding: 20px;
             border: 1px solid rgba(251,191,36,0.2);
+            transition: all 0.3s ease;
         }
         
+        .admin-form:hover { border-color: rgba(251,191,36,0.4); }
         .form-row { display: flex; flex-direction: column; gap: 16px; margin-bottom: 16px; }
         .form-group label { display: block; margin-bottom: 6px; color: #fbbf24; font-weight: 600; font-size: 0.75rem; }
         
@@ -489,7 +637,16 @@
             color: #fff;
             border-radius: 40px;
             font-size: 0.85rem;
+            transition: all 0.2s ease;
         }
+        
+        .form-group input:focus, .form-group textarea:focus, .form-group select:focus {
+            outline: none;
+            border-color: #fbbf24;
+            box-shadow: 0 0 0 3px rgba(251,191,36,0.2);
+        }
+        
+        .form-group textarea { border-radius: 20px; resize: vertical; }
         
         .btn-primary {
             background: #fbbf24;
@@ -499,11 +656,16 @@
             border-radius: 40px;
             font-weight: 700;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: all 0.2s ease;
             min-height: 48px;
         }
         
-        .btn-primary:hover { background: #ffdd44; transform: translateY(-2px); }
+        .btn-primary:hover {
+            background: #ffdd44;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(251,191,36,0.3);
+        }
+        
         .btn-primary:active { transform: scale(0.97) translateY(0); }
         
         .btn-secondary {
@@ -513,7 +675,16 @@
             padding: 10px 20px;
             border-radius: 40px;
             cursor: pointer;
+            transition: all 0.2s ease;
+            min-height: 42px;
         }
+        
+        .btn-secondary:hover {
+            background: rgba(251,191,36,0.2);
+            transform: translateY(-2px);
+        }
+        
+        .btn-secondary:active { transform: translateY(0); }
         
         .shop-info-card {
             background: rgba(15,15,15,0.7);
@@ -525,6 +696,12 @@
             gap: 20px;
             flex-wrap: wrap;
             align-items: center;
+            transition: all 0.3s ease;
+        }
+        
+        .shop-info-card:hover {
+            border-color: rgba(251,191,36,0.4);
+            transform: translateY(-3px);
         }
         
         .shop-avatar {
@@ -541,6 +718,7 @@
             overflow: hidden;
             position: relative;
             flex-shrink: 0;
+            transition: all 0.2s ease;
         }
         
         .shop-avatar:hover { transform: scale(1.05); }
@@ -562,6 +740,7 @@
         .shop-details { flex: 1; }
         .shop-details h2 { font-size: 1.1rem; margin-bottom: 6px; }
         .shop-details p { color: #aaa; margin: 3px 0; font-size: 0.7rem; }
+        .shop-details i { width: 20px; color: #fbbf24; }
         
         .empty-state { text-align: center; padding: 40px; color: #888; font-size: 0.8rem; }
         .loading { text-align: center; padding: 40px; color: #888; }
@@ -579,6 +758,7 @@
             justify-content: center;
             align-items: center;
             z-index: 2000;
+            animation: fadeIn 0.2s ease;
         }
         
         .modal-content {
@@ -588,6 +768,7 @@
             width: 90%;
             max-width: 450px;
             border: 1px solid rgba(251,191,36,0.3);
+            animation: slideUp 0.3s ease;
         }
         
         .modal-content h3 { color: #fbbf24; margin-bottom: 16px; font-size: 1.2rem; }
@@ -615,18 +796,22 @@
         .social-icon { 
             color: #aaa; 
             font-size: 1.2rem; 
-            transition: all 0.2s;
+            transition: all 0.2s ease;
         }
         
-        .social-icon:hover { color: #fbbf24; transform: translateY(-3px); }
+        .social-icon:hover { 
+            color: #fbbf24;
+            transform: translateY(-3px) scale(1.1);
+        }
         
         .footer-links { display: flex; gap: 16px; flex-wrap: wrap; justify-content: center; }
-        .footer-links a { color: #888; text-decoration: none; font-size: 0.7rem; }
+        .footer-links a { color: #888; text-decoration: none; font-size: 0.7rem; transition: color 0.2s ease; }
         .footer-links a:hover { color: #fbbf24; }
         .footer-bottom { text-align: center; padding-top: 16px; border-top: 1px solid rgba(255,255,255,0.05); font-size: 0.6rem; color: #555; }
         
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(50px); } to { opacity: 1; transform: translateY(0); } }
         
         ::-webkit-scrollbar { width: 4px; }
         ::-webkit-scrollbar-track { background: #1a1a1a; }
@@ -635,10 +820,17 @@
         
         .review-card {
             background: rgba(15,15,15,0.7);
+            backdrop-filter: blur(8px);
             border-radius: 18px;
             padding: 16px;
             margin-bottom: 14px;
             border: 1px solid rgba(251,191,36,0.15);
+            transition: all 0.3s ease;
+        }
+        
+        .review-card:hover {
+            transform: translateX(5px);
+            border-color: rgba(251,191,36,0.4);
         }
         
         .review-header { display: flex; justify-content: space-between; margin-bottom: 10px; }
@@ -647,7 +839,8 @@
         .review-text { font-size: 0.8rem; color: #ccc; margin-bottom: 10px; }
         .review-reply { background: rgba(0,0,0,0.3); padding: 8px; border-radius: 12px; margin: 8px 0; font-size: 0.75rem; border-left: 2px solid #fbbf24; }
         .reply-input { width: 100%; padding: 8px; background: #1a1a1a; border: 1px solid rgba(251,191,36,0.3); color: #fff; border-radius: 20px; margin: 8px 0; font-size: 0.7rem; }
-        .btn-reply { background: #8b5cf6; color: white; border: none; padding: 6px 14px; border-radius: 30px; cursor: pointer; min-height: 36px; }
+        .btn-reply { background: #8b5cf6; color: white; border: none; padding: 6px 14px; border-radius: 30px; cursor: pointer; transition: 0.2s; min-height: 36px; }
+        .btn-reply:hover { transform: translateY(-2px); filter: brightness(1.1); }
         
         .history-item {
             display: flex;
@@ -665,6 +858,16 @@
 
     <header class="navbar">
         <div class="logo" onclick="window.location='index.html'">PRO<span>RANK</span></div>
+        <div class="balance-indicator" id="balanceIndicator" style="display: none;">
+            <i class="fas fa-crosshairs"></i>
+            <span class="balance-count" id="headerChallengesCount">0</span>
+            <button class="balance-plus" id="balancePlusBtn">+</button>
+        </div>
+        <div class="wallet-indicator" id="walletIndicator" style="display: none;" onclick="window.location.href='wallet.html'">
+            <i class="fas fa-wallet"></i>
+            <span class="wallet-amount" id="walletBalance">0 ₽</span>
+            <i class="fas fa-chevron-right"></i>
+        </div>
         <button class="menu-toggle" id="menuToggle"><i class="fas fa-bars"></i></button>
         <nav class="nav-links" id="navLinks"></nav>
     </header>
@@ -726,10 +929,13 @@
                 <div class="stats-grid" style="margin-bottom: 20px;">
                     <div class="stat-card"><div class="value" id="financeAvailable">0 ₽</div><div class="label">К выводу</div></div>
                     <div class="stat-card"><div class="value" id="financePending">0 ₽</div><div class="label">В обработке</div></div>
-                    <div class="stat-card"><div class="value" id="financeTotal">0 ₽</div><div class="label">Всего</div></div>
+                    <div class="stat-card"><div class="value" id="financeTotal">0 ₽</div><div class="label">Всего заработано</div></div>
                 </div>
                 <div class="admin-form">
-                    <h3 style="font-size: 1rem;">💰 Запрос на вывод</h3>
+                    <h3 style="font-size: 1rem;"><i class="fas fa-history"></i> История транзакций</h3>
+                    <div id="transactionHistory" style="max-height: 300px; overflow-y: auto; margin-bottom: 20px;">Загрузка...</div>
+                    
+                    <h3 style="font-size: 1rem; margin-top: 20px;"><i class="fas fa-money-bill-wave"></i> Запрос на вывод</h3>
                     <div style="display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 20px;">
                         <input type="number" id="withdrawAmount" placeholder="Сумма" style="flex: 1; min-height: 44px;">
                         <select id="withdrawMethod" style="width: auto; min-height: 44px;">
@@ -871,7 +1077,7 @@
     <script type="module" src="header.js"></script>
     <script type="module">
         import { initializeApp } from "firebase/app";
-        import { getFirestore, collection, getDocs, query, where, orderBy, addDoc, updateDoc, deleteDoc, doc, getDoc, setDoc } from "firebase/firestore";
+        import { getFirestore, collection, getDocs, query, where, orderBy, addDoc, updateDoc, deleteDoc, doc, getDoc, setDoc, limit } from "firebase/firestore";
         import { getAuth, onAuthStateChanged } from "firebase/auth";
         import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
@@ -918,60 +1124,104 @@
             throw new Error('Ошибка загрузки логотипа');
         }
 
-        // Функция создания чата - ИСПРАВЛЕНА
+        async function loadWalletBalance() {
+            if (!partnerDocId) return;
+            try {
+                const balanceDoc = await getDoc(doc(db, "wallet_balances", partnerDocId));
+                if (balanceDoc.exists()) {
+                    const balance = balanceDoc.data();
+                    const available = balance.available || 0;
+                    document.getElementById('walletBalance').innerHTML = `${available.toLocaleString()} ₽`;
+                    document.getElementById('walletIndicator').style.display = 'flex';
+                    
+                    // Обновляем финансовые показатели
+                    document.getElementById('financeAvailable').innerHTML = `${available.toLocaleString()} ₽`;
+                    document.getElementById('financePending').innerHTML = `${(balance.pending || 0).toLocaleString()} ₽`;
+                    document.getElementById('financeTotal').innerHTML = `${(balance.totalEarned || 0).toLocaleString()} ₽`;
+                }
+            } catch (err) {
+                console.error('Ошибка загрузки баланса:', err);
+            }
+        }
+
+        async function loadTransactionHistory() {
+            if (!partnerDocId) return;
+            try {
+                const transactionsQuery = query(
+                    collection(db, "wallet_transactions"),
+                    where("userId", "==", partnerDocId),
+                    orderBy("createdAt", "desc"),
+                    limit(20)
+                );
+                const snapshot = await getDocs(transactionsQuery);
+                const container = document.getElementById('transactionHistory');
+                
+                if (snapshot.empty) {
+                    container.innerHTML = '<div class="empty-state">Нет транзакций</div>';
+                    return;
+                }
+                
+                let html = '<div style="display: flex; flex-direction: column; gap: 8px;">';
+                snapshot.forEach(docSnap => {
+                    const t = docSnap.data();
+                    const date = t.createdAt?.toDate().toLocaleString() || '—';
+                    const typeNames = { 'release': '📥 Поступление', 'payout': '📤 Вывод', 'commission': '💰 Комиссия' };
+                    const amountColor = t.type === 'release' ? '#10b981' : (t.type === 'payout' ? '#dc2626' : '#fbbf24');
+                    const sign = t.type === 'release' ? '+' : '-';
+                    html += `
+                        <div style="display: flex; justify-content: space-between; padding: 8px; border-bottom: 1px solid rgba(255,255,255,0.05);">
+                            <span>${typeNames[t.type] || t.type}</span>
+                            <span style="color: ${amountColor};">${sign} ${t.amount.toLocaleString()} ₽</span>
+                            <span style="font-size: 0.7rem; color: #666;">${date}</span>
+                        </div>
+                    `;
+                });
+                html += '</div>';
+                container.innerHTML = html;
+            } catch (err) {
+                console.error('Ошибка:', err);
+            }
+        }
+
         async function createOrGetOrderChat(orderId, buyerId, buyerName, productName) {
             if (!buyerId || !partnerDocId) {
-                console.error('Нет ID покупателя или продавца', { buyerId, partnerDocId });
-                alert('Ошибка: не удалось определить участников чата');
+                console.error('Нет ID покупателя или продавца');
                 return null;
             }
             
             const chatId = `order_${orderId}`;
             const chatRef = doc(db, "chats", chatId);
+            const chatSnap = await getDoc(chatRef);
             
-            try {
-                const chatSnap = await getDoc(chatRef);
+            if (!chatSnap.exists()) {
+                const partnerDoc = await getDoc(doc(db, "partners", partnerDocId));
+                const sellerName = partnerDoc.data()?.name || 'Продавец';
                 
-                if (!chatSnap.exists()) {
-                    console.log('Создаём новый чат:', chatId);
-                    
-                    // Получаем данные продавца
-                    const partnerDoc = await getDoc(doc(db, "partners", partnerDocId));
-                    const sellerName = partnerDoc.data()?.name || 'Продавец';
-                    
-                    // Получаем данные покупателя
-                    let finalBuyerName = buyerName || 'Покупатель';
-                    try {
-                        const buyerDoc = await getDoc(doc(db, "fighters", buyerId));
-                        if (buyerDoc.exists()) {
-                            finalBuyerName = buyerDoc.data()?.name || buyerName || 'Покупатель';
-                        }
-                    } catch (err) {
-                        console.warn('Не удалось получить данные покупателя:', err);
+                let finalBuyerName = buyerName || 'Покупатель';
+                try {
+                    const buyerDoc = await getDoc(doc(db, "fighters", buyerId));
+                    if (buyerDoc.exists()) {
+                        finalBuyerName = buyerDoc.data()?.name || buyerName || 'Покупатель';
                     }
-                    
-                    await setDoc(chatRef, {
-                        participants: [partnerDocId, buyerId],
-                        participantNames: {
-                            [partnerDocId]: sellerName,
-                            [buyerId]: finalBuyerName
-                        },
-                        orderId: orderId,
-                        orderProduct: productName || 'товар',
-                        createdAt: new Date(),
-                        lastMessage: `Чат по заказу #${orderId.slice(0, 8)}`,
-                        lastMessageTime: new Date()
-                    });
-                    console.log('✅ Чат создан:', chatId);
-                } else {
-                    console.log('✅ Чат уже существует:', chatId);
+                } catch (err) {
+                    console.warn('Не удалось получить данные покупателя:', err);
                 }
-                return chatId;
-            } catch (err) {
-                console.error('Ошибка при создании чата:', err);
-                alert('Ошибка подключения к базе данных. Проверьте интернет и перезагрузите страницу.');
-                return null;
+                
+                await setDoc(chatRef, {
+                    participants: [partnerDocId, buyerId],
+                    participantNames: {
+                        [partnerDocId]: sellerName,
+                        [buyerId]: finalBuyerName
+                    },
+                    orderId: orderId,
+                    orderProduct: productName || 'товар',
+                    createdAt: new Date(),
+                    lastMessage: `Чат по заказу #${orderId.slice(0, 8)}`,
+                    lastMessageTime: new Date()
+                });
+                console.log('✅ Чат создан:', chatId);
             }
+            return chatId;
         }
 
         async function loadShopInfo() {
@@ -1154,15 +1404,11 @@
         async function loadActiveOrders() {
             if (!partnerDocId) return;
             
-            console.log('Загрузка заказов для партнёра:', partnerDocId);
-            
             const productsSnap = await getDocs(query(collection(db, "products"), where("partnerId", "==", partnerDocId)));
             const productNames = new Set();
             productsSnap.docs.forEach(doc => {
                 productNames.add(doc.data().name);
             });
-            
-            console.log('Товары продавца:', Array.from(productNames));
             
             const ordersSnap = await getDocs(collection(db, "orders"));
             const relevantStatuses = ['paid', 'shipped', 'completed'];
@@ -1282,17 +1528,9 @@
                     const orderId = btn.dataset.orderId;
                     const userId = btn.dataset.userId;
                     const userName = btn.dataset.userName;
-                    
-                    console.log('Открытие чата:', { orderId, userId, userName });
-                    
-                    if (!userId) {
-                        alert('Ошибка: ID покупателя не найден');
-                        return;
-                    }
-                    
-                    const chatId = await createOrGetOrderChat(orderId, userId, userName, '');
-                    if (chatId) {
-                        window.location.href = `chat.html?id=${chatId}`;
+                    if (userId) {
+                        await createOrGetOrderChat(orderId, userId, userName, '');
+                        window.location.href = `chat.html?id=order_${orderId}`;
                     }
                 });
             });
@@ -1393,9 +1631,6 @@
             document.getElementById('statYourShare').innerHTML = `${(totalRevenue * 0.9).toLocaleString()} ₽`;
             document.getElementById('statPending').innerHTML = `${(pendingRevenue * 0.9).toLocaleString()} ₽`;
             document.getElementById('statAvailable').innerHTML = `${(availableRevenue * 0.9).toLocaleString()} ₽`;
-            document.getElementById('financeAvailable').innerHTML = `${(availableRevenue * 0.9).toLocaleString()} ₽`;
-            document.getElementById('financePending').innerHTML = `${(pendingRevenue * 0.9).toLocaleString()} ₽`;
-            document.getElementById('financeTotal').innerHTML = `${((totalRevenue + pendingRevenue + availableRevenue) * 0.9).toLocaleString()} ₽`;
             const reviewsSnap = await getDocs(query(collection(db, "reviews"), where("partnerId", "==", partnerDocId)));
             let ratingSum = 0;
             reviewsSnap.forEach(r => ratingSum += (r.data().rating || 5));
@@ -1437,15 +1672,42 @@
         document.getElementById('withdrawBtn')?.addEventListener('click', async () => {
             const amount = parseInt(document.getElementById('withdrawAmount').value);
             if (!amount || amount <= 0) { alert('Введите сумму'); return; }
-            await addDoc(collection(db, "withdrawals"), { partnerId: partnerDocId, amount, method: document.getElementById('withdrawMethod').value, status: 'pending', createdAt: new Date() });
+            
+            // Проверяем баланс
+            const balanceDoc = await getDoc(doc(db, "wallet_balances", partnerDocId));
+            const available = balanceDoc.exists() ? (balanceDoc.data().available || 0) : 0;
+            
+            if (amount > available) {
+                alert('❌ Недостаточно средств на балансе');
+                return;
+            }
+            
+            await addDoc(collection(db, "withdrawals"), { 
+                partnerId: partnerDocId, 
+                amount, 
+                method: document.getElementById('withdrawMethod').value, 
+                status: 'pending', 
+                createdAt: new Date() 
+            });
+            
+            // Блокируем сумму на балансе
+            await updateDoc(doc(db, "wallet_balances", partnerDocId), {
+                available: available - amount,
+                pendingWithdraw: (balanceDoc.data()?.pendingWithdraw || 0) + amount,
+                updatedAt: new Date()
+            });
+            
             alert(`✅ Запрос на вывод ${amount} ₽ отправлен`);
             document.getElementById('withdrawAmount').value = '';
+            
             const historySnap = await getDocs(query(collection(db, "withdrawals"), where("partnerId", "==", partnerDocId), orderBy("createdAt", "desc")));
             const container = document.getElementById('withdrawHistory');
             if (historySnap.empty) { container.innerHTML = '<div class="empty-state">История пуста</div>'; return; }
             let html = '';
             historySnap.forEach(docSnap => { const w = docSnap.data(); html += `<div class="history-item"><span>${w.createdAt?.toDate().toLocaleString() || '—'}</span><span>${w.amount} ₽</span><span>${w.method}</span><span style="color: ${w.status === 'completed' ? '#10b981' : '#f59e0b'};">${w.status === 'completed' ? 'Выполнен' : 'В обработке'}</span></div>`; });
             container.innerHTML = html;
+            
+            await loadWalletBalance();
         });
 
         async function updateChart(period) {
@@ -1494,7 +1756,11 @@
                 if (btn.dataset.tab === 'products') loadProducts();
                 if (btn.dataset.tab === 'active-orders') loadActiveOrders();
                 if (btn.dataset.tab === 'reviews') loadReviews();
-                if (btn.dataset.tab === 'finance') loadStats();
+                if (btn.dataset.tab === 'finance') {
+                    loadWalletBalance();
+                    loadTransactionHistory();
+                    loadStats();
+                }
             });
         });
 
@@ -1511,6 +1777,8 @@
             await loadActiveOrders();
             await loadReviews();
             await loadStats();
+            await loadWalletBalance();
+            await loadTransactionHistory();
             updateChart('all');
         });
 
