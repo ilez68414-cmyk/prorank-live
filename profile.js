@@ -749,23 +749,6 @@ async function setupTelegramVerify() {
     }
 }
 
-async function updateHeaderBalance() {
-    const user = auth.currentUser;
-    const balanceDiv = document.getElementById('balanceIndicator');
-    const balanceCount = document.getElementById('headerChallengesCount');
-    if (!user || !balanceDiv) return;
-    try {
-        const userDoc = await getDoc(doc(db, "fighters", user.uid));
-        const data = userDoc.data();
-        const free = data.freeChallenges || 0;
-        const purchased = data.purchasedChallenges || 0;
-        const total = free + purchased;
-        balanceCount.innerText = total;
-        balanceDiv.style.display = 'flex';
-        const plusBtn = document.getElementById('balancePlusBtn');
-        if (plusBtn) plusBtn.onclick = () => window.location.href = 'shop.html';
-    } catch (err) { console.error('Ошибка загрузки баланса:', err); }
-}
 
 window.updateHeaderBalance = updateHeaderBalance;
 window.addEventListener('beforeunload', () => { if (authListenerUnsub) authListenerUnsub(); });

@@ -1,5 +1,5 @@
 import { getAuth, onAuthStateChanged, signOut } from "firebase/auth";
-import { getFirestore, doc, getDoc } from "firebase/firestore";
+import { getFirestore, doc, getDoc, getDocs, collection, query, where } from "firebase/firestore";
 import { initializeApp } from "firebase/app";
 
 const firebaseConfig = {
@@ -14,6 +14,10 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
+
+let challengesIndicator = null;
+let fighterMoneyIndicator = null;
+let partnerWalletIndicator = null;
 
 function getCurrentPage() {
     const path = window.location.pathname;
@@ -63,32 +67,176 @@ function initMobileSubmenus() {
     });
 }
 
-// Функция обновления баланса вызовов (скрывается для партнёров)
-async function updateHeaderBalance() {
+// Удаление старых индикаторов из HTML
+function removeOldIndicators() {
+    const oldIndicator = document.getElementById('balanceIndicator');
+    if (oldIndicator) {
+        oldIndicator.remove();
+        console.log('✅ Старый индикатор вызовов удалён');
+    }
+    
+    const oldWalletIndicator = document.querySelector('.wallet-indicator');
+    if (oldWalletIndicator) {
+        oldWalletIndicator.remove();
+    }
+}
+
+// СОЗДАНИЕ ИНДИКАТОРОВ В ШАПКЕ
+function createIndicators() {
+    // Удаляем старые индикаторы
+    removeOldIndicators();
+    
+    const navbar = document.querySelector('.navbar');
+    if (!navbar) return;
+    
+    let indicatorsContainer = document.querySelector('.header-indicators');
+    if (indicatorsContainer) {
+        challengesIndicator = document.getElementById('challengesIndicator');
+        fighterMoneyIndicator = document.getElementById('fighterMoneyIndicator');
+        partnerWalletIndicator = document.getElementById('partnerWalletIndicator');
+        return;
+    }
+    
+    indicatorsContainer = document.createElement('div');
+    indicatorsContainer.className = 'header-indicators';
+    
+    indicatorsContainer.innerHTML = `
+        <div class="challenges-indicator" id="challengesIndicator" style="display: none;">
+            <i class="fas fa-crosshairs"></i>
+            <span class="challenges-count" id="headerChallengesCount">0</span>
+            <button class="challenges-plus" id="balancePlusBtn">+</button>
+        </div>
+        
+        <div class="fighter-money-indicator" id="fighterMoneyIndicator" style="display: none;" onclick="window.location.href='buyer-wallet.html'">
+            <i class="fas fa-ruble-sign"></i>
+            <span class="fighter-money-amount" id="fighterMoneyAmount">0</span>
+            <i class="fas fa-chevron-right" style="font-size: 0.7rem;"></i>
+        </div>
+        
+        <div class="partner-wallet-indicator" id="partnerWalletIndicator" style="display: none;" onclick="window.location.href='wallet.html'">
+            <i class="fas fa-wallet"></i>
+            <span class="partner-wallet-amount" id="partnerWalletAmount">0 ₽</span>
+            <i class="fas fa-chevron-right" style="font-size: 0.7rem;"></i>
+        </div>
+    `;
+    
+    const menuToggle = document.getElementById('menuToggle');
+    if (menuToggle) {
+        navbar.insertBefore(indicatorsContainer, menuToggle);
+    } else {
+        navbar.appendChild(indicatorsContainer);
+    }
+    
+    challengesIndicator = document.getElementById('challengesIndicator');
+    fighterMoneyIndicator = document.getElementById('fighterMoneyIndicator');
+    partnerWalletIndicator = document.getElementById('partnerWalletIndicator');
+    
+    // Кнопка пополнения вызовов (работает)
+    const plusBtn = document.getElementById('balancePlusBtn');
+    if (plusBtn) {
+        plusBtn.onclick = () => {
+            window.location.href = 'shop.html';
+        };
+    }
+}
+
+// ГЛОБАЛЬНАЯ ФУНКЦИЯ ОБНОВЛЕНИЯ ВЫЗОВОВ
+window.updateHeaderBalance = async function() {
     const user = auth.currentUser;
-    const balanceDiv = document.getElementById('balanceIndicator');
     const balanceCount = document.getElementById('headerChallengesCount');
-    if (!user || !balanceDiv) return;
+    if (!user || !balanceCount) return;
     
     try {
         const userDoc = await getDoc(doc(db, "fighters", user.uid));
         const data = userDoc.data();
         
-        // ЕСЛИ ПОЛЬЗОВАТЕЛЬ — ПАРТНЁР, СКРЫВАЕМ ИНДИКАТОР ВЫЗОВОВ
         if (data?.isPartner === true) {
-            balanceDiv.style.display = 'none';
+            if (challengesIndicator) challengesIndicator.style.display = 'none';
             return;
         }
         
-        const total = (data.freeChallenges || 0) + (data.purchasedChallenges || 0);
+        const free = data.freeChallenges || 0;
+        const purchased = data.purchasedChallenges || 0;
+        const total = free + purchased;
         balanceCount.innerText = total;
-        balanceDiv.style.display = 'flex';
-    } catch (err) { console.error(err); }
+        if (challengesIndicator) challengesIndicator.style.display = 'flex';
+    } catch (err) { 
+        console.error('Ошибка загрузки вызовов:', err);
+    }
+};
+
+// ОБНОВЛЕНИЕ КОШЕЛЬКА БОЙЦА
+async function updateFighterMoneyBalance() {
+    const user = auth.currentUser;
+    if (!user || !fighterMoneyIndicator) return;
+    
+    try {
+        const userDoc = await getDoc(doc(db, "fighters", user.uid));
+        if (userDoc.data()?.isPartner === true) {
+            fighterMoneyIndicator.style.display = 'none';
+            return;
+        }
+        
+        const balanceDoc = await getDoc(doc(db, "wallet_balances", user.uid));
+        let available = 0;
+        
+        if (balanceDoc.exists()) {
+            available = balanceDoc.data().available || 0;
+        }
+        
+        const moneyAmount = document.getElementById('fighterMoneyAmount');
+        if (moneyAmount) moneyAmount.innerText = available.toLocaleString();
+        fighterMoneyIndicator.style.display = 'flex';
+    } catch (err) {
+        console.error('Ошибка загрузки кошелька бойца:', err);
+        if (fighterMoneyIndicator) fighterMoneyIndicator.style.display = 'none';
+    }
+}
+
+// ОБНОВЛЕНИЕ КОШЕЛЬКА ПАРТНЁРА
+async function updatePartnerWalletBalance() {
+    const user = auth.currentUser;
+    if (!user || !partnerWalletIndicator) return;
+    
+    try {
+        const userDoc = await getDoc(doc(db, "fighters", user.uid));
+        const isPartner = userDoc.data()?.isPartner === true;
+        
+        if (!isPartner) {
+            partnerWalletIndicator.style.display = 'none';
+            return;
+        }
+        
+        const partnersQuery = query(collection(db, "partners"), where("email", "==", user.email));
+        const partnersSnap = await getDocs(partnersQuery);
+        
+        if (partnersSnap.empty) {
+            partnerWalletIndicator.style.display = 'none';
+            return;
+        }
+        
+        const partnerId = partnersSnap.docs[0].id;
+        const balanceDoc = await getDoc(doc(db, "wallet_balances", partnerId));
+        let available = 0;
+        
+        if (balanceDoc.exists()) {
+            available = balanceDoc.data().available || 0;
+        }
+        
+        const walletAmount = document.getElementById('partnerWalletAmount');
+        if (walletAmount) walletAmount.innerText = available.toLocaleString() + ' ₽';
+        partnerWalletIndicator.style.display = 'flex';
+    } catch (err) {
+        console.error('Ошибка загрузки кошелька партнёра:', err);
+        if (partnerWalletIndicator) partnerWalletIndicator.style.display = 'none';
+    }
 }
 
 async function initHeader() {
     const navLinks = document.getElementById('navLinks');
     if (!navLinks) return;
+
+    createIndicators();
 
     const user = auth.currentUser;
     let isPartner = false;
@@ -101,8 +249,12 @@ async function initHeader() {
             const userDoc = await getDoc(doc(db, "fighters", userId));
             isPartner = userDoc.data()?.isPartner === true;
             userName = userDoc.data()?.name || 'Боец';
-            // Обновляем индикатор баланса после получения данных о пользователе
-            setTimeout(updateHeaderBalance, 100);
+            
+            setTimeout(() => {
+                if (window.updateHeaderBalance) window.updateHeaderBalance();
+                updateFighterMoneyBalance();
+                updatePartnerWalletBalance();
+            }, 100);
         } catch (err) { console.error(err); }
     }
 
@@ -132,10 +284,9 @@ async function initHeader() {
         return;
     }
 
-    // Генерация навигации
+    // Генерация навигации (десктоп)
     if (isDesktop) {
         if (user && isPartner) {
-            // ДЛЯ ПАРТНЁРА (десктоп)
             navLinks.innerHTML = `
                 <a href="index.html"><i class="fas fa-home"></i> Главная</a>
                 <a href="rating.html"><i class="fas fa-chart-line"></i> Рейтинг</a>
@@ -170,31 +321,15 @@ async function initHeader() {
             `;
         } 
         else if (user && !isPartner) {
-            // ДЛЯ БОЙЦА (десктоп)
             navLinks.innerHTML = `
                 <a href="index.html"><i class="fas fa-home"></i> Главная</a>
                 <a href="rating.html"><i class="fas fa-chart-line"></i> Рейтинг</a>
-                <div class="dropdown" data-section="compete">
-                    <button class="dropbtn"><i class="fas fa-trophy"></i> Соревнования <i class="fas fa-chevron-down"></i></button>
-                    <div class="dropdown-content">
-                        <a href="leagues.html"><i class="fas fa-trophy"></i> Лиги</a>
-                        <a href="rules.html"><i class="fas fa-book"></i> Правила</a>
-                        <a href="halls.html"><i class="fas fa-building"></i> Клубы</a>
-                    </div>
-                </div>
                 <div class="dropdown" data-section="shop">
                     <button class="dropbtn"><i class="fas fa-store"></i> Магазин <i class="fas fa-chevron-down"></i></button>
                     <div class="dropdown-content">
-                        <a href="shop.html"><i class="fas fa-gem"></i> Премиум и вызовы</a>
-                        <a href="catalog.html"><i class="fas fa-boxes"></i> Каталог товаров</a>
+                        <a href="catalog.html"><i class="fas fa-boxes"></i> Каталог</a>
                         <a href="my-orders.html"><i class="fas fa-box"></i> Мои заказы</a>
-                    </div>
-                </div>
-                <div class="dropdown" data-section="finance">
-                    <button class="dropbtn"><i class="fas fa-wallet"></i> Финансы <i class="fas fa-chevron-down"></i></button>
-                    <div class="dropdown-content">
-                        <a href="buyer-wallet.html"><i class="fas fa-wallet"></i> Мой кошелёк</a>
-                        <a href="deposit.html"><i class="fas fa-plus-circle"></i> Пополнить баланс</a>
+                        <a href="shop.html"><i class="fas fa-gem"></i> Премиум</a>
                     </div>
                 </div>
                 <div class="dropdown" data-section="community">
@@ -202,12 +337,16 @@ async function initHeader() {
                     <div class="dropdown-content">
                         <a href="chats.html"><i class="fas fa-comments"></i> Чаты</a>
                         <a href="challenges.html"><i class="fas fa-fist-raised"></i> Вызовы</a>
+                        <a href="halls.html"><i class="fas fa-building"></i> Клубы</a>
+                        <a href="leagues.html"><i class="fas fa-trophy"></i> Лиги</a>
                     </div>
                 </div>
                 <div class="user-menu">
                     <img src="${user.photoURL || 'Avatar.png'}" class="user-avatar" onerror="this.src='Avatar.png'">
                     <div class="user-dropdown">
                         <span class="user-name">${escapeHtml(userName)}</span>
+                        <a href="buyer-wallet.html"><i class="fas fa-wallet"></i> Кошелёк</a>
+                        <a href="deposit.html"><i class="fas fa-plus-circle"></i> Пополнить</a>
                         <a href="profile.html?id=${userId}"><i class="fas fa-user"></i> Профиль</a>
                         <a href="#" id="logoutLink"><i class="fas fa-sign-out-alt"></i> Выйти</a>
                     </div>
@@ -215,24 +354,14 @@ async function initHeader() {
             `;
         } 
         else {
-            // НЕ АВТОРИЗОВАН (десктоп)
             navLinks.innerHTML = `
                 <a href="index.html"><i class="fas fa-home"></i> Главная</a>
                 <a href="rating.html"><i class="fas fa-chart-line"></i> Рейтинг</a>
-                <div class="dropdown" data-section="compete">
-                    <button class="dropbtn"><i class="fas fa-trophy"></i> Соревнования <i class="fas fa-chevron-down"></i></button>
-                    <div class="dropdown-content">
-                        <a href="leagues.html"><i class="fas fa-trophy"></i> Лиги</a>
-                        <a href="rules.html"><i class="fas fa-book"></i> Правила</a>
-                        <a href="halls.html"><i class="fas fa-building"></i> Клубы</a>
-                    </div>
-                </div>
                 <div class="dropdown" data-section="shop">
                     <button class="dropbtn"><i class="fas fa-store"></i> Магазин <i class="fas fa-chevron-down"></i></button>
                     <div class="dropdown-content">
-                        <a href="shop.html"><i class="fas fa-gem"></i> Премиум и вызовы</a>
-                        <a href="catalog.html"><i class="fas fa-boxes"></i> Каталог товаров</a>
-                        <a href="login.html"><i class="fas fa-box"></i> Мои заказы</a>
+                        <a href="catalog.html"><i class="fas fa-boxes"></i> Каталог</a>
+                        <a href="shop.html"><i class="fas fa-gem"></i> Премиум</a>
                     </div>
                 </div>
                 <div class="dropdown" data-section="community">
@@ -240,6 +369,7 @@ async function initHeader() {
                     <div class="dropdown-content">
                         <a href="chats.html"><i class="fas fa-comments"></i> Чаты</a>
                         <a href="challenges.html"><i class="fas fa-fist-raised"></i> Вызовы</a>
+                        <a href="halls.html"><i class="fas fa-building"></i> Клубы</a>
                     </div>
                 </div>
                 <a href="login.html" class="login-btn"><i class="fas fa-sign-in-alt"></i> Войти</a>
@@ -247,9 +377,8 @@ async function initHeader() {
         }
     } 
     else {
-        // МОБИЛЬНАЯ ВЕРСИЯ
+        // Мобильная версия
         if (user && isPartner) {
-            // ДЛЯ ПАРТНЁРА (мобильная)
             navLinks.innerHTML = `
                 <a href="index.html"><i class="fas fa-home"></i> Главная</a>
                 <a href="rating.html"><i class="fas fa-chart-line"></i> Рейтинг</a>
@@ -278,31 +407,15 @@ async function initHeader() {
             `;
         }
         else if (user && !isPartner) {
-            // ДЛЯ БОЙЦА (мобильная)
             navLinks.innerHTML = `
                 <a href="index.html"><i class="fas fa-home"></i> Главная</a>
                 <a href="rating.html"><i class="fas fa-chart-line"></i> Рейтинг</a>
                 <div class="mobile-submenu">
-                    <span class="mobile-submenu-trigger"><i class="fas fa-trophy"></i> Соревнования <i class="fas fa-chevron-right"></i></span>
-                    <div class="mobile-submenu-content">
-                        <a href="leagues.html"><i class="fas fa-trophy"></i> Лиги</a>
-                        <a href="rules.html"><i class="fas fa-book"></i> Правила</a>
-                        <a href="halls.html"><i class="fas fa-building"></i> Клубы</a>
-                    </div>
-                </div>
-                <div class="mobile-submenu">
                     <span class="mobile-submenu-trigger"><i class="fas fa-store"></i> Магазин <i class="fas fa-chevron-right"></i></span>
                     <div class="mobile-submenu-content">
-                        <a href="shop.html"><i class="fas fa-gem"></i> Премиум и вызовы</a>
                         <a href="catalog.html"><i class="fas fa-boxes"></i> Каталог</a>
                         <a href="my-orders.html"><i class="fas fa-box"></i> Мои заказы</a>
-                    </div>
-                </div>
-                <div class="mobile-submenu">
-                    <span class="mobile-submenu-trigger"><i class="fas fa-wallet"></i> Финансы <i class="fas fa-chevron-right"></i></span>
-                    <div class="mobile-submenu-content">
-                        <a href="buyer-wallet.html"><i class="fas fa-wallet"></i> Кошелёк</a>
-                        <a href="deposit.html"><i class="fas fa-plus-circle"></i> Пополнить</a>
+                        <a href="shop.html"><i class="fas fa-gem"></i> Премиум</a>
                     </div>
                 </div>
                 <div class="mobile-submenu">
@@ -310,31 +423,24 @@ async function initHeader() {
                     <div class="mobile-submenu-content">
                         <a href="chats.html"><i class="fas fa-comments"></i> Чаты</a>
                         <a href="challenges.html"><i class="fas fa-fist-raised"></i> Вызовы</a>
+                        <a href="halls.html"><i class="fas fa-building"></i> Клубы</a>
+                        <a href="leagues.html"><i class="fas fa-trophy"></i> Лиги</a>
                     </div>
                 </div>
+                <a href="buyer-wallet.html"><i class="fas fa-wallet"></i> Кошелёк</a>
                 <a href="profile.html?id=${userId}"><i class="fas fa-user"></i> Профиль</a>
                 <a href="#" id="logoutLink"><i class="fas fa-sign-out-alt"></i> Выйти</a>
             `;
         } 
         else {
-            // НЕ АВТОРИЗОВАН (мобильная)
             navLinks.innerHTML = `
                 <a href="index.html"><i class="fas fa-home"></i> Главная</a>
                 <a href="rating.html"><i class="fas fa-chart-line"></i> Рейтинг</a>
                 <div class="mobile-submenu">
-                    <span class="mobile-submenu-trigger"><i class="fas fa-trophy"></i> Соревнования <i class="fas fa-chevron-right"></i></span>
-                    <div class="mobile-submenu-content">
-                        <a href="leagues.html"><i class="fas fa-trophy"></i> Лиги</a>
-                        <a href="rules.html"><i class="fas fa-book"></i> Правила</a>
-                        <a href="halls.html"><i class="fas fa-building"></i> Клубы</a>
-                    </div>
-                </div>
-                <div class="mobile-submenu">
                     <span class="mobile-submenu-trigger"><i class="fas fa-store"></i> Магазин <i class="fas fa-chevron-right"></i></span>
                     <div class="mobile-submenu-content">
-                        <a href="shop.html"><i class="fas fa-gem"></i> Премиум и вызовы</a>
                         <a href="catalog.html"><i class="fas fa-boxes"></i> Каталог</a>
-                        <a href="login.html"><i class="fas fa-box"></i> Мои заказы</a>
+                        <a href="shop.html"><i class="fas fa-gem"></i> Премиум</a>
                     </div>
                 </div>
                 <div class="mobile-submenu">
@@ -342,6 +448,7 @@ async function initHeader() {
                     <div class="mobile-submenu-content">
                         <a href="chats.html"><i class="fas fa-comments"></i> Чаты</a>
                         <a href="challenges.html"><i class="fas fa-fist-raised"></i> Вызовы</a>
+                        <a href="halls.html"><i class="fas fa-building"></i> Клубы</a>
                     </div>
                 </div>
                 <a href="login.html"><i class="fas fa-sign-in-alt"></i> Войти</a>
@@ -376,5 +483,5 @@ window.addEventListener('resize', () => {
     }
 });
 
-// Экспортируем функцию для использования в других файлах
-window.updateHeaderBalance = updateHeaderBalance;
+window.updateFighterMoneyBalance = updateFighterMoneyBalance;
+window.updatePartnerWalletBalance = updatePartnerWalletBalance;
