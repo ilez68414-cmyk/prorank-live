@@ -916,14 +916,16 @@
 
             <div id="tab-products" class="tab-pane active"><div id="productsList" class="products-grid"><div class="loading">Загрузка...</div></div></div>
             <div id="tab-active-orders" class="tab-pane">
-                <div class="orders-filters">
-                    <button class="status-filter-btn active" data-status="all">Все заказы</button>
-                    <button class="status-filter-btn" data-status="paid">✅ Оплаченные</button>
-                    <button class="status-filter-btn" data-status="shipped">📦 Отправленные</button>
-                    <button class="status-filter-btn" data-status="completed">✔️ Завершённые</button>
-                </div>
-                <div id="activeOrdersList" class="orders-list">Загрузка...</div>
-            </div>
+    <div class="orders-filters">
+        <button class="status-filter-btn active" data-status="active">🟡 Активные (оплаченные)</button>
+        <button class="status-filter-btn" data-status="shipped">📦 Отправленные</button>
+        <button class="status-filter-btn" data-status="completed">✅ Завершённые</button>
+        <button id="clearHistoryPartnerBtn" class="clear-history-btn" style="background: #dc2626; color: white; border: none; padding: 8px 16px; border-radius: 30px; cursor: pointer; margin-left: auto;">
+            <i class="fas fa-trash"></i> Очистить историю
+        </button>
+    </div>
+    <div id="activeOrdersList" class="orders-list">Загрузка...</div>
+</div>
             <div id="tab-reviews" class="tab-pane"><div id="reviewsList" class="reviews-list">Загрузка...</div></div>
             <div id="tab-finance" class="tab-pane">
                 <div class="stats-grid" style="margin-bottom: 20px;">
@@ -1076,714 +1078,830 @@
     </script>
     <script type="module" src="header.js"></script>
     <script type="module">
-        import { initializeApp } from "firebase/app";
-        import { getFirestore, collection, getDocs, query, where, orderBy, addDoc, updateDoc, deleteDoc, doc, getDoc, setDoc, limit } from "firebase/firestore";
-        import { getAuth, onAuthStateChanged } from "firebase/auth";
-        import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
+    import { initializeApp } from "firebase/app";
+    import { getFirestore, collection, getDocs, query, where, orderBy, addDoc, updateDoc, deleteDoc, doc, getDoc, setDoc, limit } from "firebase/firestore";
+    import { getAuth, onAuthStateChanged } from "firebase/auth";
+    import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyDUGYJY7pX7q02MS5SACMIIQXpjpQ97mPw",
-            authDomain: "proranklive.firebaseapp.com",
-            projectId: "proranklive",
-            storageBucket: "proranklive.firebasestorage.app",
-            messagingSenderId: "716836144015",
-            appId: "1:716836144015:web:f1575147750608d0f881fa"
-        };
+    const firebaseConfig = {
+        apiKey: "AIzaSyDUGYJY7pX7q02MS5SACMIIQXpjpQ97mPw",
+        authDomain: "proranklive.firebaseapp.com",
+        projectId: "proranklive",
+        storageBucket: "proranklive.firebasestorage.app",
+        messagingSenderId: "716836144015",
+        appId: "1:716836144015:web:f1575147750608d0f881fa"
+    };
 
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-        const auth = getAuth(app);
-        const storage = getStorage(app);
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
+    const storage = getStorage(app);
 
-        const CLOUD_NAME = 'dbv7bfkgy';
-        const UPLOAD_PRESET = 'prorank_avatars';
+    const CLOUD_NAME = 'dbv7bfkgy';
+    const UPLOAD_PRESET = 'prorank_avatars';
 
-        let partnerDocId = null;
-        let partnerData = null;
-        let salesChart = null;
-        let allOrders = [];
-        let activeFilter = 'all';
+    let partnerDocId = null;
+    let partnerData = null;
+    let salesChart = null;
+    let allOrders = [];
+    let allPartnerOrders = [];
+    let partnerActiveFilter = 'active';
 
-        async function uploadToCloudinary(file) {
-            const formData = new FormData();
-            formData.append('file', file);
-            formData.append('upload_preset', UPLOAD_PRESET);
-            const response = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, { method: 'POST', body: formData });
-            const data = await response.json();
-            if (data.secure_url) return data.secure_url.replace('/upload/', '/upload/w_300,h_300,c_fill,f_auto,q_auto/');
-            throw new Error('Ошибка загрузки');
-        }
+    async function uploadToCloudinary(file) {
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('upload_preset', UPLOAD_PRESET);
+        const response = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, { method: 'POST', body: formData });
+        const data = await response.json();
+        if (data.secure_url) return data.secure_url.replace('/upload/', '/upload/w_300,h_300,c_fill,f_auto,q_auto/');
+        throw new Error('Ошибка загрузки');
+    }
 
-        async function uploadShopLogo(file) {
-            const formData = new FormData();
-            formData.append('file', file);
-            formData.append('upload_preset', UPLOAD_PRESET);
-            const response = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, { method: 'POST', body: formData });
-            const data = await response.json();
-            if (data.secure_url) return data.secure_url.replace('/upload/', '/upload/w_200,h_200,c_fill,f_auto,q_auto/');
-            throw new Error('Ошибка загрузки логотипа');
-        }
+    async function uploadShopLogo(file) {
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('upload_preset', UPLOAD_PRESET);
+        const response = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, { method: 'POST', body: formData });
+        const data = await response.json();
+        if (data.secure_url) return data.secure_url.replace('/upload/', '/upload/w_200,h_200,c_fill,f_auto,q_auto/');
+        throw new Error('Ошибка загрузки логотипа');
+    }
 
-        async function loadWalletBalance() {
-            if (!partnerDocId) return;
-            try {
-                const balanceDoc = await getDoc(doc(db, "wallet_balances", partnerDocId));
-                if (balanceDoc.exists()) {
-                    const balance = balanceDoc.data();
-                    const available = balance.available || 0;
-                    document.getElementById('walletBalance').innerHTML = `${available.toLocaleString()} ₽`;
-                    document.getElementById('walletIndicator').style.display = 'flex';
-                    
-                    // Обновляем финансовые показатели
-                    document.getElementById('financeAvailable').innerHTML = `${available.toLocaleString()} ₽`;
-                    document.getElementById('financePending').innerHTML = `${(balance.pending || 0).toLocaleString()} ₽`;
-                    document.getElementById('financeTotal').innerHTML = `${(balance.totalEarned || 0).toLocaleString()} ₽`;
-                }
-            } catch (err) {
-                console.error('Ошибка загрузки баланса:', err);
-            }
-        }
-
-        async function loadTransactionHistory() {
-            if (!partnerDocId) return;
-            try {
-                const transactionsQuery = query(
-                    collection(db, "wallet_transactions"),
-                    where("userId", "==", partnerDocId),
-                    orderBy("createdAt", "desc"),
-                    limit(20)
-                );
-                const snapshot = await getDocs(transactionsQuery);
-                const container = document.getElementById('transactionHistory');
+    async function loadWalletBalance() {
+        if (!partnerDocId) return;
+        try {
+            const balanceDoc = await getDoc(doc(db, "wallet_balances", partnerDocId));
+            if (balanceDoc.exists()) {
+                const balance = balanceDoc.data();
+                const available = balance.available || 0;
+                document.getElementById('walletBalance').innerHTML = `${available.toLocaleString()} ₽`;
+                document.getElementById('walletIndicator').style.display = 'flex';
                 
-                if (snapshot.empty) {
-                    container.innerHTML = '<div class="empty-state">Нет транзакций</div>';
-                    return;
-                }
-                
-                let html = '<div style="display: flex; flex-direction: column; gap: 8px;">';
-                snapshot.forEach(docSnap => {
-                    const t = docSnap.data();
-                    const date = t.createdAt?.toDate().toLocaleString() || '—';
-                    const typeNames = { 'release': '📥 Поступление', 'payout': '📤 Вывод', 'commission': '💰 Комиссия' };
-                    const amountColor = t.type === 'release' ? '#10b981' : (t.type === 'payout' ? '#dc2626' : '#fbbf24');
-                    const sign = t.type === 'release' ? '+' : '-';
-                    html += `
-                        <div style="display: flex; justify-content: space-between; padding: 8px; border-bottom: 1px solid rgba(255,255,255,0.05);">
-                            <span>${typeNames[t.type] || t.type}</span>
-                            <span style="color: ${amountColor};">${sign} ${t.amount.toLocaleString()} ₽</span>
-                            <span style="font-size: 0.7rem; color: #666;">${date}</span>
-                        </div>
-                    `;
-                });
-                html += '</div>';
-                container.innerHTML = html;
-            } catch (err) {
-                console.error('Ошибка:', err);
+                document.getElementById('financeAvailable').innerHTML = `${available.toLocaleString()} ₽`;
+                document.getElementById('financePending').innerHTML = `${(balance.pending || 0).toLocaleString()} ₽`;
+                document.getElementById('financeTotal').innerHTML = `${(balance.totalEarned || 0).toLocaleString()} ₽`;
             }
+        } catch (err) {
+            console.error('Ошибка загрузки баланса:', err);
         }
+    }
 
-        async function createOrGetOrderChat(orderId, buyerId, buyerName, productName) {
-            if (!buyerId || !partnerDocId) {
-                console.error('Нет ID покупателя или продавца');
-                return null;
+    async function loadTransactionHistory() {
+        if (!partnerDocId) return;
+        try {
+            const transactionsQuery = query(
+                collection(db, "wallet_transactions"),
+                where("userId", "==", partnerDocId),
+                orderBy("createdAt", "desc"),
+                limit(20)
+            );
+            const snapshot = await getDocs(transactionsQuery);
+            const container = document.getElementById('transactionHistory');
+            
+            if (snapshot.empty) {
+                container.innerHTML = '<div class="empty-state">Нет транзакций</div>';
+                return;
             }
             
-            const chatId = `order_${orderId}`;
-            const chatRef = doc(db, "chats", chatId);
-            const chatSnap = await getDoc(chatRef);
-            
-            if (!chatSnap.exists()) {
-                const partnerDoc = await getDoc(doc(db, "partners", partnerDocId));
-                const sellerName = partnerDoc.data()?.name || 'Продавец';
-                
-                let finalBuyerName = buyerName || 'Покупатель';
-                try {
-                    const buyerDoc = await getDoc(doc(db, "fighters", buyerId));
-                    if (buyerDoc.exists()) {
-                        finalBuyerName = buyerDoc.data()?.name || buyerName || 'Покупатель';
-                    }
-                } catch (err) {
-                    console.warn('Не удалось получить данные покупателя:', err);
-                }
-                
-                await setDoc(chatRef, {
-                    participants: [partnerDocId, buyerId],
-                    participantNames: {
-                        [partnerDocId]: sellerName,
-                        [buyerId]: finalBuyerName
-                    },
-                    orderId: orderId,
-                    orderProduct: productName || 'товар',
-                    createdAt: new Date(),
-                    lastMessage: `Чат по заказу #${orderId.slice(0, 8)}`,
-                    lastMessageTime: new Date()
-                });
-                console.log('✅ Чат создан:', chatId);
-            }
-            return chatId;
-        }
-
-        async function loadShopInfo() {
-            if (!partnerDocId) return;
-            const shopDoc = await getDoc(doc(db, "partners", partnerDocId));
-            if (shopDoc.exists()) {
-                partnerData = shopDoc.data();
-                const logoHtml = partnerData.logo ? `<img src="${partnerData.logo}" alt="Логотип">` : '<i class="fas fa-store"></i>';
-                document.getElementById('shopInfoCard').innerHTML = `
-                    <div class="shop-avatar" id="shopAvatarBtn">${logoHtml}</div>
-                    <div class="shop-details">
-                        <h2>${escapeHtml(partnerData.name || 'Магазин')}</h2>
-                        <p><i class="fas fa-link"></i> ${partnerData.url ? `<a href="${partnerData.url}" target="_blank" style="color:#fbbf24;">${partnerData.url}</a>` : '—'}</p>
-                        <p><i class="fas fa-align-left"></i> ${escapeHtml(partnerData.description || 'Нет описания')}</p>
-                        <p><i class="fas fa-phone"></i> ${partnerData.phone || '—'}</p>
-                        ${partnerData.processingDays ? `<p><i class="fas fa-calendar-day"></i> Отправка за ${partnerData.processingDays} дней</p>` : ''}
-                        ${partnerData.discount ? `<p><i class="fas fa-tag"></i> Промокод: <strong style="color:#fbbf24;">${partnerData.discount}</strong></p>` : ''}
-                    </div>
-                `;
-                const avatarBtn = document.getElementById('shopAvatarBtn');
-                if (avatarBtn) {
-                    avatarBtn.style.cursor = 'pointer';
-                    const fileInput = document.createElement('input');
-                    fileInput.type = 'file';
-                    fileInput.accept = 'image/jpeg,image/png,image/webp';
-                    fileInput.style.display = 'none';
-                    document.body.appendChild(fileInput);
-                    avatarBtn.addEventListener('click', () => fileInput.click());
-                    fileInput.addEventListener('change', async (e) => {
-                        const file = e.target.files[0];
-                        if (!file) return;
-                        if (file.size > 5 * 1024 * 1024) { alert('❌ Файл больше 5MB'); return; }
-                        avatarBtn.style.opacity = '0.5';
-                        try {
-                            const logoUrl = await uploadShopLogo(file);
-                            await updateDoc(doc(db, "partners", partnerDocId), { logo: logoUrl });
-                            loadShopInfo();
-                            alert('✅ Логотип обновлён!');
-                        } catch (err) { alert('❌ Ошибка: ' + err.message); }
-                        avatarBtn.style.opacity = '1';
-                        fileInput.value = '';
-                    });
-                }
-                document.getElementById('shopName').value = partnerData.name || '';
-                document.getElementById('shopUrl').value = partnerData.url || '';
-                document.getElementById('shopDesc').value = partnerData.description || '';
-                document.getElementById('shopPhone').value = partnerData.phone || '';
-                document.getElementById('shopProcessingDays').value = partnerData.processingDays || 3;
-                document.getElementById('shopDiscount').value = partnerData.discount || '';
-            }
-        }
-
-        document.getElementById('updateShopBtn')?.addEventListener('click', async () => {
-            await updateDoc(doc(db, "partners", partnerDocId), {
-                name: document.getElementById('shopName').value,
-                url: document.getElementById('shopUrl').value,
-                description: document.getElementById('shopDesc').value,
-                phone: document.getElementById('shopPhone').value,
-                processingDays: parseInt(document.getElementById('shopProcessingDays').value) || 3,
-                discount: document.getElementById('shopDiscount').value
-            });
-            alert('✅ Сохранено');
-            loadShopInfo();
-        });
-
-        async function loadProducts() {
-            const container = document.getElementById('productsList');
-            if (!partnerDocId) return;
-            const snapshot = await getDocs(query(collection(db, "products"), where("partnerId", "==", partnerDocId), orderBy("createdAt", "desc")));
-            if (snapshot.empty) { container.innerHTML = '<div class="empty-state">Нет товаров</div>'; return; }
-            
-            let html = '';
-            for (const docSnap of snapshot.docs) {
-                const p = docSnap.data();
-                const stock = p.stock !== undefined ? p.stock : 999;
-                const stockClass = stock === 0 ? 'stock-low' : 'stock-high';
-                const stockText = stock === 0 ? 'Нет в наличии' : `${stock} шт`;
+            let html = '<div style="display: flex; flex-direction: column; gap: 8px;">';
+            snapshot.forEach(docSnap => {
+                const t = docSnap.data();
+                const date = t.createdAt?.toDate().toLocaleString() || '—';
+                const typeNames = { 'release': '📥 Поступление', 'payout': '📤 Вывод', 'commission': '💰 Комиссия' };
+                const amountColor = t.type === 'release' ? '#10b981' : (t.type === 'payout' ? '#dc2626' : '#fbbf24');
+                const sign = t.type === 'release' ? '+' : '-';
                 html += `
-                    <div class="product-card">
-                        <div class="product-image">
-                            ${p.image ? `<img src="${p.image}" onerror="this.src='https://placehold.co/300x200/1a1a1a/fbbf24?text=No+Image'">` : '<i class="fas fa-image"></i>'}
-                        </div>
-                        <div class="product-info">
-                            <div class="product-title">${escapeHtml(p.name)}</div>
-                            <div class="product-price">${p.price.toLocaleString()} ₽</div>
-                            <div class="product-store"><i class="fas fa-store"></i> ${escapeHtml(p.partnerName || partnerData?.name || 'Магазин')}</div>
-                            <div class="product-stock ${stockClass}">${stockText}</div>
-                            <div class="product-desc">${escapeHtml(p.desc?.substring(0, 80))}</div>
-                            <div class="product-actions">
-                                <button class="btn-edit" data-id="${docSnap.id}" data-name="${escapeHtml(p.name)}" data-price="${p.price}" data-stock="${stock}" data-desc="${escapeHtml(p.desc || '')}"><i class="fas fa-edit"></i> Ред.</button>
-                                <button class="btn-duplicate" data-name="${escapeHtml(p.name)}" data-price="${p.price}" data-stock="${stock}" data-desc="${escapeHtml(p.desc || '')}"><i class="fas fa-copy"></i> Коп.</button>
-                                <button class="btn-delete" data-id="${docSnap.id}"><i class="fas fa-trash"></i> Уд.</button>
-                            </div>
-                        </div>
+                    <div style="display: flex; justify-content: space-between; padding: 8px; border-bottom: 1px solid rgba(255,255,255,0.05);">
+                        <span>${typeNames[t.type] || t.type}</span>
+                        <span style="color: ${amountColor};">${sign} ${t.amount.toLocaleString()} ₽</span>
+                        <span style="font-size: 0.7rem; color: #666;">${date}</span>
                     </div>
                 `;
-            }
-            container.innerHTML = html;
-            
-            document.querySelectorAll('.btn-edit').forEach(btn => btn.addEventListener('click', () => { 
-                document.getElementById('editProductId').value = btn.dataset.id; 
-                document.getElementById('editProductName').value = btn.dataset.name; 
-                document.getElementById('editProductPrice').value = btn.dataset.price; 
-                document.getElementById('editProductStock').value = btn.dataset.stock; 
-                document.getElementById('editProductDesc').value = btn.dataset.desc; 
-                document.getElementById('editModal').style.display = 'flex'; 
-            }));
-            
-            document.querySelectorAll('.btn-duplicate').forEach(btn => btn.addEventListener('click', async () => { 
-                await addDoc(collection(db, "products"), { 
-                    name: btn.dataset.name + ' (копия)', 
-                    price: parseInt(btn.dataset.price), 
-                    stock: parseInt(btn.dataset.stock), 
-                    desc: btn.dataset.desc, 
-                    partnerId: partnerDocId,
-                    partnerName: partnerData?.name || 'Магазин',
-                    createdAt: new Date() 
-                }); 
-                alert('✅ Скопировано'); 
-                loadProducts(); 
-                loadStats(); 
-            }));
-            
-            document.querySelectorAll('.btn-delete').forEach(btn => btn.addEventListener('click', async () => { 
-                if (confirm('Удалить?')) await deleteDoc(doc(db, "products", btn.dataset.id)); 
-                loadProducts(); 
-                loadStats(); 
-            }));
-        }
-
-        document.getElementById('saveEditBtn')?.addEventListener('click', async () => {
-            await updateDoc(doc(db, "products", document.getElementById('editProductId').value), {
-                name: document.getElementById('editProductName').value,
-                price: parseInt(document.getElementById('editProductPrice').value),
-                stock: parseInt(document.getElementById('editProductStock').value),
-                desc: document.getElementById('editProductDesc').value
             });
-            document.getElementById('editModal').style.display = 'none';
-            loadProducts();
-            loadStats();
-        });
+            html += '</div>';
+            container.innerHTML = html;
+        } catch (err) {
+            console.error('Ошибка:', err);
+        }
+    }
 
-        document.getElementById('addProductBtn')?.addEventListener('click', async () => {
-            const name = document.getElementById('newProductName').value.trim();
-            const price = parseInt(document.getElementById('newProductPrice').value);
-            if (!name || !price) { alert('Заполните поля'); return; }
-            const file = document.getElementById('newProductImage').files[0];
-            let imageUrl = null;
-            if (file) imageUrl = await uploadToCloudinary(file);
+    async function createOrGetOrderChat(orderId, buyerId, buyerName, productName) {
+        if (!buyerId || !partnerDocId) {
+            console.error('Нет ID покупателя или продавца');
+            return null;
+        }
+        
+        const chatId = `order_${orderId}`;
+        const chatRef = doc(db, "chats", chatId);
+        const chatSnap = await getDoc(chatRef);
+        
+        if (!chatSnap.exists()) {
+            const partnerDoc = await getDoc(doc(db, "partners", partnerDocId));
+            const sellerName = partnerDoc.data()?.name || 'Продавец';
             
-            await addDoc(collection(db, "products"), {
-                name, price, desc: document.getElementById('newProductDesc').value,
-                category: document.getElementById('newProductCategory').value,
-                stock: parseInt(document.getElementById('newProductStock').value) || 0,
-                image: imageUrl, 
+            let finalBuyerName = buyerName || 'Покупатель';
+            try {
+                const buyerDoc = await getDoc(doc(db, "fighters", buyerId));
+                if (buyerDoc.exists()) {
+                    finalBuyerName = buyerDoc.data()?.name || buyerName || 'Покупатель';
+                }
+            } catch (err) {
+                console.warn('Не удалось получить данные покупателя:', err);
+            }
+            
+            await setDoc(chatRef, {
+                participants: [partnerDocId, buyerId],
+                participantNames: {
+                    [partnerDocId]: sellerName,
+                    [buyerId]: finalBuyerName
+                },
+                orderId: orderId,
+                orderProduct: productName || 'товар',
+                createdAt: new Date(),
+                lastMessage: `Чат по заказу #${orderId.slice(0, 8)}`,
+                lastMessageTime: new Date()
+            });
+            console.log('✅ Чат создан:', chatId);
+        }
+        return chatId;
+    }
+
+    async function loadShopInfo() {
+        if (!partnerDocId) return;
+        const shopDoc = await getDoc(doc(db, "partners", partnerDocId));
+        if (shopDoc.exists()) {
+            partnerData = shopDoc.data();
+            const logoHtml = partnerData.logo ? `<img src="${partnerData.logo}" alt="Логотип">` : '<i class="fas fa-store"></i>';
+            document.getElementById('shopInfoCard').innerHTML = `
+                <div class="shop-avatar" id="shopAvatarBtn">${logoHtml}</div>
+                <div class="shop-details">
+                    <h2>${escapeHtml(partnerData.name || 'Магазин')}</h2>
+                    <p><i class="fas fa-link"></i> ${partnerData.url ? `<a href="${partnerData.url}" target="_blank" style="color:#fbbf24;">${partnerData.url}</a>` : '—'}</p>
+                    <p><i class="fas fa-align-left"></i> ${escapeHtml(partnerData.description || 'Нет описания')}</p>
+                    <p><i class="fas fa-phone"></i> ${partnerData.phone || '—'}</p>
+                    ${partnerData.processingDays ? `<p><i class="fas fa-calendar-day"></i> Отправка за ${partnerData.processingDays} дней</p>` : ''}
+                    ${partnerData.discount ? `<p><i class="fas fa-tag"></i> Промокод: <strong style="color:#fbbf24;">${partnerData.discount}</strong></p>` : ''}
+                </div>
+            `;
+            const avatarBtn = document.getElementById('shopAvatarBtn');
+            if (avatarBtn) {
+                avatarBtn.style.cursor = 'pointer';
+                const fileInput = document.createElement('input');
+                fileInput.type = 'file';
+                fileInput.accept = 'image/jpeg,image/png,image/webp';
+                fileInput.style.display = 'none';
+                document.body.appendChild(fileInput);
+                avatarBtn.addEventListener('click', () => fileInput.click());
+                fileInput.addEventListener('change', async (e) => {
+                    const file = e.target.files[0];
+                    if (!file) return;
+                    if (file.size > 5 * 1024 * 1024) { alert('❌ Файл больше 5MB'); return; }
+                    avatarBtn.style.opacity = '0.5';
+                    try {
+                        const logoUrl = await uploadShopLogo(file);
+                        await updateDoc(doc(db, "partners", partnerDocId), { logo: logoUrl });
+                        loadShopInfo();
+                        alert('✅ Логотип обновлён!');
+                    } catch (err) { alert('❌ Ошибка: ' + err.message); }
+                    avatarBtn.style.opacity = '1';
+                    fileInput.value = '';
+                });
+            }
+            document.getElementById('shopName').value = partnerData.name || '';
+            document.getElementById('shopUrl').value = partnerData.url || '';
+            document.getElementById('shopDesc').value = partnerData.description || '';
+            document.getElementById('shopPhone').value = partnerData.phone || '';
+            document.getElementById('shopProcessingDays').value = partnerData.processingDays || 3;
+            document.getElementById('shopDiscount').value = partnerData.discount || '';
+        }
+    }
+
+    document.getElementById('updateShopBtn')?.addEventListener('click', async () => {
+        await updateDoc(doc(db, "partners", partnerDocId), {
+            name: document.getElementById('shopName').value,
+            url: document.getElementById('shopUrl').value,
+            description: document.getElementById('shopDesc').value,
+            phone: document.getElementById('shopPhone').value,
+            processingDays: parseInt(document.getElementById('shopProcessingDays').value) || 3,
+            discount: document.getElementById('shopDiscount').value
+        });
+        alert('✅ Сохранено');
+        loadShopInfo();
+    });
+
+    async function loadProducts() {
+        const container = document.getElementById('productsList');
+        if (!partnerDocId) return;
+        const snapshot = await getDocs(query(collection(db, "products"), where("partnerId", "==", partnerDocId), orderBy("createdAt", "desc")));
+        if (snapshot.empty) { container.innerHTML = '<div class="empty-state">Нет товаров</div>'; return; }
+        
+        let html = '';
+        for (const docSnap of snapshot.docs) {
+            const p = docSnap.data();
+            const stock = p.stock !== undefined ? p.stock : 999;
+            const stockClass = stock === 0 ? 'stock-low' : 'stock-high';
+            const stockText = stock === 0 ? 'Нет в наличии' : `${stock} шт`;
+            html += `
+                <div class="product-card">
+                    <div class="product-image">
+                        ${p.image ? `<img src="${p.image}" onerror="this.src='https://placehold.co/300x200/1a1a1a/fbbf24?text=No+Image'">` : '<i class="fas fa-image"></i>'}
+                    </div>
+                    <div class="product-info">
+                        <div class="product-title">${escapeHtml(p.name)}</div>
+                        <div class="product-price">${p.price.toLocaleString()} ₽</div>
+                        <div class="product-store"><i class="fas fa-store"></i> ${escapeHtml(p.partnerName || partnerData?.name || 'Магазин')}</div>
+                        <div class="product-stock ${stockClass}">${stockText}</div>
+                        <div class="product-desc">${escapeHtml(p.desc?.substring(0, 80))}</div>
+                        <div class="product-actions">
+                            <button class="btn-edit" data-id="${docSnap.id}" data-name="${escapeHtml(p.name)}" data-price="${p.price}" data-stock="${stock}" data-desc="${escapeHtml(p.desc || '')}"><i class="fas fa-edit"></i> Ред.</button>
+                            <button class="btn-duplicate" data-name="${escapeHtml(p.name)}" data-price="${p.price}" data-stock="${stock}" data-desc="${escapeHtml(p.desc || '')}"><i class="fas fa-copy"></i> Коп.</button>
+                            <button class="btn-delete" data-id="${docSnap.id}"><i class="fas fa-trash"></i> Уд.</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+        container.innerHTML = html;
+        
+        document.querySelectorAll('.btn-edit').forEach(btn => btn.addEventListener('click', () => { 
+            document.getElementById('editProductId').value = btn.dataset.id; 
+            document.getElementById('editProductName').value = btn.dataset.name; 
+            document.getElementById('editProductPrice').value = btn.dataset.price; 
+            document.getElementById('editProductStock').value = btn.dataset.stock; 
+            document.getElementById('editProductDesc').value = btn.dataset.desc; 
+            document.getElementById('editModal').style.display = 'flex'; 
+        }));
+        
+        document.querySelectorAll('.btn-duplicate').forEach(btn => btn.addEventListener('click', async () => { 
+            await addDoc(collection(db, "products"), { 
+                name: btn.dataset.name + ' (копия)', 
+                price: parseInt(btn.dataset.price), 
+                stock: parseInt(btn.dataset.stock), 
+                desc: btn.dataset.desc, 
                 partnerId: partnerDocId,
                 partnerName: partnerData?.name || 'Магазин',
-                createdAt: new Date()
-            });
-            alert('✅ Добавлено');
-            document.getElementById('newProductName').value = '';
-            document.getElementById('newProductPrice').value = '';
-            document.getElementById('newProductDesc').value = '';
-            document.getElementById('newProductImage').value = '';
-            document.getElementById('imagePreview').innerHTML = '';
-            loadProducts();
-            loadStats();
-        });
+                createdAt: new Date() 
+            }); 
+            alert('✅ Скопировано'); 
+            loadProducts(); 
+            loadStats(); 
+        }));
+        
+        document.querySelectorAll('.btn-delete').forEach(btn => btn.addEventListener('click', async () => { 
+            if (confirm('Удалить?')) await deleteDoc(doc(db, "products", btn.dataset.id)); 
+            loadProducts(); 
+            loadStats(); 
+        }));
+    }
 
-        document.getElementById('newProductImage')?.addEventListener('change', (e) => {
-            const file = e.target.files[0];
-            const preview = document.getElementById('imagePreview');
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = (event) => { preview.innerHTML = `<img src="${event.target.result}" style="max-width: 200px; border-radius: 16px; border: 1px solid #fbbf24;">`; };
-                reader.readAsDataURL(file);
-            } else { preview.innerHTML = ''; }
+    document.getElementById('saveEditBtn')?.addEventListener('click', async () => {
+        await updateDoc(doc(db, "products", document.getElementById('editProductId').value), {
+            name: document.getElementById('editProductName').value,
+            price: parseInt(document.getElementById('editProductPrice').value),
+            stock: parseInt(document.getElementById('editProductStock').value),
+            desc: document.getElementById('editProductDesc').value
         });
+        document.getElementById('editModal').style.display = 'none';
+        loadProducts();
+        loadStats();
+    });
 
-        async function loadActiveOrders() {
-            if (!partnerDocId) return;
+    document.getElementById('addProductBtn')?.addEventListener('click', async () => {
+        const name = document.getElementById('newProductName').value.trim();
+        const price = parseInt(document.getElementById('newProductPrice').value);
+        if (!name || !price) { alert('Заполните поля'); return; }
+        const file = document.getElementById('newProductImage').files[0];
+        let imageUrl = null;
+        if (file) imageUrl = await uploadToCloudinary(file);
+        
+        await addDoc(collection(db, "products"), {
+            name, price, desc: document.getElementById('newProductDesc').value,
+            category: document.getElementById('newProductCategory').value,
+            stock: parseInt(document.getElementById('newProductStock').value) || 0,
+            image: imageUrl, 
+            partnerId: partnerDocId,
+            partnerName: partnerData?.name || 'Магазин',
+            createdAt: new Date()
+        });
+        alert('✅ Добавлено');
+        document.getElementById('newProductName').value = '';
+        document.getElementById('newProductPrice').value = '';
+        document.getElementById('newProductDesc').value = '';
+        document.getElementById('newProductImage').value = '';
+        document.getElementById('imagePreview').innerHTML = '';
+        loadProducts();
+        loadStats();
+    });
+
+    document.getElementById('newProductImage')?.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        const preview = document.getElementById('imagePreview');
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = (event) => { preview.innerHTML = `<img src="${event.target.result}" style="max-width: 200px; border-radius: 16px; border: 1px solid #fbbf24;">`; };
+            reader.readAsDataURL(file);
+        } else { preview.innerHTML = ''; }
+    });
+
+    // ========== ЗАКАЗЫ ПАРТНЁРА ==========
+    async function loadActiveOrders() {
+        if (!partnerDocId) return;
+        
+        const productsSnap = await getDocs(query(collection(db, "products"), where("partnerId", "==", partnerDocId)));
+        const productNames = new Set();
+        const productIds = new Set();
+        productsSnap.docs.forEach(doc => {
+            productNames.add(doc.data().name);
+            productIds.add(doc.id);
+        });
+        
+        const ordersSnap = await getDocs(collection(db, "orders"));
+        let orders = [];
+        
+        ordersSnap.forEach(orderDoc => {
+            const order = { id: orderDoc.id, ...orderDoc.data() };
             
-            const productsSnap = await getDocs(query(collection(db, "products"), where("partnerId", "==", partnerDocId)));
-            const productNames = new Set();
-            productsSnap.docs.forEach(doc => {
-                productNames.add(doc.data().name);
-            });
+            let hasPartnerProduct = false;
+            let partnerItems = [];
+            let orderTotalForPartner = 0;
             
-            const ordersSnap = await getDocs(collection(db, "orders"));
-            const relevantStatuses = ['paid', 'shipped', 'completed'];
-            let orders = [];
-            
-            ordersSnap.forEach(orderDoc => {
-                const order = { id: orderDoc.id, ...orderDoc.data() };
-                
-                let hasPartnerProduct = false;
-                let partnerItems = [];
-                let orderTotalForPartner = 0;
-                
-                if (order.items && Array.isArray(order.items) && order.items.length > 0) {
-                    order.items.forEach(item => {
-                        if (item.partnerId === partnerDocId || productNames.has(item.productName)) {
-                            hasPartnerProduct = true;
-                            const itemTotal = item.price * (item.quantity || 1);
-                            orderTotalForPartner += itemTotal;
-                            partnerItems.push({
-                                productName: item.productName,
-                                price: item.price,
-                                quantity: item.quantity || 1,
-                                totalPrice: itemTotal
-                            });
-                        }
-                    });
-                } else if (order.productName) {
-                    if (productNames.has(order.productName) || order.partnerId === partnerDocId) {
+            if (order.items && Array.isArray(order.items) && order.items.length > 0) {
+                order.items.forEach(item => {
+                    if (item.partnerId === partnerDocId || productNames.has(item.productName) || productIds.has(item.productId)) {
                         hasPartnerProduct = true;
-                        const itemTotal = (order.totalPrice || order.price || 0);
-                        orderTotalForPartner = itemTotal;
+                        const itemTotal = item.price * (item.quantity || 1);
+                        orderTotalForPartner += itemTotal;
                         partnerItems.push({
-                            productName: order.productName,
-                            price: order.price,
-                            quantity: order.quantity || 1,
+                            productId: item.productId,
+                            productName: item.productName,
+                            price: item.price,
+                            quantity: item.quantity || 1,
                             totalPrice: itemTotal
                         });
                     }
-                }
-                
-                if (hasPartnerProduct && relevantStatuses.includes(order.status)) {
-                    orders.push({ 
-                        ...order, 
-                        partnerItems: partnerItems,
-                        partnerOrderTotal: orderTotalForPartner
+                });
+            } else if (order.productName) {
+                if (productNames.has(order.productName) || order.partnerId === partnerDocId) {
+                    hasPartnerProduct = true;
+                    const itemTotal = (order.totalPrice || order.price || 0);
+                    orderTotalForPartner = itemTotal;
+                    partnerItems.push({
+                        productId: order.productId,
+                        productName: order.productName,
+                        price: order.price,
+                        quantity: order.quantity || 1,
+                        totalPrice: itemTotal
                     });
                 }
-            });
-            
-            allOrders = orders;
-            let filtered = orders;
-            if (activeFilter !== 'all') {
-                filtered = orders.filter(o => o.status === activeFilter);
             }
             
-            const container = document.getElementById('activeOrdersList');
-            if (filtered.length === 0) { 
-                container.innerHTML = '<div class="empty-state">Нет заказов</div>'; 
-                return; 
+            if (hasPartnerProduct) {
+                allOrders.push({ ...order, partnerItems, partnerOrderTotal: orderTotalForPartner });
+                orders.push({ ...order, partnerItems, partnerOrderTotal: orderTotalForPartner });
+            }
+        });
+        
+        allPartnerOrders = orders;
+        applyPartnerOrdersFilter();
+    }
+
+    function applyPartnerOrdersFilter() {
+        let filtered = [...allPartnerOrders];
+        
+        if (partnerActiveFilter === 'active') {
+            filtered = filtered.filter(o => o.status === 'paid');
+        } else if (partnerActiveFilter === 'shipped') {
+            filtered = filtered.filter(o => o.status === 'shipped');
+        } else if (partnerActiveFilter === 'completed') {
+            filtered = filtered.filter(o => o.status === 'completed');
+        }
+        
+        renderPartnerOrders(filtered);
+    }
+
+    function renderPartnerOrders(orders) {
+        const container = document.getElementById('activeOrdersList');
+        if (orders.length === 0) { 
+            container.innerHTML = '<div class="empty-state">Нет заказов</div>'; 
+            return; 
+        }
+        
+        let html = '';
+        for (const order of orders) {
+            const statusText = getSellerStatusText(order.status);
+            const statusColor = getSellerStatusColor(order.status);
+            const canShip = order.status === 'paid';
+            const canCancel = order.status === 'paid';
+            
+            let itemsHtml = '';
+            if (order.partnerItems && order.partnerItems.length > 0) {
+                itemsHtml = '<div style="margin: 8px 0; padding: 8px; background: rgba(0,0,0,0.2); border-radius: 12px;">';
+                order.partnerItems.forEach(item => {
+                    itemsHtml += `
+                        <div style="display: flex; justify-content: space-between; padding: 4px 0; font-size: 0.75rem;">
+                            <span>${escapeHtml(item.productName)} ${item.quantity > 1 ? `× ${item.quantity}` : ''}</span>
+                            <span style="color: #fbbf24;">${item.totalPrice.toLocaleString()} ₽</span>
+                        </div>
+                    `;
+                });
+                itemsHtml += `<div style="margin-top: 6px; padding-top: 6px; border-top: 1px solid rgba(255,255,255,0.1); font-weight: 600;">Итого: ${order.partnerOrderTotal.toLocaleString()} ₽</div>`;
+                itemsHtml += '</div>';
             }
             
-            let html = '';
-            for (const order of filtered) {
-                const statusText = getSellerStatusText(order.status);
-                const statusColor = getSellerStatusColor(order.status);
-                const canShip = order.status === 'paid';
-                
-                let itemsHtml = '';
-                if (order.partnerItems && order.partnerItems.length > 0) {
-                    itemsHtml = '<div style="margin: 8px 0; padding: 8px; background: rgba(0,0,0,0.2); border-radius: 12px;">';
-                    order.partnerItems.forEach(item => {
-                        itemsHtml += `
-                            <div style="display: flex; justify-content: space-between; padding: 4px 0; font-size: 0.75rem;">
-                                <span>${escapeHtml(item.productName)} ${item.quantity > 1 ? `× ${item.quantity}` : ''}</span>
-                                <span style="color: #fbbf24;">${item.totalPrice.toLocaleString()} ₽</span>
-                            </div>
-                        `;
-                    });
-                    itemsHtml += `<div style="margin-top: 6px; padding-top: 6px; border-top: 1px solid rgba(255,255,255,0.1); font-weight: 600;">Итого: ${order.partnerOrderTotal.toLocaleString()} ₽</div>`;
-                    itemsHtml += '</div>';
-                }
-                
-                html += `
-                    <div class="order-card">
-                        <div class="order-header">
-                            <span class="order-id">Заказ #${order.id.slice(0, 8)}</span>
-                            <span class="order-date">${order.createdAt?.toDate().toLocaleString() || '—'}</span>
-                            <span class="order-status" style="background: ${statusColor};">${statusText}</span>
-                        </div>
-                        <div><strong>Покупатель:</strong> ${escapeHtml(order.userName || 'Покупатель')}</div>
-                        <div class="order-customer">
-                            <i class="fas fa-phone"></i> ${escapeHtml(order.userPhone || '—')}<br>
-                            <i class="fas fa-map-marker-alt"></i> ${escapeHtml(order.userAddress || '—')}<br>
-                            ${order.userComment ? `<i class="fas fa-comment"></i> ${escapeHtml(order.userComment)}` : ''}
-                            ${order.trackingNumber ? `<br><i class="fas fa-box"></i> Трек: ${escapeHtml(order.trackingNumber)}` : ''}
-                        </div>
-                        ${itemsHtml}
-                        <div class="order-buttons">
-                            <button class="btn-chat-order" data-order-id="${order.id}" data-user-id="${order.userId}" data-user-name="${escapeHtml(order.userName || 'Покупатель')}"><i class="fas fa-comments"></i> Чат с покупателем</button>
-                            ${canShip ? `<button class="btn-ship" data-id="${order.id}">📦 Отправить товар</button>` : ''}
-                            ${order.status === 'completed' ? `<span style="color:#10b981;">✅ Завершён</span>` : ''}
-                        </div>
+            html += `
+                <div class="order-card" data-order-id="${order.id}">
+                    <div class="order-header">
+                        <span class="order-id">Заказ #${order.id.slice(0, 8)}</span>
+                        <span class="order-date">${order.createdAt?.toDate().toLocaleString() || '—'}</span>
+                        <span class="order-status" style="background: ${statusColor};">${statusText}</span>
                     </div>
-                `;
-            }
-            container.innerHTML = html;
-            
-            document.querySelectorAll('.btn-ship').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    document.getElementById('shippingOrderId').value = btn.dataset.id;
-                    document.getElementById('shippingModal').style.display = 'flex';
-                });
+                    <div><strong>Покупатель:</strong> ${escapeHtml(order.userName || 'Покупатель')}</div>
+                    <div class="order-customer">
+                        <i class="fas fa-phone"></i> ${escapeHtml(order.userPhone || '—')}<br>
+                        <i class="fas fa-map-marker-alt"></i> ${escapeHtml(order.userAddress || '—')}<br>
+                        ${order.userComment ? `<i class="fas fa-comment"></i> ${escapeHtml(order.userComment)}` : ''}
+                        ${order.trackingNumber ? `<br><i class="fas fa-box"></i> Трек: ${escapeHtml(order.trackingNumber)}` : ''}
+                    </div>
+                    ${itemsHtml}
+                    <div class="order-buttons">
+                        <button class="btn-chat-order" data-order-id="${order.id}" data-user-id="${order.userId}" data-user-name="${escapeHtml(order.userName || 'Покупатель')}">
+                            <i class="fas fa-comments"></i> Чат
+                        </button>
+                        ${canShip ? `<button class="btn-ship" data-id="${order.id}">📦 Отправить товар</button>` : ''}
+                        ${canCancel ? `<button class="btn-cancel-order" data-id="${order.id}" data-total="${order.partnerOrderTotal}">❌ Отменить заказ</button>` : ''}
+                        ${order.status === 'completed' ? `<span style="color:#10b981;"><i class="fas fa-check-circle"></i> Завершён</span>` : ''}
+                    </div>
+                </div>
+            `;
+        }
+        container.innerHTML = html;
+        
+        document.querySelectorAll('.btn-ship').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.getElementById('shippingOrderId').value = btn.dataset.id;
+                document.getElementById('shippingModal').style.display = 'flex';
             });
-            
-            document.querySelectorAll('.btn-chat-order').forEach(btn => {
-                btn.addEventListener('click', async () => {
-                    const orderId = btn.dataset.orderId;
-                    const userId = btn.dataset.userId;
-                    const userName = btn.dataset.userName;
-                    if (userId) {
-                        await createOrGetOrderChat(orderId, userId, userName, '');
-                        window.location.href = `chat.html?id=order_${orderId}`;
-                    }
-                });
-            });
-        }
-
-        function getSellerStatusText(status) {
-            const statuses = {
-                'paid': '✅ Оплачен (готовьте к отправке)',
-                'shipped': '📦 Отправлен',
-                'completed': '✔️ Завершён (деньги получены)'
-            };
-            return statuses[status] || status;
-        }
-
-        function getSellerStatusColor(status) {
-            const colors = {
-                'paid': '#f59e0b',
-                'shipped': '#8b5cf6',
-                'completed': '#10b981'
-            };
-            return colors[status] || '#888';
-        }
-
-        document.getElementById('confirmShippingBtn')?.addEventListener('click', async () => {
-            const tracking = document.getElementById('shippingTracking').value.trim();
-            if (!tracking) { alert('Введите трек-номер'); return; }
-            
-            try {
-                const orderId = document.getElementById('shippingOrderId').value;
-                await updateDoc(doc(db, "orders", orderId), { 
-                    status: 'shipped', 
-                    trackingNumber: tracking,
-                    shippedAt: new Date()
-                });
-                alert('✅ Заказ отмечен как отправленный');
-                document.getElementById('shippingModal').style.display = 'none';
-                document.getElementById('shippingTracking').value = '';
-                await loadActiveOrders();
-                await loadStats();
-            } catch (err) {
-                console.error('Ошибка:', err);
-                alert('❌ Ошибка при отправке');
-            }
         });
-
-        document.getElementById('cancelShippingBtn')?.addEventListener('click', () => {
-            document.getElementById('shippingModal').style.display = 'none';
-            document.getElementById('shippingTracking').value = '';
-        });
-
-        async function loadReviews() {
-            if (!partnerDocId) return;
-            const snapshot = await getDocs(query(collection(db, "reviews"), where("partnerId", "==", partnerDocId)));
-            const container = document.getElementById('reviewsList');
-            if (snapshot.empty) { container.innerHTML = '<div class="empty-state">Нет отзывов</div>'; return; }
-            let html = '';
-            snapshot.forEach(docSnap => {
-                const r = docSnap.data();
-                html += `<div class="review-card"><div class="review-header"><span class="review-author">${escapeHtml(r.userName || 'Покупатель')}</span><span class="review-rating">★ ${r.rating || 5}</span></div><div class="review-text">${escapeHtml(r.text)}</div>${r.reply ? `<div class="review-reply"><i class="fas fa-reply"></i> ${escapeHtml(r.reply)}</div>` : ''}<textarea id="reply-${docSnap.id}" class="reply-input" placeholder="Ответ продавца..."></textarea><button class="btn-reply" data-id="${docSnap.id}">Ответить</button></div>`;
+        
+        document.querySelectorAll('.btn-cancel-order').forEach(btn => {
+            btn.addEventListener('click', async () => {
+                const orderId = btn.dataset.id;
+                const totalAmount = parseFloat(btn.dataset.total);
+                
+                if (confirm('❓ Вы уверены, что хотите отменить этот заказ? Средства будут возвращены покупателю.')) {
+                    await cancelOrderByPartner(orderId, totalAmount);
+                }
             });
-            container.innerHTML = html;
-            document.querySelectorAll('.btn-reply').forEach(btn => btn.addEventListener('click', async () => { const reply = document.getElementById(`reply-${btn.dataset.id}`).value; if (reply) await updateDoc(doc(db, "reviews", btn.dataset.id), { reply }); loadReviews(); }));
-        }
+        });
+        
+        document.querySelectorAll('.btn-chat-order').forEach(btn => {
+            btn.addEventListener('click', async () => {
+                const orderId = btn.dataset.orderId;
+                const userId = btn.dataset.userId;
+                const userName = btn.dataset.userName;
+                if (userId) {
+                    await createOrGetOrderChat(orderId, userId, userName, '');
+                    window.location.href = `chat.html?id=order_${orderId}`;
+                }
+            });
+        });
+    }
 
-        async function loadStats() {
-            if (!partnerDocId) return;
+    async function cancelOrderByPartner(orderId, totalAmount) {
+        try {
+            const orderRef = doc(db, "orders", orderId);
+            const orderSnap = await getDoc(orderRef);
+            const order = orderSnap.data();
+            
+            if (!order || order.status !== 'paid') {
+                alert('❌ Этот заказ уже нельзя отменить');
+                return;
+            }
+            
+            await updateDoc(orderRef, {
+                status: 'cancelled',
+                cancelledBy: 'partner',
+                cancelledAt: new Date(),
+                cancelReason: 'Отменён продавцом'
+            });
+            
+            if (order.paymentMethod === 'balance' && order.userId) {
+                const { refundFunds } = await import('./wallet.js');
+                await refundFunds(order.userId, totalAmount, orderId);
+            }
+            
+            alert('✅ Заказ отменён, средства возвращены покупателю');
+            await loadActiveOrders();
+            await loadStats();
+            
+        } catch (err) {
+            console.error('Ошибка отмены заказа:', err);
+            alert('❌ Ошибка при отмене заказа');
+        }
+    }
+
+    async function clearPartnerOrderHistory() {
+        if (!partnerDocId) return;
+        
+        if (!confirm('⚠️ Вы уверены, что хотите очистить ВСЮ историю завершённых заказов? Это действие нельзя отменить.')) {
+            return;
+        }
+        
+        try {
             const productsSnap = await getDocs(query(collection(db, "products"), where("partnerId", "==", partnerDocId)));
-            const productNames = productsSnap.docs.map(d => d.data().name);
+            const productNames = new Set();
+            const productIds = new Set();
+            productsSnap.docs.forEach(doc => {
+                productNames.add(doc.data().name);
+                productIds.add(doc.id);
+            });
+            
             const ordersSnap = await getDocs(collection(db, "orders"));
-            let totalRevenue = 0, pendingRevenue = 0, availableRevenue = 0, activeCount = 0;
-            ordersSnap.forEach(orderDoc => {
+            let deletedCount = 0;
+            
+            for (const orderDoc of ordersSnap.docs) {
                 const order = orderDoc.data();
                 let hasPartnerProduct = false;
-                let orderTotal = 0;
                 
                 if (order.items && Array.isArray(order.items)) {
                     order.items.forEach(item => {
-                        if (item.partnerId === partnerDocId || productNames.includes(item.productName)) {
+                        if (item.partnerId === partnerDocId || productNames.has(item.productName) || productIds.has(item.productId)) {
                             hasPartnerProduct = true;
-                            orderTotal += item.price * (item.quantity || 1);
                         }
                     });
-                } else if (productNames.includes(order.productName) || order.partnerId === partnerDocId) {
+                } else if (productNames.has(order.productName) || order.partnerId === partnerDocId) {
                     hasPartnerProduct = true;
-                    orderTotal = order.totalPrice || order.price || 0;
                 }
                 
-                if (hasPartnerProduct) {
-                    if (order.status === 'completed') totalRevenue += orderTotal;
-                    else if (order.status === 'shipped') pendingRevenue += orderTotal;
-                    else if (order.status === 'paid') availableRevenue += orderTotal;
-                    if (['paid', 'shipped'].includes(order.status)) activeCount++;
-                }
-            });
-            document.getElementById('statProducts').innerText = productsSnap.size;
-            document.getElementById('statActiveOrders').innerText = activeCount;
-            document.getElementById('statRevenue').innerHTML = `${totalRevenue.toLocaleString()} ₽`;
-            document.getElementById('statYourShare').innerHTML = `${(totalRevenue * 0.9).toLocaleString()} ₽`;
-            document.getElementById('statPending').innerHTML = `${(pendingRevenue * 0.9).toLocaleString()} ₽`;
-            document.getElementById('statAvailable').innerHTML = `${(availableRevenue * 0.9).toLocaleString()} ₽`;
-            const reviewsSnap = await getDocs(query(collection(db, "reviews"), where("partnerId", "==", partnerDocId)));
-            let ratingSum = 0;
-            reviewsSnap.forEach(r => ratingSum += (r.data().rating || 5));
-            document.getElementById('statRating').innerHTML = reviewsSnap.size ? (ratingSum / reviewsSnap.size).toFixed(1) : '0.0';
-        }
-
-        document.getElementById('exportOrdersBtn')?.addEventListener('click', () => {
-            let csv = "ID,Товар,Сумма,Статус,Покупатель,Телефон,Адрес,Дата\n";
-            allOrders.forEach(o => { 
-                const items = o.partnerItems.map(i => i.productName).join(', ');
-                csv += `${o.id},${items},${o.partnerOrderTotal},${o.status},${o.userName || ''},${o.userPhone || ''},${o.userAddress || ''},${o.createdAt?.toDate()}\n`; 
-            });
-            const blob = new Blob([csv], {type: 'text/csv'});
-            const link = document.createElement('a');
-            link.href = URL.createObjectURL(blob);
-            link.download = `orders_${Date.now()}.csv`;
-            link.click();
-        });
-
-        document.getElementById('importBtn')?.addEventListener('click', async () => {
-            const file = document.getElementById('csvFile').files[0];
-            if (!file) return;
-            const text = await file.text();
-            const lines = text.split('\n').slice(1);
-            let count = 0;
-            for (const line of lines) {
-                if (!line.trim()) continue;
-                const [name, price, category, stock, desc] = line.split(',');
-                if (name && price) {
-                    await addDoc(collection(db, "products"), { name: name.trim(), price: parseInt(price), category: category || 'equipment', stock: parseInt(stock) || 0, desc: desc || '', partnerId: partnerDocId, createdAt: new Date() });
-                    count++;
+                if (hasPartnerProduct && order.status === 'completed') {
+                    await deleteDoc(doc(db, "orders", orderDoc.id));
+                    deletedCount++;
                 }
             }
-            alert(`✅ Импортировано ${count} товаров`);
-            loadProducts();
-            loadStats();
-        });
-
-        document.getElementById('withdrawBtn')?.addEventListener('click', async () => {
-            const amount = parseInt(document.getElementById('withdrawAmount').value);
-            if (!amount || amount <= 0) { alert('Введите сумму'); return; }
             
-            // Проверяем баланс
-            const balanceDoc = await getDoc(doc(db, "wallet_balances", partnerDocId));
-            const available = balanceDoc.exists() ? (balanceDoc.data().available || 0) : 0;
-            
-            if (amount > available) {
-                alert('❌ Недостаточно средств на балансе');
-                return;
-            }
-            
-            await addDoc(collection(db, "withdrawals"), { 
-                partnerId: partnerDocId, 
-                amount, 
-                method: document.getElementById('withdrawMethod').value, 
-                status: 'pending', 
-                createdAt: new Date() 
-            });
-            
-            // Блокируем сумму на балансе
-            await updateDoc(doc(db, "wallet_balances", partnerDocId), {
-                available: available - amount,
-                pendingWithdraw: (balanceDoc.data()?.pendingWithdraw || 0) + amount,
-                updatedAt: new Date()
-            });
-            
-            alert(`✅ Запрос на вывод ${amount} ₽ отправлен`);
-            document.getElementById('withdrawAmount').value = '';
-            
-            const historySnap = await getDocs(query(collection(db, "withdrawals"), where("partnerId", "==", partnerDocId), orderBy("createdAt", "desc")));
-            const container = document.getElementById('withdrawHistory');
-            if (historySnap.empty) { container.innerHTML = '<div class="empty-state">История пуста</div>'; return; }
-            let html = '';
-            historySnap.forEach(docSnap => { const w = docSnap.data(); html += `<div class="history-item"><span>${w.createdAt?.toDate().toLocaleString() || '—'}</span><span>${w.amount} ₽</span><span>${w.method}</span><span style="color: ${w.status === 'completed' ? '#10b981' : '#f59e0b'};">${w.status === 'completed' ? 'Выполнен' : 'В обработке'}</span></div>`; });
-            container.innerHTML = html;
-            
-            await loadWalletBalance();
-        });
-
-        async function updateChart(period) {
-            if (!allOrders.length) {
-                if (salesChart) salesChart.destroy();
-                salesChart = new Chart(document.getElementById('salesChart'), { type: 'line', data: { labels: [], datasets: [{ label: 'Выручка (₽)', data: [] }] } });
-                return;
-            }
-            let filtered = [...allOrders];
-            if (period !== 'all') { const start = new Date(); start.setDate(start.getDate() - parseInt(period)); filtered = allOrders.filter(o => o.createdAt && o.createdAt.toDate() >= start); }
-            const daily = {};
-            let startDate, endDate = new Date();
-            if (period !== 'all') startDate = new Date(Date.now() - parseInt(period) * 86400000);
-            else { const oldest = [...allOrders].sort((a,b) => a.createdAt?.toDate() - b.createdAt?.toDate())[0]; startDate = oldest?.createdAt?.toDate() || new Date(); }
-            for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) daily[d.toISOString().split('T')[0]] = 0;
-            filtered.forEach(o => { if (o.createdAt) daily[o.createdAt.toDate().toISOString().split('T')[0]] += o.partnerOrderTotal || o.totalPrice || 0; });
-            const labels = Object.keys(daily).sort();
-            const data = labels.map(l => daily[l]);
-            if (salesChart) salesChart.destroy();
-            salesChart = new Chart(document.getElementById('salesChart'), { type: 'line', data: { labels: labels.map(l => l.slice(5)), datasets: [{ label: 'Выручка (₽)', data, borderColor: '#fbbf24', backgroundColor: 'rgba(251,191,36,0.1)', fill: true, tension: 0.4 }] } });
-        }
-
-        document.querySelectorAll('.status-filter-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                document.querySelectorAll('.status-filter-btn').forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-                activeFilter = btn.dataset.status;
-                loadActiveOrders();
-            });
-        });
-
-        document.querySelectorAll('.period-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                document.querySelectorAll('.period-btn').forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-                updateChart(btn.dataset.period);
-            });
-        });
-
-        document.querySelectorAll('.tab-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-                document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
-                btn.classList.add('active');
-                document.getElementById(`tab-${btn.dataset.tab}`).classList.add('active');
-                if (btn.dataset.tab === 'products') loadProducts();
-                if (btn.dataset.tab === 'active-orders') loadActiveOrders();
-                if (btn.dataset.tab === 'reviews') loadReviews();
-                if (btn.dataset.tab === 'finance') {
-                    loadWalletBalance();
-                    loadTransactionHistory();
-                    loadStats();
-                }
-            });
-        });
-
-        function escapeHtml(str) { if (!str) return ''; return String(str).replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[m])); }
-
-        onAuthStateChanged(auth, async (user) => {
-            if (!user) { window.location.href = 'login.html'; return; }
-            const partners = await getDocs(query(collection(db, "partners"), where("email", "==", user.email)));
-            if (partners.empty) { document.getElementById('pendingStatus').style.display = 'block'; return; }
-            partnerDocId = partners.docs[0].id;
-            document.getElementById('partnerContent').style.display = 'block';
-            await loadShopInfo();
-            await loadProducts();
+            alert(`✅ Удалено ${deletedCount} завершённых заказов из истории`);
             await loadActiveOrders();
-            await loadReviews();
             await loadStats();
-            await loadWalletBalance();
-            await loadTransactionHistory();
-            updateChart('all');
-        });
+            
+        } catch (err) {
+            console.error('Ошибка очистки истории:', err);
+            alert('❌ Ошибка при очистке истории');
+        }
+    }
 
-        document.getElementById('closeModalBtn')?.addEventListener('click', () => { document.getElementById('editModal').style.display = 'none'; });
-        document.getElementById('menuToggle')?.addEventListener('click', () => document.getElementById('navLinks')?.classList.toggle('show'));
-    </script>
+    function getSellerStatusText(status) {
+        const statuses = {
+            'paid': '🟡 Оплачен (ожидает отправки)',
+            'shipped': '📦 Отправлен',
+            'completed': '✅ Завершён'
+        };
+        return statuses[status] || status;
+    }
+
+    function getSellerStatusColor(status) {
+        const colors = {
+            'paid': '#f59e0b',
+            'shipped': '#8b5cf6',
+            'completed': '#10b981'
+        };
+        return colors[status] || '#888';
+    }
+
+    document.getElementById('confirmShippingBtn')?.addEventListener('click', async () => {
+        const tracking = document.getElementById('shippingTracking').value.trim();
+        if (!tracking) { alert('Введите трек-номер'); return; }
+        
+        try {
+            const orderId = document.getElementById('shippingOrderId').value;
+            await updateDoc(doc(db, "orders", orderId), { 
+                status: 'shipped', 
+                trackingNumber: tracking,
+                shippedAt: new Date()
+            });
+            alert('✅ Заказ отмечен как отправленный');
+            document.getElementById('shippingModal').style.display = 'none';
+            document.getElementById('shippingTracking').value = '';
+            await loadActiveOrders();
+            await loadStats();
+        } catch (err) {
+            console.error('Ошибка:', err);
+            alert('❌ Ошибка при отправке');
+        }
+    });
+
+    document.getElementById('cancelShippingBtn')?.addEventListener('click', () => {
+        document.getElementById('shippingModal').style.display = 'none';
+        document.getElementById('shippingTracking').value = '';
+    });
+
+    async function loadReviews() {
+        if (!partnerDocId) return;
+        const snapshot = await getDocs(query(collection(db, "reviews"), where("partnerId", "==", partnerDocId)));
+        const container = document.getElementById('reviewsList');
+        if (snapshot.empty) { container.innerHTML = '<div class="empty-state">Нет отзывов</div>'; return; }
+        let html = '';
+        snapshot.forEach(docSnap => {
+            const r = docSnap.data();
+            html += `<div class="review-card"><div class="review-header"><span class="review-author">${escapeHtml(r.userName || 'Покупатель')}</span><span class="review-rating">★ ${r.rating || 5}</span></div><div class="review-text">${escapeHtml(r.text)}</div>${r.reply ? `<div class="review-reply"><i class="fas fa-reply"></i> ${escapeHtml(r.reply)}</div>` : ''}<textarea id="reply-${docSnap.id}" class="reply-input" placeholder="Ответ продавца..."></textarea><button class="btn-reply" data-id="${docSnap.id}">Ответить</button></div>`;
+        });
+        container.innerHTML = html;
+        document.querySelectorAll('.btn-reply').forEach(btn => btn.addEventListener('click', async () => { const reply = document.getElementById(`reply-${btn.dataset.id}`).value; if (reply) await updateDoc(doc(db, "reviews", btn.dataset.id), { reply }); loadReviews(); }));
+    }
+
+    async function loadStats() {
+        if (!partnerDocId) return;
+        const productsSnap = await getDocs(query(collection(db, "products"), where("partnerId", "==", partnerDocId)));
+        const productNames = productsSnap.docs.map(d => d.data().name);
+        const ordersSnap = await getDocs(collection(db, "orders"));
+        let totalRevenue = 0, pendingRevenue = 0, availableRevenue = 0, activeCount = 0;
+        ordersSnap.forEach(orderDoc => {
+            const order = orderDoc.data();
+            let hasPartnerProduct = false;
+            let orderTotal = 0;
+            
+            if (order.items && Array.isArray(order.items)) {
+                order.items.forEach(item => {
+                    if (item.partnerId === partnerDocId || productNames.includes(item.productName)) {
+                        hasPartnerProduct = true;
+                        orderTotal += item.price * (item.quantity || 1);
+                    }
+                });
+            } else if (productNames.includes(order.productName) || order.partnerId === partnerDocId) {
+                hasPartnerProduct = true;
+                orderTotal = order.totalPrice || order.price || 0;
+            }
+            
+            if (hasPartnerProduct) {
+                if (order.status === 'completed') totalRevenue += orderTotal;
+                else if (order.status === 'shipped') pendingRevenue += orderTotal;
+                else if (order.status === 'paid') availableRevenue += orderTotal;
+                if (['paid', 'shipped'].includes(order.status)) activeCount++;
+            }
+        });
+        document.getElementById('statProducts').innerText = productsSnap.size;
+        document.getElementById('statActiveOrders').innerText = activeCount;
+        document.getElementById('statRevenue').innerHTML = `${totalRevenue.toLocaleString()} ₽`;
+        document.getElementById('statYourShare').innerHTML = `${(totalRevenue * 0.9).toLocaleString()} ₽`;
+        document.getElementById('statPending').innerHTML = `${(pendingRevenue * 0.9).toLocaleString()} ₽`;
+        document.getElementById('statAvailable').innerHTML = `${(availableRevenue * 0.9).toLocaleString()} ₽`;
+        const reviewsSnap = await getDocs(query(collection(db, "reviews"), where("partnerId", "==", partnerDocId)));
+        let ratingSum = 0;
+        reviewsSnap.forEach(r => ratingSum += (r.data().rating || 5));
+        document.getElementById('statRating').innerHTML = reviewsSnap.size ? (ratingSum / reviewsSnap.size).toFixed(1) : '0.0';
+    }
+
+    document.getElementById('exportOrdersBtn')?.addEventListener('click', () => {
+        let csv = "ID,Товар,Сумма,Статус,Покупатель,Телефон,Адрес,Дата\n";
+        allOrders.forEach(o => { 
+            const items = o.partnerItems?.map(i => i.productName).join(', ') || '';
+            csv += `${o.id},${items},${o.partnerOrderTotal || 0},${o.status},${o.userName || ''},${o.userPhone || ''},${o.userAddress || ''},${o.createdAt?.toDate()}\n`; 
+        });
+        const blob = new Blob([csv], {type: 'text/csv'});
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = `orders_${Date.now()}.csv`;
+        link.click();
+    });
+
+    document.getElementById('importBtn')?.addEventListener('click', async () => {
+        const file = document.getElementById('csvFile').files[0];
+        if (!file) return;
+        const text = await file.text();
+        const lines = text.split('\n').slice(1);
+        let count = 0;
+        for (const line of lines) {
+            if (!line.trim()) continue;
+            const [name, price, category, stock, desc] = line.split(',');
+            if (name && price) {
+                await addDoc(collection(db, "products"), { name: name.trim(), price: parseInt(price), category: category || 'equipment', stock: parseInt(stock) || 0, desc: desc || '', partnerId: partnerDocId, createdAt: new Date() });
+                count++;
+            }
+        }
+        alert(`✅ Импортировано ${count} товаров`);
+        loadProducts();
+        loadStats();
+    });
+
+    document.getElementById('withdrawBtn')?.addEventListener('click', async () => {
+        const amount = parseInt(document.getElementById('withdrawAmount').value);
+        if (!amount || amount <= 0) { alert('Введите сумму'); return; }
+        
+        const balanceDoc = await getDoc(doc(db, "wallet_balances", partnerDocId));
+        const available = balanceDoc.exists() ? (balanceDoc.data().available || 0) : 0;
+        
+        if (amount > available) {
+            alert('❌ Недостаточно средств на балансе');
+            return;
+        }
+        
+        await addDoc(collection(db, "withdrawals"), { 
+            partnerId: partnerDocId, 
+            amount, 
+            method: document.getElementById('withdrawMethod').value, 
+            status: 'pending', 
+            createdAt: new Date() 
+        });
+        
+        await updateDoc(doc(db, "wallet_balances", partnerDocId), {
+            available: available - amount,
+            pendingWithdraw: (balanceDoc.data()?.pendingWithdraw || 0) + amount,
+            updatedAt: new Date()
+        });
+        
+        alert(`✅ Запрос на вывод ${amount} ₽ отправлен`);
+        document.getElementById('withdrawAmount').value = '';
+        
+        const historySnap = await getDocs(query(collection(db, "withdrawals"), where("partnerId", "==", partnerDocId), orderBy("createdAt", "desc")));
+        const container = document.getElementById('withdrawHistory');
+        if (historySnap.empty) { container.innerHTML = '<div class="empty-state">История пуста</div>'; return; }
+        let html = '';
+        historySnap.forEach(docSnap => { const w = docSnap.data(); html += `<div class="history-item"><span>${w.createdAt?.toDate().toLocaleString() || '—'}</span><span>${w.amount} ₽</span><span>${w.method}</span><span style="color: ${w.status === 'completed' ? '#10b981' : '#f59e0b'};">${w.status === 'completed' ? 'Выполнен' : 'В обработке'}</span></div>`; });
+        container.innerHTML = html;
+        
+        await loadWalletBalance();
+    });
+
+    async function updateChart(period) {
+        if (!allOrders.length) {
+            if (salesChart) salesChart.destroy();
+            salesChart = new Chart(document.getElementById('salesChart'), { type: 'line', data: { labels: [], datasets: [{ label: 'Выручка (₽)', data: [] }] } });
+            return;
+        }
+        let filtered = [...allOrders];
+        if (period !== 'all') { const start = new Date(); start.setDate(start.getDate() - parseInt(period)); filtered = allOrders.filter(o => o.createdAt && o.createdAt.toDate() >= start); }
+        const daily = {};
+        let startDate, endDate = new Date();
+        if (period !== 'all') startDate = new Date(Date.now() - parseInt(period) * 86400000);
+        else { const oldest = [...allOrders].sort((a,b) => a.createdAt?.toDate() - b.createdAt?.toDate())[0]; startDate = oldest?.createdAt?.toDate() || new Date(); }
+        for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) daily[d.toISOString().split('T')[0]] = 0;
+        filtered.forEach(o => { if (o.createdAt) daily[o.createdAt.toDate().toISOString().split('T')[0]] += o.partnerOrderTotal || o.totalPrice || 0; });
+        const labels = Object.keys(daily).sort();
+        const data = labels.map(l => daily[l]);
+        if (salesChart) salesChart.destroy();
+        salesChart = new Chart(document.getElementById('salesChart'), { type: 'line', data: { labels: labels.map(l => l.slice(5)), datasets: [{ label: 'Выручка (₽)', data, borderColor: '#fbbf24', backgroundColor: 'rgba(251,191,36,0.1)', fill: true, tension: 0.4 }] } });
+    }
+
+    // ========== ОБРАБОТЧИКИ ФИЛЬТРОВ ==========
+    document.querySelectorAll('.status-filter-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.status-filter-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            partnerActiveFilter = btn.dataset.status;
+            applyPartnerOrdersFilter();
+        });
+    });
+
+    // Кнопка очистки истории
+    const clearHistoryBtn = document.getElementById('clearHistoryPartnerBtn');
+    if (clearHistoryBtn) {
+        clearHistoryBtn.addEventListener('click', clearPartnerOrderHistory);
+    }
+
+    document.querySelectorAll('.period-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.period-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            updateChart(btn.dataset.period);
+        });
+    });
+
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+            btn.classList.add('active');
+            document.getElementById(`tab-${btn.dataset.tab}`).classList.add('active');
+            if (btn.dataset.tab === 'products') loadProducts();
+            if (btn.dataset.tab === 'active-orders') loadActiveOrders();
+            if (btn.dataset.tab === 'reviews') loadReviews();
+            if (btn.dataset.tab === 'finance') {
+                loadWalletBalance();
+                loadTransactionHistory();
+                loadStats();
+            }
+        });
+    });
+
+    function escapeHtml(str) { if (!str) return ''; return String(str).replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[m])); }
+
+    onAuthStateChanged(auth, async (user) => {
+        if (!user) { window.location.href = 'login.html'; return; }
+        const partners = await getDocs(query(collection(db, "partners"), where("email", "==", user.email)));
+        if (partners.empty) { document.getElementById('pendingStatus').style.display = 'block'; return; }
+        partnerDocId = partners.docs[0].id;
+        document.getElementById('partnerContent').style.display = 'block';
+        await loadShopInfo();
+        await loadProducts();
+        await loadActiveOrders();
+        await loadReviews();
+        await loadStats();
+        await loadWalletBalance();
+        await loadTransactionHistory();
+        updateChart('all');
+    });
+
+    document.getElementById('closeModalBtn')?.addEventListener('click', () => { document.getElementById('editModal').style.display = 'none'; });
+    document.getElementById('menuToggle')?.addEventListener('click', () => document.getElementById('navLinks')?.classList.toggle('show'));
+</script>
 </body>
 </html>
