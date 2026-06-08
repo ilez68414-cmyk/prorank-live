@@ -18,6 +18,7 @@ const db = getFirestore(app);
 let challengesIndicator = null;
 let fighterMoneyIndicator = null;
 let partnerWalletIndicator = null;
+let deferredPrompt = null;
 
 function getCurrentPage() {
     const path = window.location.pathname;
@@ -67,25 +68,15 @@ function initMobileSubmenus() {
     });
 }
 
-// Удаление старых индикаторов из HTML
 function removeOldIndicators() {
     const oldIndicator = document.getElementById('balanceIndicator');
-    if (oldIndicator) {
-        oldIndicator.remove();
-        console.log('✅ Старый индикатор вызовов удалён');
-    }
-    
+    if (oldIndicator) oldIndicator.remove();
     const oldWalletIndicator = document.querySelector('.wallet-indicator');
-    if (oldWalletIndicator) {
-        oldWalletIndicator.remove();
-    }
+    if (oldWalletIndicator) oldWalletIndicator.remove();
 }
 
-// СОЗДАНИЕ ИНДИКАТОРОВ В ШАПКЕ
 function createIndicators() {
-    // Удаляем старые индикаторы
     removeOldIndicators();
-    
     const navbar = document.querySelector('.navbar');
     if (!navbar) return;
     
@@ -99,20 +90,17 @@ function createIndicators() {
     
     indicatorsContainer = document.createElement('div');
     indicatorsContainer.className = 'header-indicators';
-    
     indicatorsContainer.innerHTML = `
         <div class="challenges-indicator" id="challengesIndicator" style="display: none;">
             <i class="fas fa-crosshairs"></i>
             <span class="challenges-count" id="headerChallengesCount">0</span>
             <button class="challenges-plus" id="balancePlusBtn">+</button>
         </div>
-        
         <div class="fighter-money-indicator" id="fighterMoneyIndicator" style="display: none;" onclick="window.location.href='buyer-wallet.html'">
             <i class="fas fa-ruble-sign"></i>
             <span class="fighter-money-amount" id="fighterMoneyAmount">0</span>
             <i class="fas fa-chevron-right" style="font-size: 0.7rem;"></i>
         </div>
-        
         <div class="partner-wallet-indicator" id="partnerWalletIndicator" style="display: none;" onclick="window.location.href='wallet.html'">
             <i class="fas fa-wallet"></i>
             <span class="partner-wallet-amount" id="partnerWalletAmount">0 ₽</span>
@@ -131,108 +119,218 @@ function createIndicators() {
     fighterMoneyIndicator = document.getElementById('fighterMoneyIndicator');
     partnerWalletIndicator = document.getElementById('partnerWalletIndicator');
     
-    // Кнопка пополнения вызовов (работает)
     const plusBtn = document.getElementById('balancePlusBtn');
-    if (plusBtn) {
-        plusBtn.onclick = () => {
-            window.location.href = 'shop.html';
-        };
-    }
+    if (plusBtn) plusBtn.onclick = () => window.location.href = 'shop.html';
 }
 
-// ГЛОБАЛЬНАЯ ФУНКЦИЯ ОБНОВЛЕНИЯ ВЫЗОВОВ
 window.updateHeaderBalance = async function() {
     const user = auth.currentUser;
     const balanceCount = document.getElementById('headerChallengesCount');
     if (!user || !balanceCount) return;
-    
     try {
         const userDoc = await getDoc(doc(db, "fighters", user.uid));
         const data = userDoc.data();
-        
         if (data?.isPartner === true) {
             if (challengesIndicator) challengesIndicator.style.display = 'none';
             return;
         }
-        
-        const free = data.freeChallenges || 0;
-        const purchased = data.purchasedChallenges || 0;
-        const total = free + purchased;
+        const total = (data.freeChallenges || 0) + (data.purchasedChallenges || 0);
         balanceCount.innerText = total;
         if (challengesIndicator) challengesIndicator.style.display = 'flex';
-    } catch (err) { 
-        console.error('Ошибка загрузки вызовов:', err);
-    }
+    } catch (err) { console.error(err); }
 };
 
-// ОБНОВЛЕНИЕ КОШЕЛЬКА БОЙЦА
 async function updateFighterMoneyBalance() {
     const user = auth.currentUser;
     if (!user || !fighterMoneyIndicator) return;
-    
     try {
         const userDoc = await getDoc(doc(db, "fighters", user.uid));
         if (userDoc.data()?.isPartner === true) {
             fighterMoneyIndicator.style.display = 'none';
             return;
         }
-        
         const balanceDoc = await getDoc(doc(db, "wallet_balances", user.uid));
-        let available = 0;
-        
-        if (balanceDoc.exists()) {
-            available = balanceDoc.data().available || 0;
-        }
-        
+        let available = balanceDoc.exists() ? (balanceDoc.data().available || 0) : 0;
         const moneyAmount = document.getElementById('fighterMoneyAmount');
         if (moneyAmount) moneyAmount.innerText = available.toLocaleString();
         fighterMoneyIndicator.style.display = 'flex';
-    } catch (err) {
-        console.error('Ошибка загрузки кошелька бойца:', err);
-        if (fighterMoneyIndicator) fighterMoneyIndicator.style.display = 'none';
-    }
+    } catch (err) { console.error(err); }
 }
 
-// ОБНОВЛЕНИЕ КОШЕЛЬКА ПАРТНЁРА
 async function updatePartnerWalletBalance() {
     const user = auth.currentUser;
     if (!user || !partnerWalletIndicator) return;
-    
     try {
         const userDoc = await getDoc(doc(db, "fighters", user.uid));
         const isPartner = userDoc.data()?.isPartner === true;
-        
         if (!isPartner) {
             partnerWalletIndicator.style.display = 'none';
             return;
         }
-        
         const partnersQuery = query(collection(db, "partners"), where("email", "==", user.email));
         const partnersSnap = await getDocs(partnersQuery);
-        
         if (partnersSnap.empty) {
             partnerWalletIndicator.style.display = 'none';
             return;
         }
-        
         const partnerId = partnersSnap.docs[0].id;
         const balanceDoc = await getDoc(doc(db, "wallet_balances", partnerId));
-        let available = 0;
-        
-        if (balanceDoc.exists()) {
-            available = balanceDoc.data().available || 0;
-        }
-        
+        let available = balanceDoc.exists() ? (balanceDoc.data().available || 0) : 0;
         const walletAmount = document.getElementById('partnerWalletAmount');
         if (walletAmount) walletAmount.innerText = available.toLocaleString() + ' ₽';
         partnerWalletIndicator.style.display = 'flex';
-    } catch (err) {
-        console.error('Ошибка загрузки кошелька партнёра:', err);
-        if (partnerWalletIndicator) partnerWalletIndicator.style.display = 'none';
+    } catch (err) { console.error(err); }
+}
+
+function ensureMobileNavContainer() {
+    let container = document.getElementById('mobileBottomNavContainer');
+    if (!container) {
+        container = document.createElement('div');
+        container.id = 'mobileBottomNavContainer';
+        document.body.appendChild(container);
+    }
+    return container;
+}
+
+function renderMobileBottomNav() {
+    const container = ensureMobileNavContainer();
+    if (!container) return;
+    
+    const currentPage = window.location.pathname.split('/').pop() || 'index.html';
+    
+    container.innerHTML = `
+        <nav class="mobile-bottom-nav" style="display:flex!important">
+            <a href="index.html" class="mobile-nav-item ${currentPage === 'index.html' ? 'active' : ''}">
+                <i class="fas fa-home"></i>
+                <span>Главная</span>
+            </a>
+            <a href="catalog.html" class="mobile-nav-item ${currentPage === 'catalog.html' ? 'active' : ''}">
+                <i class="fas fa-store"></i>
+                <span>Каталог</span>
+            </a>
+            <div class="mobile-nav-center" id="centerActionBtn">
+                <div class="center-button">
+                    <i class="fas fa-plus"></i>
+                </div>
+            </div>
+            <a href="chats.html" class="mobile-nav-item ${currentPage === 'chats.html' ? 'active' : ''}">
+                <i class="fas fa-comments"></i>
+                <span>Чаты</span>
+            </a>
+            <a href="profile.html" class="mobile-nav-item ${currentPage === 'profile.html' ? 'active' : ''}">
+                <i class="fas fa-user"></i>
+                <span>Профиль</span>
+            </a>
+        </nav>
+    `;
+    
+    initCenterAction();
+}
+
+function initCenterAction() {
+    const centerBtn = document.getElementById('centerActionBtn');
+    if (!centerBtn) return;
+    
+    const newCenterBtn = centerBtn.cloneNode(true);
+    centerBtn.parentNode.replaceChild(newCenterBtn, centerBtn);
+    
+    newCenterBtn.onclick = (e) => {
+        e.preventDefault();
+        
+        const actions = [
+            { text: '🔥 Кинуть вызов', icon: 'fa-fist-raised', url: 'challenges.html' },
+            { text: '📦 Мои заказы', icon: 'fa-box', url: 'my-orders.html' },
+            { text: '📊 Мой рейтинг', icon: 'fa-chart-line', url: 'rating.html' },
+            { text: '💰 Пополнить баланс', icon: 'fa-plus-circle', url: 'deposit.html' }
+        ];
+        
+        let menu = document.getElementById('quickActionsMenu');
+        if (menu) menu.remove();
+        
+        menu = document.createElement('div');
+        menu.id = 'quickActionsMenu';
+        menu.innerHTML = `
+            <div class="quick-actions-overlay">
+                <div class="quick-actions-panel">
+                    <div class="quick-actions-header">Быстрые действия</div>
+                    ${actions.map(a => `<div class="quick-action-item" data-url="${a.url}">
+                        <i class="fas ${a.icon}"></i><span>${a.text}</span>
+                    </div>`).join('')}
+                    <div class="quick-actions-close">Закрыть</div>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(menu);
+        
+        menu.querySelectorAll('.quick-action-item').forEach(item => {
+            item.onclick = () => window.location.href = item.dataset.url;
+        });
+        menu.querySelector('.quick-actions-close').onclick = () => menu.remove();
+        menu.onclick = (e) => { if (e.target === menu) menu.remove(); };
+    };
+}
+
+function initPWABanner() {
+    const banner = document.getElementById('pwaInstallBanner');
+    if (!banner) return;
+    
+    if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true) {
+        banner.style.display = 'none';
+        return;
+    }
+    
+    banner.style.display = 'flex';
+    
+    const installBtn = document.getElementById('installPwaBtn');
+    if (installBtn) {
+        installBtn.onclick = async () => {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                if (outcome === 'accepted') {
+                    banner.style.display = 'none';
+                }
+                deferredPrompt = null;
+            } else {
+                alert('Нажмите меню (три точки) → Установить приложение');
+            }
+        };
+    }
+    
+    const closeBtn = document.getElementById('closePwaBanner');
+    if (closeBtn) {
+        closeBtn.onclick = () => {
+            banner.style.display = 'none';
+        };
     }
 }
 
+window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    initPWABanner();
+});
+
+window.addEventListener('appinstalled', () => {
+    const banner = document.getElementById('pwaInstallBanner');
+    if (banner) banner.style.display = 'none';
+});
+
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js').catch(err => console.error('SW error:', err));
+    });
+}
+
+function escapeHtml(str) {
+    if (!str) return '';
+    return str;
+}
+
 async function initHeader() {
+    ensureMobileNavContainer();
+    
     const navLinks = document.getElementById('navLinks');
     if (!navLinks) return;
 
@@ -249,9 +347,8 @@ async function initHeader() {
             const userDoc = await getDoc(doc(db, "fighters", userId));
             isPartner = userDoc.data()?.isPartner === true;
             userName = userDoc.data()?.name || 'Боец';
-            
             setTimeout(() => {
-                if (window.updateHeaderBalance) window.updateHeaderBalance();
+                window.updateHeaderBalance();
                 updateFighterMoneyBalance();
                 updatePartnerWalletBalance();
             }, 100);
@@ -264,7 +361,6 @@ async function initHeader() {
     function updateActiveAndLogout() {
         const links = navLinks.querySelectorAll('a');
         setActiveLink(links, currentPage);
-        
         const logoutLink = document.getElementById('logoutLink');
         if (logoutLink) {
             const newLogout = logoutLink.cloneNode(true);
@@ -281,10 +377,11 @@ async function initHeader() {
         updateActiveAndLogout();
         initBurger();
         initMobileSubmenus();
+        renderMobileBottomNav();
+        initPWABanner();
         return;
     }
 
-    // Генерация навигации (десктоп)
     if (isDesktop) {
         if (user && isPartner) {
             navLinks.innerHTML = `
@@ -319,8 +416,7 @@ async function initHeader() {
                     </div>
                 </div>
             `;
-        } 
-        else if (user && !isPartner) {
+        } else if (user && !isPartner) {
             navLinks.innerHTML = `
                 <a href="index.html"><i class="fas fa-home"></i> Главная</a>
                 <a href="rating.html"><i class="fas fa-chart-line"></i> Рейтинг</a>
@@ -352,8 +448,7 @@ async function initHeader() {
                     </div>
                 </div>
             `;
-        } 
-        else {
+        } else {
             navLinks.innerHTML = `
                 <a href="index.html"><i class="fas fa-home"></i> Главная</a>
                 <a href="rating.html"><i class="fas fa-chart-line"></i> Рейтинг</a>
@@ -375,9 +470,7 @@ async function initHeader() {
                 <a href="login.html" class="login-btn"><i class="fas fa-sign-in-alt"></i> Войти</a>
             `;
         }
-    } 
-    else {
-        // Мобильная версия
+    } else {
         if (user && isPartner) {
             navLinks.innerHTML = `
                 <a href="index.html"><i class="fas fa-home"></i> Главная</a>
@@ -405,8 +498,7 @@ async function initHeader() {
                 <a href="partner-dashboard.html"><i class="fas fa-tachometer-alt"></i> Кабинет</a>
                 <a href="#" id="logoutLink"><i class="fas fa-sign-out-alt"></i> Выйти</a>
             `;
-        }
-        else if (user && !isPartner) {
+        } else if (user && !isPartner) {
             navLinks.innerHTML = `
                 <a href="index.html"><i class="fas fa-home"></i> Главная</a>
                 <a href="rating.html"><i class="fas fa-chart-line"></i> Рейтинг</a>
@@ -431,8 +523,7 @@ async function initHeader() {
                 <a href="profile.html?id=${userId}"><i class="fas fa-user"></i> Профиль</a>
                 <a href="#" id="logoutLink"><i class="fas fa-sign-out-alt"></i> Выйти</a>
             `;
-        } 
-        else {
+        } else {
             navLinks.innerHTML = `
                 <a href="index.html"><i class="fas fa-home"></i> Главная</a>
                 <a href="rating.html"><i class="fas fa-chart-line"></i> Рейтинг</a>
@@ -454,33 +545,35 @@ async function initHeader() {
                 <a href="login.html"><i class="fas fa-sign-in-alt"></i> Войти</a>
             `;
         }
-        
         initMobileSubmenus();
     }
 
     updateActiveAndLogout();
     initBurger();
+    renderMobileBottomNav();
+    initPWABanner();
 }
 
-function escapeHtml(str) {
-    if (!str) return '';
-    return str.replace(/[&<>]/g, m => m === '&' ? '&amp;' : m === '<' ? '&lt;' : '&gt;');
+// ========== АВТОМАТИЧЕСКОЕ ВОССТАНОВЛЕНИЕ МЕНЮ ==========
+function autoRestoreMenu() {
+    const menu = document.querySelector('.mobile-bottom-nav');
+    const container = document.getElementById('mobileBottomNavContainer');
+    
+    if (!menu && container) {
+        renderMobileBottomNav();
+    } else if (menu) {
+        menu.style.display = 'flex';
+    }
 }
+
+setInterval(autoRestoreMenu, 200);
+window.addEventListener('popstate', () => setTimeout(renderMobileBottomNav, 50));
+window.addEventListener('pageshow', () => setTimeout(renderMobileBottomNav, 50));
 
 document.addEventListener('DOMContentLoaded', () => {
     onAuthStateChanged(auth, async () => {
         await initHeader();
     });
-});
-
-window.addEventListener('resize', () => {
-    const navLinks = document.getElementById('navLinks');
-    if (navLinks) {
-        navLinks.innerHTML = '';
-        onAuthStateChanged(auth, async () => {
-            await initHeader();
-        });
-    }
 });
 
 window.updateFighterMoneyBalance = updateFighterMoneyBalance;
