@@ -199,7 +199,7 @@ function renderMobileBottomNav() {
     const currentPage = window.location.pathname.split('/').pop() || 'index.html';
     
     container.innerHTML = `
-        <nav class="mobile-bottom-nav" style="display:flex!important">
+        <nav class="mobile-bottom-nav">
             <a href="index.html" class="mobile-nav-item ${currentPage === 'index.html' ? 'active' : ''}">
                 <i class="fas fa-home"></i>
                 <span>Главная</span>
@@ -224,51 +224,42 @@ function renderMobileBottomNav() {
         </nav>
     `;
     
-    initCenterAction();
-}
-
-function initCenterAction() {
     const centerBtn = document.getElementById('centerActionBtn');
-    if (!centerBtn) return;
-    
-    const newCenterBtn = centerBtn.cloneNode(true);
-    centerBtn.parentNode.replaceChild(newCenterBtn, centerBtn);
-    
-    newCenterBtn.onclick = (e) => {
-        e.preventDefault();
-        
-        const actions = [
-            { text: '🔥 Кинуть вызов', icon: 'fa-fist-raised', url: 'challenges.html' },
-            { text: '📦 Мои заказы', icon: 'fa-box', url: 'my-orders.html' },
-            { text: '📊 Мой рейтинг', icon: 'fa-chart-line', url: 'rating.html' },
-            { text: '💰 Пополнить баланс', icon: 'fa-plus-circle', url: 'deposit.html' }
-        ];
-        
-        let menu = document.getElementById('quickActionsMenu');
-        if (menu) menu.remove();
-        
-        menu = document.createElement('div');
-        menu.id = 'quickActionsMenu';
-        menu.innerHTML = `
-            <div class="quick-actions-overlay">
-                <div class="quick-actions-panel">
-                    <div class="quick-actions-header">Быстрые действия</div>
-                    ${actions.map(a => `<div class="quick-action-item" data-url="${a.url}">
-                        <i class="fas ${a.icon}"></i><span>${a.text}</span>
-                    </div>`).join('')}
-                    <div class="quick-actions-close">Закрыть</div>
+    if (centerBtn) {
+        centerBtn.onclick = () => {
+            const actions = [
+                { text: '🔥 Кинуть вызов', icon: 'fa-fist-raised', url: 'challenges.html' },
+                { text: '📦 Мои заказы', icon: 'fa-box', url: 'my-orders.html' },
+                { text: '📊 Мой рейтинг', icon: 'fa-chart-line', url: 'rating.html' },
+                { text: '💰 Пополнить баланс', icon: 'fa-plus-circle', url: 'deposit.html' }
+            ];
+            
+            let menu = document.getElementById('quickActionsMenu');
+            if (menu) menu.remove();
+            
+            menu = document.createElement('div');
+            menu.id = 'quickActionsMenu';
+            menu.innerHTML = `
+                <div class="quick-actions-overlay">
+                    <div class="quick-actions-panel">
+                        <div class="quick-actions-header">Быстрые действия</div>
+                        ${actions.map(a => `<div class="quick-action-item" data-url="${a.url}">
+                            <i class="fas ${a.icon}"></i><span>${a.text}</span>
+                        </div>`).join('')}
+                        <div class="quick-actions-close">Закрыть</div>
+                    </div>
                 </div>
-            </div>
-        `;
-        
-        document.body.appendChild(menu);
-        
-        menu.querySelectorAll('.quick-action-item').forEach(item => {
-            item.onclick = () => window.location.href = item.dataset.url;
-        });
-        menu.querySelector('.quick-actions-close').onclick = () => menu.remove();
-        menu.onclick = (e) => { if (e.target === menu) menu.remove(); };
-    };
+            `;
+            
+            document.body.appendChild(menu);
+            
+            menu.querySelectorAll('.quick-action-item').forEach(item => {
+                item.onclick = () => window.location.href = item.dataset.url;
+            });
+            menu.querySelector('.quick-actions-close').onclick = () => menu.remove();
+            menu.onclick = (e) => { if (e.target === menu) menu.remove(); };
+        };
+    }
 }
 
 function initPWABanner() {
@@ -285,7 +276,6 @@ function initPWABanner() {
     const installBtn = document.getElementById('installPwaBtn');
     if (installBtn) {
         installBtn.onclick = async () => {
-            // Проверяем iOS
             const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
             
             if (isIOS) {
@@ -310,13 +300,30 @@ function initPWABanner() {
         };
     }
 }
+
+// PWA УСТАНОВКА - ПОЯВЛЯЕТСЯ СРАЗУ ПРИ ЗАХОДЕ
 window.addEventListener('beforeinstallprompt', (e) => {
+    console.log('PWA установка доступна');
     e.preventDefault();
     deferredPrompt = e;
-    initPWABanner();
+    
+    // ПОКАЗЫВАЕМ ОКНО УСТАНОВКИ СРАЗУ
+    deferredPrompt.prompt();
+    
+    deferredPrompt.userChoice.then((choiceResult) => {
+        if (choiceResult.outcome === 'accepted') {
+            console.log('Пользователь установил PWA');
+            const banner = document.getElementById('pwaInstallBanner');
+            if (banner) banner.style.display = 'none';
+        } else {
+            console.log('Пользователь отклонил установку');
+        }
+        deferredPrompt = null;
+    });
 });
 
 window.addEventListener('appinstalled', () => {
+    console.log('PWA установлено');
     const banner = document.getElementById('pwaInstallBanner');
     if (banner) banner.style.display = 'none';
 });
@@ -558,64 +565,11 @@ async function initHeader() {
     initPWABanner();
 }
 
-// ========== АВТОМАТИЧЕСКОЕ ВОССТАНОВЛЕНИЕ МЕНЮ ==========
-function autoRestoreMenu() {
+setInterval(() => {
     const menu = document.querySelector('.mobile-bottom-nav');
-    const container = document.getElementById('mobileBottomNavContainer');
-    
-    if (!menu && container) {
-        renderMobileBottomNav();
-    } else if (menu) {
-        menu.style.display = 'flex';
-    }
-}
+    if (menu) menu.style.display = 'flex';
+}, 300);
 
-// Запускаем полноэкранный режим в PWA
-function enableFullscreenInPWA() {
-    if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true) {
-        // Уже в PWA, ничего не делаем
-        return;
-    }
-    
-    // Для телефонов в браузере - просим добавить в PWA
-    const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-    if (isMobile && !window.matchMedia('(display-mode: standalone)').matches) {
-        // Показываем баннер с предложением установить PWA
-        const banner = document.getElementById('pwaInstallBanner');
-        if (banner) banner.style.display = 'flex';
-    }
-}
-
-// Для iOS - скрываем строку браузера
-if (/iPhone|iPad|iPod/i.test(navigator.userAgent)) {
-    window.addEventListener('load', function() {
-        setTimeout(function() {
-            window.scrollTo(0, 0);
-        }, 100);
-    });
-    
-    // При каждом переходе
-    document.addEventListener('click', function() {
-        setTimeout(function() {
-            window.scrollTo(0, 0);
-        }, 50);
-    });
-}
-
-// Скрываем строку браузера при прокрутке (для браузера)
-function hideBrowserAddressBar() {
-    window.scrollTo(0, 1);
-    setTimeout(() => {
-        window.scrollTo(0, 0);
-    }, 100);
-}
-
-// Запускаем
-enableFullscreenInPWA();
-window.addEventListener('load', hideBrowserAddressBar);
-window.addEventListener('orientationchange', hideBrowserAddressBar);
-
-setInterval(autoRestoreMenu, 200);
 window.addEventListener('popstate', () => setTimeout(renderMobileBottomNav, 50));
 window.addEventListener('pageshow', () => setTimeout(renderMobileBottomNav, 50));
 
