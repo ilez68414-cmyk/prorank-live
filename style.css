@@ -1334,6 +1334,8 @@ body {
     padding: 12px 16px;
     margin: 0;
     animation: slideDown 0.4s ease;
+    z-index: 1000;
+    position: relative;
 }
 
 .install-banner-content {
@@ -1427,21 +1429,101 @@ body {
     }
 }
 
-/* ========== АДАПТИВ ========== */
-/* Десктоп — скрываем нижнее меню */
-@media (min-width: 769px) {
-    .mobile-bottom-nav {
-        display: none !important;
-    }
+/* ========== НИЖНЕЕ МЕНЮ ========== */
+.mobile-bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: rgba(20, 20, 25, 0.95);
+    backdrop-filter: blur(20px);
+    border-top: 1px solid rgba(251, 191, 36, 0.3);
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    padding: 8px 12px;
+    padding-bottom: calc(8px + env(safe-area-inset-bottom, 0px));
+    z-index: 1000;
 }
 
-/* Телефон — показываем нижнее меню */
-@media (max-width: 768px) {
+.mobile-nav-center {
+    cursor: pointer;
+    position: relative;
+    top: 0px;
+}
+
+.center-button {
+    width: 52px;
+    height: 52px;
+    background: #fbbf24;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 10px rgba(251, 191, 36, 0.3);
+    margin-top: 0;
+    margin-bottom: -2px;
+}
+
+.center-button:active {
+    transform: scale(0.95);
+}
+
+.center-button i {
+    color: #000;
+    font-size: 1.7rem;
+}
+
+.mobile-nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    color: #888;
+    text-decoration: none;
+    font-size: 0.7rem;
+    padding: 6px 12px;
+    border-radius: 30px;
+    transition: all 0.2s ease;
+}
+
+.mobile-nav-item i {
+    font-size: 1.2rem;
+}
+
+.mobile-nav-item.active {
+    color: #fbbf24;
+}
+
+/* ========== КОНТЕЙНЕР ДЛЯ МЕНЮ ========== */
+#mobileBottomNavContainer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 999;
+}
+
+/* ========== АДАПТИВ: ТЕЛЕФОНЫ И PWA ========== */
+@media (max-width: 768px), (display-mode: standalone) {
     .mobile-bottom-nav {
         display: flex !important;
     }
+    
     body {
         padding-bottom: 70px;
+    }
+    
+    /* Скрываем компьютерное меню (ссылки), но НЕ индикаторы */
+    .navbar .nav-links {
+        display: none !important;
+    }
+    
+    /* Индикаторы остаются видимыми */
+    .header-indicators {
+        display: flex !important;
     }
     
     /* Компактнее индикаторы на телефонах */
@@ -1461,6 +1543,22 @@ body {
     .fighter-money-indicator i:first-child,
     .partner-wallet-indicator i:first-child {
         font-size: 0.8rem;
+    }
+    
+    /* Скрываем футер на телефонах */
+    .main-footer {
+        display: none !important;
+    }
+}
+
+/* ========== КОМПЬЮТЕР (НЕ PWA) ========== */
+@media (min-width: 769px) and (display-mode: browser) {
+    .mobile-bottom-nav {
+        display: none !important;
+    }
+    
+    .main-footer {
+        display: block !important;
     }
 }
 
@@ -1487,18 +1585,21 @@ body {
         font-size: 0.75rem;
         min-height: 36px;
     }
-}
-
-/* Футер виден только на десктопе */
-.main-footer {
-    display: block;
-}
-
-@media (max-width: 768px) {
-    .main-footer {
-        display: none !important;
+    
+    .center-button {
+        width: 48px;
+        height: 48px;
+    }
+    
+    .center-button i {
+        font-size: 1.4rem;
+    }
+    
+    .mobile-nav-center {
+        top: -6px;
     }
 }
+
 /* ========== МОДАЛЬНОЕ ОКНО ДЛЯ ИНСТРУКЦИИ УСТАНОВКИ PWA ========== */
 .pwa-install-modal {
     position: fixed;
@@ -1582,44 +1683,15 @@ body {
     font-size: 13px;
 }
 
-@keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
-}
-
-@keyframes slideUp {
-    from {
-        opacity: 0;
-        transform: translateY(30px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-/* ========== ДОПОЛНИТЕЛЬНАЯ ЗАЩИТА ДЛЯ МЕНЮ ========== */
-#mobileBottomNavContainer {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    z-index: 999;
-}
-
-/* Гарантия, что меню всегда видно на телефонах */
-@media (min-width: 769px) {
-    .mobile-bottom-nav {
-        display: flex !important;
-    }
-}
+/* ========== БЫСТРЫЕ ДЕЙСТВИЯ (МЕНЮ ПРИ НАЖАТИИ НА ПЛЮС) ========== */
 .quick-actions-overlay {
     position: fixed;
     top: 0;
     left: 0;
     right: 0;
     bottom: 0;
-    background: rgba(0,0,0,0.8);
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(4px);
     z-index: 10001;
     display: flex;
     align-items: center;
@@ -1634,7 +1706,7 @@ body {
     width: 280px;
     border: 1px solid rgba(251, 191, 36, 0.3);
     animation: slideUp 0.2s ease;
-    box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
 }
 
 .quick-actions-header {
@@ -1642,7 +1714,7 @@ body {
     color: #fbbf24;
     font-weight: bold;
     padding-bottom: 15px;
-    border-bottom: 1px solid rgba(255,255,255,0.1);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     margin-bottom: 15px;
     font-size: 16px;
 }
@@ -1650,7 +1722,7 @@ body {
 .quick-action-item {
     padding: 14px;
     margin: 8px 0;
-    background: rgba(255,255,255,0.05);
+    background: rgba(255, 255, 255, 0.05);
     border-radius: 16px;
     cursor: pointer;
     display: flex;
@@ -1659,9 +1731,9 @@ body {
     transition: 0.2s;
 }
 
-.quick-action-item:hover {
-    background: rgba(251,191,36,0.2);
-    transform: scale(1.02);
+.quick-action-item:active {
+    background: rgba(251, 191, 36, 0.3);
+    transform: scale(0.98);
 }
 
 .quick-action-item i {
@@ -1679,7 +1751,7 @@ body {
     text-align: center;
     padding: 12px;
     margin-top: 15px;
-    background: rgba(255,255,255,0.08);
+    background: rgba(255, 255, 255, 0.08);
     border-radius: 16px;
     cursor: pointer;
     color: #aaa;
@@ -1687,11 +1759,12 @@ body {
     transition: 0.2s;
 }
 
-.quick-actions-close:hover {
-    background: rgba(255,255,255,0.15);
+.quick-actions-close:active {
+    background: rgba(255, 255, 255, 0.15);
     color: white;
 }
 
+/* Общие анимации */
 @keyframes fadeIn {
     from { opacity: 0; }
     to { opacity: 1; }

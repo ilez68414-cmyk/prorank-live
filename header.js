@@ -286,14 +286,27 @@ function initPWABanner() {
     if (installBtn) {
         installBtn.onclick = async () => {
             if (deferredPrompt) {
+                // Показываем диалог установки
                 deferredPrompt.prompt();
                 const { outcome } = await deferredPrompt.userChoice;
                 if (outcome === 'accepted') {
                     banner.style.display = 'none';
+                    console.log('PWA установлен');
                 }
                 deferredPrompt = null;
             } else {
-                alert('Нажмите меню (три точки) → Установить приложение');
+                // Если beforeinstallprompt не сработал, пробуем альтернативный способ
+                try {
+                    // Для iOS
+                    if (window.navigator.standalone === false) {
+                        alert('Нажмите "Поделиться" → "На экран Домой"');
+                    } else {
+                        // Для Android Chrome
+                        window.location.href = 'https://support.google.com/chrome/answer/9658361';
+                    }
+                } catch(e) {
+                    alert('Нажмите меню браузера (три точки) → "Установить приложение"');
+                }
             }
         };
     }
@@ -565,6 +578,35 @@ function autoRestoreMenu() {
         menu.style.display = 'flex';
     }
 }
+
+// Запускаем полноэкранный режим в PWA
+function enableFullscreenInPWA() {
+    if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true) {
+        // Уже в PWA, ничего не делаем
+        return;
+    }
+    
+    // Для телефонов в браузере - просим добавить в PWA
+    const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+    if (isMobile && !window.matchMedia('(display-mode: standalone)').matches) {
+        // Показываем баннер с предложением установить PWA
+        const banner = document.getElementById('pwaInstallBanner');
+        if (banner) banner.style.display = 'flex';
+    }
+}
+
+// Скрываем строку браузера при прокрутке (для браузера)
+function hideBrowserAddressBar() {
+    window.scrollTo(0, 1);
+    setTimeout(() => {
+        window.scrollTo(0, 0);
+    }, 100);
+}
+
+// Запускаем
+enableFullscreenInPWA();
+window.addEventListener('load', hideBrowserAddressBar);
+window.addEventListener('orientationchange', hideBrowserAddressBar);
 
 setInterval(autoRestoreMenu, 200);
 window.addEventListener('popstate', () => setTimeout(renderMobileBottomNav, 50));
