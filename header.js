@@ -285,28 +285,20 @@ function initPWABanner() {
     const installBtn = document.getElementById('installPwaBtn');
     if (installBtn) {
         installBtn.onclick = async () => {
-            if (deferredPrompt) {
-                // Показываем диалог установки
+            // Проверяем iOS
+            const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+            
+            if (isIOS) {
+                alert('Нажмите "Поделиться" → "На экран Домой"');
+            } else if (deferredPrompt) {
                 deferredPrompt.prompt();
                 const { outcome } = await deferredPrompt.userChoice;
                 if (outcome === 'accepted') {
                     banner.style.display = 'none';
-                    console.log('PWA установлен');
                 }
                 deferredPrompt = null;
             } else {
-                // Если beforeinstallprompt не сработал, пробуем альтернативный способ
-                try {
-                    // Для iOS
-                    if (window.navigator.standalone === false) {
-                        alert('Нажмите "Поделиться" → "На экран Домой"');
-                    } else {
-                        // Для Android Chrome
-                        window.location.href = 'https://support.google.com/chrome/answer/9658361';
-                    }
-                } catch(e) {
-                    alert('Нажмите меню браузера (три точки) → "Установить приложение"');
-                }
+                alert('Нажмите меню (три точки) → "Установить приложение"');
             }
         };
     }
@@ -318,7 +310,6 @@ function initPWABanner() {
         };
     }
 }
-
 window.addEventListener('beforeinstallprompt', (e) => {
     e.preventDefault();
     deferredPrompt = e;
@@ -593,6 +584,22 @@ function enableFullscreenInPWA() {
         const banner = document.getElementById('pwaInstallBanner');
         if (banner) banner.style.display = 'flex';
     }
+}
+
+// Для iOS - скрываем строку браузера
+if (/iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+    window.addEventListener('load', function() {
+        setTimeout(function() {
+            window.scrollTo(0, 0);
+        }, 100);
+    });
+    
+    // При каждом переходе
+    document.addEventListener('click', function() {
+        setTimeout(function() {
+            window.scrollTo(0, 0);
+        }, 50);
+    });
 }
 
 // Скрываем строку браузера при прокрутке (для браузера)
