@@ -236,10 +236,10 @@ async function renderMobileBottomNav() {
                 <i class="fas fa-comments"></i>
                 <span>Чаты</span>
             </a>
-            <div class="mobile-nav-item" id="mobileProfileBtn">
+            <a href="${profileLink}" class="mobile-nav-item ${currentPage === 'profile.html' || (currentPage === 'partner-dashboard.html' && isPartner) ? 'active' : ''}" id="mobileProfileBtn">
                 <i class="fas ${profileIcon}"></i>
                 <span>${profileText}</span>
-            </div>
+            </a>
         </nav>
     `;
     

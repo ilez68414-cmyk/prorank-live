@@ -247,6 +247,7 @@ async function loadFightHistory() {
     }
 }
 
+// ========== ИСПРАВЛЕННАЯ ФУНКЦИЯ ЗАГРУЗКИ АЧИВОК ==========
 async function loadAchievements() {
     const userId = currentFighterId;
     if (!userId) return;
@@ -273,14 +274,26 @@ async function loadAchievements() {
         allAchievements.forEach(ach => {
             const earned = earnedIds.has(ach.id);
             const icon = ach.icon || 'fa-medal';
-            const rewardText = ach.reward ? `${ach.reward.amount} ${ach.reward.type === 'frs' ? 'FRS' : (ach.reward.type === 'challenges' ? 'вызовов' : '')}` : '';
+            
+            // ========== ИСПРАВЛЕНИЕ ТУТ ==========
+            // Теперь правильно отображаем знаки: + для положительных, - для отрицательных (без лишнего плюса)
+            let rewardHtml = '';
+            if (ach.reward && ach.reward.amount) {
+                const amount = ach.reward.amount;
+                const typeText = ach.reward.type === 'frs' ? 'FRS' : (ach.reward.type === 'challenges' ? 'вызовов' : '');
+                const isNegative = amount < 0;
+                const sign = isNegative ? '' : '+';  // для отрицательных знак уже в числе
+                const rewardClass = isNegative ? 'negative' : 'positive';
+                rewardHtml = `<div class="achievement-reward ${rewardClass}"><i class="fas fa-gift"></i> ${sign}${amount} ${typeText}</div>`;
+            }
+            // ======================================
             
             html += `
                 <div class="achievement-card ${earned ? 'earned' : 'locked'}">
                     <div class="achievement-icon"><i class="fas ${icon}"></i></div>
                     <div class="achievement-name">${ach.name}</div>
                     <div class="achievement-desc">${ach.description || ''}</div>
-                    ${rewardText ? `<div class="achievement-reward">+${rewardText}</div>` : ''}
+                    ${rewardHtml}
                 </div>
             `;
         });
@@ -291,6 +304,7 @@ async function loadAchievements() {
         console.error('Ошибка загрузки ачивок:', err);
     }
 }
+// ========== КОНЕЦ ИСПРАВЛЕНИЯ ==========
 
 async function checkAndAwardAchievements(userId) {
     const userRef = doc(db, "fighters", userId);
@@ -348,7 +362,7 @@ async function checkAndAwardAchievements(userId) {
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         chat_id: user.telegramId,
-                        text: `🏆 НОВАЯ АЧИВКА!\n\n${ach.name}\n${ach.description || ''}\nНаграда: +${ach.reward?.amount || 0} ${ach.reward?.type === 'frs' ? 'FRS' : 'вызовов'}`,
+                        text: `🏆 НОВАЯ АЧИВКА!\n\n${ach.name}\n${ach.description || ''}\nНаграда: ${ach.reward?.amount > 0 ? '+' : ''}${ach.reward?.amount || 0} ${ach.reward?.type === 'frs' ? 'FRS' : 'вызовов'}`,
                         parse_mode: 'Markdown'
                     })
                 });
@@ -748,7 +762,6 @@ async function setupTelegramVerify() {
         telegramBtn.onclick = () => window.open(`https://t.me/ProRankBot?start=verify_${user.uid}`, '_blank');
     }
 }
-
 
 window.updateHeaderBalance = updateHeaderBalance;
 window.addEventListener('beforeunload', () => { if (authListenerUnsub) authListenerUnsub(); });
