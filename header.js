@@ -212,8 +212,8 @@ async function renderMobileBottomNav() {
         }
     }
     
-    // Определяем ссылку на профиль (как в верхнем меню)
-    const profileLink = isPartner ? 'partner-dashboard.html' : 'profile.html';
+    // Ссылка на профиль с ID для бойца
+    const profileLink = isPartner ? 'partner-dashboard.html' : `profile.html?id=${userId || ''}`;
     const profileIcon = isPartner ? 'fa-chart-line' : 'fa-user';
     const profileText = isPartner ? 'Кабинет' : 'Профиль';
     
@@ -251,7 +251,7 @@ async function renderMobileBottomNav() {
         };
     }
     
-    // Центральная кнопка
+    // Остальной код центральной кнопки...
     const centerBtn = document.getElementById('centerActionBtn');
     if (centerBtn) {
         centerBtn.onclick = () => {
