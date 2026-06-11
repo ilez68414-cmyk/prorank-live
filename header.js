@@ -192,11 +192,30 @@ function ensureMobileNavContainer() {
     return container;
 }
 
-function renderMobileBottomNav() {
+async function renderMobileBottomNav() {
     const container = ensureMobileNavContainer();
     if (!container) return;
     
     const currentPage = window.location.pathname.split('/').pop() || 'index.html';
+    const user = auth.currentUser;
+    let isPartner = false;
+    let userId = null;
+    
+    // Ждём данные о пользователе
+    if (user) {
+        userId = user.uid;
+        try {
+            const userDoc = await getDoc(doc(db, "fighters", userId));
+            isPartner = userDoc.data()?.isPartner === true;
+        } catch (err) {
+            console.error('Ошибка загрузки данных пользователя:', err);
+        }
+    }
+    
+    // Определяем ссылку на профиль (как в верхнем меню)
+    const profileLink = isPartner ? 'partner-dashboard.html' : 'profile.html';
+    const profileIcon = isPartner ? 'fa-chart-line' : 'fa-user';
+    const profileText = isPartner ? 'Кабинет' : 'Профиль';
     
     container.innerHTML = `
         <nav class="mobile-bottom-nav">
@@ -210,29 +229,52 @@ function renderMobileBottomNav() {
             </a>
             <div class="mobile-nav-center" id="centerActionBtn">
                 <div class="center-button">
-                    <i class="fas fa-plus"></i>
+                    <i class="fas fa-bolt"></i>
                 </div>
             </div>
             <a href="chats.html" class="mobile-nav-item ${currentPage === 'chats.html' ? 'active' : ''}">
                 <i class="fas fa-comments"></i>
                 <span>Чаты</span>
             </a>
-            <a href="profile.html" class="mobile-nav-item ${currentPage === 'profile.html' ? 'active' : ''}">
-                <i class="fas fa-user"></i>
-                <span>Профиль</span>
-            </a>
+            <div class="mobile-nav-item" id="mobileProfileBtn">
+                <i class="fas ${profileIcon}"></i>
+                <span>${profileText}</span>
+            </div>
         </nav>
     `;
     
+    // Обработчик кнопки профиля
+    const mobileProfileBtn = document.getElementById('mobileProfileBtn');
+    if (mobileProfileBtn) {
+        mobileProfileBtn.onclick = () => {
+            window.location.href = profileLink;
+        };
+    }
+    
+    // Центральная кнопка
     const centerBtn = document.getElementById('centerActionBtn');
     if (centerBtn) {
         centerBtn.onclick = () => {
-            const actions = [
-                { text: '🔥 Кинуть вызов', icon: 'fa-fist-raised', url: 'challenges.html' },
-                { text: '📦 Мои заказы', icon: 'fa-box', url: 'my-orders.html' },
-                { text: '📊 Мой рейтинг', icon: 'fa-chart-line', url: 'rating.html' },
-                { text: '💰 Пополнить баланс', icon: 'fa-plus-circle', url: 'deposit.html' }
-            ];
+            let actions = [];
+            
+            if (isPartner) {
+                actions = [
+                    { text: '📊 Аналитика', icon: 'fa-chart-line', url: 'partner-dashboard.html' },
+                    { text: '📦 Товары', icon: 'fa-box', url: 'partner-dashboard.html?tab=products' },
+                    { text: '🛒 Заказы', icon: 'fa-shopping-cart', url: 'partner-dashboard.html?tab=active-orders' },
+                    { text: '💰 Финансы', icon: 'fa-wallet', url: 'partner-dashboard.html?tab=finance' },
+                    { text: '⚙️ Настройки', icon: 'fa-cog', url: 'partner-dashboard.html?tab=settings' }
+                ];
+            } else {
+                actions = [
+                    { text: '🥊 Кинуть вызов', icon: 'fa-fist-raised', url: 'challenges.html' },
+                    { text: '🏆 Мой рейтинг', icon: 'fa-chart-line', url: 'rating.html' },
+                    { text: '💎 Пополнить баланс', icon: 'fa-plus-circle', url: 'deposit.html' },
+                    { text: '📦 Мои заказы', icon: 'fa-box', url: 'my-orders.html' }
+                ];
+            }
+            
+            actions.push({ text: '🚪 Выйти', icon: 'fa-sign-out-alt', isLogout: true });
             
             let menu = document.getElementById('quickActionsMenu');
             if (menu) menu.remove();
@@ -242,10 +284,15 @@ function renderMobileBottomNav() {
             menu.innerHTML = `
                 <div class="quick-actions-overlay">
                     <div class="quick-actions-panel">
-                        <div class="quick-actions-header">Быстрые действия</div>
-                        ${actions.map(a => `<div class="quick-action-item" data-url="${a.url}">
-                            <i class="fas ${a.icon}"></i><span>${a.text}</span>
-                        </div>`).join('')}
+                        <div class="quick-actions-header">
+                            <i class="fas fa-bolt"></i> Быстрые действия
+                        </div>
+                        ${actions.map(a => `
+                            <div class="quick-action-item" data-url="${a.url || ''}" data-logout="${a.isLogout || false}">
+                                <i class="fas ${a.icon}"></i>
+                                <span>${a.text}</span>
+                            </div>
+                        `).join('')}
                         <div class="quick-actions-close">Закрыть</div>
                     </div>
                 </div>
@@ -254,8 +301,21 @@ function renderMobileBottomNav() {
             document.body.appendChild(menu);
             
             menu.querySelectorAll('.quick-action-item').forEach(item => {
-                item.onclick = () => window.location.href = item.dataset.url;
+                const url = item.dataset.url;
+                const isLogout = item.dataset.logout === 'true';
+                
+                if (isLogout) {
+                    item.onclick = async () => {
+                        await signOut(auth);
+                        window.location.href = 'index.html';
+                    };
+                } else if (url) {
+                    item.onclick = () => {
+                        window.location.href = url;
+                    };
+                }
             });
+            
             menu.querySelector('.quick-actions-close').onclick = () => menu.remove();
             menu.onclick = (e) => { if (e.target === menu) menu.remove(); };
         };
@@ -301,13 +361,10 @@ function initPWABanner() {
     }
 }
 
-// PWA УСТАНОВКА - ПОЯВЛЯЕТСЯ СРАЗУ ПРИ ЗАХОДЕ
 window.addEventListener('beforeinstallprompt', (e) => {
     console.log('PWA установка доступна');
     e.preventDefault();
     deferredPrompt = e;
-    
-    // ПОКАЗЫВАЕМ ОКНО УСТАНОВКИ СРАЗУ
     deferredPrompt.prompt();
     
     deferredPrompt.userChoice.then((choiceResult) => {
@@ -322,7 +379,6 @@ window.addEventListener('beforeinstallprompt', (e) => {
     });
 });
 
-// Принудительно открываем все ссылки внутри PWA
 document.addEventListener('click', function(e) {
     const link = e.target.closest('a');
     if (link && link.href && link.href.startsWith(window.location.origin)) {
@@ -399,7 +455,7 @@ async function initHeader() {
         updateActiveAndLogout();
         initBurger();
         initMobileSubmenus();
-        renderMobileBottomNav();
+        await renderMobileBottomNav();
         initPWABanner();
         return;
     }
@@ -572,7 +628,7 @@ async function initHeader() {
 
     updateActiveAndLogout();
     initBurger();
-    renderMobileBottomNav();
+    await renderMobileBottomNav();
     initPWABanner();
 }
 
