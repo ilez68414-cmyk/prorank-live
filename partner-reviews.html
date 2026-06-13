@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <link rel="manifest" href="/prorank-live/manifest.json">
+    <link rel="apple-touch-icon" href="/prorank-live/icons/icon-192.png">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="PRORANK">
+    <meta name="theme-color" content="#fbbf24">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=yes">
+    <title>Отзывы | PRORANK</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700;14..32,800;14..32,900&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: radial-gradient(ellipse at 30% 40%, rgba(251, 191, 36, 0.12) 0%, transparent 60%),
+                        radial-gradient(ellipse at 70% 80%, rgba(251, 191, 36, 0.06) 0%, transparent 50%),
+                        linear-gradient(135deg, #121212 0%, #0a0a0a 100%);
+            background-attachment: fixed;
+            color: #e5e5e5;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        main { flex: 1; }
+        
+        .gold-top { 
+            position: fixed; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 3px; 
+            background: linear-gradient(90deg, #fbbf24, #ffdd88, #fbbf24, #b8860b); 
+            z-index: 1001; 
+        }
+        
+        .container { 
+            max-width: 1200px; 
+            margin: 0 auto; 
+            padding: 0 20px; 
+            width: 100%; 
+        }
+        
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 20px;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(16px);
+            border-bottom: 1px solid rgba(251, 191, 36, 0.25);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+        
+        .logo {
+            font-size: 1.6rem;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            cursor: pointer;
+            background: linear-gradient(135deg, #ffffff, #fbbf24);
+            background-clip: text;
+            color: transparent;
+        }
+        
+        .logo span { 
+            background: linear-gradient(135deg, #fbbf24, #ffdd77); 
+            background-clip: text; 
+            color: transparent; 
+        }
+        
+        .wallet-indicator {
+            background: rgba(251,191,36,0.1);
+            border: 1px solid rgba(251,191,36,0.3);
+            border-radius: 60px;
+            padding: 7px 18px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 700;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .wallet-indicator:hover {
+            background: rgba(251,191,36,0.2);
+            border-color: #fbbf24;
+        }
+        
+        .wallet-amount { color: #fbbf24; font-weight: 800; }
+        
+        .menu-toggle {
+            display: none;
+            background: rgba(251,191,36,0.1);
+            border: 1px solid #fbbf24;
+            color: #fbbf24;
+            font-size: 1.4rem;
+            cursor: pointer;
+            padding: 8px 14px;
+            border-radius: 12px;
+            min-height: 44px;
+            min-width: 44px;
+        }
+        
+        .nav-links {
+            display: flex;
+            gap: 6px;
+            background: rgba(15,15,15,0.8);
+            backdrop-filter: blur(12px);
+            padding: 5px 14px;
+            border-radius: 60px;
+            border: 1px solid rgba(251,191,36,0.2);
+        }
+        
+        .nav-links a { 
+            color: #ddd; 
+            text-decoration: none; 
+            font-size: 0.85rem; 
+            font-weight: 500; 
+            padding: 8px 16px; 
+            border-radius: 40px; 
+            transition: all 0.2s; 
+            min-height: 40px;
+            display: inline-flex;
+            align-items: center;
+        }
+        
+        .nav-links a i { margin-right: 8px; color: #fbbf24; }
+        .nav-links a:active { color: #fbbf24; background: rgba(251,191,36,0.15); }
+        
+        .page-header { text-align: center; padding: 24px 16px 16px; }
+        .page-header h1 { font-size: 1.6rem; font-weight: 800; background: linear-gradient(135deg, #fff, #fbbf24); background-clip: text; color: transparent; }
+        .page-header p { color: #aaa; margin-top: 4px; font-size: 0.8rem; }
+        
+        /* Сабменю */
+        .partner-subnav {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin: 20px 0 24px;
+            background: rgba(15,15,15,0.5);
+            padding: 8px;
+            border-radius: 60px;
+            backdrop-filter: blur(8px);
+        }
+        
+        .subnav-link {
+            background: none;
+            border: none;
+            color: #aaa;
+            padding: 8px 18px;
+            border-radius: 40px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+        }
+        
+        .subnav-link i { font-size: 0.85rem; }
+        .subnav-link:hover { background: rgba(251,191,36,0.1); color: #fbbf24; transform: translateY(-2px); }
+        .subnav-link.active { background: #fbbf24; color: #000; }
+        .subnav-link.active i { color: #000; }
+        
+        /* Список отзывов */
+        .reviews-list {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+        
+        .review-card {
+            background: rgba(15,15,15,0.7);
+            backdrop-filter: blur(8px);
+            border-radius: 20px;
+            padding: 20px;
+            border: 1px solid rgba(251,191,36,0.15);
+            transition: all 0.3s ease;
+        }
+        
+        .review-card:hover {
+            transform: translateX(5px);
+            border-color: rgba(251,191,36,0.4);
+        }
+        
+        .review-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            margin-bottom: 12px;
+            gap: 8px;
+        }
+        
+        .review-author {
+            font-weight: 700;
+            color: #fbbf24;
+            font-size: 0.9rem;
+        }
+        
+        .review-rating {
+            color: #fbbf24;
+            font-size: 0.85rem;
+            letter-spacing: 2px;
+        }
+        
+        .review-date {
+            font-size: 0.7rem;
+            color: #666;
+        }
+        
+        .review-text {
+            font-size: 0.85rem;
+            line-height: 1.5;
+            color: #ccc;
+            margin-bottom: 16px;
+            padding: 8px 0;
+        }
+        
+        .review-reply {
+            background: rgba(0,0,0,0.3);
+            padding: 12px;
+            border-radius: 14px;
+            margin: 12px 0;
+            font-size: 0.8rem;
+            border-left: 3px solid #fbbf24;
+        }
+        
+        .review-reply i {
+            color: #fbbf24;
+            margin-right: 8px;
+        }
+        
+        .reply-input-area {
+            margin-top: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .reply-input {
+            width: 100%;
+            padding: 12px 16px;
+            background: #1a1a1a;
+            border: 1px solid rgba(251,191,36,0.3);
+            color: #fff;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            resize: vertical;
+            font-family: inherit;
+        }
+        
+        .reply-input:focus {
+            outline: none;
+            border-color: #fbbf24;
+        }
+        
+        .btn-reply {
+            background: #8b5cf6;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 40px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.75rem;
+            transition: all 0.2s;
+            align-self: flex-start;
+            min-height: 40px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .btn-reply:hover {
+            transform: translateY(-2px);
+            filter: brightness(1.1);
+        }
+        
+        .btn-reply:active {
+            transform: translateY(0);
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #666;
+        }
+        
+        @media (max-width: 768px) {
+            .navbar { padding: 10px 16px; }
+            .menu-toggle { display: block; }
+            .nav-links {
+                display: none;
+                flex-direction: column;
+                position: absolute;
+                top: 60px;
+                left: 16px;
+                right: 16px;
+                background: #0f0f0f;
+                border-radius: 20px;
+                padding: 16px;
+                gap: 8px;
+                border: 1px solid rgba(251,191,36,0.3);
+                z-index: 1000;
+            }
+            .nav-links.show { display: flex; }
+            .nav-links a { width: 100%; text-align: center; padding: 12px; justify-content: center; }
+            .container { padding: 0 16px; }
+            .partner-subnav { gap: 6px; }
+            .subnav-link { padding: 6px 12px; font-size: 0.7rem; }
+            .review-header { flex-direction: column; align-items: flex-start; }
+            .btn-reply { width: 100%; justify-content: center; }
+        }
+        
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: #1a1a1a; }
+        ::-webkit-scrollbar-thumb { background: #fbbf24; border-radius: 10px; }
+        
+        .main-footer {
+            background: #0a0a0a;
+            border-top: 1px solid rgba(251,191,36,0.15);
+            margin-top: 40px;
+            padding: 30px 0 20px;
+        }
+        
+        .footer-inner {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        
+        .footer-links { display: flex; gap: 20px; flex-wrap: wrap; }
+        .footer-links a { color: #888; text-decoration: none; font-size: 0.8rem; }
+        .footer-links a:hover { color: #fbbf24; }
+        .footer-social { display: flex; gap: 16px; }
+        .social-icon { color: #aaa; font-size: 1.2rem; min-width: 44px; min-height: 44px; display: inline-flex; align-items: center; justify-content: center; }
+        .social-icon:hover { color: #fbbf24; }
+    </style>
+</head>
+<body>
+    <div class="gold-top"></div>
+
+    <header class="navbar">
+        <div class="logo" onclick="window.location='index.html'">PRO<span>RANK</span></div>
+        <div class="wallet-indicator" id="walletIndicator" style="display: none;" onclick="window.location.href='wallet.html'">
+            <i class="fas fa-wallet"></i>
+            <span class="wallet-amount" id="walletBalance">0 ₽</span>
+            <i class="fas fa-chevron-right"></i>
+        </div>
+        <button class="menu-toggle" id="menuToggle"><i class="fas fa-bars"></i></button>
+        <nav class="nav-links" id="navLinks"></nav>
+    </header>
+
+    <main class="container">
+        <div class="page-header">
+            <h1><i class="fas fa-star"></i> Отзывы и рейтинг</h1>
+            <p>Читайте отзывы покупателей и отвечайте на них</p>
+        </div>
+
+        <!-- Навигация между разделами партнёра -->
+        <div class="partner-subnav">
+            <a href="partner-dashboard.html" class="subnav-link"><i class="fas fa-chart-line"></i> Аналитика</a>
+            <a href="partner-products.html" class="subnav-link"><i class="fas fa-box"></i> Товары</a>
+            <a href="partner-orders.html" class="subnav-link"><i class="fas fa-shopping-cart"></i> Заказы</a>
+            <a href="partner-reviews.html" class="subnav-link active"><i class="fas fa-star"></i> Отзывы</a>
+            <a href="wallet.html" class="subnav-link"><i class="fas fa-wallet"></i> Кошелёк</a>
+        </div>
+
+        <!-- Список отзывов -->
+        <div id="reviewsList" class="reviews-list">Загрузка...</div>
+    </main>
+
+    <footer class="main-footer">
+        <div class="container">
+            <div class="footer-inner">
+                <div class="footer-logo">
+                    <div class="logo">PRO<span>RANK</span></div>
+                    <p style="font-size: 0.7rem; color: #666;">Рейтинг спортсменов-любителей</p>
+                </div>
+                <div class="footer-social">
+                    <a href="#" class="social-icon"><i class="fab fa-telegram"></i></a>
+                    <a href="#" class="social-icon"><i class="fab fa-vk"></i></a>
+                    <a href="#" class="social-icon"><i class="fab fa-youtube"></i></a>
+                    <a href="#" class="social-icon"><i class="fab fa-instagram"></i></a>
+                </div>
+                <div class="footer-links">
+                    <a href="about.html">О проекте</a>
+                    <a href="privacy.html">Конфиденциальность</a>
+                    <a href="disclaimer.html">Дисклеймер</a>
+                </div>
+            </div>
+            <div style="text-align: center; margin-top: 24px;">
+                <p style="font-size: 0.7rem; color: #444;">© 2026 PRORANK. Все права защищены.</p>
+            </div>
+        </div>
+    </footer>
+
+    <div id="mobileBottomNavContainer"></div>
+
+    <script type="importmap">
+        {
+            "imports": {
+                "firebase/app": "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js",
+                "firebase/firestore": "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js",
+                "firebase/auth": "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js"
+            }
+        }
+    </script>
+    <script type="module" src="header.js"></script>
+    <script type="module">
+        import { initializeApp } from "firebase/app";
+        import { getFirestore, collection, getDocs, query, where, orderBy, updateDoc, doc, getDoc } from "firebase/firestore";
+        import { getAuth, onAuthStateChanged } from "firebase/auth";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDUGYJY7pX7q02MS5SACMIIQXpjpQ97mPw",
+            authDomain: "proranklive.firebaseapp.com",
+            projectId: "proranklive",
+            storageBucket: "proranklive.firebasestorage.app",
+            messagingSenderId: "716836144015",
+            appId: "1:716836144015:web:f1575147750608d0f881fa"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+
+        let partnerDocId = null;
+
+        async function loadWalletBalance() {
+            if (!partnerDocId) return;
+            try {
+                const balanceDoc = await getDoc(doc(db, "wallet_balances", partnerDocId));
+                if (balanceDoc.exists()) {
+                    const available = balanceDoc.data().available || 0;
+                    document.getElementById('walletBalance').innerHTML = `${available.toLocaleString()} ₽`;
+                    document.getElementById('walletIndicator').style.display = 'flex';
+                }
+            } catch (err) { console.error('Ошибка загрузки баланса:', err); }
+        }
+
+        async function loadReviews() {
+            if (!partnerDocId) return;
+            
+            const container = document.getElementById('reviewsList');
+            
+            try {
+                const reviewsQuery = query(
+                    collection(db, "reviews"),
+                    where("partnerId", "==", partnerDocId),
+                    orderBy("createdAt", "desc")
+                );
+                const snapshot = await getDocs(reviewsQuery);
+                
+                if (snapshot.empty) {
+                    container.innerHTML = '<div class="empty-state"><i class="fas fa-star"></i><br>Пока нет отзывов</div>';
+                    return;
+                }
+                
+                let html = '';
+                for (const docSnap of snapshot.docs) {
+                    const review = docSnap.data();
+                    const reviewId = docSnap.id;
+                    const date = review.createdAt?.toDate().toLocaleString('ru-RU') || '—';
+                    const rating = review.rating || 5;
+                    const stars = '★'.repeat(rating) + '☆'.repeat(5 - rating);
+                    const hasReply = review.reply && review.reply.trim() !== '';
+                    
+                    html += `
+                        <div class="review-card" data-review-id="${reviewId}">
+                            <div class="review-header">
+                                <span class="review-author"><i class="fas fa-user"></i> ${escapeHtml(review.userName || 'Покупатель')}</span>
+                                <span class="review-rating">${stars}</span>
+                                <span class="review-date">${date}</span>
+                            </div>
+                            <div class="review-text">${escapeHtml(review.text || 'Без комментария')}</div>
+                            ${hasReply ? `
+                                <div class="review-reply">
+                                    <i class="fas fa-reply"></i> ${escapeHtml(review.reply)}
+                                </div>
+                            ` : ''}
+                            <div class="reply-input-area">
+                                <textarea id="reply-${reviewId}" class="reply-input" rows="2" placeholder="Ответить на отзыв...">${hasReply ? escapeHtml(review.reply) : ''}</textarea>
+                                <button class="btn-reply" data-id="${reviewId}">
+                                    <i class="fas fa-paper-plane"></i> ${hasReply ? 'Изменить ответ' : 'Ответить'}
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                }
+                container.innerHTML = html;
+                
+                // Обработчики кнопок ответа
+                document.querySelectorAll('.btn-reply').forEach(btn => {
+                    btn.addEventListener('click', async () => {
+                        const reviewId = btn.dataset.id;
+                        const replyText = document.getElementById(`reply-${reviewId}`).value.trim();
+                        
+                        if (!replyText) {
+                            alert('Введите текст ответа');
+                            return;
+                        }
+                        
+                        try {
+                            await updateDoc(doc(db, "reviews", reviewId), {
+                                reply: replyText,
+                                repliedAt: new Date()
+                            });
+                            alert('✅ Ответ сохранён');
+                            await loadReviews(); // Обновляем список
+                        } catch (err) {
+                            console.error('Ошибка сохранения ответа:', err);
+                            alert('❌ Ошибка при сохранении ответа');
+                        }
+                    });
+                });
+                
+            } catch (err) {
+                console.error('Ошибка загрузки отзывов:', err);
+                container.innerHTML = '<div class="empty-state">Ошибка загрузки отзывов</div>';
+            }
+        }
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            return String(str).replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[m]));
+        }
+
+        // Авторизация
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) { 
+                window.location.href = 'login.html'; 
+                return; 
+            }
+            
+            const partners = await getDocs(query(collection(db, "partners"), where("email", "==", user.email)));
+            if (partners.empty) {
+                document.getElementById('reviewsList').innerHTML = '<div class="empty-state">Доступ только для партнёров</div>';
+                return;
+            }
+            
+            partnerDocId = partners.docs[0].id;
+            await loadWalletBalance();
+            await loadReviews();
+        });
+
+        document.getElementById('menuToggle')?.addEventListener('click', () => document.getElementById('navLinks')?.classList.toggle('show'));
+    </script>
+</body>
+</html>

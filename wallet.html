@@ -125,7 +125,7 @@
         
         .page-header { 
             text-align: center; 
-            padding: 24px 16px 16px; 
+            padding: 24px 16px 8px; 
         }
         
         .page-header h1 { 
@@ -135,6 +135,40 @@
             background-clip: text; 
             color: transparent; 
         }
+        
+        /* Сабменю партнёра */
+        .partner-subnav {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin: 16px 0 24px;
+            background: rgba(15,15,15,0.5);
+            padding: 8px;
+            border-radius: 60px;
+            backdrop-filter: blur(8px);
+        }
+        
+        .subnav-link {
+            background: none;
+            border: none;
+            color: #aaa;
+            padding: 8px 18px;
+            border-radius: 40px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+        }
+        
+        .subnav-link i { font-size: 0.85rem; }
+        .subnav-link:hover { background: rgba(251,191,36,0.1); color: #fbbf24; transform: translateY(-2px); }
+        .subnav-link.active { background: #fbbf24; color: #000; }
+        .subnav-link.active i { color: #000; }
         
         .balance-card {
             background: rgba(20, 20, 20, 0.7);
@@ -265,7 +299,6 @@
             color: #666; 
         }
         
-        /* Модалка вывода */
         .modal-overlay {
             display: none;
             position: fixed;
@@ -413,10 +446,8 @@
                 grid-column: span 2;
             }
             .balance-card { padding: 20px 16px; }
-            .transaction-item {
-                flex-direction: column;
-                align-items: flex-start;
-            }
+            .partner-subnav { gap: 6px; }
+            .subnav-link { padding: 6px 12px; font-size: 0.7rem; }
         }
         
         @media (min-width: 600px) {
@@ -427,19 +458,19 @@
         ::-webkit-scrollbar-track { background: #1a1a1a; }
         ::-webkit-scrollbar-thumb { background: #fbbf24; border-radius: 10px; }
         
+        .main-footer {
+            background: #0a0a0a;
+            border-top: 1px solid rgba(251,191,36,0.15);
+            margin-top: 40px;
+            padding: 30px 0 20px;
+        }
+        
         .footer-inner {
             display: flex;
             justify-content: space-between;
             align-items: center;
             flex-wrap: wrap;
             gap: 20px;
-        }
-        
-        .main-footer {
-            background: #0a0a0a;
-            border-top: 1px solid rgba(251,191,36,0.15);
-            margin-top: 40px;
-            padding: 30px 0 20px;
         }
         
         .footer-links {
@@ -482,6 +513,15 @@
     <main class="container">
         <div class="page-header">
             <h1><i class="fas fa-wallet"></i> Кошелёк партнёра</h1>
+        </div>
+
+        <!-- Сабменю партнёра — теперь кошелёк часть партнёрки -->
+        <div class="partner-subnav">
+            <a href="partner-dashboard.html" class="subnav-link"><i class="fas fa-chart-line"></i> Аналитика</a>
+            <a href="partner-products.html" class="subnav-link"><i class="fas fa-box"></i> Товары</a>
+            <a href="partner-orders.html" class="subnav-link"><i class="fas fa-shopping-cart"></i> Заказы</a>
+            <a href="partner-reviews.html" class="subnav-link"><i class="fas fa-star"></i> Отзывы</a>
+            <a href="wallet.html" class="subnav-link active"><i class="fas fa-wallet"></i> Кошелёк</a>
         </div>
 
         <div class="balance-card">
@@ -587,23 +627,14 @@
         const db = getFirestore(app);
         const auth = getAuth(app);
 
-        let currentUser = null;
+        let currentPartnerId = null;
         let currentBalance = null;
 
         async function loadWallet() {
-            if (!currentUser) return;
+            if (!currentPartnerId) return;
             
             try {
-                let balanceDoc = await getDoc(doc(db, "wallet_balances", currentUser.uid));
-                
-                if (!balanceDoc.exists()) {
-                    const partnersQuery = query(collection(db, "partners"), where("email", "==", currentUser.email));
-                    const partnerSnap = await getDocs(partnersQuery);
-                    if (!partnerSnap.empty) {
-                        balanceDoc = await getDoc(doc(db, "wallet_balances", partnerSnap.docs[0].id));
-                    }
-                }
-                
+                const balanceDoc = await getDoc(doc(db, "wallet_balances", currentPartnerId));
                 if (balanceDoc.exists()) {
                     currentBalance = balanceDoc.data();
                     document.getElementById('availableBalance').innerHTML = `${(currentBalance.available || 0).toLocaleString()} ₽`;
@@ -616,7 +647,7 @@
                 
                 const transactionsQuery = query(
                     collection(db, "wallet_transactions"),
-                    where("userId", "==", currentUser.uid),
+                    where("userId", "==", currentPartnerId),
                     where("userType", "==", "partner"),
                     orderBy("createdAt", "desc")
                 );
@@ -688,7 +719,7 @@
             
             try {
                 await addDoc(collection(db, "withdrawals"), {
-                    partnerId: currentUser.uid,
+                    partnerId: currentPartnerId,
                     amount: amount,
                     method: method,
                     details: details,
@@ -696,14 +727,14 @@
                     createdAt: new Date()
                 });
                 
-                await updateDoc(doc(db, "wallet_balances", currentUser.uid), {
-                    available: (currentBalance.available || 0) - amount,
-                    pendingWithdraw: (currentBalance.pendingWithdraw || 0) + amount,
+                await updateDoc(doc(db, "wallet_balances", currentPartnerId), {
+                    available: (currentBalance?.available || 0) - amount,
+                    pendingWithdraw: (currentBalance?.pendingWithdraw || 0) + amount,
                     updatedAt: new Date()
                 });
                 
                 await addDoc(collection(db, "wallet_transactions"), {
-                    userId: currentUser.uid,
+                    userId: currentPartnerId,
                     userType: 'partner',
                     type: 'payout',
                     amount: amount,
@@ -727,18 +758,8 @@
             }
         }
 
-        onAuthStateChanged(auth, async (user) => {
-            currentUser = user;
-            if (user) {
-                await loadWallet();
-            } else {
-                document.getElementById('availableBalance').innerHTML = '0 ₽';
-                document.getElementById('transactionsList').innerHTML = '<div class="empty-state">Войдите в аккаунт</div>';
-            }
-        });
-
         document.getElementById('withdrawBtn')?.addEventListener('click', () => {
-            if (!currentUser) {
+            if (!currentPartnerId) {
                 alert('Войдите в аккаунт');
                 window.location.href = 'login.html';
                 return;
@@ -755,6 +776,23 @@
             if (e.target === document.getElementById('withdrawModal')) {
                 document.getElementById('withdrawModal').classList.remove('active');
             }
+        });
+
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) {
+                window.location.href = 'login.html';
+                return;
+            }
+            
+            const partners = await getDocs(query(collection(db, "partners"), where("email", "==", user.email)));
+            if (partners.empty) {
+                document.getElementById('availableBalance').innerHTML = '0 ₽';
+                document.getElementById('transactionsList').innerHTML = '<div class="empty-state">Доступ только для партнёров</div>';
+                return;
+            }
+            
+            currentPartnerId = partners.docs[0].id;
+            await loadWallet();
         });
 
         const menuToggle = document.getElementById('menuToggle');

@@ -254,12 +254,13 @@ async function renderMobileBottomNav() {
             let actions = [];
             
             if (isPartner) {
+                // ОБНОВЛЁННЫЕ БЫСТРЫЕ ДЕЙСТВИЯ ДЛЯ ПАРТНЁРА
                 actions = [
                     { text: 'Аналитика', icon: 'fa-chart-line', url: 'partner-dashboard.html' },
-                    { text: 'Товары', icon: 'fa-box', url: 'partner-dashboard.html?tab=products' },
-                    { text: 'Заказы', icon: 'fa-shopping-cart', url: 'partner-dashboard.html?tab=active-orders' },
-                    { text: 'Финансы', icon: 'fa-wallet', url: 'partner-dashboard.html?tab=finance' },
-                    { text: 'Настройки', icon: 'fa-cog', url: 'partner-dashboard.html?tab=settings' }
+                    { text: 'Товары', icon: 'fa-box', url: 'partner-products.html' },
+                    { text: 'Заказы', icon: 'fa-shopping-cart', url: 'partner-orders.html' },
+                    { text: 'Отзывы', icon: 'fa-star', url: 'partner-reviews.html' },
+                    { text: 'Кошелёк', icon: 'fa-wallet', url: 'wallet.html' }
                 ];
             } else {
                 actions = [

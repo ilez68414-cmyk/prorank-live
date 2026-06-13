@@ -1,8 +1,8 @@
 // sw.js - Service Worker для PRORANK PWA
-const CACHE_NAME = 'prorank-v1.0.0';
+const CACHE_NAME = 'prorank-v1.1.0';  // Обновил версию для обновления кеша
 const OFFLINE_URL = '/prorank-live/offline.html';
 
-// Файлы для кэширования при установке
+// Файлы для кэширования при установке (обновлён список)
 const STATIC_FILES = [
   '/prorank-live/',
   '/prorank-live/index.html',
@@ -18,9 +18,11 @@ const STATIC_FILES = [
   '/prorank-live/halls.html',
   '/prorank-live/shop.html',
   '/prorank-live/buyer-wallet.html',
-  '/prorank-live/deposit.html',
   '/prorank-live/wallet.html',
   '/prorank-live/partner-dashboard.html',
+  '/prorank-live/partner-products.html',
+  '/prorank-live/partner-orders.html',
+  '/prorank-live/partner-reviews.html',
   '/prorank-live/login.html',
   '/prorank-live/about.html',
   '/prorank-live/privacy.html',
@@ -70,44 +72,86 @@ self.addEventListener('activate', event => {
   self.clients.claim();
 });
 
-// Стратегия загрузки: сначала сеть, при ошибке — кэш
+// Стратегия загрузки: сначала сеть, при ошибке — кэш или офлайн-страница
 self.addEventListener('fetch', event => {
   const url = new URL(event.request.url);
   
-  // Firebase API не кэшируем
+  // Firebase и внешние API не кэшируем (только сеть)
   if (url.hostname.includes('firebase') || 
       url.hostname.includes('googleapis') ||
       url.hostname.includes('cloudinary')) {
     return;
   }
   
-  // HTML страницы — сначала сеть, при ошибке кэш или офлайн страница
+  // HTML страницы — специальная обработка для офлайн-режима
   if (event.request.mode === 'navigate') {
     event.respondWith(
       fetch(event.request)
+        .then(response => {
+          // Если запрос успешен, кэшируем страницу для будущего офлайн-доступа
+          if (response && response.status === 200) {
+            const responseClone = response.clone();
+            caches.open(CACHE_NAME).then(cache => {
+              cache.put(event.request, responseClone);
+            });
+          }
+          return response;
+        })
         .catch(async () => {
+          console.log('[SW] Офлайн-режим: показываем кэш или offline.html');
+          // Пытаемся найти запрошенную страницу в кэше
           const cachedResponse = await caches.match(event.request);
-          if (cachedResponse) return cachedResponse;
-          return caches.match(OFFLINE_URL);
+          if (cachedResponse) {
+            return cachedResponse;
+          }
+          // Если нет в кэше — показываем offline.html
+          const offlinePage = await caches.match(OFFLINE_URL);
+          if (offlinePage) {
+            return offlinePage;
+          }
+          // Если и offline.html нет — возвращаем заглушку
+          return new Response('Нет соединения с интернетом', { 
+            status: 503, 
+            statusText: 'Service Unavailable',
+            headers: new Headers({ 'Content-Type': 'text/html' })
+          });
         })
     );
     return;
   }
   
-  // Статика — сначала кэш, потом сеть
+  // Статика (CSS, JS, изображения) — сначала кэш, потом сеть
   event.respondWith(
     caches.match(event.request)
-      .then(response => response || fetch(event.request))
+      .then(response => {
+        if (response) {
+          return response;
+        }
+        return fetch(event.request).then(networkResponse => {
+          // Кэшируем успешные ответы для будущего офлайн-доступа
+          if (networkResponse && networkResponse.status === 200) {
+            const responseClone = networkResponse.clone();
+            caches.open(CACHE_NAME).then(cache => {
+              cache.put(event.request, responseClone);
+            });
+          }
+          return networkResponse;
+        });
+      })
       .catch(() => {
         if (event.request.destination === 'image') {
           return new Response('', { status: 404 });
+        }
+        // Для CSS/JS при офлайн-режиме возвращаем заглушку
+        if (event.request.destination === 'style' || event.request.destination === 'script') {
+          return new Response('', { status: 200, headers: new Headers({ 'Content-Type': event.request.destination === 'style' ? 'text/css' : 'application/javascript' }) });
         }
         return new Response('Офлайн. Проверьте соединение.', { status: 404 });
       })
   );
 });
 
-// Push-уведомления (подготовка)
+// Push-уведомления
 self.addEventListener('push', event => {
   const data = event.data?.json() || {};
   const options = {
