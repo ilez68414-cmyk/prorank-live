@@ -247,14 +247,13 @@ async function loadFightHistory() {
     }
 }
 
-// ========== ИСПРАВЛЕННАЯ ФУНКЦИЯ ЗАГРУЗКИ АЧИВОК ==========
+// ========== ГЛАВНАЯ ФУНКЦИЯ С ИКОНКАМИ PNG ==========
 async function loadAchievements() {
     const userId = currentFighterId;
     if (!userId) return;
     
-    const section = document.getElementById('achievementsSection');
     const container = document.getElementById('achievementsList');
-    if (!section) return;
+    if (!container) return;
     
     try {
         const achievementsSnap = await getDocs(collection(db, "achievements"));
@@ -271,40 +270,47 @@ async function loadAchievements() {
         if (countSpan) countSpan.innerText = `${earnedCount}/${totalCount}`;
         
         let html = '';
-        allAchievements.forEach(ach => {
+        for (const ach of allAchievements) {
             const earned = earnedIds.has(ach.id);
-            const icon = ach.icon || 'fa-medal';
+            // ЭТО ГЛАВНОЕ: ПРАВИЛЬНЫЙ ОТНОСИТЕЛЬНЫЙ ПУТЬ
+            const iconPath = `./achiev-icons/${ach.id}.png`;
             
-            // ========== ИСПРАВЛЕНИЕ ТУТ ==========
-            // Теперь правильно отображаем знаки: + для положительных, - для отрицательных (без лишнего плюса)
             let rewardHtml = '';
             if (ach.reward && ach.reward.amount) {
                 const amount = ach.reward.amount;
                 const typeText = ach.reward.type === 'frs' ? 'FRS' : (ach.reward.type === 'challenges' ? 'вызовов' : '');
                 const isNegative = amount < 0;
-                const sign = isNegative ? '' : '+';  // для отрицательных знак уже в числе
+                const sign = isNegative ? '' : '+';
                 const rewardClass = isNegative ? 'negative' : 'positive';
                 rewardHtml = `<div class="achievement-reward ${rewardClass}"><i class="fas fa-gift"></i> ${sign}${amount} ${typeText}</div>`;
             }
-            // ======================================
             
             html += `
                 <div class="achievement-card ${earned ? 'earned' : 'locked'}">
-                    <div class="achievement-icon"><i class="fas ${icon}"></i></div>
+                    <div class="achievement-icon">
+                        <img src="${iconPath}" 
+                             alt="${ach.name}" 
+                             style="width: 45px; height: 45px; object-fit: contain;"
+                             onerror="this.onerror=null; this.style.display='none'; this.parentElement.innerHTML='<i class=\\'fas fa-medal\\' style=\\'font-size: 2rem; color: #fbbf24;\\'></i>';">
+                    </div>
                     <div class="achievement-name">${ach.name}</div>
-                    <div class="achievement-desc">${ach.description || ''}</div>
                     ${rewardHtml}
                 </div>
             `;
-        });
+        }
         
         container.innerHTML = html;
-        section.style.display = 'block';
     } catch (err) {
         console.error('Ошибка загрузки ачивок:', err);
+        container.innerHTML = '<div class="empty-state">Ошибка загрузки достижений</div>';
     }
 }
-// ========== КОНЕЦ ИСПРАВЛЕНИЯ ==========
+// ========== КОНЕЦ ==========
+
+function escapeHtml(str) {
+    if (!str) return '';
+    return String(str).replace(/[&<>]/g, m => m === '&' ? '&amp;' : m === '<' ? '&lt;' : '&gt;');
+}
 
 async function checkAndAwardAchievements(userId) {
     const userRef = doc(db, "fighters", userId);
@@ -355,7 +361,6 @@ async function checkAndAwardAchievements(userId) {
                 isNegative: ach.isNegative || false
             });
             
-            // Уведомление в Telegram
             if (user.telegramId) {
                 await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
                     method: 'POST',
