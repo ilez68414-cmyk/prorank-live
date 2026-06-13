@@ -201,7 +201,6 @@ async function renderMobileBottomNav() {
     let isPartner = false;
     let userId = null;
     
-    // Ждём данные о пользователе
     if (user) {
         userId = user.uid;
         try {
@@ -212,7 +211,6 @@ async function renderMobileBottomNav() {
         }
     }
     
-    // Ссылка на профиль с ID для бойца
     const profileLink = isPartner ? 'partner-dashboard.html' : `profile.html?id=${userId || ''}`;
     const profileIcon = isPartner ? 'fa-chart-line' : 'fa-user';
     const profileText = isPartner ? 'Кабинет' : 'Профиль';
@@ -243,7 +241,6 @@ async function renderMobileBottomNav() {
         </nav>
     `;
     
-    // Обработчик кнопки профиля
     const mobileProfileBtn = document.getElementById('mobileProfileBtn');
     if (mobileProfileBtn) {
         mobileProfileBtn.onclick = () => {
@@ -251,7 +248,6 @@ async function renderMobileBottomNav() {
         };
     }
     
-    // Остальной код центральной кнопки...
     const centerBtn = document.getElementById('centerActionBtn');
     if (centerBtn) {
         centerBtn.onclick = () => {
@@ -259,22 +255,22 @@ async function renderMobileBottomNav() {
             
             if (isPartner) {
                 actions = [
-                    { text: '📊 Аналитика', icon: 'fa-chart-line', url: 'partner-dashboard.html' },
-                    { text: '📦 Товары', icon: 'fa-box', url: 'partner-dashboard.html?tab=products' },
-                    { text: '🛒 Заказы', icon: 'fa-shopping-cart', url: 'partner-dashboard.html?tab=active-orders' },
-                    { text: '💰 Финансы', icon: 'fa-wallet', url: 'partner-dashboard.html?tab=finance' },
-                    { text: '⚙️ Настройки', icon: 'fa-cog', url: 'partner-dashboard.html?tab=settings' }
+                    { text: 'Аналитика', icon: 'fa-chart-line', url: 'partner-dashboard.html' },
+                    { text: 'Товары', icon: 'fa-box', url: 'partner-dashboard.html?tab=products' },
+                    { text: 'Заказы', icon: 'fa-shopping-cart', url: 'partner-dashboard.html?tab=active-orders' },
+                    { text: 'Финансы', icon: 'fa-wallet', url: 'partner-dashboard.html?tab=finance' },
+                    { text: 'Настройки', icon: 'fa-cog', url: 'partner-dashboard.html?tab=settings' }
                 ];
             } else {
                 actions = [
-                    { text: '🥊 Кинуть вызов', icon: 'fa-fist-raised', url: 'challenges.html' },
-                    { text: '🏆 Мой рейтинг', icon: 'fa-chart-line', url: 'rating.html' },
-                    { text: '💎 Пополнить баланс', icon: 'fa-plus-circle', url: 'deposit.html' },
-                    { text: '📦 Мои заказы', icon: 'fa-box', url: 'my-orders.html' }
+                    { text: 'Кинуть вызов', icon: 'fa-fist-raised', url: 'challenges.html' },
+                    { text: 'Мой рейтинг', icon: 'fa-chart-line', url: 'rating.html' },
+                    { text: 'Кошелёк', icon: 'fa-wallet', url: 'buyer-wallet.html' },
+                    { text: 'Мои заказы', icon: 'fa-box', url: 'my-orders.html' }
                 ];
             }
             
-            actions.push({ text: '🚪 Выйти', icon: 'fa-sign-out-alt', isLogout: true });
+            actions.push({ text: 'Выйти', icon: 'fa-sign-out-alt', isLogout: true });
             
             let menu = document.getElementById('quickActionsMenu');
             if (menu) menu.remove();
@@ -520,7 +516,6 @@ async function initHeader() {
                     <div class="user-dropdown">
                         <span class="user-name">${escapeHtml(userName)}</span>
                         <a href="buyer-wallet.html"><i class="fas fa-wallet"></i> Кошелёк</a>
-                        <a href="deposit.html"><i class="fas fa-plus-circle"></i> Пополнить</a>
                         <a href="profile.html?id=${userId}"><i class="fas fa-user"></i> Профиль</a>
                         <a href="#" id="logoutLink"><i class="fas fa-sign-out-alt"></i> Выйти</a>
                     </div>
