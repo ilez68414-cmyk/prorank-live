@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <!-- PWA Manifest & Icons -->
     <link rel="manifest" href="/manifest.json">
     <link rel="apple-touch-icon" href="/icons/icon-192.png">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -11,7 +10,6 @@
     <meta name="mobile-web-app-capable" content="yes">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=yes">
-    <meta name="theme-color" content="#fbbf24">
     <title>Чат | PRORANK</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
@@ -73,9 +71,6 @@
             background: rgba(251,191,36,0.2);
             transform: scale(1.05);
         }
-        .back-btn:active {
-            transform: scale(0.94);
-        }
         .chat-header h3 {
             font-size: 1.1rem;
             font-weight: 600;
@@ -134,9 +129,6 @@
             border-bottom-left-radius: 4px;
             border: 1px solid rgba(251,191,36,0.15);
         }
-        .message.other:hover {
-            background: #2a2a35;
-        }
         .message-sender {
             font-size: 0.65rem;
             opacity: 0.8;
@@ -150,9 +142,6 @@
             text-align: right;
             display: inline-block;
             margin-left: 8px;
-        }
-        .own .message-time {
-            color: #000;
         }
         
         .reply-preview {
@@ -175,9 +164,6 @@
             overflow: hidden;
             text-overflow: ellipsis;
         }
-        .own .reply-preview {
-            background: rgba(0,0,0,0.2);
-        }
         
         .reply-indicator {
             background: #1f1f2a;
@@ -195,22 +181,6 @@
             from { opacity: 0; transform: translateY(-10px); }
             to { opacity: 1; transform: translateY(0); }
         }
-        .reply-indicator .reply-info {
-            flex: 1;
-        }
-        .reply-indicator .reply-author {
-            color: #fbbf24;
-            font-weight: 600;
-        }
-        .reply-indicator .reply-text {
-            color: #aaa;
-            font-size: 0.65rem;
-            margin-top: 2px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            max-width: 250px;
-        }
         .cancel-reply {
             background: rgba(220,38,38,0.2);
             border: none;
@@ -223,43 +193,6 @@
             align-items: center;
             justify-content: center;
             transition: all 0.2s ease;
-        }
-        .cancel-reply:hover {
-            background: rgba(220,38,38,0.4);
-            transform: scale(1.05);
-        }
-
-        .message-menu {
-            position: absolute;
-            background: #2a2a35;
-            border-radius: 12px;
-            padding: 8px 0;
-            min-width: 150px;
-            z-index: 1000;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.3);
-            border: 1px solid rgba(251,191,36,0.2);
-            animation: fadeIn 0.1s ease;
-        }
-        .message-menu button {
-            background: none;
-            border: none;
-            color: #fff;
-            padding: 10px 16px;
-            width: 100%;
-            text-align: left;
-            cursor: pointer;
-            font-size: 0.8rem;
-            transition: all 0.1s ease;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .message-menu button:hover {
-            background: rgba(251,191,36,0.2);
-            color: #fbbf24;
-        }
-        .message-menu button i {
-            width: 20px;
         }
 
         .chat-input-area {
@@ -311,50 +244,16 @@
             background: #ffdd44;
             transform: translateY(-2px);
         }
-        .chat-input-area button:active {
-            transform: scale(0.96);
-        }
 
         .empty-chat {
-            text-align: center;
-            padding: 40px;
-            color: #888;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 12px;
-        }
-        .empty-chat i {
-            font-size: 3rem;
-            color: #fbbf24;
-            opacity: 0.5;
-        }
-        .loading {
             text-align: center;
             padding: 40px;
             color: #888;
         }
 
         @media (max-width: 600px) {
-            .message {
-                max-width: 90%;
-            }
-            .chat-header {
-                padding: 12px 16px;
-            }
-            .messages-area {
-                padding: 16px;
-            }
-            .input-wrapper {
-                padding: 12px 16px;
-                gap: 8px;
-            }
-            .chat-input-area button {
-                padding: 0 18px;
-            }
-            .reply-indicator .reply-text {
-                max-width: 150px;
-            }
+            .message { max-width: 90%; }
+            .input-wrapper { padding: 12px 16px; }
         }
     </style>
 </head>
@@ -365,7 +264,7 @@
             <h3><i class="fas fa-comments"></i> <span id="chatTitle">Загрузка...</span></h3>
         </div>
         <div id="messagesArea" class="messages-area">
-            <div class="loading"><i class="fas fa-spinner fa-pulse"></i> Загрузка сообщений...</div>
+            <div class="empty-chat"><i class="fas fa-spinner fa-pulse"></i> Загрузка...</div>
         </div>
         <div class="chat-input-area">
             <div id="replyIndicator" class="reply-indicator" style="display: none;">
@@ -413,13 +312,12 @@
         let chatId = null;
         let unsubscribe = null;
         let currentReplyTo = null;
-        let chatData = null;
 
         function goBack() {
             if (document.referrer && document.referrer.includes(window.location.host)) {
                 window.history.back();
             } else {
-                window.location.href = 'challenges.html';
+                window.location.href = 'chats.html';
             }
         }
 
@@ -429,224 +327,111 @@
             document.getElementById('messageInput').focus();
         }
 
-        function setReplyTo(messageId, messageText, messageAuthor) {
-            currentReplyTo = { id: messageId, text: messageText, fromName: messageAuthor };
-            document.getElementById('replyAuthor').innerText = messageAuthor;
-            document.getElementById('replyText').innerText = messageText.length > 60 ? messageText.substring(0, 57) + '...' : messageText;
-            document.getElementById('replyIndicator').style.display = 'flex';
-            document.getElementById('messageInput').focus();
-        }
-
-       async function loadChat() {
-    const params = new URLSearchParams(window.location.search);
-    chatId = params.get('id');
-    
-    console.log('Загрузка чата:', chatId);
-    
-    if (!chatId) {
-        document.getElementById('chatTitle').innerText = 'Чат не найден';
-        if (document.querySelector('.chat-input-area')) {
-            document.querySelector('.chat-input-area').style.display = 'none';
-        }
-        return;
-    }
-
-    const chatRef = doc(db, "chats", chatId);
-    const chatSnap = await getDoc(chatRef);
-    
-    if (!chatSnap.exists()) {
-        document.getElementById('chatTitle').innerText = 'Чат не найден';
-        if (document.querySelector('.chat-input-area')) {
-            document.querySelector('.chat-input-area').style.display = 'none';
-        }
-        return;
-    }
-    
-    const chatData = chatSnap.data();
-    const participants = chatData.participants || [];
-    
-    console.log('Участники чата:', participants);
-    console.log('Текущий пользователь:', currentUser?.uid);
-    console.log('Является участником:', participants.includes(currentUser?.uid));
-    
-    // Проверяем доступ - если пользователь не участник, показываем ошибку
-    if (!currentUser || !participants.includes(currentUser.uid)) {
-        document.getElementById('chatTitle').innerText = 'Нет доступа к чату';
-        if (document.querySelector('.chat-input-area')) {
-            document.querySelector('.chat-input-area').style.display = 'none';
-        }
-        document.getElementById('messagesArea').innerHTML = '<div class="empty-chat"><i class="fas fa-lock"></i><div>У вас нет доступа к этому чату</div></div>';
-        return;
-    }
-    
-    // Находим ID собеседника
-    const otherId = participants.find(id => id !== currentUser.uid);
-    console.log('ID собеседника:', otherId);
-    
-    if (otherId) {
-        // Пытаемся получить имя из participantNames или из БД
-        let otherName = 'Собеседник';
-        if (chatData.participantNames && chatData.participantNames[otherId]) {
-            otherName = chatData.participantNames[otherId];
-        } else {
-            // Ищем в fighters, потом в partners
-            try {
-                let userDoc = await getDoc(doc(db, "fighters", otherId));
-                if (userDoc.exists()) {
-                    otherName = userDoc.data()?.name || 'Боец';
-                } else {
-                    userDoc = await getDoc(doc(db, "partners", otherId));
-                    if (userDoc.exists()) {
-                        otherName = userDoc.data()?.name || 'Продавец';
-                    }
-                }
-            } catch (err) {
-                console.warn('Не удалось получить имя:', err);
+        async function loadChat() {
+            const params = new URLSearchParams(window.location.search);
+            chatId = params.get('id');
+            
+            if (!chatId) {
+                document.getElementById('chatTitle').innerText = 'Чат не найден';
+                document.querySelector('.chat-input-area').style.display = 'none';
+                return;
             }
-        }
-        document.getElementById('chatTitle').innerHTML = otherName;
-    }
-    
-    const messagesRef = collection(db, "chats", chatId, "messages");
-    const q = query(messagesRef, orderBy("createdAt", "asc"));
-    
-    if (unsubscribe) unsubscribe();
-    unsubscribe = onSnapshot(q, (snapshot) => {
-        const container = document.getElementById('messagesArea');
-        if (snapshot.empty) {
-            container.innerHTML = `
-                <div class="empty-chat">
-                    <i class="fas fa-comment-dots"></i>
-                    <div>💬 Напишите первое сообщение!</div>
-                </div>
-            `;
-            return;
-        }
-        
-        let html = '';
-        snapshot.forEach(doc => {
-            const msg = doc.data();
-            const isOwn = msg.from === currentUser?.uid;
-            
-            // Получаем имя отправителя для чужих сообщений
-            let senderName = '';
-            if (!isOwn && msg.fromName) {
-                senderName = `<div class="message-sender"><i class="fas fa-user"></i> ${escapeHtml(msg.fromName)}</div>`;
-            }
-            
-            html += `
-                <div class="message ${isOwn ? 'own' : 'other'}">
-                    ${senderName}
-                    <div>${escapeHtml(msg.text)}</div>
-                </div>
-            `;
-        });
-        container.innerHTML = html;
-        container.scrollTop = container.scrollHeight;
-    });
-    
-    if (document.querySelector('.chat-input-area')) {
-        document.querySelector('.chat-input-area').style.display = 'flex';
-    }
-}
 
-        function renderMessages(messages) {
-            const container = document.getElementById('messagesArea');
+            const chatRef = doc(db, "chats", chatId);
+            const chatSnap = await getDoc(chatRef);
             
-            if (messages.length === 0) {
-                container.innerHTML = `
-                    <div class="empty-chat">
-                        <i class="fas fa-comment-dots"></i>
-                        <div>💬 Напишите первое сообщение!</div>
-                        <small style="color:#666;">Обсудите детали спарринга</small>
-                    </div>
-                `;
+            if (!chatSnap.exists()) {
+                document.getElementById('chatTitle').innerText = 'Чат не найден';
+                document.querySelector('.chat-input-area').style.display = 'none';
                 return;
             }
             
-            container.innerHTML = '';
-            messages.forEach(msg => {
-                const isOwn = msg.from === currentUser.uid;
-                const messageDiv = document.createElement('div');
-                messageDiv.className = `message ${isOwn ? 'own' : 'other'}`;
-                messageDiv.dataset.messageId = msg.id;
-                messageDiv.dataset.messageText = msg.text;
-                messageDiv.dataset.messageAuthor = msg.fromName || (isOwn ? 'Вы' : 'Соперник');
-                
-                if (!isOwn && msg.fromName) {
-                    const senderDiv = document.createElement('div');
-                    senderDiv.className = 'message-sender';
-                    senderDiv.innerHTML = `<i class="fas fa-user"></i> ${escapeHtml(msg.fromName)}`;
-                    messageDiv.appendChild(senderDiv);
-                }
-                
-                if (msg.replyTo) {
-                    const replyDiv = document.createElement('div');
-                    replyDiv.className = 'reply-preview';
-                    replyDiv.innerHTML = `
-                        <div class="reply-author"><i class="fas fa-reply"></i> Ответ для ${escapeHtml(msg.replyTo.fromName || 'пользователя')}</div>
-                        <div class="reply-text">${escapeHtml(msg.replyTo.text)}</div>
-                    `;
-                    messageDiv.appendChild(replyDiv);
-                }
-                
-                const textDiv = document.createElement('div');
-                textDiv.innerText = msg.text;
-                messageDiv.appendChild(textDiv);
-                
-                if (msg.createdAt) {
-                    const timeDiv = document.createElement('div');
-                    timeDiv.className = 'message-time';
-                    const date = msg.createdAt.toDate();
-                    timeDiv.innerText = `${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
-                    messageDiv.appendChild(timeDiv);
-                }
-                
-                container.appendChild(messageDiv);
-            });
+            const chatData = chatSnap.data();
+            const participants = chatData.participants || [];
             
-            container.scrollTop = container.scrollHeight;
+            if (!currentUser || !participants.includes(currentUser.uid)) {
+                document.getElementById('chatTitle').innerText = 'Нет доступа';
+                document.querySelector('.chat-input-area').style.display = 'none';
+                document.getElementById('messagesArea').innerHTML = '<div class="empty-chat"><i class="fas fa-lock"></i><div>Нет доступа</div></div>';
+                return;
+            }
             
-            document.querySelectorAll('.message').forEach(msgEl => {
-                msgEl.addEventListener('contextmenu', (e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    
-                    const existingMenu = document.querySelector('.message-menu');
-                    if (existingMenu) existingMenu.remove();
-                    
-                    const messageId = msgEl.dataset.messageId;
-                    const messageText = msgEl.dataset.messageText;
-                    const messageAuthor = msgEl.dataset.messageAuthor;
-                    
-                    const menu = document.createElement('div');
-                    menu.className = 'message-menu';
-                    menu.style.top = `${e.clientY}px`;
-                    menu.style.left = `${e.clientX}px`;
-                    
-                    const replyBtn = document.createElement('button');
-                    replyBtn.innerHTML = '<i class="fas fa-reply"></i> Ответить';
-                    replyBtn.addEventListener('click', () => {
-                        setReplyTo(messageId, messageText, messageAuthor);
-                        menu.remove();
-                    });
-                    menu.appendChild(replyBtn);
-                    
-                    const closeMenu = (event) => {
-                        if (!menu.contains(event.target)) {
-                            menu.remove();
-                            document.removeEventListener('click', closeMenu);
-                            document.removeEventListener('contextmenu', closeMenu);
+            // Обнуляем счётчик непрочитанных
+            try {
+                const currentCounts = chatData.unreadCounts || {};
+                if (currentCounts[currentUser.uid] > 0) {
+                    const updateData = {};
+                    updateData[`unreadCounts.${currentUser.uid}`] = 0;
+                    await updateDoc(chatRef, updateData);
+                }
+            } catch (err) {
+                console.log('Не обнулился счётчик:', err);
+            }
+            
+            const otherId = participants.find(id => id !== currentUser.uid);
+            
+            if (otherId) {
+                let otherName = 'Собеседник';
+                if (chatData.participantNames && chatData.participantNames[otherId]) {
+                    otherName = chatData.participantNames[otherId];
+                } else {
+                    try {
+                        let userDoc = await getDoc(doc(db, "fighters", otherId));
+                        if (userDoc.exists()) {
+                            otherName = userDoc.data()?.name || 'Боец';
+                        } else {
+                            userDoc = await getDoc(doc(db, "partners", otherId));
+                            if (userDoc.exists()) otherName = userDoc.data()?.name || 'Продавец';
                         }
-                    };
-                    setTimeout(() => {
-                        document.addEventListener('click', closeMenu);
-                        document.addEventListener('contextmenu', closeMenu);
-                    }, 10);
+                    } catch (err) {}
+                }
+                document.getElementById('chatTitle').innerHTML = `<i class="fas fa-user"></i> ${otherName}`;
+            }
+            
+            const messagesRef = collection(db, "chats", chatId, "messages");
+            const q = query(messagesRef, orderBy("createdAt", "asc"));
+            
+            if (unsubscribe) unsubscribe();
+            unsubscribe = onSnapshot(q, (snapshot) => {
+                const container = document.getElementById('messagesArea');
+                if (snapshot.empty) {
+                    container.innerHTML = '<div class="empty-chat"><i class="fas fa-comment-dots"></i><div>Напишите первое сообщение!</div></div>';
+                    return;
+                }
+                
+                let html = '';
+                snapshot.forEach(doc => {
+                    const msg = doc.data();
+                    const isOwn = msg.from === currentUser?.uid;
+                    const senderName = (!isOwn && msg.fromName) ? `<div class="message-sender"><i class="fas fa-user"></i> ${escapeHtml(msg.fromName)}</div>` : '';
                     
-                    document.body.appendChild(menu);
+                    let replyHtml = '';
+                    if (msg.replyTo) {
+                        replyHtml = `
+                            <div class="reply-preview">
+                                <div class="reply-author"><i class="fas fa-reply"></i> Ответ для ${escapeHtml(msg.replyTo.fromName)}</div>
+                                <div class="reply-text">${escapeHtml(msg.replyTo.text)}</div>
+                            </div>
+                        `;
+                    }
+                    
+                    const time = msg.createdAt?.toDate();
+                    const timeStr = time ? `${time.getHours().toString().padStart(2,'0')}:${time.getMinutes().toString().padStart(2,'0')}` : '';
+                    
+                    html += `
+                        <div class="message ${isOwn ? 'own' : 'other'}">
+                            ${senderName}
+                            ${replyHtml}
+                            <div>${escapeHtml(msg.text)}</div>
+                            ${timeStr ? `<div class="message-time">${timeStr}</div>` : ''}
+                        </div>
+                    `;
                 });
+                container.innerHTML = html;
+                container.scrollTop = container.scrollHeight;
             });
+            
+            document.querySelector('.chat-input-area').style.display = 'flex';
         }
 
         async function sendMessage() {
@@ -656,20 +441,15 @@
             if (!text || !currentUser || !chatId) return;
             
             let userName = 'Пользователь';
-            
-            // Пытаемся получить имя из fighters или partners
             const fighterDoc = await getDoc(doc(db, "fighters", currentUser.uid));
             if (fighterDoc.exists()) {
                 userName = fighterDoc.data()?.name || 'Боец';
             } else {
                 const partnerDoc = await getDoc(doc(db, "partners", currentUser.uid));
-                if (partnerDoc.exists()) {
-                    userName = partnerDoc.data()?.name || 'Продавец';
-                }
+                if (partnerDoc.exists()) userName = partnerDoc.data()?.name || 'Продавец';
             }
             
             const messagesRef = collection(db, "chats", chatId, "messages");
-            
             const messageData = {
                 from: currentUser.uid,
                 fromName: userName,
@@ -688,10 +468,28 @@
             
             await addDoc(messagesRef, messageData);
             
-            await updateDoc(doc(db, "chats", chatId), {
+            const chatRef = doc(db, "chats", chatId);
+            const chatSnap = await getDoc(chatRef);
+            const chatData = chatSnap.data();
+            const participants = chatData.participants || [];
+            const otherId = participants.find(id => id !== currentUser.uid);
+            
+            const updateData = {
                 lastMessage: text.substring(0, 100),
-                lastMessageTime: new Date()
-            });
+                lastMessageTime: new Date(),
+                lastMessageAuthor: currentUser.uid
+            };
+            
+            if (otherId) {
+                const currentCounts = chatData.unreadCounts || {};
+                updateData.unreadCounts = {
+                    ...currentCounts,
+                    [currentUser.uid]: 0,
+                    [otherId]: (currentCounts[otherId] || 0) + 1
+                };
+            }
+            
+            await updateDoc(chatRef, updateData);
             
             input.value = '';
             input.focus();
@@ -699,12 +497,7 @@
 
         function escapeHtml(str) {
             if (!str) return '';
-            return str.replace(/[&<>]/g, function(m) {
-                if (m === '&') return '&amp;';
-                if (m === '<') return '&lt;';
-                if (m === '>') return '&gt;';
-                return m;
-            });
+            return str.replace(/[&<>]/g, m => m === '&' ? '&amp;' : m === '<' ? '&lt;' : '&gt;');
         }
 
         onAuthStateChanged(auth, (user) => {
@@ -712,9 +505,9 @@
             if (user) {
                 loadChat();
             } else {
-                document.getElementById('chatTitle').innerText = 'Войдите в аккаунт';
-                document.querySelector('.input-wrapper').style.display = 'none';
-                document.getElementById('messagesArea').innerHTML = '<div class="empty-chat"><i class="fas fa-lock"></i><div>Войдите, чтобы читать чат</div></div>';
+                document.getElementById('chatTitle').innerText = 'Войдите';
+                document.querySelector('.chat-input-area').style.display = 'none';
+                document.getElementById('messagesArea').innerHTML = '<div class="empty-chat"><i class="fas fa-lock"></i><div>Войдите в аккаунт</div></div>';
             }
         });
 

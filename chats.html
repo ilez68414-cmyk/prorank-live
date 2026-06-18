@@ -609,7 +609,7 @@
     <script type="module" src="header.js"></script>
     <script type="module">
         import { initializeApp } from "firebase/app";
-        import { getFirestore, collection, getDocs, query, where, doc, getDoc, orderBy, limit } from "firebase/firestore";
+        import { getFirestore, collection, getDocs, query, where, doc, getDoc, orderBy, updateDoc } from "firebase/firestore";
         import { getAuth, onAuthStateChanged } from "firebase/auth";
 
         const firebaseConfig = {
@@ -680,19 +680,46 @@
                     
                     const otherFighterRef = doc(db, "fighters", otherId);
                     const otherFighterSnap = await getDoc(otherFighterRef);
-                    const otherName = otherFighterSnap.data()?.name || 'Соперник';
-                    const otherAvatar = otherFighterSnap.data()?.avatar || 'Avatar.png';
+                    const otherData = otherFighterSnap.data();
+                    const otherName = otherData?.name || 'Соперник';
+                    const otherAvatar = otherData?.avatar || 'Avatar.png';
+                    
+                    // Проверяем онлайн (если есть поле lastSeen)
+                    let isOnline = false;
+                    if (otherData?.lastSeen) {
+                        const lastSeen = otherData.lastSeen.toDate();
+                        isOnline = (new Date() - lastSeen) < 5 * 60 * 1000;
+                    }
                     
                     const lastMessage = chat.lastMessage || 'Нет сообщений';
                     const lastMessageTime = chat.lastMessageTime?.toDate();
                     const timeStr = lastMessageTime ? formatTime(lastMessageTime) : '';
                     
+                    // Проверяем автора последнего сообщения (если есть поле)
+                    const lastMessageAuthor = chat.lastMessageAuthor || '';
+                    const isMyMessage = lastMessageAuthor === currentUser.uid;
+                    
+                    // Получаем счётчик непрочитанных (если есть)
+                    const unreadCount = chat.unreadCounts?.[currentUser.uid] || 0;
+                    
+                    // Формируем превью сообщения
+                    let messagePreview = escapeHtml(lastMessage);
+                    if (isMyMessage) {
+                        messagePreview = `<span style="color: #fbbf24; font-weight: 600;">Вы: </span>${messagePreview}`;
+                    }
+                    
                     html += `
                         <div class="chat-item" data-chat-id="${docSnap.id}">
-                            <img src="${otherAvatar}" class="chat-avatar" onerror="this.src='Avatar.png'">
+                            <div style="position: relative;">
+                                <img src="${otherAvatar}" class="chat-avatar" onerror="this.src='Avatar.png'">
+                                ${isOnline ? '<span style="position: absolute; bottom: 2px; right: 2px; width: 12px; height: 12px; background: #22c55e; border: 2px solid #0f0f0f; border-radius: 50%;"></span>' : ''}
+                            </div>
                             <div class="chat-info">
-                                <div class="chat-name">${escapeHtml(otherName)}</div>
-                                <div class="chat-last-message">${escapeHtml(lastMessage)}</div>
+                                <div class="chat-name">
+                                    ${escapeHtml(otherName)}
+                                    ${unreadCount > 0 ? `<span class="unread-badge" style="background: #ef4444; color: white;">${unreadCount > 99 ? '99+' : unreadCount}</span>` : ''}
+                                </div>
+                                <div class="chat-last-message">${messagePreview}</div>
                             </div>
                             <div class="chat-time">${timeStr}</div>
                         </div>
@@ -700,11 +727,23 @@
                 }
                 container.innerHTML = html;
                 
-                document.querySelectorAll('.chat-item').forEach(item => {
-                    item.addEventListener('click', () => {
-                        window.location.href = `chat.html?id=${item.dataset.chatId}`;
+                // Обработка кликов по чатам
+                for (const item of document.querySelectorAll('.chat-item')) {
+                    item.addEventListener('click', async () => {
+                        const chatId = item.dataset.chatId;
+                        // Пытаемся обнулить непрочитанные (если есть поле unreadCounts)
+                        try {
+                            const chatRef = doc(db, "chats", chatId);
+                            const updateData = {};
+                            updateData[`unreadCounts.${currentUser.uid}`] = 0;
+                            await updateDoc(chatRef, updateData);
+                        } catch (err) {
+                            // Если поля нет — просто игнорируем ошибку
+                            console.log('Нет поля unreadCounts, пропускаем обнуление');
+                        }
+                        window.location.href = `chat.html?id=${chatId}`;
                     });
-                });
+                }
             } catch (err) {
                 console.error('Ошибка загрузки чатов:', err);
                 container.innerHTML = '<div class="empty-state"><i class="fas fa-exclamation-triangle"></i><p>Ошибка загрузки чатов</p></div>';
@@ -759,6 +798,5 @@
             });
         }
     </script>
-    
 </body>
 </html>
