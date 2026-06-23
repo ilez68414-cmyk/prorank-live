@@ -82,22 +82,14 @@ async function checkAndAwardLeagueRewards(userId, oldFrs, newFrs) {
     }
 }
 
+// ═══════════════════════════════════════════════════
+// ❌ ЕЖЕМЕСЯЧНОЕ НАЧИСЛЕНИЕ ВЫЗОВОВ — ОТКЛЮЧЕНО
+// ═══════════════════════════════════════════════════
 async function refreshMonthlyChallenges(userId) {
-    const userRef = doc(db, "fighters", userId);
-    const userSnap = await getDoc(userRef);
-    const userData = userSnap.data();
-    const lastRefresh = userData.lastMonthlyRefresh?.toDate();
-    const now = new Date();
-    
-    if (!lastRefresh || now.getMonth() !== lastRefresh.getMonth() || now.getFullYear() !== lastRefresh.getFullYear()) {
-        const currentFree = userData.freeChallenges || 0;
-        await updateDoc(userRef, {
-            freeChallenges: currentFree + 3,
-            lastMonthlyRefresh: now
-        });
-        console.log('✅ Бесплатные вызовы обновлены (+3)');
-        if (window.updateHeaderBalance) window.updateHeaderBalance();
-    }
+    // Функция отключена — вызовы больше не начисляются автоматически каждый месяц
+    // Начальные 5 вызовов выдаются при регистрации
+    console.log('❌ Автоначисление вызовов ОТКЛЮЧЕНО (было +3 в месяц)');
+    return;
 }
 
 function updateLeagueDisplay(frs) {
@@ -383,9 +375,20 @@ async function getLikesCount(userId) {
     return snap.size;
 }
 
-async function loadProfileData() {
+async function loadProfileData(user) {
     const loadingDiv = document.getElementById('profileLoading');
     const profileContent = document.getElementById('profileContent');
+    const unauthorizedMessage = document.getElementById('unauthorizedMessage');
+    
+    // ✅ Проверяем авторизацию (используем переданного user)
+    if (!user) {
+        if (unauthorizedMessage) unauthorizedMessage.style.display = 'flex';
+        if (loadingDiv) loadingDiv.style.display = 'none';
+        if (profileContent) profileContent.style.display = 'none';
+        return;
+    }
+    
+    if (unauthorizedMessage) unauthorizedMessage.style.display = 'none';
     if (loadingDiv) loadingDiv.style.display = 'block';
     if (profileContent) profileContent.style.display = 'none';
 
@@ -502,6 +505,14 @@ async function loadProfileData() {
         if (profileContent) profileContent.style.display = 'block';
     }
 }
+
+// ===== В КОНЦЕ ФАЙЛА ЗАМЕНИ ЭТИ СТРОКИ =====
+// Было: document.addEventListener('DOMContentLoaded', () => { loadProfileData(); });
+// Стало:
+
+onAuthStateChanged(auth, (user) => {
+    loadProfileData(user);
+});
 
 function setupOnboardingClose() {
     const close1 = document.getElementById('closeOnboarding');
