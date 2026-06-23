@@ -534,7 +534,7 @@
             transform: translateX(3px);
         }
 
-        /* ===== АЧИВКИ — ИДЕАЛЬНО ВЫРОВНЕНЫ ===== */
+        /* ===== АЧИВКИ ===== */
         .achievements-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
@@ -831,6 +831,41 @@
             display: none !important;
         }
         
+        /* ===== НЕАВТОРИЗОВАННЫЙ ПОЛЬЗОВАТЕЛЬ ===== */
+        .unauthorized-message {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            min-height: 50vh;
+            padding: 40px 20px;
+            background: rgba(15,15,15,0.7);
+            backdrop-filter: blur(8px);
+            border-radius: 32px;
+            border: 1px solid rgba(251,191,36,0.2);
+            animation: fadeInUp 0.5s ease;
+        }
+
+        .unauthorized-message.show {
+            display: flex !important;
+        }
+
+        .unauthorized-message h2 {
+            background: linear-gradient(135deg, #fff, #fbbf24);
+            background-clip: text;
+            color: transparent;
+        }
+
+        .unauthorized-message .btn-primary:hover {
+            transform: translateY(-2px);
+            filter: brightness(1.05);
+        }
+
+        .unauthorized-message .btn-primary:active {
+            transform: scale(0.97);
+        }
+        
         @keyframes fadeInUp {
             from {
                 opacity: 0;
@@ -1014,7 +1049,6 @@
                 align-items: center;
             }
             
-            /* Ачивки на телефоне — 3 колонки */
             .achievements-grid {
                 grid-template-columns: repeat(3, 1fr) !important;
                 gap: 10px !important;
@@ -1162,36 +1196,6 @@
                 display: none !important;
             }
         }
-        /* ===== НЕАВТОРИЗОВАННЫЙ ПОЛЬЗОВАТЕЛЬ ===== */
-.unauthorized-message {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    min-height: 50vh;
-    padding: 40px 20px;
-    background: rgba(15,15,15,0.7);
-    backdrop-filter: blur(8px);
-    border-radius: 32px;
-    border: 1px solid rgba(251,191,36,0.2);
-    animation: fadeInUp 0.5s ease;
-}
-
-.unauthorized-message h2 {
-    background: linear-gradient(135deg, #fff, #fbbf24);
-    background-clip: text;
-    color: transparent;
-}
-
-.unauthorized-message .btn-primary:hover {
-    transform: translateY(-2px);
-    filter: brightness(1.05);
-}
-
-.unauthorized-message .btn-primary:active {
-    transform: scale(0.97);
-}
     </style>
 </head>
 <body>
@@ -1211,18 +1215,19 @@
     <main>
         <div class="profile-container">
             <!-- Блок для неавторизованных пользователей -->
-<div id="unauthorizedMessage" class="unauthorized-message" style="display: none;">
-    <i class="fas fa-lock" style="font-size: 3rem; color: #fbbf24; margin-bottom: 16px;"></i>
-    <h2 style="font-size: 1.5rem; margin-bottom: 8px;">Войдите в аккаунт</h2>
-    <p style="color: #888; margin-bottom: 20px;">Чтобы просматривать профили и пользоваться всеми возможностями PRORANK</p>
-    <button onclick="window.location.href='login.html'" class="btn-primary" style="padding: 12px 32px; border-radius: 40px; font-weight: 700; font-size: 1rem; cursor: pointer; border: none; background: #fbbf24; color: #000;">
-        <i class="fas fa-sign-in-alt"></i> Войти
-    </button>
-    <br>
-    <button onclick="window.location.href='register.html'" style="margin-top: 12px; background: transparent; border: 1px solid #fbbf24; color: #fbbf24; padding: 10px 28px; border-radius: 40px; cursor: pointer; font-weight: 600;">
-        <i class="fas fa-user-plus"></i> Зарегистрироваться
-    </button>
-</div>
+            <div id="unauthorizedMessage" class="unauthorized-message">
+                <i class="fas fa-lock" style="font-size: 3rem; color: #fbbf24; margin-bottom: 16px;"></i>
+                <h2 style="font-size: 1.5rem; margin-bottom: 8px;">Войдите в аккаунт</h2>
+                <p style="color: #888; margin-bottom: 20px;">Чтобы просматривать профили и пользоваться всеми возможностями PRORANK</p>
+                <button onclick="window.location.href='login.html'" class="btn-primary" style="padding: 12px 32px; border-radius: 40px; font-weight: 700; font-size: 1rem; cursor: pointer; border: none; background: #fbbf24; color: #000;">
+                    <i class="fas fa-sign-in-alt"></i> Войти
+                </button>
+                <br>
+                <button onclick="window.location.href='register.html'" style="margin-top: 12px; background: transparent; border: 1px solid #fbbf24; color: #fbbf24; padding: 10px 28px; border-radius: 40px; cursor: pointer; font-weight: 600;">
+                    <i class="fas fa-user-plus"></i> Зарегистрироваться
+                </button>
+            </div>
+            
             <div id="profileLoading" class="loading"><div class="loading-spinner"></div> Загрузка профиля...</div>
             
             <div id="profileContent" style="display: none;">
@@ -1385,8 +1390,8 @@
             }
         }
     </script>
-    <script type="module" src="header.js"></script>
-    <script type="module" src="profile.js"></script>
+    <script type="module" src="header.js?v=2"></script>
+    <script type="module" src="profile.js?v=2"></script>
     <script type="module">
         import { initializeApp } from "firebase/app";
         import { getFirestore, doc, getDoc, updateDoc } from "firebase/firestore";

@@ -82,12 +82,8 @@ async function checkAndAwardLeagueRewards(userId, oldFrs, newFrs) {
     }
 }
 
-// ═══════════════════════════════════════════════════
 // ❌ ЕЖЕМЕСЯЧНОЕ НАЧИСЛЕНИЕ ВЫЗОВОВ — ОТКЛЮЧЕНО
-// ═══════════════════════════════════════════════════
 async function refreshMonthlyChallenges(userId) {
-    // Функция отключена — вызовы больше не начисляются автоматически каждый месяц
-    // Начальные 5 вызовов выдаются при регистрации
     console.log('❌ Автоначисление вызовов ОТКЛЮЧЕНО (было +3 в месяц)');
     return;
 }
@@ -239,7 +235,6 @@ async function loadFightHistory() {
     }
 }
 
-// ========== ГЛАВНАЯ ФУНКЦИЯ С ИКОНКАМИ PNG ==========
 async function loadAchievements() {
     const userId = currentFighterId;
     if (!userId) return;
@@ -264,7 +259,6 @@ async function loadAchievements() {
         let html = '';
         for (const ach of allAchievements) {
             const earned = earnedIds.has(ach.id);
-            // ЭТО ГЛАВНОЕ: ПРАВИЛЬНЫЙ ОТНОСИТЕЛЬНЫЙ ПУТЬ
             const iconPath = `./achiev-icons/${ach.id}.png`;
             
             let rewardHtml = '';
@@ -282,7 +276,7 @@ async function loadAchievements() {
                     <div class="achievement-icon">
                         <img src="${iconPath}" 
                              alt="${ach.name}" 
-                             style="width: 45px; height: 45px; object-fit: contain;"
+                             style="width: 42px; height: 42px; object-fit: contain;"
                              onerror="this.onerror=null; this.style.display='none'; this.parentElement.innerHTML='<i class=\\'fas fa-medal\\' style=\\'font-size: 2rem; color: #fbbf24;\\'></i>';">
                     </div>
                     <div class="achievement-name">${ach.name}</div>
@@ -297,7 +291,6 @@ async function loadAchievements() {
         container.innerHTML = '<div class="empty-state">Ошибка загрузки достижений</div>';
     }
 }
-// ========== КОНЕЦ ==========
 
 function escapeHtml(str) {
     if (!str) return '';
@@ -375,20 +368,27 @@ async function getLikesCount(userId) {
     return snap.size;
 }
 
+// ===== ГЛАВНАЯ ФУНКЦИЯ ЗАГРУЗКИ ПРОФИЛЯ =====
 async function loadProfileData(user) {
     const loadingDiv = document.getElementById('profileLoading');
     const profileContent = document.getElementById('profileContent');
     const unauthorizedMessage = document.getElementById('unauthorizedMessage');
     
-    // ✅ Проверяем авторизацию (используем переданного user)
+    // ✅ Проверяем авторизацию через переданного user
     if (!user) {
-        if (unauthorizedMessage) unauthorizedMessage.style.display = 'flex';
+        if (unauthorizedMessage) {
+            unauthorizedMessage.style.display = 'flex';
+            unauthorizedMessage.classList.add('show');
+        }
         if (loadingDiv) loadingDiv.style.display = 'none';
         if (profileContent) profileContent.style.display = 'none';
         return;
     }
     
-    if (unauthorizedMessage) unauthorizedMessage.style.display = 'none';
+    if (unauthorizedMessage) {
+        unauthorizedMessage.style.display = 'none';
+        unauthorizedMessage.classList.remove('show');
+    }
     if (loadingDiv) loadingDiv.style.display = 'block';
     if (profileContent) profileContent.style.display = 'none';
 
@@ -506,14 +506,6 @@ async function loadProfileData(user) {
     }
 }
 
-// ===== В КОНЦЕ ФАЙЛА ЗАМЕНИ ЭТИ СТРОКИ =====
-// Было: document.addEventListener('DOMContentLoaded', () => { loadProfileData(); });
-// Стало:
-
-onAuthStateChanged(auth, (user) => {
-    loadProfileData(user);
-});
-
 function setupOnboardingClose() {
     const close1 = document.getElementById('closeOnboarding');
     const close2 = document.getElementById('closeOnboardingX');
@@ -546,7 +538,7 @@ function setupEditProfile(fighterRef, fighter) {
                 sport: document.getElementById('editSport').value
             });
             document.getElementById('editProfileModal').style.display = 'none';
-            loadProfileData();
+            loadProfileData(auth.currentUser);
         };
     }
     const cancel = document.getElementById('cancelProfileBtn');
@@ -781,5 +773,8 @@ async function setupTelegramVerify() {
 
 window.updateHeaderBalance = updateHeaderBalance;
 window.addEventListener('beforeunload', () => { if (authListenerUnsub) authListenerUnsub(); });
-document.addEventListener('DOMContentLoaded', () => { loadProfileData(); });
-window.loadProfileData = loadProfileData;
+
+// ===== ЗАПУСК =====
+onAuthStateChanged(auth, (user) => {
+    loadProfileData(user);
+});
