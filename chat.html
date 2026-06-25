@@ -91,6 +91,7 @@
             flex-direction: column;
             gap: 12px;
             scroll-behavior: smooth;
+            touch-action: pan-y;
         }
         .messages-area::-webkit-scrollbar {
             width: 4px;
@@ -111,7 +112,40 @@
             animation: fadeIn 0.2s ease;
             position: relative;
             transition: all 0.2s ease;
+            cursor: default;
+            touch-action: none;
+            user-select: none;
+            -webkit-user-select: none;
         }
+        
+        /* Свайп-индикатор */
+        .message.swiping {
+            transform: translateX(20px);
+            background: rgba(251,191,36,0.15);
+            border-left: 4px solid #fbbf24;
+        }
+        
+        .message.swiping-reply {
+            transform: translateX(0);
+            background: rgba(251,191,36,0.08);
+            border-left: 4px solid #fbbf24;
+        }
+        
+        .message .reply-hint {
+            position: absolute;
+            right: -50px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 1.2rem;
+            color: #fbbf24;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+        
+        .message.swiping .reply-hint {
+            opacity: 1;
+        }
+        
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(5px); }
             to { opacity: 1; transform: translateY(0); }
@@ -313,6 +347,158 @@
         let unsubscribe = null;
         let currentReplyTo = null;
 
+        // ===== СВАЙП ДЛЯ ОТВЕТА =====
+        let swipeData = {
+            element: null,
+            startX: 0,
+            startY: 0,
+            isSwiping: false,
+            threshold: 60
+        };
+
+        function setupSwipeReply() {
+            const messagesArea = document.getElementById('messagesArea');
+            
+            // Обработка touch-событий (телефон)
+            messagesArea.addEventListener('touchstart', (e) => {
+                const messageEl = e.target.closest('.message.other');
+                if (!messageEl || messageEl.closest('.reply-preview')) return;
+                
+                const touch = e.touches[0];
+                swipeData.element = messageEl;
+                swipeData.startX = touch.clientX;
+                swipeData.startY = touch.clientY;
+                swipeData.isSwiping = false;
+            }, { passive: true });
+
+            messagesArea.addEventListener('touchmove', (e) => {
+                if (!swipeData.element) return;
+                
+                const touch = e.touches[0];
+                const deltaX = touch.clientX - swipeData.startX;
+                const deltaY = touch.clientY - swipeData.startY;
+                
+                // Если свайп вертикальный - отключаем
+                if (Math.abs(deltaY) > 20 && Math.abs(deltaY) > Math.abs(deltaX)) {
+                    resetSwipe();
+                    return;
+                }
+                
+                if (deltaX > 10) {
+                    swipeData.isSwiping = true;
+                    const progress = Math.min(deltaX / swipeData.threshold, 1);
+                    const translate = progress * 20;
+                    swipeData.element.style.transform = `translateX(${translate}px)`;
+                    swipeData.element.style.borderLeft = `4px solid rgba(251,191,36,${progress})`;
+                    swipeData.element.style.background = `rgba(251,191,36,${progress * 0.12})`;
+                    
+                    // Показываем стрелку
+                    let hint = swipeData.element.querySelector('.reply-hint');
+                    if (!hint) {
+                        hint = document.createElement('div');
+                        hint.className = 'reply-hint';
+                        hint.innerHTML = '<i class="fas fa-reply"></i>';
+                        swipeData.element.style.position = 'relative';
+                        swipeData.element.appendChild(hint);
+                    }
+                    hint.style.opacity = progress;
+                }
+            }, { passive: true });
+
+            messagesArea.addEventListener('touchend', (e) => {
+                if (!swipeData.element) return;
+                
+                const touch = e.changedTouches[0];
+                const deltaX = touch.clientX - swipeData.startX;
+                
+                if (swipeData.isSwiping && deltaX > swipeData.threshold) {
+                    // Сработал свайп — отвечаем
+                    const messageEl = swipeData.element;
+                    const messageId = messageEl.dataset.messageId;
+                    const messageText = messageEl.dataset.messageText;
+                    const messageAuthor = messageEl.dataset.messageAuthor;
+                    
+                    if (messageId && messageText && messageAuthor) {
+                        setReplyTo(messageId, messageText, messageAuthor);
+                    }
+                }
+                
+                resetSwipe();
+            }, { passive: true });
+
+            // Обработка мыши (компьютер)
+            let mouseDownEl = null;
+            let mouseStartX = 0;
+            
+            messagesArea.addEventListener('mousedown', (e) => {
+                const messageEl = e.target.closest('.message.other');
+                if (!messageEl || messageEl.closest('.reply-preview')) return;
+                
+                mouseDownEl = messageEl;
+                mouseStartX = e.clientX;
+                swipeData.element = messageEl;
+                swipeData.startX = e.clientX;
+                swipeData.startY = e.clientY;
+                swipeData.isSwiping = false;
+            });
+
+            document.addEventListener('mousemove', (e) => {
+                if (!mouseDownEl) return;
+                
+                const deltaX = e.clientX - mouseStartX;
+                if (deltaX > 10) {
+                    swipeData.isSwiping = true;
+                    const progress = Math.min(deltaX / swipeData.threshold, 1);
+                    const translate = progress * 20;
+                    mouseDownEl.style.transform = `translateX(${translate}px)`;
+                    mouseDownEl.style.borderLeft = `4px solid rgba(251,191,36,${progress})`;
+                    mouseDownEl.style.background = `rgba(251,191,36,${progress * 0.12})`;
+                    
+                    let hint = mouseDownEl.querySelector('.reply-hint');
+                    if (!hint) {
+                        hint = document.createElement('div');
+                        hint.className = 'reply-hint';
+                        hint.innerHTML = '<i class="fas fa-reply"></i>';
+                        mouseDownEl.style.position = 'relative';
+                        mouseDownEl.appendChild(hint);
+                    }
+                    hint.style.opacity = progress;
+                }
+            });
+
+            document.addEventListener('mouseup', (e) => {
+                if (!mouseDownEl) return;
+                
+                const deltaX = e.clientX - mouseStartX;
+                
+                if (swipeData.isSwiping && deltaX > swipeData.threshold) {
+                    const messageEl = mouseDownEl;
+                    const messageId = messageEl.dataset.messageId;
+                    const messageText = messageEl.dataset.messageText;
+                    const messageAuthor = messageEl.dataset.messageAuthor;
+                    
+                    if (messageId && messageText && messageAuthor) {
+                        setReplyTo(messageId, messageText, messageAuthor);
+                    }
+                }
+                
+                resetSwipe();
+                mouseDownEl = null;
+            });
+        }
+
+        function resetSwipe() {
+            if (swipeData.element) {
+                swipeData.element.style.transform = '';
+                swipeData.element.style.borderLeft = '';
+                swipeData.element.style.background = '';
+                const hint = swipeData.element.querySelector('.reply-hint');
+                if (hint) hint.remove();
+            }
+            swipeData.element = null;
+            swipeData.isSwiping = false;
+        }
+
         function goBack() {
             if (document.referrer && document.referrer.includes(window.location.host)) {
                 window.history.back();
@@ -325,6 +511,15 @@
             currentReplyTo = null;
             document.getElementById('replyIndicator').style.display = 'none';
             document.getElementById('messageInput').focus();
+        }
+
+        function setReplyTo(messageId, messageText, messageAuthor) {
+            currentReplyTo = { id: messageId, text: messageText, fromName: messageAuthor };
+            document.getElementById('replyAuthor').innerText = messageAuthor;
+            document.getElementById('replyText').innerText = messageText.length > 60 ? messageText.substring(0, 57) + '...' : messageText;
+            document.getElementById('replyIndicator').style.display = 'flex';
+            document.getElementById('messageInput').focus();
+            resetSwipe();
         }
 
         async function loadChat() {
@@ -418,20 +613,82 @@
                     const time = msg.createdAt?.toDate();
                     const timeStr = time ? `${time.getHours().toString().padStart(2,'0')}:${time.getMinutes().toString().padStart(2,'0')}` : '';
                     
+                    const messageId = doc.id;
+                    const messageText = escapeHtml(msg.text);
+                    const messageAuthor = escapeHtml(msg.fromName || 'Соперник');
+                    
                     html += `
-                        <div class="message ${isOwn ? 'own' : 'other'}">
+                        <div class="message ${isOwn ? 'own' : 'other'}" 
+                             data-message-id="${messageId}" 
+                             data-message-text="${messageText}"
+                             data-message-author="${messageAuthor}">
                             ${senderName}
                             ${replyHtml}
-                            <div>${escapeHtml(msg.text)}</div>
+                            <div>${messageText}</div>
                             ${timeStr ? `<div class="message-time">${timeStr}</div>` : ''}
                         </div>
                     `;
                 });
                 container.innerHTML = html;
                 container.scrollTop = container.scrollHeight;
+                
+                // Добавляем контекстное меню (правый клик)
+                document.querySelectorAll('.message.other').forEach(msgEl => {
+                    msgEl.addEventListener('contextmenu', (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        
+                        const existingMenu = document.querySelector('.message-menu');
+                        if (existingMenu) existingMenu.remove();
+                        
+                        const messageId = msgEl.dataset.messageId;
+                        const messageText = msgEl.dataset.messageText;
+                        const messageAuthor = msgEl.dataset.messageAuthor;
+                        
+                        const menu = document.createElement('div');
+                        menu.className = 'message-menu';
+                        menu.style.position = 'fixed';
+                        menu.style.top = `${Math.min(e.clientY, window.innerHeight - 100)}px`;
+                        menu.style.left = `${Math.min(e.clientX, window.innerWidth - 160)}px`;
+                        menu.style.background = '#2a2a35';
+                        menu.style.borderRadius = '12px';
+                        menu.style.padding = '8px 0';
+                        menu.style.minWidth = '150px';
+                        menu.style.zIndex = '1000';
+                        menu.style.boxShadow = '0 5px 20px rgba(0,0,0,0.3)';
+                        menu.style.border = '1px solid rgba(251,191,36,0.2)';
+                        menu.style.animation = 'fadeIn 0.1s ease';
+                        
+                        const replyBtn = document.createElement('button');
+                        replyBtn.innerHTML = '<i class="fas fa-reply"></i> Ответить';
+                        replyBtn.style.cssText = 'background:none;border:none;color:#fff;padding:10px 16px;width:100%;text-align:left;cursor:pointer;font-size:0.8rem;display:flex;align-items:center;gap:8px;transition:all 0.1s ease;';
+                        replyBtn.onmouseover = () => { replyBtn.style.background = 'rgba(251,191,36,0.2)'; replyBtn.style.color = '#fbbf24'; };
+                        replyBtn.onmouseout = () => { replyBtn.style.background = 'none'; replyBtn.style.color = '#fff'; };
+                        replyBtn.addEventListener('click', () => {
+                            setReplyTo(messageId, messageText, messageAuthor);
+                            menu.remove();
+                        });
+                        menu.appendChild(replyBtn);
+                        
+                        const closeMenu = (event) => {
+                            if (!menu.contains(event.target)) {
+                                menu.remove();
+                                document.removeEventListener('click', closeMenu);
+                                document.removeEventListener('contextmenu', closeMenu);
+                            }
+                        };
+                        setTimeout(() => {
+                            document.addEventListener('click', closeMenu);
+                            document.addEventListener('contextmenu', closeMenu);
+                        }, 10);
+                        
+                        document.body.appendChild(menu);
+                    });
+                });
             });
             
             document.querySelector('.chat-input-area').style.display = 'flex';
+            setupSwipeReply();
         }
 
         async function sendMessage() {
