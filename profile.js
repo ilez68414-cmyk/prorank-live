@@ -1,6 +1,8 @@
 import { initializeApp } from "firebase/app";
 import { getFirestore, doc, getDoc, updateDoc, collection, query, where, getDocs, setDoc, addDoc, deleteDoc } from "firebase/firestore";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
+import { ensureUserFields, getAvailableBadges, selectBadge, getSelectedBadge, ALL_BADGES, getBadgeImage } from './payment.js';
+import { applyAllPremiumBonuses } from './premium.js';
 
 const firebaseConfig = {
     apiKey: "AIzaSyDUGYJY7pX7q02MS5SACMIIQXpjpQ97mPw",
@@ -82,9 +84,8 @@ async function checkAndAwardLeagueRewards(userId, oldFrs, newFrs) {
     }
 }
 
-// ❌ ЕЖЕМЕСЯЧНОЕ НАЧИСЛЕНИЕ ВЫЗОВОВ — ОТКЛЮЧЕНО
 async function refreshMonthlyChallenges(userId) {
-    console.log('❌ Автоначисление вызовов ОТКЛЮЧЕНО (было +3 в месяц)');
+    console.log('❌ Автоначисление вызовов ОТКЛЮЧЕНО');
     return;
 }
 
@@ -368,13 +369,161 @@ async function getLikesCount(userId) {
     return snap.size;
 }
 
-// ===== ГЛАВНАЯ ФУНКЦИЯ ЗАГРУЗКИ ПРОФИЛЯ =====
+// ============================================================
+// БЕЙДЖИ
+// ============================================================
+async function loadUserBadge(userId) {
+    try {
+        await ensureUserFields(userId);
+        const selectedBadgeId = await getSelectedBadge(userId);
+        const badgeImg = document.getElementById('profileBadgeImg');
+        const badgeContainer = document.getElementById('badgeDisplay');
+        
+        if (!badgeImg || !badgeContainer) return;
+        
+        if (selectedBadgeId) {
+            const badge = ALL_BADGES.find(b => b.id === selectedBadgeId);
+            if (badge) {
+                badgeImg.src = getBadgeImage(selectedBadgeId);
+                badgeImg.style.display = 'block';
+                badgeImg.onerror = () => {
+                    badgeImg.style.display = 'none';
+                    badgeImg.parentElement.innerHTML = `<span style="font-size: 1.8rem;">${badge.emoji}</span>`;
+                };
+                badgeContainer.style.display = 'flex';
+                badgeImg.style.cursor = 'pointer';
+                badgeImg.onclick = () => openBadgeSelector();
+            }
+        } else {
+            badgeContainer.style.display = 'none';
+        }
+    } catch (err) {
+        console.error('Ошибка загрузки бейджа:', err);
+    }
+}
+
+async function openBadgeSelector() {
+    if (!currentFighterId) return;
+    
+    const modal = document.getElementById('badgeSelectModal');
+    const grid = document.getElementById('badgeSelectGrid');
+    const countEl = document.getElementById('availableBadgesCount');
+    
+    if (!modal || !grid) return;
+    
+    try {
+        const availableBadges = await getAvailableBadges(currentFighterId);
+        const available = availableBadges.filter(b => b.isAvailable);
+        const selectedBadge = await getSelectedBadge(currentFighterId);
+        
+        if (countEl) countEl.textContent = available.length;
+        grid.innerHTML = '';
+        
+        if (available.length === 0) {
+            grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:20px;color:#888;">
+                <i class="fas fa-lock" style="font-size:2rem;display:block;margin-bottom:8px;"></i>
+                Нет доступных бейджей<br><span style="font-size:0.7rem;">Купите премиум</span>
+            </div>`;
+        } else {
+            availableBadges.forEach(badge => {
+                const div = document.createElement('div');
+                div.className = 'badge-option';
+                if (badge.id === selectedBadge) div.classList.add('selected');
+                
+                div.innerHTML = `
+                    <img src="${getBadgeImage(badge.id)}" alt="${badge.name}" 
+                        onerror="this.style.display='none';this.parentElement.innerHTML='<div style=\\'font-size:2rem;\\'>${badge.emoji}</div>'">
+                    <div class="badge-name">${badge.name}</div>
+                    <div class="badge-status ${badge.isOwned ? 'owned' : ''}">${badge.isOwned ? '✅ Владелец' : '🔓 Доступен'}</div>
+                `;
+                
+                if (badge.isAvailable) {
+                    div.addEventListener('click', async () => {
+                        try {
+                            await selectBadge(currentFighterId, badge.id);
+                            await loadUserBadge(currentFighterId);
+                            modal.style.display = 'none';
+                            alert(`✅ Бейдж "${badge.name}" выбран!`);
+                            // Обновляем имя
+                            await updateProfileName();
+                        } catch (err) {
+                            alert('❌ ' + err.message);
+                        }
+                    });
+                } else {
+                    div.style.opacity = '0.5';
+                    div.style.cursor = 'not-allowed';
+                }
+                grid.appendChild(div);
+            });
+        }
+        modal.style.display = 'flex';
+    } catch (err) {
+        console.error(err);
+        alert('❌ Ошибка загрузки бейджей');
+    }
+}
+
+async function initBadgeDisplay(userId) {
+    await loadUserBadge(userId);
+    const changeBtn = document.getElementById('changeBadgeBtn');
+    if (changeBtn) {
+        changeBtn.style.display = 'inline-flex';
+        changeBtn.onclick = () => openBadgeSelector();
+    }
+}
+
+// ============================================================
+// ИМЯ + ЛИГА + БЕЙДЖ (ОТДЕЛЬНАЯ ФУНКЦИЯ)
+// ============================================================
+async function updateProfileName() {
+    const nameElement = document.getElementById('profName');
+    if (!nameElement) {
+        console.error('❌ Элемент profName не найден');
+        return;
+    }
+    
+    const fighter = currentFighterData;
+    if (!fighter) {
+        console.error('❌ Нет данных бойца');
+        return;
+    }
+    
+    try {
+        const league = getLeague(fighter.frs || 0);
+        const selectedBadgeId = await getSelectedBadge(currentFighterId);
+        let badgeHtml = '';
+        
+        if (selectedBadgeId) {
+            const badge = ALL_BADGES.find(b => b.id === selectedBadgeId);
+            if (badge) {
+                badgeHtml = `<img src="${getBadgeImage(selectedBadgeId)}" 
+                    style="width:28px;height:28px;object-fit:contain;display:inline-block;vertical-align:middle;"
+                    onerror="this.style.display='none';this.parentElement.innerHTML='<span style=\\'font-size:1.4rem;\\'>${badge.emoji}</span>';">`;
+            }
+        }
+        
+        nameElement.innerHTML = `
+            ${badgeHtml}
+            ${fighter.name || 'Без имени'} 
+            <i class="fas ${league.icon}" style="color:${league.color}; font-size: 1.2rem;"></i>
+        `;
+        console.log('✅ Имя обновлено:', nameElement.innerHTML);
+    } catch (err) {
+        console.error('❌ Ошибка обновления имени:', err);
+        // Фолбек — показываем хотя бы имя без бейджа
+        nameElement.innerHTML = `${fighter.name || 'Без имени'}`;
+    }
+}
+
+// ============================================================
+// ГЛАВНАЯ ФУНКЦИЯ
+// ============================================================
 async function loadProfileData(user) {
     const loadingDiv = document.getElementById('profileLoading');
     const profileContent = document.getElementById('profileContent');
     const unauthorizedMessage = document.getElementById('unauthorizedMessage');
     
-    // ✅ Проверяем авторизацию через переданного user
     if (!user) {
         if (unauthorizedMessage) {
             unauthorizedMessage.style.display = 'flex';
@@ -411,7 +560,19 @@ async function loadProfileData(user) {
         currentFighterData = fighterSnap.data();
         const fighter = currentFighterData;
         
-        document.getElementById('profName').innerHTML = `${fighter.name || 'Без имени'} <i class="fas ${getLeague(fighter.frs || 0).icon}" style="color:${getLeague(fighter.frs || 0).color}; font-size: 1.2rem;"></i>`;
+        // Добавляем недостающие поля
+        await ensureUserFields(profileId);
+        
+        // Применяем премиум-бонусы
+        await applyAllPremiumBonuses(profileId);
+        
+        // Отображаем бейдж
+        await initBadgeDisplay(profileId);
+        
+        // Обновляем имя (ОСНОВНОЙ ФИКС!)
+        await updateProfileName();
+        
+        // Остальные данные
         document.getElementById('profSport').innerText = fighter.sport || '—';
         document.getElementById('profCity').innerText = fighter.city || '—';
         
@@ -434,7 +595,6 @@ async function loadProfileData(user) {
         const newFrs = fighter.frs || 0;
         
         await checkAndAwardLeagueRewards(profileId, oldFrs, newFrs);
-        await refreshMonthlyChallenges(profileId);
         updateLeagueDisplay(newFrs);
         
         document.getElementById('statWinsHeader').innerText = fighter.wins || 0;
