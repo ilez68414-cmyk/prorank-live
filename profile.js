@@ -92,7 +92,7 @@ async function refreshMonthlyChallenges(userId) {
 function updateLeagueDisplay(frs) {
     const league = getLeague(frs);
     const leagueBadge = document.getElementById('leagueBadge');
-    const leagueIcon = document.getElementById('leagueIcon');
+    const leagueIcon = document.getElementById('leagueIconBig');
     const leagueName = document.getElementById('leagueName');
     
     if (!leagueBadge) return;
@@ -444,7 +444,6 @@ async function openBadgeSelector() {
                             await loadUserBadge(currentFighterId);
                             modal.style.display = 'none';
                             alert(`✅ Бейдж "${badge.name}" выбран!`);
-                            // Обновляем имя
                             await updateProfileName();
                         } catch (err) {
                             alert('❌ ' + err.message);
@@ -474,15 +473,9 @@ async function initBadgeDisplay(userId) {
 }
 
 // ============================================================
-// ИМЯ + ЛИГА + БЕЙДЖ (ОТДЕЛЬНАЯ ФУНКЦИЯ)
+// ИМЯ + ЛИГА + БЕЙДЖ — НОВАЯ ВЕРСИЯ
 // ============================================================
 async function updateProfileName() {
-    const nameElement = document.getElementById('profName');
-    if (!nameElement) {
-        console.error('❌ Элемент profName не найден');
-        return;
-    }
-    
     const fighter = currentFighterData;
     if (!fighter) {
         console.error('❌ Нет данных бойца');
@@ -492,27 +485,54 @@ async function updateProfileName() {
     try {
         const league = getLeague(fighter.frs || 0);
         const selectedBadgeId = await getSelectedBadge(currentFighterId);
-        let badgeHtml = '';
         
-        if (selectedBadgeId) {
-            const badge = ALL_BADGES.find(b => b.id === selectedBadgeId);
-            if (badge) {
-                badgeHtml = `<img src="${getBadgeImage(selectedBadgeId)}" 
-                    style="width:28px;height:28px;object-fit:contain;display:inline-block;vertical-align:middle;"
-                    onerror="this.style.display='none';this.parentElement.innerHTML='<span style=\\'font-size:1.4rem;\\'>${badge.emoji}</span>';">`;
-            }
+        // === Имя ===
+        const nameEl = document.getElementById('fighterName');
+        if (nameEl) nameEl.textContent = fighter.name || 'Без имени';
+        
+        // === Лига (справа) ===
+        const leagueIcon = document.getElementById('leagueIcon');
+        if (leagueIcon) {
+            leagueIcon.className = `fas ${league.icon} league-icon`;
+            leagueIcon.style.color = league.color;
         }
         
-        nameElement.innerHTML = `
-            ${badgeHtml}
-            ${fighter.name || 'Без имени'} 
-            <i class="fas ${league.icon}" style="color:${league.color}; font-size: 1.2rem;"></i>
-        `;
-        console.log('✅ Имя обновлено:', nameElement.innerHTML);
+        // === Бейдж (слева) ===
+        const badgeImg = document.getElementById('profileBadgeImg');
+        const badgeEmoji = document.getElementById('badgeEmoji');
+        const badgeWrapper = document.getElementById('badgeWrapper');
+        
+        if (selectedBadgeId && badgeWrapper) {
+            const badge = ALL_BADGES.find(b => b.id === selectedBadgeId);
+            if (badge) {
+                badgeWrapper.style.display = 'inline-flex';
+                
+                if (badgeImg) {
+                    badgeImg.src = getBadgeImage(selectedBadgeId);
+                    badgeImg.style.display = 'block';
+                    badgeImg.onerror = () => {
+                        badgeImg.style.display = 'none';
+                        if (badgeEmoji) {
+                            badgeEmoji.textContent = badge.emoji;
+                            badgeEmoji.style.display = 'block';
+                        }
+                    };
+                }
+                if (badgeEmoji) badgeEmoji.style.display = 'none';
+                
+                badgeWrapper.onclick = () => {
+                    if (window.openBadgeSelector) window.openBadgeSelector();
+                };
+            }
+        } else if (badgeWrapper) {
+            badgeWrapper.style.display = 'none';
+        }
+        
+        console.log('✅ Имя обновлено:', fighter.name);
     } catch (err) {
         console.error('❌ Ошибка обновления имени:', err);
-        // Фолбек — показываем хотя бы имя без бейджа
-        nameElement.innerHTML = `${fighter.name || 'Без имени'}`;
+        const nameEl = document.getElementById('fighterName');
+        if (nameEl) nameEl.textContent = fighter.name || 'Без имени';
     }
 }
 
@@ -553,7 +573,7 @@ async function loadProfileData(user) {
     try {
         const fighterSnap = await getDoc(fighterRef);
         if (!fighterSnap.exists()) {
-            document.getElementById('profName').innerText = 'Боец не найден';
+            document.getElementById('fighterName').textContent = 'Боец не найден';
             if (loadingDiv) loadingDiv.style.display = 'none';
             return;
         }
@@ -569,12 +589,12 @@ async function loadProfileData(user) {
         // Отображаем бейдж
         await initBadgeDisplay(profileId);
         
-        // Обновляем имя (ОСНОВНОЙ ФИКС!)
+        // Обновляем имя
         await updateProfileName();
         
         // Остальные данные
-        document.getElementById('profSport').innerText = fighter.sport || '—';
-        document.getElementById('profCity').innerText = fighter.city || '—';
+        document.getElementById('profSport').textContent = fighter.sport || '—';
+        document.getElementById('profCity').textContent = fighter.city || '—';
         
         const weightMap = {
             '47': 'Наилегчайшая (до 50 кг)', '53': 'Легчайшая (51–56 кг)', '59': 'Полулёгкая (57–61 кг)',
@@ -582,8 +602,8 @@ async function loadProfileData(user) {
             '80': '1-я средняя (78–83 кг)', '86': 'Средняя (84–89 кг)', '94': 'Полутяжёлая (90–99 кг)',
             '110': 'Тяжёлая (100+ кг)'
         };
-        document.getElementById('profWeight').innerText = weightMap[fighter.weightClass] || fighter.weightClass || '—';
-        document.getElementById('bioText').innerText = fighter.bio || "Тут пока пусто...";
+        document.getElementById('profWeight').textContent = weightMap[fighter.weightClass] || fighter.weightClass || '—';
+        document.getElementById('bioText').textContent = fighter.bio || "Тут пока пусто...";
         
         const avatarImg = document.getElementById('profAvatar');
         if (avatarImg) {
@@ -597,10 +617,10 @@ async function loadProfileData(user) {
         await checkAndAwardLeagueRewards(profileId, oldFrs, newFrs);
         updateLeagueDisplay(newFrs);
         
-        document.getElementById('statWinsHeader').innerText = fighter.wins || 0;
-        document.getElementById('statLossesHeader').innerText = fighter.losses || 0;
-        document.getElementById('statFinishesHeader').innerText = fighter.finishes || 0;
-        document.getElementById('statFRSHeader').innerText = fighter.frs || 0;
+        document.getElementById('statWinsHeader').textContent = fighter.wins || 0;
+        document.getElementById('statLossesHeader').textContent = fighter.losses || 0;
+        document.getElementById('statFinishesHeader').textContent = fighter.finishes || 0;
+        document.getElementById('statFRSHeader').textContent = fighter.frs || 0;
         
         await updateLikesUI();
         await updateSubscribeUI();
@@ -627,7 +647,7 @@ async function loadProfileData(user) {
                         const onboarding = document.getElementById('frsOnboarding');
                         if (onboarding) {
                             onboarding.classList.remove('hidden');
-                            document.getElementById('onboardingFrs').innerText = fighter.frs || 0;
+                            document.getElementById('onboardingFrs').textContent = fighter.frs || 0;
                         }
                     }
                     await setupReferral();
@@ -932,6 +952,7 @@ async function setupTelegramVerify() {
 }
 
 window.updateHeaderBalance = updateHeaderBalance;
+window.openBadgeSelector = openBadgeSelector;
 window.addEventListener('beforeunload', () => { if (authListenerUnsub) authListenerUnsub(); });
 
 // ===== ЗАПУСК =====

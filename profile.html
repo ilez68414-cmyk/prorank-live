@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
+    <!-- PWA Manifest & Icons -->
     <link rel="manifest" href="/prorank-live/manifest.json">
     <link rel="apple-touch-icon" href="/prorank-live/icons/icon-192.png">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -17,7 +18,11 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700;14..32,800;14..32,900&display=swap" rel="stylesheet">
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
@@ -32,7 +37,9 @@
             flex-direction: column;
         }
 
-        main { flex: 1; }
+        main {
+            flex: 1;
+        }
 
         .gold-top {
             position: fixed;
@@ -78,7 +85,9 @@
             transition: transform 0.2s ease;
         }
 
-        .logo:hover { transform: scale(1.02); }
+        .logo:hover {
+            transform: scale(1.02);
+        }
 
         .logo span {
             background: linear-gradient(135deg, #fbbf24, #ffdd77);
@@ -104,7 +113,10 @@
             box-shadow: 0 0 15px rgba(251,191,36,0.2);
         }
 
-        .balance-count { color: #fbbf24; font-size: 1.1rem; }
+        .balance-count {
+            color: #fbbf24;
+            font-size: 1.1rem;
+        }
 
         .balance-plus {
             background: rgba(251,191,36,0.15);
@@ -147,7 +159,9 @@
             transform: scale(1.02);
         }
 
-        .menu-toggle:active { transform: scale(0.95); }
+        .menu-toggle:active {
+            transform: scale(0.95);
+        }
 
         .nav-links {
             display: flex;
@@ -181,7 +195,9 @@
             transform: translateY(-2px);
         }
 
-        .nav-links a:hover i { transform: scale(1.1); }
+        .nav-links a:hover i {
+            transform: scale(1.1);
+        }
 
         .profile-container {
             max-width: 1200px;
@@ -233,41 +249,48 @@
             box-shadow: 0 0 30px rgba(251,191,36,0.4);
         }
         
-        .info-section { flex: 1; }
+        .info-section {
+            flex: 1;
+        }
         
-        .info-section h1 {
-            font-size: 1.8rem;
-            margin-bottom: 12px;
+        /* ===== НОВАЯ СТРУКТУРА ИМЕНИ ===== */
+        .name-row {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 12px;
             flex-wrap: wrap;
+            margin-bottom: 12px;
         }
-        
-        /* Бейдж рядом с именем — кликабельный */
-        .badge-clickable {
+        .name-row .badge-wrapper {
+            display: inline-flex;
+            align-items: center;
             cursor: pointer;
-            transition: all 0.2s ease;
-            display: inline-block;
-            line-height: 1;
+            transition: transform 0.2s;
+            flex-shrink: 0;
         }
-        .badge-clickable:hover {
+        .name-row .badge-wrapper:hover {
             transform: scale(1.1);
-            filter: brightness(1.2);
         }
-        .badge-clickable img {
-            width: 32px;
-            height: 32px;
+        .name-row .badge-wrapper img {
+            width: 36px;
+            height: 36px;
             object-fit: contain;
-            display: inline-block;
-            vertical-align: middle;
             border-radius: 50%;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(251,191,36,0.2);
         }
-        .badge-clickable .badge-emoji {
-            font-size: 1.6rem;
-            display: inline-block;
-            vertical-align: middle;
+        .name-row .badge-wrapper .badge-emoji {
+            font-size: 2rem;
             line-height: 1;
+        }
+        .name-row .fighter-name {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #fff;
+        }
+        .name-row .league-icon {
+            font-size: 1.4rem;
+            flex-shrink: 0;
         }
         
         .fighter-details {
@@ -837,6 +860,7 @@
             display: none !important;
         }
         
+        /* ===== НЕАВТОРИЗОВАННЫЙ ПОЛЬЗОВАТЕЛЬ ===== */
         .unauthorized-message {
             display: none;
             flex-direction: column;
@@ -869,6 +893,29 @@
 
         .unauthorized-message .btn-primary:active {
             transform: scale(0.97);
+        }
+        
+        /* ===== БЕЙДЖИ В ПРОФИЛЕ ===== */
+        .badge-display {
+            display: none;
+            justify-content: center;
+            align-items: center;
+            margin: 8px 0 12px 0;
+            padding: 6px 12px;
+            background: rgba(15,15,15,0.5);
+            border-radius: 40px;
+            border: 1px solid rgba(251,191,36,0.1);
+            gap: 12px;
+        }
+        .badge-display-inner {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .badge-display-inner img {
+            border-radius: 50%;
+            background: rgba(255,255,255,0.05);
+            padding: 4px;
         }
         
         /* Модалка выбора бейджа */
@@ -938,11 +985,30 @@
                 width: 40px;
                 height: 40px;
             }
+            .badge-display {
+                flex-wrap: wrap;
+            }
+            .name-row .fighter-name {
+                font-size: 1.4rem;
+            }
+            .name-row .badge-wrapper img {
+                width: 30px;
+                height: 30px;
+            }
+            .name-row .league-icon {
+                font-size: 1.2rem;
+            }
         }
         
         @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(30px); }
-            to { opacity: 1; transform: translateY(0); }
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
         
         @keyframes fadeIn {
@@ -951,8 +1017,14 @@
         }
         
         @keyframes slideUp {
-            from { opacity: 0; transform: translateY(50px); }
-            to { opacity: 1; transform: translateY(0); }
+            from {
+                opacity: 0;
+                transform: translateY(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
         
         .main-footer {
@@ -1023,10 +1095,17 @@
             color: #666;
         }
         
+        /* ===== АДАПТИВ ===== */
         @media (max-width: 768px) {
-            .container { padding: 0 16px; }
-            .navbar { padding: 12px 18px; }
-            .menu-toggle { display: block; }
+            .container {
+                padding: 0 16px;
+            }
+            .navbar {
+                padding: 12px 18px;
+            }
+            .menu-toggle {
+                display: block;
+            }
             .nav-links {
                 display: none;
                 flex-direction: column;
@@ -1041,11 +1120,26 @@
                 border: 1px solid rgba(251,191,36,0.3);
                 backdrop-filter: blur(20px);
             }
-            .nav-links.show { display: flex; animation: fadeIn 0.2s ease; }
-            .nav-links a { width: 100%; text-align: center; padding: 12px; }
-            .profile-container { padding: 0 16px; }
-            .profile-top { flex-direction: column; align-items: center; text-align: center; }
-            .fighter-details { justify-content: center; }
+            .nav-links.show {
+                display: flex;
+                animation: fadeIn 0.2s ease;
+            }
+            .nav-links a {
+                width: 100%;
+                text-align: center;
+                padding: 12px;
+            }
+            .profile-container {
+                padding: 0 16px;
+            }
+            .profile-top {
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
+            }
+            .fighter-details {
+                justify-content: center;
+            }
             
             .stats-row {
                 display: grid !important;
@@ -1080,7 +1174,9 @@
                 flex-direction: column;
                 text-align: center;
             }
-            .wallet-info { justify-content: center; }
+            .wallet-info {
+                justify-content: center;
+            }
             .footer-inner {
                 flex-direction: column;
                 text-align: center;
@@ -1107,51 +1203,89 @@
                 height: 36px !important;
             }
             
-            .achievement-name { font-size: 0.65rem !important; }
-            .achievement-reward { font-size: 0.55rem !important; }
+            .achievement-name {
+                font-size: 0.65rem !important;
+            }
+            
+            .achievement-reward {
+                font-size: 0.55rem !important;
+            }
+            
             .badge-grid {
                 grid-template-columns: repeat(3, 1fr) !important;
                 gap: 8px !important;
             }
+            .name-row {
+                justify-content: center;
+            }
         }
         
         @media (max-width: 480px) {
-            .profile-card { padding: 16px !important; }
-            .info-section h1 { font-size: 1.4rem; }
-            .avatar-section img { width: 100px; height: 100px; }
+            .profile-card {
+                padding: 16px !important;
+            }
+            
+            .info-section h1 {
+                font-size: 1.4rem;
+            }
+            
+            .avatar-section img {
+                width: 100px;
+                height: 100px;
+            }
+            
             .stat-badge {
                 font-size: 0.7rem !important;
                 padding: 6px 8px !important;
             }
-            .stat-badge .value { font-size: 0.9rem !important; }
+            
+            .stat-badge .value {
+                font-size: 0.9rem !important;
+            }
+            
             .action-buttons button {
                 padding: 10px !important;
                 font-size: 0.8rem !important;
             }
+            
             .btn-like, .btn-subscribe {
                 font-size: 0.75rem !important;
                 padding: 6px 12px !important;
             }
-            .wallet-balance { font-size: 1rem; }
+            
+            .wallet-balance {
+                font-size: 1rem;
+            }
+            
             .achievements-grid {
                 grid-template-columns: repeat(2, 1fr) !important;
                 gap: 8px !important;
             }
+            
             .achievement-card {
                 padding: 8px 4px !important;
                 min-height: 110px !important;
             }
+            
             .achievement-icon {
                 width: 42px !important;
                 height: 42px !important;
             }
+            
             .achievement-icon img {
                 width: 32px !important;
                 height: 32px !important;
             }
-            .achievement-name { font-size: 0.58rem !important; }
+            
+            .achievement-name {
+                font-size: 0.58rem !important;
+            }
+            
             .badge-grid {
                 grid-template-columns: repeat(2, 1fr) !important;
+            }
+            .name-row .fighter-name {
+                font-size: 1.2rem;
             }
         }
         
@@ -1199,6 +1333,7 @@
             to { transform: rotate(360deg); }
         }
         
+        /* ===== ЖЁСТКОЕ ПРАВИЛО ДЛЯ СКРЫТЫХ БЛОКОВ ===== */
         #ownerButtons.hidden,
         #visitorButtons.hidden {
             display: none !important;
@@ -1228,6 +1363,7 @@
 
     <main>
         <div class="profile-container">
+            <!-- Блок для неавторизованных пользователей -->
             <div id="unauthorizedMessage" class="unauthorized-message">
                 <i class="fas fa-lock" style="font-size: 3rem; color: #fbbf24; margin-bottom: 16px;"></i>
                 <h2 style="font-size: 1.5rem; margin-bottom: 8px;">Войдите в аккаунт</h2>
@@ -1250,7 +1386,16 @@
                             <img id="profAvatar" src="Avatar.png" alt="Аватар">
                         </div>
                         <div class="info-section">
-                            <h1 id="profName">Боец</h1>
+                            <!-- ===== НОВАЯ СТРУКТУРА ИМЕНИ ===== -->
+                            <div class="name-row" id="nameRow">
+                                <span class="badge-wrapper" id="badgeWrapper" onclick="window.openBadgeSelector && window.openBadgeSelector()">
+                                    <img id="profileBadgeImg" src="" alt="Бейдж" style="display: none;">
+                                    <span class="badge-emoji" id="badgeEmoji" style="display: none;">👑</span>
+                                </span>
+                                <span class="fighter-name" id="fighterName">Боец</span>
+                                <i class="fas fa-medal league-icon" id="leagueIcon" style="color:#cd7f32;"></i>
+                            </div>
+
                             <div class="fighter-details">
                                 <span><i class="fas fa-fist-raised icon-gold"></i> <span id="profSport">—</span></span>
                                 <span><i class="fas fa-weight-hanging icon-gold"></i> <span id="profWeight">—</span></span>
@@ -1262,6 +1407,9 @@
                                 <div class="stat-badge"><i class="fas fa-bolt icon-orange"></i> <span class="value" id="statFinishesHeader">0</span> <span>финишей</span></div>
                                 <div class="stat-badge"><i class="fas fa-star icon-gold"></i> <span class="value" id="statFRSHeader">0</span> <span>FRS</span></div>
                             </div>
+                            
+                            <!-- БЕЙДЖ В ПРОФИЛЕ (устаревший, оставлен для совместимости) -->
+                           
                             <div class="stats-row">
                                 <div class="stat-badge">
                                     <button id="likeBtn" class="btn-like"><i class="fas fa-heart"></i> <span id="likeCount">0</span></button>
@@ -1282,6 +1430,7 @@
                     </div>
                 </div>
 
+                <!-- Блок кошелька (только для владельца профиля) -->
                 <div id="walletBlock" class="wallet-card" style="display: none;">
                     <div class="wallet-info">
                         <i class="fas fa-wallet"></i>
@@ -1297,7 +1446,7 @@
 
                 <div class="league-container" id="leagueContainer">
                     <div class="league-badge" id="leagueBadge">
-                        <i class="fas" id="leagueIcon"></i>
+                        <i class="fas" id="leagueIconBig"></i>
                         <span id="leagueName"></span>
                     </div>
                     <div class="progress-bar">
@@ -1471,7 +1620,7 @@
                         bio: newBio
                     });
                     
-                    document.getElementById('profName').textContent = newName;
+                    document.getElementById('fighterName').textContent = newName;
                     document.getElementById('profCity').textContent = newCity;
                     document.getElementById('profWeight').textContent = newWeight;
                     document.getElementById('profSport').textContent = newSport;
@@ -1493,7 +1642,7 @@
         
         if (editProfileBtn) {
             editProfileBtn.addEventListener('click', () => {
-                document.getElementById('editName').value = document.getElementById('profName').textContent;
+                document.getElementById('editName').value = document.getElementById('fighterName').textContent;
                 document.getElementById('editCity').value = document.getElementById('profCity').textContent;
                 document.getElementById('editWeightClass').value = document.getElementById('profWeight').textContent;
                 document.getElementById('editSport').value = document.getElementById('profSport').textContent;
@@ -1506,6 +1655,8 @@
             if (event.target === editProfileModal) {
                 editProfileModal.style.display = 'none';
             }
+            
+            // Закрытие модалки бейджей
             const badgeModal = document.getElementById('badgeSelectModal');
             if (event.target === badgeModal) {
                 badgeModal.style.display = 'none';
@@ -1543,6 +1694,7 @@
             menuToggle.addEventListener('click', () => {
                 navLinks.classList.toggle('show');
             });
+            
             navLinks.querySelectorAll('a').forEach(link => {
                 link.addEventListener('click', () => {
                     navLinks.classList.remove('show');
@@ -1553,5 +1705,6 @@
         const plusBtn = document.getElementById('balancePlusBtn');
         if (plusBtn) plusBtn.onclick = () => window.location.href = 'shop.html';
     </script>
+    
 </body>
 </html>
