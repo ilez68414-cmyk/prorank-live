@@ -136,7 +136,6 @@
             color: transparent; 
         }
         
-        /* Сабменю партнёра */
         .partner-subnav {
             display: flex;
             gap: 8px;
@@ -290,7 +289,6 @@
         .transaction-date { 
             font-size: 0.65rem; 
             color: #666; 
-            width: 100%;
         }
         
         .empty-state { 
@@ -515,7 +513,7 @@
             <h1><i class="fas fa-wallet"></i> Кошелёк партнёра</h1>
         </div>
 
-        <!-- Сабменю партнёра — теперь кошелёк часть партнёрки -->
+        <!-- Сабменю партнёра -->
         <div class="partner-subnav">
             <a href="partner-dashboard.html" class="subnav-link"><i class="fas fa-chart-line"></i> Аналитика</a>
             <a href="partner-products.html" class="subnav-link"><i class="fas fa-box"></i> Товары</a>
@@ -611,8 +609,9 @@
     <script type="module" src="header.js"></script>
     <script type="module">
         import { initializeApp } from "firebase/app";
-        import { getFirestore, doc, getDoc, getDocs, collection, query, where, orderBy, addDoc, updateDoc } from "firebase/firestore";
+        import { getFirestore, doc, getDoc, getDocs, collection, query, where, orderBy } from "firebase/firestore";
         import { getAuth, onAuthStateChanged } from "firebase/auth";
+        import { getWalletBalance, getWalletTransactions, createWithdrawalRequest, formatAmount, getTransactionTypeName, getTransactionIcon, getTransactionColor } from './wallet.js';
 
         const firebaseConfig = {
             apiKey: "AIzaSyDUGYJY7pX7q02MS5SACMIIQXpjpQ97mPw",
@@ -628,60 +627,45 @@
         const auth = getAuth(app);
 
         let currentPartnerId = null;
-        let currentBalance = null;
 
         async function loadWallet() {
             if (!currentPartnerId) return;
             
             try {
-                const balanceDoc = await getDoc(doc(db, "wallet_balances", currentPartnerId));
-                if (balanceDoc.exists()) {
-                    currentBalance = balanceDoc.data();
-                    document.getElementById('availableBalance').innerHTML = `${(currentBalance.available || 0).toLocaleString()} ₽`;
-                    document.getElementById('pendingBalance').innerHTML = `${(currentBalance.pending || 0).toLocaleString()} ₽`;
-                    document.getElementById('totalEarned').innerHTML = `${(currentBalance.totalEarned || 0).toLocaleString()} ₽`;
-                    document.getElementById('totalWithdrawn').innerHTML = `${(currentBalance.totalWithdrawn || 0).toLocaleString()} ₽`;
-                } else {
-                    document.getElementById('availableBalance').innerHTML = '0 ₽';
+                const balance = await getWalletBalance(currentPartnerId);
+                if (balance) {
+                    document.getElementById('availableBalance').innerHTML = `${(balance.available || 0).toLocaleString()} ₽`;
+                    document.getElementById('pendingBalance').innerHTML = `${(balance.pending || 0).toLocaleString()} ₽`;
+                    document.getElementById('totalEarned').innerHTML = `${(balance.totalEarned || 0).toLocaleString()} ₽`;
+                    document.getElementById('totalWithdrawn').innerHTML = `${(balance.totalWithdrawn || 0).toLocaleString()} ₽`;
                 }
                 
-                const transactionsQuery = query(
-                    collection(db, "wallet_transactions"),
-                    where("userId", "==", currentPartnerId),
-                    where("userType", "==", "partner"),
-                    orderBy("createdAt", "desc")
-                );
-                const transactionsSnap = await getDocs(transactionsQuery);
+                const transactions = await getWalletTransactions(currentPartnerId, 'partner');
                 const container = document.getElementById('transactionsList');
                 
-                if (transactionsSnap.empty) {
+                if (transactions.length === 0) {
                     container.innerHTML = '<div class="empty-state"><i class="fas fa-inbox"></i><br>История операций пуста</div>';
                     return;
                 }
                 
                 let html = '';
-                transactionsSnap.forEach(docSnap => {
-                    const t = docSnap.data();
-                    const date = t.createdAt?.toDate().toLocaleString('ru-RU') || '—';
-                    const typeNames = {
-                        'deposit': 'Пополнение', 'hold': 'Заморожено', 'release': 'Поступление',
-                        'payout': 'Вывод', 'commission': 'Комиссия', 'refund': 'Возврат'
-                    };
-                    const icon = {
-                        'deposit': 'fa-arrow-down', 'hold': 'fa-lock', 'release': 'fa-arrow-up',
-                        'payout': 'fa-money-bill-wave', 'commission': 'fa-percent', 'refund': 'fa-undo'
-                    }[t.type] || 'fa-circle';
-                    const sign = (t.type === 'hold' || t.type === 'payout' || t.type === 'commission') ? '−' : '+';
-                    const amountColor = (t.type === 'hold' || t.type === 'payout' || t.type === 'commission') ? '#f59e0b' : '#10b981';
+                transactions.forEach(t => {
+                    const sign = (t.type === 'hold' || t.type === 'payout' || t.type === 'commission' || t.type === 'withdrawal') ? '−' : '+';
+                    const amountColor = getTransactionColor(t.type) || '#fbbf24';
+                    const icon = getTransactionIcon(t.type) || 'fa-circle';
+                    const typeName = getTransactionTypeName(t.type) || t.type;
+                    const date = t.createdAt?.toLocaleString('ru-RU') || '—';
                     
                     html += `
                         <div class="transaction-item">
                             <div class="transaction-type">
                                 <i class="fas ${icon}" style="color: ${amountColor};"></i>
-                                <span>${typeNames[t.type] || t.type}</span>
+                                <span>${typeName}</span>
+                                ${t.status === 'pending' ? '<span style="font-size:0.6rem;color:#f59e0b;">⏳</span>' : ''}
                             </div>
                             <div class="transaction-amount" style="color: ${amountColor};">${sign} ${(t.amount || 0).toLocaleString()} ₽</div>
                             <div class="transaction-date">${date}</div>
+                            ${t.description ? `<div style="width:100%;font-size:0.65rem;color:#666;">${t.description}</div>` : ''}
                         </div>
                     `;
                 });
@@ -707,7 +691,8 @@
                 return;
             }
             
-            if (amount > (currentBalance?.available || 0)) {
+            const balance = await getWalletBalance(currentPartnerId);
+            if (!balance || amount > (balance.available || 0)) {
                 alert('Недостаточно средств на балансе');
                 return;
             }
@@ -718,31 +703,7 @@
             btn.disabled = true;
             
             try {
-                await addDoc(collection(db, "withdrawals"), {
-                    partnerId: currentPartnerId,
-                    amount: amount,
-                    method: method,
-                    details: details,
-                    status: 'pending',
-                    createdAt: new Date()
-                });
-                
-                await updateDoc(doc(db, "wallet_balances", currentPartnerId), {
-                    available: (currentBalance?.available || 0) - amount,
-                    pendingWithdraw: (currentBalance?.pendingWithdraw || 0) + amount,
-                    updatedAt: new Date()
-                });
-                
-                await addDoc(collection(db, "wallet_transactions"), {
-                    userId: currentPartnerId,
-                    userType: 'partner',
-                    type: 'payout',
-                    amount: amount,
-                    status: 'pending',
-                    description: `Заявка на вывод ${amount} ₽ (${method})`,
-                    createdAt: new Date()
-                });
-                
+                const result = await createWithdrawalRequest(currentPartnerId, amount, method, details);
                 alert(`✅ Заявка на вывод ${amount.toLocaleString()} ₽ отправлена!`);
                 
                 document.getElementById('withdrawModal').classList.remove('active');
@@ -750,8 +711,7 @@
                 document.getElementById('withdrawDetails').value = '';
                 await loadWallet();
             } catch (err) {
-                console.error('Ошибка:', err);
-                alert('❌ Ошибка при отправке заявки');
+                alert(`❌ ${err.message}`);
             } finally {
                 btn.innerHTML = originalText;
                 btn.disabled = false;

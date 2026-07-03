@@ -317,7 +317,6 @@
             color: #666; 
         }
         
-        /* Общий стиль для модалок */
         .modal-overlay {
             display: none;
             position: fixed;
@@ -791,6 +790,7 @@
         import { initializeApp } from "firebase/app";
         import { getFirestore, doc, getDoc, getDocs, collection, query, where, orderBy, updateDoc, addDoc, setDoc } from "firebase/firestore";
         import { getAuth, onAuthStateChanged } from "firebase/auth";
+        import { getWalletBalance, depositFunds, createWithdrawalRequest, getWalletTransactions, formatAmount } from './wallet.js';
 
         const firebaseConfig = {
             apiKey: "AIzaSyDUGYJY7pX7q02MS5SACMIIQXpjpQ97mPw",
@@ -813,148 +813,57 @@
             if (!currentUser) return;
             
             try {
-                const balanceRef = doc(db, "wallet_balances", currentUser.uid);
-                const balanceDoc = await getDoc(balanceRef);
-                if (balanceDoc.exists()) {
-                    const data = balanceDoc.data();
-                    document.getElementById('balanceAmount').innerHTML = `${(data.available || 0).toLocaleString()} ₽`;
-                    document.getElementById('totalSpent').innerHTML = `${(data.totalSpent || 0).toLocaleString()} ₽`;
-                    document.getElementById('totalRefunded').innerHTML = `${(data.totalRefunded || 0).toLocaleString()} ₽`;
-                } else {
-                    document.getElementById('balanceAmount').innerHTML = '0 ₽';
-                    document.getElementById('totalSpent').innerHTML = '0 ₽';
-                    document.getElementById('totalRefunded').innerHTML = '0 ₽';
+                const balance = await getWalletBalance(currentUser.uid);
+                if (balance) {
+                    document.getElementById('balanceAmount').innerHTML = `${(balance.available || 0).toLocaleString()} ₽`;
+                    document.getElementById('totalSpent').innerHTML = `${(balance.totalSpent || 0).toLocaleString()} ₽`;
+                    document.getElementById('totalRefunded').innerHTML = `${(balance.totalRefunded || 0).toLocaleString()} ₽`;
                 }
                 
-                const transactionsQuery = query(
-                    collection(db, "wallet_transactions"),
-                    where("userId", "==", currentUser.uid),
-                    where("userType", "==", "fighter"),
-                    orderBy("createdAt", "desc")
-                );
-                const transactionsSnap = await getDocs(transactionsQuery);
+                const transactions = await getWalletTransactions(currentUser.uid, 'fighter');
                 const container = document.getElementById('transactionsList');
                 
-                if (transactionsSnap.empty) {
+                if (transactions.length === 0) {
                     container.innerHTML = '<div class="empty-state"><i class="fas fa-inbox"></i><br>История операций пуста</div>';
                     return;
                 }
                 
                 let html = '';
-                transactionsSnap.forEach(docSnap => {
-                    const t = docSnap.data();
-                    const date = t.createdAt?.toDate().toLocaleString('ru-RU') || '—';
+                transactions.forEach(t => {
                     const typeNames = { 
                         'deposit': 'Пополнение', 
                         'payment': 'Оплата', 
                         'refund': 'Возврат',
-                        'withdrawal': 'Вывод средств'
+                        'withdrawal': 'Вывод средств',
+                        'hold': 'Заморозка',
+                        'release': 'Поступление'
                     };
                     const icon = t.type === 'deposit' ? 'fa-arrow-down' : 
                                  (t.type === 'refund' ? 'fa-undo' : 
-                                 (t.type === 'withdrawal' ? 'fa-arrow-up' : 'fa-shopping-cart'));
-                    const sign = (t.type === 'deposit' || t.type === 'refund') ? '+' : 
-                                 (t.type === 'withdrawal' ? '−' : '−');
-                    const amountColor = (t.type === 'deposit' || t.type === 'refund') ? '#10b981' : '#f59e0b';
-                    
-                    let refundButton = '';
-                    if (t.type === 'payment' && t.refund_status !== 'completed') {
-                        refundButton = `<button class="refund-btn" data-txid="${docSnap.id}" data-amount="${t.amount}"><i class="fas fa-undo-alt"></i> Вернуть</button>`;
-                    } else if (t.type === 'payment' && t.refund_status === 'completed') {
-                        refundButton = `<span class="refund-badge"><i class="fas fa-check-circle"></i> Возвращён</span>`;
-                    }
+                                 (t.type === 'withdrawal' ? 'fa-arrow-up' : 
+                                 (t.type === 'hold' ? 'fa-lock' : 'fa-shopping-cart')));
+                    const sign = (t.type === 'deposit' || t.type === 'refund' || t.type === 'release') ? '+' : '−';
+                    const amountColor = (t.type === 'deposit' || t.type === 'refund' || t.type === 'release') ? '#10b981' : '#f59e0b';
+                    const date = t.createdAt?.toLocaleString('ru-RU') || '—';
                     
                     html += `
                         <div class="transaction-item">
                             <div class="transaction-type">
                                 <i class="fas ${icon}" style="color: ${amountColor};"></i>
                                 <span>${typeNames[t.type] || t.type}</span>
+                                ${t.status === 'pending' ? '<span style="font-size:0.6rem;color:#f59e0b;">⏳</span>' : ''}
                             </div>
                             <div class="transaction-amount" style="color: ${amountColor};">${sign} ${(t.amount || 0).toLocaleString()} ₽</div>
                             <div class="transaction-date">${date}</div>
-                            <div class="transaction-actions">${refundButton}</div>
+                            ${t.description ? `<div style="width:100%;font-size:0.65rem;color:#666;">${t.description}</div>` : ''}
                         </div>
                     `;
                 });
                 container.innerHTML = html;
-                
-                document.querySelectorAll('.refund-btn').forEach(btn => {
-                    btn.addEventListener('click', (e) => {
-                        e.stopPropagation();
-                        const txId = btn.dataset.txid;
-                        const amount = parseInt(btn.dataset.amount);
-                        requestRefund(txId, amount);
-                    });
-                });
             } catch (err) {
                 console.error('Ошибка загрузки кошелька:', err);
                 document.getElementById('transactionsList').innerHTML = '<div class="empty-state">Ошибка загрузки</div>';
             }
-        }
-
-        async function requestRefund(transactionId, originalAmount) {
-            if (!currentUser) {
-                alert('Войдите в аккаунт');
-                return;
-            }
-            
-            if (!confirm(`Вернуть ${originalAmount.toLocaleString()} ₽ на баланс?`)) return;
-            
-            const refundBtn = document.querySelector(`.refund-btn[data-txid="${transactionId}"]`);
-            if (!refundBtn) return;
-            
-            const originalText = refundBtn.innerHTML;
-            refundBtn.innerHTML = '<div class="loading-spinner"></div>';
-            refundBtn.disabled = true;
-            refundBtn.classList.add('disabled');
-            
-            setTimeout(async () => {
-                try {
-                    const txRef = doc(db, "wallet_transactions", transactionId);
-                    const txDoc = await getDoc(txRef);
-                    
-                    if (txDoc.data()?.refund_status === 'completed') {
-                        alert('Возврат уже был выполнен');
-                        return;
-                    }
-                    
-                    await addDoc(collection(db, "wallet_transactions"), {
-                        userId: currentUser.uid,
-                        userType: 'fighter',
-                        type: 'refund',
-                        amount: originalAmount,
-                        status: 'completed',
-                        originalTransactionId: transactionId,
-                        description: `Возврат средств за оплату`,
-                        createdAt: new Date()
-                    });
-                    
-                    const balanceRef = doc(db, "wallet_balances", currentUser.uid);
-                    const balanceDoc = await getDoc(balanceRef);
-                    const currentBalance = balanceDoc.exists() ? balanceDoc.data().available || 0 : 0;
-                    
-                    await setDoc(balanceRef, {
-                        available: currentBalance + originalAmount,
-                        totalRefunded: (balanceDoc.data()?.totalRefunded || 0) + originalAmount,
-                        updatedAt: new Date()
-                    }, { merge: true });
-                    
-                    await updateDoc(txRef, {
-                        refund_status: 'completed',
-                        refundedAt: new Date()
-                    });
-                    
-                    alert(`✅ Возврат ${originalAmount.toLocaleString()} ₽ выполнен`);
-                    await loadWallet();
-                    
-                } catch (err) {
-                    console.error('Ошибка возврата:', err);
-                    alert('❌ Ошибка при возврате средств');
-                    refundBtn.innerHTML = originalText;
-                    refundBtn.disabled = false;
-                    refundBtn.classList.remove('disabled');
-                }
-            }, 800);
         }
 
         async function processPayment() {
@@ -975,42 +884,20 @@
             confirmBtn.innerHTML = '<div class="loading-spinner"></div>';
             confirmBtn.disabled = true;
             
-            setTimeout(async () => {
-                try {
-                    const balanceRef = doc(db, "wallet_balances", currentUser.uid);
-                    const balanceDoc = await getDoc(balanceRef);
-                    const currentBalance = balanceDoc.exists() ? (balanceDoc.data().available || 0) : 0;
-                    
-                    await setDoc(balanceRef, {
-                        available: currentBalance + amount,
-                        totalSpent: balanceDoc.exists() ? (balanceDoc.data().totalSpent || 0) : 0,
-                        totalRefunded: balanceDoc.exists() ? (balanceDoc.data().totalRefunded || 0) : 0,
-                        updatedAt: new Date()
-                    }, { merge: true });
-                    
-                    await addDoc(collection(db, "wallet_transactions"), {
-                        userId: currentUser.uid,
-                        userType: 'fighter',
-                        type: 'deposit',
-                        amount: amount,
-                        status: 'completed',
-                        description: `Пополнение баланса на ${amount} ₽ (${selectedMethod === 'card' ? 'карта' : 'СБП'})`,
-                        createdAt: new Date()
-                    });
-                    
-                    alert(`✅ Баланс пополнен на ${amount} ₽!`);
-                    
-                    document.getElementById('depositModal').classList.remove('active');
-                    document.getElementById('modalAmount').value = '';
-                    await loadWallet();
-                } catch (err) {
-                    console.error('Ошибка:', err);
-                    alert('❌ Ошибка при пополнении баланса');
-                } finally {
-                    confirmBtn.innerHTML = originalText;
-                    confirmBtn.disabled = false;
-                }
-            }, 1000);
+            try {
+                await depositFunds(currentUser.uid, amount, selectedMethod === 'card' ? 'card' : 'sbp');
+                alert(`✅ Баланс пополнен на ${amount} ₽!`);
+                
+                document.getElementById('depositModal').classList.remove('active');
+                document.getElementById('modalAmount').value = '';
+                await loadWallet();
+            } catch (err) {
+                console.error('Ошибка:', err);
+                alert('❌ Ошибка при пополнении баланса');
+            } finally {
+                confirmBtn.innerHTML = originalText;
+                confirmBtn.disabled = false;
+            }
         }
 
         async function requestWithdraw() {
@@ -1025,9 +912,8 @@
                 return;
             }
             
-            const balanceRef = doc(db, "wallet_balances", currentUser.uid);
-            const balanceDoc = await getDoc(balanceRef);
-            const currentBalance = balanceDoc.exists() ? balanceDoc.data().available || 0 : 0;
+            const balance = await getWalletBalance(currentUser.uid);
+            const currentBalance = balance?.available || 0;
             
             if (amount > currentBalance) {
                 alert(`Недостаточно средств. Доступно: ${currentBalance} ₽`);
@@ -1041,38 +927,25 @@
             confirmBtn.innerHTML = '<div class="loading-spinner"></div>';
             confirmBtn.disabled = true;
             
-            setTimeout(async () => {
-                try {
-                    await setDoc(balanceRef, {
-                        available: currentBalance - amount,
-                        updatedAt: new Date()
-                    }, { merge: true });
-                    
-                    await addDoc(collection(db, "wallet_transactions"), {
-                        userId: currentUser.uid,
-                        userType: 'fighter',
-                        type: 'withdrawal',
-                        amount: amount,
-                        status: 'pending',
-                        withdrawalMethod: selectedWithdrawMethod,
-                        description: `Вывод средств на ${selectedWithdrawMethod === 'card' ? 'карту' : 'СБП'}`,
-                        createdAt: new Date()
-                    });
-                    
-                    alert(`✅ Заявка на вывод ${amount.toLocaleString()} ₽ принята!`);
-                    
-                    document.getElementById('withdrawModal').classList.remove('active');
-                    document.getElementById('withdrawAmount').value = '';
-                    await loadWallet();
-                    
-                } catch (err) {
-                    console.error('Ошибка вывода:', err);
-                    alert('❌ Ошибка при создании заявки на вывод');
-                } finally {
-                    confirmBtn.innerHTML = originalText;
-                    confirmBtn.disabled = false;
-                }
-            }, 800);
+            try {
+                const result = await createWithdrawalRequest(
+                    currentUser.uid, 
+                    amount, 
+                    selectedWithdrawMethod,
+                    `Вывод на ${selectedWithdrawMethod === 'card' ? 'карту' : 'СБП'}`
+                );
+                
+                alert(`✅ Заявка на вывод ${amount.toLocaleString()} ₽ принята!`);
+                
+                document.getElementById('withdrawModal').classList.remove('active');
+                document.getElementById('withdrawAmount').value = '';
+                await loadWallet();
+            } catch (err) {
+                alert(`❌ ${err.message}`);
+            } finally {
+                confirmBtn.innerHTML = originalText;
+                confirmBtn.disabled = false;
+            }
         }
 
         // Пополнение
@@ -1104,9 +977,8 @@
                 window.location.href = 'login.html';
                 return;
             }
-            const balanceRef = doc(db, "wallet_balances", currentUser.uid);
-            const balanceDoc = await getDoc(balanceRef);
-            const currentBalance = balanceDoc.exists() ? balanceDoc.data().available || 0 : 0;
+            const balance = await getWalletBalance(currentUser.uid);
+            const currentBalance = balance?.available || 0;
             document.getElementById('availableBalanceDisplay').innerHTML = currentBalance.toLocaleString();
             document.getElementById('withdrawModal').classList.add('active');
         });
