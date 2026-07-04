@@ -254,7 +254,6 @@ async function renderMobileBottomNav() {
             let actions = [];
             
             if (isPartner) {
-                // ОБНОВЛЁННЫЕ БЫСТРЫЕ ДЕЙСТВИЯ ДЛЯ ПАРТНЁРА
                 actions = [
                     { text: 'Аналитика', icon: 'fa-chart-line', url: 'partner-dashboard.html' },
                     { text: 'Товары', icon: 'fa-box', url: 'partner-products.html' },
@@ -264,10 +263,12 @@ async function renderMobileBottomNav() {
                 ];
             } else {
                 actions = [
+                    { text: 'Премиум и вызовы', icon: 'fa-gem', url: 'shop.html' },
                     { text: 'Кинуть вызов', icon: 'fa-fist-raised', url: 'challenges.html' },
                     { text: 'Мой рейтинг', icon: 'fa-chart-line', url: 'rating.html' },
                     { text: 'Кошелёк', icon: 'fa-wallet', url: 'buyer-wallet.html' },
-                    { text: 'Мои заказы', icon: 'fa-box', url: 'my-orders.html' }
+                    { text: 'Мои заказы', icon: 'fa-box', url: 'my-orders.html' },
+                    { text: 'О проекте', icon: 'fa-info-circle', url: 'about.html' }
                 ];
             }
             

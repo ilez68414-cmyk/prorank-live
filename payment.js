@@ -3,7 +3,7 @@
 // ============================================================
 
 import { initializeApp } from "firebase/app";
-import { getFirestore, doc, setDoc, getDoc, updateDoc, collection, addDoc, query, where, getDocs, serverTimestamp } from "firebase/firestore";
+import { getFirestore, doc, setDoc, getDoc, updateDoc, collection, addDoc, query, where, getDocs, serverTimestamp, runTransaction } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
 
 const firebaseConfig = {
@@ -20,10 +20,18 @@ const db = getFirestore(app);
 const auth = getAuth();
 
 // ============================================================
+// КОНФИГУРАЦИЯ ЮKASSA — ВСТАВЬ СВОИ КЛЮЧИ!
+// ============================================================
+const YOOKASSA_SHOP_ID = 'ВАШ_SHOP_ID';        // ← ВСТАВИТЬ
+const YOOKASSA_SECRET_KEY = 'ВАШ_SECRET_KEY';   // ← ВСТАВИТЬ
+
+// 🔧 РЕЖИМ: 'test' — заглушка (без реальных денег), 'production' — реальные платежи
+const PAYMENT_MODE = 'test'; // 'test' или 'production'
+
+// ============================================================
 // ВСЕ БЕЙДЖИ (>20 ШТУК)
 // ============================================================
 export const ALL_BADGES = [
-    // === ПРЕМИУМ БЕЙДЖИ (ВЫДАЮТСЯ С ПРЕМИУМОМ) ===
     { id: 'badge_crown', name: 'Корона', emoji: '👑', isPremium: true },
     { id: 'badge_legend', name: 'Легенда', emoji: '⭐', isPremium: true },
     { id: 'badge_elite', name: 'Элита', emoji: '💎', isPremium: true },
@@ -52,39 +60,24 @@ export const ALL_BADGES = [
 // ТОВАРЫ
 // ============================================================
 export const PRODUCTS = {
-    // === ВЫЗОВЫ ===
     CHALLENGE_5: { id: 'challenge_5', name: '5 вызовов', price: 100, type: 'challenge', amount: 5 },
     CHALLENGE_10: { id: 'challenge_10', name: '10 вызовов', price: 180, type: 'challenge', amount: 10 },
     CHALLENGE_25: { id: 'challenge_25', name: '25 вызовов', price: 350, type: 'challenge', amount: 25 },
-    
-    // === ПРЕМИУМ ===
     PREMIUM_MONTH: { id: 'premium_month', name: 'Премиум 1 месяц', price: 200, type: 'premium', duration: 30 },
     PREMIUM_3MONTHS: { id: 'premium_3months', name: 'Премиум 3 месяца', price: 500, type: 'premium', duration: 90 },
     PREMIUM_6MONTHS: { id: 'premium_6months', name: 'Премиум 6 месяцев', price: 850, type: 'premium', duration: 180 },
     PREMIUM_YEAR: { id: 'premium_year', name: 'Премиум 12 месяцев', price: 1500, type: 'premium', duration: 365 },
-    
-    // === НАБОРЫ ===
     FIGHTER_PACK: { id: 'fighter_pack', name: 'Набор "Боец"', price: 400, type: 'pack', challenges: 15, premiumDays: 30 },
     CHAMPION_PACK: { id: 'champion_pack', name: 'Набор "Чемпион"', price: 1000, type: 'pack', challenges: 40, premiumDays: 90 },
 };
 
 // ============================================================
-// ПОЛУЧИТЬ БЕЙДЖ ПО ID
-// ============================================================
-export function getBadgeById(badgeId) {
-    return ALL_BADGES.find(b => b.id === badgeId);
-}
-
-// ============================================================
-// ПОЛУЧИТЬ ПУТЬ К КАРТИНКЕ БЕЙДЖА
+// ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ
 // ============================================================
 export function getBadgeImage(badgeId) {
     return `./badges/${badgeId}.png`;
 }
 
-// ============================================================
-// АВТОМАТИЧЕСКОЕ ДОБАВЛЕНИЕ ПОЛЕЙ
-// ============================================================
 export async function ensureUserFields(userId) {
     if (!userId) return;
     const userRef = doc(db, "fighters", userId);
@@ -94,30 +87,12 @@ export async function ensureUserFields(userId) {
     const updates = {};
     let needUpdate = false;
     
-    if (userData.premiumUntil === undefined) {
-        updates.premiumUntil = null;
-        needUpdate = true;
-    }
-    if (userData.badges === undefined) {
-        updates.badges = [];
-        needUpdate = true;
-    }
-    if (userData.orders === undefined) {
-        updates.orders = [];
-        needUpdate = true;
-    }
-    if (userData.totalPaid === undefined) {
-        updates.totalPaid = 0;
-        needUpdate = true;
-    }
-    if (userData.selectedBadge === undefined) {
-        updates.selectedBadge = null;
-        needUpdate = true;
-    }
-    if (userData.lastPremiumRefresh === undefined) {
-        updates.lastPremiumRefresh = null;
-        needUpdate = true;
-    }
+    if (userData.premiumUntil === undefined) { updates.premiumUntil = null; needUpdate = true; }
+    if (userData.badges === undefined) { updates.badges = []; needUpdate = true; }
+    if (userData.orders === undefined) { updates.orders = []; needUpdate = true; }
+    if (userData.totalPaid === undefined) { updates.totalPaid = 0; needUpdate = true; }
+    if (userData.selectedBadge === undefined) { updates.selectedBadge = null; needUpdate = true; }
+    if (userData.lastPremiumRefresh === undefined) { updates.lastPremiumRefresh = null; needUpdate = true; }
     
     if (needUpdate) {
         await updateDoc(userRef, updates);
@@ -126,18 +101,154 @@ export async function ensureUserFields(userId) {
     return true;
 }
 
+export async function checkPremium(userId) {
+    await ensureUserFields(userId);
+    const userRef = doc(db, "fighters", userId);
+    const userSnap = await getDoc(userRef);
+    const userData = userSnap.data();
+    if (!userData) return false;
+    const premiumUntil = userData.premiumUntil?.toDate();
+    if (!premiumUntil) return false;
+    const now = new Date();
+    const isActive = premiumUntil > now;
+    if (!isActive && userData.premium) {
+        await updateDoc(userRef, { premium: false });
+        return false;
+    }
+    return isActive;
+}
+
+export async function getAvailableBadges(userId) {
+    await ensureUserFields(userId);
+    const userRef = doc(db, "fighters", userId);
+    const userSnap = await getDoc(userRef);
+    const userData = userSnap.data();
+    if (!userData) return [];
+    const ownedBadges = userData.badges || [];
+    const isPremium = userData.premium || false;
+    
+    if (isPremium) {
+        return ALL_BADGES.map(b => ({ ...b, isOwned: ownedBadges.includes(b.id), isAvailable: true }));
+    }
+    return ALL_BADGES.map(b => ({
+        ...b,
+        isOwned: ownedBadges.includes(b.id),
+        isAvailable: ownedBadges.includes(b.id)
+    }));
+}
+
+export async function getSelectedBadge(userId) {
+    await ensureUserFields(userId);
+    const userRef = doc(db, "fighters", userId);
+    const userSnap = await getDoc(userRef);
+    const userData = userSnap.data();
+    if (!userData) return null;
+    return userData.selectedBadge || null;
+}
+
+export async function selectBadge(userId, badgeId) {
+    await ensureUserFields(userId);
+    const userRef = doc(db, "fighters", userId);
+    const userSnap = await getDoc(userRef);
+    const userData = userSnap.data();
+    if (!userData) throw new Error('❌ Пользователь не найден');
+    const available = await getAvailableBadges(userId);
+    const badge = available.find(b => b.id === badgeId);
+    if (!badge || !badge.isAvailable) {
+        throw new Error('❌ Бейдж недоступен');
+    }
+    await updateDoc(userRef, { selectedBadge: badgeId });
+    return badgeId;
+}
+
 // ============================================================
-// СОЗДАНИЕ ПЛАТЕЖА (ЗАГЛУШКА)
+// НАЧИСЛЕНИЕ ТОВАРА
+// ============================================================
+export async function applyProduct(userId, product, orderId) {
+    await ensureUserFields(userId);
+    const userRef = doc(db, "fighters", userId);
+    const userSnap = await getDoc(userRef);
+    const userData = userSnap.data();
+    if (!userData) throw new Error('❌ Пользователь не найден');
+    const updates = {};
+
+    switch (product.type) {
+        case 'challenge': {
+            const currentPurchased = userData.purchasedChallenges || 0;
+            updates.purchasedChallenges = currentPurchased + product.amount;
+            updates.totalPaid = (userData.totalPaid || 0) + product.price;
+            break;
+        }
+        case 'premium': {
+            const now = new Date();
+            const currentUntil = userData.premiumUntil?.toDate() || now;
+            const newUntil = new Date(Math.max(now.getTime(), currentUntil.getTime()) + product.duration * 24 * 60 * 60 * 1000);
+            updates.premium = true;
+            updates.premiumUntil = newUntil;
+            updates.totalPaid = (userData.totalPaid || 0) + product.price;
+            
+            const allBadgeIds = ALL_BADGES.map(b => b.id);
+            const currentBadges = userData.badges || [];
+            const newBadges = [...new Set([...currentBadges, ...allBadgeIds])];
+            updates.badges = newBadges;
+            if (!userData.selectedBadge) {
+                updates.selectedBadge = 'badge_crown';
+            }
+            const currentFree = userData.freeChallenges || 0;
+            updates.freeChallenges = currentFree + 5;
+            updates.lastPremiumRefresh = new Date();
+            break;
+        }
+        case 'pack': {
+            const now = new Date();
+            const currentUntil = userData.premiumUntil?.toDate() || now;
+            const newUntil = new Date(Math.max(now.getTime(), currentUntil.getTime()) + product.premiumDays * 24 * 60 * 60 * 1000);
+            updates.premium = true;
+            updates.premiumUntil = newUntil;
+            const currentPurchased = userData.purchasedChallenges || 0;
+            updates.purchasedChallenges = currentPurchased + product.challenges;
+            const allBadgeIds = ALL_BADGES.map(b => b.id);
+            const currentBadges = userData.badges || [];
+            const newBadges = [...new Set([...currentBadges, ...allBadgeIds])];
+            updates.badges = newBadges;
+            if (!userData.selectedBadge) {
+                updates.selectedBadge = 'badge_crown';
+            }
+            updates.totalPaid = (userData.totalPaid || 0) + product.price;
+            updates.lastPremiumRefresh = new Date();
+            break;
+        }
+        default:
+            throw new Error('❌ Неизвестный тип товара');
+    }
+
+    const orders = userData.orders || [];
+    orders.push(orderId);
+    updates.orders = orders;
+
+    await updateDoc(userRef, updates);
+    await updateDoc(doc(db, "orders", orderId), {
+        status: 'paid',
+        paidAt: new Date()
+    });
+
+    console.log(`✅ Товар "${product.name}" начислен пользователю ${userId}`);
+    return true;
+}
+
+// ============================================================
+// СОЗДАНИЕ ПЛАТЕЖА (ЮKassa + ЗАГЛУШКА)
 // ============================================================
 export async function createPayment(productId, userId) {
     await ensureUserFields(userId);
     
     const product = Object.values(PRODUCTS).find(p => p.id === productId);
     if (!product) throw new Error('❌ Товар не найден');
-    
+
     const user = auth.currentUser;
     if (!user || user.uid !== userId) throw new Error('❌ Не авторизован');
-    
+
+    // Создаём заказ в Firestore
     const orderData = {
         userId: userId,
         productId: product.id,
@@ -153,216 +264,402 @@ export async function createPayment(productId, userId) {
             duration: product.duration || null,
         }
     };
-    
+
     const orderRef = await addDoc(collection(db, "orders"), orderData);
     const orderId = orderRef.id;
-    
-    console.log(`💳 Заказ создан: ${orderId}`);
-    console.log(`💰 Сумма: ${product.price} ₽`);
-    console.log(`📦 Товар: ${product.name}`);
-    
-    // Заглушка: через 2 секунды "оплата"
-    setTimeout(async () => {
-        try {
-            await updateDoc(orderRef, {
-                status: 'paid',
-                paidAt: new Date(),
-                paymentId: 'test_payment_' + Date.now()
-            });
-            await applyProduct(userId, product, orderId);
-            console.log(`✅ Платёж успешно проведён (заглушка)`);
-        } catch (err) {
-            console.error('❌ Ошибка начисления:', err);
-            await updateDoc(orderRef, { status: 'failed' });
+
+    // ============================================================
+    // 🔥 РЕЖИМ: 'test' — ЗАГЛУШКА (без денег)
+    // ============================================================
+    if (PAYMENT_MODE === 'test') {
+        console.log('🧪 ТЕСТОВЫЙ РЕЖИМ: оплата без реальных денег');
+        console.log(`💳 Заказ создан: ${orderId}`);
+        console.log(`💰 Сумма: ${product.price} ₽`);
+        console.log(`📦 Товар: ${product.name}`);
+
+        setTimeout(async () => {
+            try {
+                await updateDoc(orderRef, {
+                    status: 'paid',
+                    paidAt: new Date(),
+                    paymentId: 'test_payment_' + Date.now()
+                });
+                await applyProduct(userId, product, orderId);
+                console.log(`✅ Тестовый платёж успешно проведён`);
+            } catch (err) {
+                console.error('❌ Ошибка начисления:', err);
+                await updateDoc(orderRef, { status: 'failed' });
+            }
+        }, 2000);
+
+        return {
+            orderId: orderId,
+            status: 'pending',
+            amount: product.price,
+            productName: product.name,
+            paymentUrl: '#',
+            isTest: true
+        };
+    }
+
+    // ============================================================
+    // 🔥 РЕЖИМ: 'production' — РЕАЛЬНЫЕ ПЛАТЕЖИ (ЮKassa)
+    // ============================================================
+    try {
+        // Получаем ссылку на страницу с реквизитами
+        const siteUrl = 'https://ilez68414-cmyk.github.io/prorank-live';
+        
+        const response = await fetch('https://api.yookassa.ru/v3/payments', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Idempotence-Key': orderId,
+                'Authorization': `Basic ${btoa(YOOKASSA_SHOP_ID + ':' + YOOKASSA_SECRET_KEY)}`
+            },
+            body: JSON.stringify({
+                amount: {
+                    value: product.price.toFixed(2),
+                    currency: 'RUB'
+                },
+                capture: true,
+                confirmation: {
+                    type: 'redirect',
+                    return_url: `${siteUrl}/shop.html?payment=success&order=${orderId}`
+                },
+                description: product.name,
+                receipt: {
+                    items: [{
+                        description: product.name,
+                        quantity: 1,
+                        amount: {
+                            value: product.price.toFixed(2),
+                            currency: 'RUB'
+                        },
+                        vat_code: 1,
+                        payment_mode: 'full_payment',
+                        payment_subject: 'service'
+                    }]
+                },
+                metadata: {
+                    orderId: orderId,
+                    userId: userId,
+                    productId: product.id
+                }
+            })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            console.error('❌ Ошибка ЮKassa:', data);
+            throw new Error(`❌ Ошибка оплаты: ${data.description || 'Неизвестная ошибка'}`);
         }
-    }, 2000);
-    
-    return {
-        orderId: orderId,
-        status: 'pending',
-        amount: product.price,
-        productName: product.name,
-        paymentUrl: '#',
-    };
+
+        await updateDoc(orderRef, {
+            paymentId: data.id,
+            paymentStatus: data.status
+        });
+
+        console.log(`✅ Платёж создан: ${data.id}`);
+        console.log(`🔗 Ссылка на оплату: ${data.confirmation.confirmation_url}`);
+
+        return {
+            orderId: orderId,
+            status: data.status,
+            amount: product.price,
+            productName: product.name,
+            paymentUrl: data.confirmation.confirmation_url,
+            paymentId: data.id,
+            isTest: false
+        };
+
+    } catch (err) {
+        console.error('❌ Ошибка создания платежа:', err);
+        throw err;
+    }
 }
 
 // ============================================================
-// НАЧИСЛЕНИЕ ТОВАРА
+// WEBHOOK ДЛЯ ОБРАБОТКИ УВЕДОМЛЕНИЙ ОТ ЮKASSA
 // ============================================================
-export async function applyProduct(userId, product, orderId) {
-    await ensureUserFields(userId);
-    
-    const userRef = doc(db, "fighters", userId);
-    const userSnap = await getDoc(userRef);
-    const userData = userSnap.data();
-    if (!userData) throw new Error('❌ Пользователь не найден');
-    
-    const updates = {};
-    
-    switch (product.type) {
-        case 'challenge': {
-            const currentPurchased = userData.purchasedChallenges || 0;
-            updates.purchasedChallenges = currentPurchased + product.amount;
-            updates.totalPaid = (userData.totalPaid || 0) + product.price;
-            break;
-        }
+export async function handleYookassaWebhook(req, res) {
+    try {
+        const event = req.body;
         
-        case 'premium': {
-            // Начисляем премиум
-            const now = new Date();
-            const currentUntil = userData.premiumUntil?.toDate() || now;
-            const newUntil = new Date(Math.max(now.getTime(), currentUntil.getTime()) + product.duration * 24 * 60 * 60 * 1000);
+        // Проверяем, что это уведомление об успешной оплате
+        if (event.object && event.object.status === 'succeeded') {
+            const orderId = event.object.metadata?.orderId;
+            const userId = event.object.metadata?.userId;
+            const productId = event.object.metadata?.productId;
             
-            updates.premium = true;
-            updates.premiumUntil = newUntil;
-            updates.totalPaid = (userData.totalPaid || 0) + product.price;
-            
-            // ✅ ВЫДАЁМ ВСЕ БЕЙДЖИ (ВСЕ >20 ШТУК)
-            const allBadgeIds = ALL_BADGES.map(b => b.id);
-            const currentBadges = userData.badges || [];
-            const newBadges = [...new Set([...currentBadges, ...allBadgeIds])];
-            updates.badges = newBadges;
-            
-            // Если нет выбранного бейджа — ставим корону
-            if (!userData.selectedBadge) {
-                updates.selectedBadge = 'badge_crown';
+            if (!orderId || !userId || !productId) {
+                console.error('❌ Недостаточно данных в webhook:', event.object.metadata);
+                return res.status(400).send('Missing metadata');
             }
             
-            // Начисляем +5 бесплатных вызовов сразу
-            const currentFree = userData.freeChallenges || 0;
-            updates.freeChallenges = currentFree + 5;
-            updates.lastPremiumRefresh = new Date();
+            // Находим заказ
+            const orderRef = doc(db, "orders", orderId);
+            const orderSnap = await getDoc(orderRef);
             
-            break;
-        }
-        
-        case 'pack': {
-            // Набор: вызовы + премиум
-            const now = new Date();
-            const currentUntil = userData.premiumUntil?.toDate() || now;
-            const newUntil = new Date(Math.max(now.getTime(), currentUntil.getTime()) + product.premiumDays * 24 * 60 * 60 * 1000);
-            
-            updates.premium = true;
-            updates.premiumUntil = newUntil;
-            
-            // Вызовы
-            const currentPurchased = userData.purchasedChallenges || 0;
-            updates.purchasedChallenges = currentPurchased + product.challenges;
-            
-            // Бейджи
-            const allBadgeIds = ALL_BADGES.map(b => b.id);
-            const currentBadges = userData.badges || [];
-            const newBadges = [...new Set([...currentBadges, ...allBadgeIds])];
-            updates.badges = newBadges;
-            
-            if (!userData.selectedBadge) {
-                updates.selectedBadge = 'badge_crown';
+            if (!orderSnap.exists()) {
+                console.error(`❌ Заказ ${orderId} не найден`);
+                return res.status(404).send('Order not found');
             }
             
-            updates.totalPaid = (userData.totalPaid || 0) + product.price;
-            updates.lastPremiumRefresh = new Date();
-            break;
+            const orderData = orderSnap.data();
+            
+            // Проверяем, не оплачен ли уже заказ
+            if (orderData.status === 'paid') {
+                console.log(`ℹ️ Заказ ${orderId} уже оплачен`);
+                return res.status(200).send('Already paid');
+            }
+            
+            // Находим товар
+            const product = Object.values(PRODUCTS).find(p => p.id === productId);
+            if (!product) {
+                console.error(`❌ Товар ${productId} не найден`);
+                return res.status(400).send('Product not found');
+            }
+            
+            // Начисляем товар пользователю
+            await applyProduct(userId, product, orderId);
+            
+            console.log(`✅ Заказ ${orderId} успешно оплачен и начислен`);
+            return res.status(200).send('OK');
         }
         
-        default:
-            throw new Error('❌ Неизвестный тип товара');
+        // Если это другое событие — просто подтверждаем получение
+        return res.status(200).send('OK');
+    } catch (err) {
+        console.error('❌ Ошибка обработки webhook:', err);
+        return res.status(500).send('Internal Server Error');
+    }
+}
+
+// ============================================================
+// МАРКЕТПЛЕЙС — ОПЛАТА ТОВАРА С КОМИССИЕЙ
+// ============================================================
+export async function createMarketplacePayment(productId, buyerId, sellerId, price) {
+    if (!productId || !buyerId || !sellerId || !price) {
+        throw new Error('❌ Недостаточно данных для оплаты');
     }
     
-    // Добавляем заказ в историю
-    const orders = userData.orders || [];
-    orders.push(orderId);
-    updates.orders = orders;
+    await ensureUserFields(buyerId);
     
-    await updateDoc(userRef, updates);
-    await updateDoc(doc(db, "orders", orderId), {
-        status: 'paid',
-        paidAt: new Date()
-    });
+    const commission = Math.round(price * 0.1); // 10% комиссия
+    const sellerAmount = price - commission;
     
-    console.log(`✅ Товар "${product.name}" начислен пользователю ${userId}`);
-    return true;
+    // Создаём заказ в маркетплейсе
+    const orderData = {
+        buyerId: buyerId,
+        sellerId: sellerId,
+        productId: productId,
+        totalAmount: price,
+        commission: commission,
+        sellerAmount: sellerAmount,
+        status: 'pending',
+        createdAt: new Date(),
+        paidAt: null,
+        metadata: {
+            type: 'marketplace',
+            productId: productId
+        }
+    };
+    
+    const orderRef = await addDoc(collection(db, "marketplace_orders"), orderData);
+    const orderId = orderRef.id;
+    
+    // ============================================================
+    // 🔥 РЕЖИМ: 'test' — ЗАГЛУШКА
+    // ============================================================
+    if (PAYMENT_MODE === 'test') {
+        console.log('🧪 ТЕСТОВЫЙ РЕЖИМ: оплата товара в маркетплейсе');
+        console.log(`💳 Заказ создан: ${orderId}`);
+        console.log(`💰 Сумма: ${price} ₽ (комиссия: ${commission} ₽, продавцу: ${sellerAmount} ₽)`);
+        
+        setTimeout(async () => {
+            try {
+                await updateDoc(orderRef, {
+                    status: 'paid',
+                    paidAt: new Date()
+                });
+                
+                // Зачисляем деньги продавцу
+                await addToPartnerWallet(sellerId, sellerAmount, orderId, `Продажа товара (комиссия ${commission} ₽)`);
+                console.log(`✅ Тестовый платёж в маркетплейсе проведён`);
+            } catch (err) {
+                console.error('❌ Ошибка начисления:', err);
+                await updateDoc(orderRef, { status: 'failed' });
+            }
+        }, 2000);
+        
+        return {
+            orderId: orderId,
+            status: 'pending',
+            amount: price,
+            commission: commission,
+            sellerAmount: sellerAmount,
+            paymentUrl: '#',
+            isTest: true
+        };
+    }
+    
+    // ============================================================
+    // 🔥 РЕЖИМ: 'production' — РЕАЛЬНЫЕ ПЛАТЕЖИ
+    // ============================================================
+    try {
+        const siteUrl = 'https://ilez68414-cmyk.github.io/prorank-live';
+        const productName = `Товар в маркетплейсе #${productId}`;
+        
+        const response = await fetch('https://api.yookassa.ru/v3/payments', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Idempotence-Key': orderId,
+                'Authorization': `Basic ${btoa(YOOKASSA_SHOP_ID + ':' + YOOKASSA_SECRET_KEY)}`
+            },
+            body: JSON.stringify({
+                amount: {
+                    value: price.toFixed(2),
+                    currency: 'RUB'
+                },
+                capture: true,
+                confirmation: {
+                    type: 'redirect',
+                    return_url: `${siteUrl}/marketplace.html?payment=success&order=${orderId}`
+                },
+                description: productName,
+                receipt: {
+                    items: [{
+                        description: productName,
+                        quantity: 1,
+                        amount: {
+                            value: price.toFixed(2),
+                            currency: 'RUB'
+                        },
+                        vat_code: 1,
+                        payment_mode: 'full_payment',
+                        payment_subject: 'service'
+                    }]
+                },
+                metadata: {
+                    orderId: orderId,
+                    buyerId: buyerId,
+                    sellerId: sellerId,
+                    productId: productId,
+                    type: 'marketplace'
+                }
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (!response.ok) {
+            console.error('❌ Ошибка ЮKassa:', data);
+            throw new Error(`❌ Ошибка оплаты: ${data.description || 'Неизвестная ошибка'}`);
+        }
+        
+        await updateDoc(orderRef, {
+            paymentId: data.id,
+            paymentStatus: data.status
+        });
+        
+        console.log(`✅ Платёж в маркетплейсе создан: ${data.id}`);
+        
+        return {
+            orderId: orderId,
+            status: data.status,
+            amount: price,
+            commission: commission,
+            sellerAmount: sellerAmount,
+            paymentUrl: data.confirmation.confirmation_url,
+            paymentId: data.id,
+            isTest: false
+        };
+        
+    } catch (err) {
+        console.error('❌ Ошибка создания платежа в маркетплейсе:', err);
+        throw err;
+    }
 }
 
 // ============================================================
-// ПРОВЕРКА ПРЕМИУМ-СТАТУСА
+// ЗАЧИСЛЕНИЕ ДЕНЕГ ПАРТНЁРУ (ДЛЯ МАРКЕТПЛЕЙСА)
 // ============================================================
-export async function checkPremium(userId) {
-    await ensureUserFields(userId);
-    const userRef = doc(db, "fighters", userId);
-    const userSnap = await getDoc(userRef);
-    const userData = userSnap.data();
-    if (!userData) return false;
+export async function addToPartnerWallet(partnerId, amount, orderId, description = '') {
+    if (!partnerId || !amount || amount <= 0) return false;
     
-    const premiumUntil = userData.premiumUntil?.toDate();
-    if (!premiumUntil) return false;
-    
-    const now = new Date();
-    const isActive = premiumUntil > now;
-    
-    if (!isActive && userData.premium) {
-        await updateDoc(userRef, { premium: false });
+    try {
+        const balanceRef = doc(db, "wallet_balances", partnerId);
+        
+        await runTransaction(db, async (transaction) => {
+            const balanceSnap = await transaction.get(balanceRef);
+            const currentData = balanceSnap.exists() ? balanceSnap.data() : { available: 0, totalEarned: 0 };
+            
+            transaction.set(balanceRef, {
+                available: (currentData.available || 0) + amount,
+                totalEarned: (currentData.totalEarned || 0) + amount,
+                updatedAt: new Date()
+            }, { merge: true });
+        });
+        
+        await addDoc(collection(db, "wallet_transactions"), {
+            userId: partnerId,
+            userType: "partner",
+            type: "deposit",
+            amount: amount,
+            status: "completed",
+            orderId: orderId,
+            description: description || `Зачисление за заказ ${orderId?.slice(0, 8) || ''}`,
+            createdAt: new Date()
+        });
+        
+        console.log(`✅ Зачислено ${amount} ₽ партнёру ${partnerId}`);
+        return true;
+    } catch (err) {
+        console.error('❌ Ошибка зачисления партнёру:', err);
         return false;
     }
-    
-    return isActive;
 }
 
 // ============================================================
-// ПОЛУЧЕНИЕ ДОСТУПНЫХ БЕЙДЖЕЙ
+// ПРОВЕРКА СТАТУСА ЗАКАЗА ПО PAYMENT_ID (ЮKassa)
 // ============================================================
-export async function getAvailableBadges(userId) {
-    await ensureUserFields(userId);
-    const userRef = doc(db, "fighters", userId);
-    const userSnap = await getDoc(userRef);
-    const userData = userSnap.data();
-    if (!userData) return [];
-    
-    const ownedBadges = userData.badges || [];
-    const isPremium = userData.premium || false;
-    
-    // Если есть премиум — доступны все бейджи
-    if (isPremium) {
-        return ALL_BADGES.map(b => ({ ...b, isOwned: ownedBadges.includes(b.id), isAvailable: true }));
+export async function checkPaymentStatus(paymentId) {
+    if (PAYMENT_MODE === 'test') {
+        return { status: 'succeeded' };
     }
-    
-    // Без премиума — доступны только купленные отдельно (но у нас их нет)
-    return ALL_BADGES.map(b => ({
-        ...b,
-        isOwned: ownedBadges.includes(b.id),
-        isAvailable: ownedBadges.includes(b.id)
-    }));
-}
 
-// ============================================================
-// ПОЛУЧИТЬ ВЫБРАННЫЙ БЕЙДЖ
-// ============================================================
-export async function getSelectedBadge(userId) {
-    await ensureUserFields(userId);
-    const userRef = doc(db, "fighters", userId);
-    const userSnap = await getDoc(userRef);
-    const userData = userSnap.data();
-    if (!userData) return null;
-    return userData.selectedBadge || null;
-}
+    try {
+        const response = await fetch(`https://api.yookassa.ru/v3/payments/${paymentId}`, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Basic ${btoa(YOOKASSA_SHOP_ID + ':' + YOOKASSA_SECRET_KEY)}`
+            }
+        });
 
-// ============================================================
-// ВЫБРАТЬ БЕЙДЖ
-// ============================================================
-export async function selectBadge(userId, badgeId) {
-    await ensureUserFields(userId);
-    const userRef = doc(db, "fighters", userId);
-    const userSnap = await getDoc(userRef);
-    const userData = userSnap.data();
-    if (!userData) throw new Error('❌ Пользователь не найден');
-    
-    const available = await getAvailableBadges(userId);
-    const badge = available.find(b => b.id === badgeId);
-    if (!badge || !badge.isAvailable) {
-        throw new Error('❌ Бейдж недоступен');
+        const data = await response.json();
+        return data;
+    } catch (err) {
+        console.error('❌ Ошибка проверки платежа:', err);
+        return null;
     }
-    
-    await updateDoc(userRef, { selectedBadge: badgeId });
-    return badgeId;
+}
+
+// ============================================================
+// ПРОВЕРКА СТАТУСА ЗАКАЗА ПО ID
+// ============================================================
+export async function checkOrderStatus(orderId) {
+    const orderRef = doc(db, "orders", orderId);
+    const orderSnap = await getDoc(orderRef);
+    if (!orderSnap.exists()) return null;
+    const data = orderSnap.data();
+    return {
+        id: orderSnap.id,
+        ...data,
+        createdAt: data.createdAt?.toDate(),
+        paidAt: data.paidAt?.toDate(),
+    };
 }
 
 // ============================================================
