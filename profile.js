@@ -758,63 +758,57 @@ function setupVerifyRecord() {
     };
 }
 
+// ============================================================
+// ВЫЗОВ (ИСПРАВЛЕННАЯ ВЕРСИЯ)
+// ============================================================
 async function setupChallengeButton(targetId) {
     const btn = document.getElementById('btnChallenge');
     if (!btn) return;
+    
     btn.onclick = async () => {
         const user = auth.currentUser;
-        if (!user) { alert('Вы не авторизованы'); return; }
+        if (!user) {
+            alert('Вы не авторизованы');
+            return;
+        }
+        
+        // Проверяем, есть ли вызовы
         try {
             const currentDoc = await getDoc(doc(db, "fighters", user.uid));
             const current = currentDoc.data();
             let freeChallenges = current.freeChallenges || 0;
             let purchasedChallenges = current.purchasedChallenges || 0;
             let totalChallenges = freeChallenges + purchasedChallenges;
+            
             if (totalChallenges <= 0) {
-                if (confirm(`❌ У вас закончились вызовы!\nПерейти в магазин?`)) window.location.href = 'shop.html';
+                if (confirm(`❌ У вас закончились вызовы!\nПерейти в магазин?`)) {
+                    window.location.href = 'shop.html';
+                }
                 return;
             }
+        } catch (err) {
+            console.error(err);
+            alert('Ошибка проверки вызовов');
+            return;
+        }
+        
+        // Получаем имя соперника
+        try {
             const targetDoc = await getDoc(doc(db, "fighters", targetId));
             const target = targetDoc.data();
-            if (!target) { alert('❌ Данные соперника не найдены'); return; }
-            const targetWeight = parseInt(target.weightClass) || 0;
-            const currentWeight = parseInt(current.weightClass) || 0;
-            const weightDiff = Math.abs(currentWeight - targetWeight);
-            if (weightDiff > 15) {
-                alert(`⚠️ Слишком большая разница в весе (${weightDiff} кг). Спарринг небезопасен.`);
-                return;
+            const targetName = target?.name || 'Соперник';
+            
+            // Открываем модалку (функция определена в profile.html)
+            if (typeof window.openChallengeModal === 'function') {
+                window.openChallengeModal(targetId, targetName);
+            } else {
+                // Фолбэк — переходим на страницу вызовов
+                window.location.href = `challenges.html?target=${targetId}&name=${encodeURIComponent(targetName)}`;
             }
-            const existingQuery = await getDocs(query(
-                collection(db, "challenges"),
-                where("fromUserId", "==", user.uid),
-                where("toUserId", "==", targetId),
-                where("status", "in", ["pending", "accepted"])
-            ));
-            if (!existingQuery.empty) { alert('Вы уже вызывали этого бойца'); return; }
-            const message = prompt('💬 Сообщение сопернику:', 'Хочешь спарринг?') || '';
-            await addDoc(collection(db, "challenges"), {
-                fromUserId: user.uid,
-                fromName: current.name || 'Боец',
-                fromWeight: currentWeight,
-                fromTelegramId: current.telegramId ? String(current.telegramId) : null,
-                toUserId: targetId,
-                toName: target.name || 'Соперник',
-                toWeight: targetWeight,
-                toTelegramId: target.telegramId ? String(target.telegramId) : null,
-                status: "pending", message: message, createdAt: new Date(), updatedAt: new Date()
-            });
-            if (freeChallenges > 0) await updateDoc(doc(db, "fighters", user.uid), { freeChallenges: freeChallenges - 1 });
-            else await updateDoc(doc(db, "fighters", user.uid), { purchasedChallenges: purchasedChallenges - 1 });
-            if (target.telegramId) {
-                await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
-                    method: 'POST', headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ chat_id: target.telegramId, text: `🥊 *ВЫЗОВ НА СПАРРИНГ!*\n\nБоец *${current.name}* вызывает тебя на бой.\n📝 Сообщение: ${message || '—'}\n\n👉 Зайди на сайт в раздел "Мои вызовы", чтобы ответить.`, parse_mode: 'Markdown' })
-                });
-            }
-            alert(`✅ Вызов отправлен! Осталось вызовов: ${totalChallenges - 1}`);
-            await checkAndAwardAchievements(user.uid);
-            if (window.updateHeaderBalance) await window.updateHeaderBalance();
-        } catch (err) { console.error(err); alert('❌ Ошибка при отправке вызова'); }
+        } catch (err) {
+            console.error(err);
+            alert('Ошибка получения данных соперника');
+        }
     };
 }
 
