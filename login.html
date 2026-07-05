@@ -698,7 +698,7 @@
     <script type="module">
         import { initializeApp } from "firebase/app";
         import { getFirestore, doc, setDoc, updateDoc, getDoc, collection, addDoc, serverTimestamp, query, where, getDocs } from "firebase/firestore";
-        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendPasswordResetEmail } from "firebase/auth";
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendPasswordResetEmail, fetchSignInMethodsForEmail } from "firebase/auth";
 
         const firebaseConfig = {
             apiKey: "AIzaSyDUGYJY7pX7q02MS5SACMIIQXpjpQ97mPw",
@@ -989,7 +989,7 @@
             });
         }
 
-        // СБРОС ПАРОЛЯ
+        // СБРОС ПАРОЛЯ (ИСПРАВЛЕННАЯ ВЕРСИЯ)
         const forgotLink = document.getElementById('forgotPasswordLink');
         const resetModal = document.getElementById('resetModal');
         const sendResetBtn = document.getElementById('sendResetBtn');
@@ -999,38 +999,19 @@
         if (forgotLink) {
             forgotLink.addEventListener('click', (e) => {
                 e.preventDefault();
-                if (resetModal) resetModal.style.display = 'flex';
+                if (resetModal) {
+                    resetModal.style.display = 'flex';
+                    setTimeout(() => {
+                        if (resetEmail) resetEmail.focus();
+                    }, 100);
+                }
             });
         }
 
         if (closeResetBtn) {
             closeResetBtn.addEventListener('click', () => {
                 if (resetModal) resetModal.style.display = 'none';
-            });
-        }
-
-        if (sendResetBtn) {
-            sendResetBtn.addEventListener('click', async () => {
-                const email = resetEmail ? resetEmail.value : '';
-                if (!email) {
-                    alert("Введите email");
-                    return;
-                }
-                const originalText = sendResetBtn.innerHTML;
-                sendResetBtn.innerHTML = '<div class="loading-spinner"></div> Отправка...';
-                sendResetBtn.disabled = true;
-                
-                try {
-                    await sendPasswordResetEmail(auth, email);
-                    alert("✅ Письмо для сброса пароля отправлено");
-                    if (resetModal) resetModal.style.display = 'none';
-                    if (resetEmail) resetEmail.value = '';
-                } catch (error) {
-                    alert("❌ Ошибка: " + error.message);
-                } finally {
-                    sendResetBtn.innerHTML = originalText;
-                    sendResetBtn.disabled = false;
-                }
+                if (resetEmail) resetEmail.value = '';
             });
         }
 
@@ -1038,8 +1019,76 @@
         window.addEventListener('click', (e) => {
             if (e.target === resetModal) {
                 resetModal.style.display = 'none';
+                if (resetEmail) resetEmail.value = '';
             }
         });
+
+        if (sendResetBtn) {
+            sendResetBtn.addEventListener('click', async () => {
+                const email = resetEmail ? resetEmail.value.trim() : '';
+                
+                if (!email) {
+                    alert('📧 Введите ваш email');
+                    return;
+                }
+                
+                if (!email.includes('@') || !email.includes('.')) {
+                    alert('❌ Введите корректный email');
+                    return;
+                }
+
+                const originalText = sendResetBtn.innerHTML;
+                sendResetBtn.innerHTML = '<div class="loading-spinner"></div> Отправка...';
+                sendResetBtn.disabled = true;
+                
+                try {
+                    // Проверяем, существует ли пользователь с таким email
+                    const methods = await fetchSignInMethodsForEmail(auth, email);
+                    
+                    if (methods.length === 0) {
+                        alert('❌ Пользователь с таким email не найден');
+                        sendResetBtn.innerHTML = originalText;
+                        sendResetBtn.disabled = false;
+                        return;
+                    }
+                    
+                    // Отправляем письмо со ссылкой на reset-password.html
+                    await sendPasswordResetEmail(auth, email, {
+                        url: window.location.origin + '/reset-password.html',
+                        handleCodeInApp: false
+                    });
+                    
+                    alert('✅ Письмо для сброса пароля отправлено на ' + email + '\nПроверьте почту (включая папку "Спам")');
+                    
+                    if (resetModal) resetModal.style.display = 'none';
+                    if (resetEmail) resetEmail.value = '';
+                    
+                } catch (error) {
+                    console.error('Ошибка сброса пароля:', error);
+                    
+                    if (error.code === 'auth/user-not-found') {
+                        alert('❌ Пользователь с таким email не найден');
+                    } else if (error.code === 'auth/too-many-requests') {
+                        alert('❌ Слишком много запросов. Попробуйте позже.');
+                    } else {
+                        alert('❌ Ошибка: ' + error.message);
+                    }
+                } finally {
+                    sendResetBtn.innerHTML = originalText;
+                    sendResetBtn.disabled = false;
+                }
+            });
+        }
+
+        // Отправка письма по Enter в поле email
+        if (resetEmail) {
+            resetEmail.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    if (sendResetBtn) sendResetBtn.click();
+                }
+            });
+        }
 
         // БУРГЕР-МЕНЮ
         const menuToggle = document.getElementById('menuToggle');
