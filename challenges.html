@@ -626,7 +626,12 @@
             border-radius: 50%;
             animation: spin 0.8s linear infinite;
         }
-
+/* Принудительно показываем вкладку "Доска" на мобилке (для теста) */
+@media (max-width: 768px) {
+    #sparring-board.active {
+        display: block !important;
+    }
+}
         @keyframes spin { to { transform: rotate(360deg); } }
     </style>
 </head>
@@ -821,25 +826,59 @@
         let currentUserData = null;
 
         // ===== ТАБЫ =====
-        function initTabs() {
-            const tabs = document.querySelectorAll('.tab-btn');
-            const contents = {
-                'my-challenges': document.getElementById('my-challenges'),
-                'sparring-board': document.getElementById('sparring-board')
-            };
+        // ===== ТАБЫ (ИСПРАВЛЕННАЯ ВЕРСИЯ) =====
+function initTabs() {
+    const tabs = document.querySelectorAll('.tab-btn');
+    const contents = {
+        'my-challenges': document.getElementById('my-challenges'),
+        'sparring-board': document.getElementById('sparring-board')
+    };
 
-            tabs.forEach(btn => {
-                btn.addEventListener('click', () => {
-                    tabs.forEach(b => b.classList.remove('active'));
-                    btn.classList.add('active');
-                    Object.keys(contents).forEach(key => {
-                        contents[key].classList.remove('active');
-                    });
-                    const target = btn.dataset.tab;
-                    if (contents[target]) contents[target].classList.add('active');
-                });
+    // Проверяем, что элементы найдены
+    if (tabs.length === 0) {
+        console.error('❌ Кнопки вкладок не найдены');
+        return;
+    }
+
+    if (!contents['my-challenges'] || !contents['sparring-board']) {
+        console.error('❌ Контент вкладок не найден');
+        return;
+    }
+
+    tabs.forEach(btn => {
+        // Удаляем старые обработчики (чтобы не было дублирования)
+        btn.removeEventListener('click', () => {});
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            const target = this.dataset.tab;
+            
+            // Убираем активный класс со всех вкладок
+            tabs.forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            
+            // Скрываем все контенты
+            Object.keys(contents).forEach(key => {
+                contents[key].classList.remove('active');
             });
-        }
+            
+            // Показываем нужный контент
+            if (contents[target]) {
+                contents[target].classList.add('active');
+                console.log('✅ Показана вкладка:', target);
+            } else {
+                console.error('❌ Контент для вкладки не найден:', target);
+            }
+        });
+    });
+
+    // По умолчанию показываем "Мои вызовы"
+    const defaultTab = document.querySelector('.tab-btn.active') || tabs[0];
+    if (defaultTab) {
+        defaultTab.click();
+    }
+
+    console.log('✅ Табы инициализированы');
+}
 
         // ===== ОБНОВЛЕНИЕ БАЛАНСА =====
         async function updateHeaderBalance() {
