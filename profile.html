@@ -1759,6 +1759,9 @@
     
     <div id="mobileBottomNavContainer"></div>
     
+    <!-- Контейнер для ошибок — ВСЕГДА СВЕРХУ -->
+<div id="errorContainer" style="position: fixed; top: 15px; left: 50%; transform: translateX(-50%); z-index: 9999; max-width: 90%; width: 480px; padding: 14px 20px; border-radius: 16px; font-weight: 600; font-size: 0.9rem; animation: slideDown 0.3s ease; box-shadow: 0 10px 30px rgba(0,0,0,0.4); backdrop-filter: blur(8px); display: none; text-align: center; border: 1px solid rgba(255,255,255,0.1);"></div>
+
     <script type="importmap">
         {
             "imports": {
@@ -1772,298 +1775,294 @@
     <script type="module" src="header.js"></script>
     <script type="module" src="profile.js"></script>
     <script type="module">
-        import { initializeApp } from "firebase/app";
-        import { getFirestore, doc, getDoc, updateDoc, collection, query, where, getDocs, addDoc } from "firebase/firestore";
-        import { getAuth, onAuthStateChanged } from "firebase/auth";
+    import { initializeApp } from "firebase/app";
+    import { getFirestore, doc, getDoc, updateDoc, collection, query, where, getDocs, addDoc } from "firebase/firestore";
+    import { getAuth, onAuthStateChanged } from "firebase/auth";
+    import { showError, handleFirebaseError } from './error-handler.js';
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyDUGYJY7pX7q02MS5SACMIIQXpjpQ97mPw",
-            authDomain: "proranklive.firebaseapp.com",
-            projectId: "proranklive",
-            storageBucket: "proranklive.firebasestorage.app",
-            messagingSenderId: "716836144015",
-            appId: "1:716836144015:web:f1575147750608d0f881fa"
-        };
+    const firebaseConfig = {
+        apiKey: "AIzaSyDUGYJY7pX7q02MS5SACMIIQXpjpQ97mPw",
+        authDomain: "proranklive.firebaseapp.com",
+        projectId: "proranklive",
+        storageBucket: "proranklive.firebasestorage.app",
+        messagingSenderId: "716836144015",
+        appId: "1:716836144015:web:f1575147750608d0f881fa"
+    };
 
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-        const auth = getAuth(app);
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
 
-        const editProfileBtn = document.getElementById('editProfileBtn');
-        const editProfileModal = document.getElementById('editProfileModal');
-        const saveProfileBtn = document.getElementById('saveProfileBtn');
-        const cancelProfileBtn = document.getElementById('cancelProfileBtn');
-        const editBio = document.getElementById('editBio');
+    const editProfileBtn = document.getElementById('editProfileBtn');
+    const editProfileModal = document.getElementById('editProfileModal');
+    const saveProfileBtn = document.getElementById('saveProfileBtn');
+    const cancelProfileBtn = document.getElementById('cancelProfileBtn');
+    const editBio = document.getElementById('editBio');
+    
+    const BOT_TOKEN = '8527160088:AAGc2311QFkp6F7-Jx5k8MJfqlpvbueSl5E';
+    
+    let currentProfileUserId = null;
+    
+    // ===== МОДАЛКА ВЫЗОВА =====
+    let selectedFighterId = null;
+    let selectedFighterName = '';
+
+    window.openChallengeModal = function(fighterId, fighterName) {
+        selectedFighterId = fighterId;
+        selectedFighterName = fighterName;
         
-        const BOT_TOKEN = '8527160088:AAGc2311QFkp6F7-Jx5k8MJfqlpvbueSl5E';
+        document.getElementById('challengeModal').style.display = 'flex';
+        document.getElementById('challengeOpponentName').textContent = fighterName;
         
-        let currentProfileUserId = null;
-        
-        // ===== МОДАЛКА ВЫЗОВА =====
-        let selectedFighterId = null;
-        let selectedFighterName = '';
-
-        window.openChallengeModal = function(fighterId, fighterName) {
-            selectedFighterId = fighterId;
-            selectedFighterName = fighterName;
-            
-            document.getElementById('challengeModal').style.display = 'flex';
-            document.getElementById('challengeOpponentName').textContent = fighterName;
-            
-            // Подтягиваем спорт из профиля
-            const user = auth.currentUser;
-            if (user) {
-                getDoc(doc(db, "fighters", user.uid)).then(docSnap => {
-                    if (docSnap.exists()) {
-                        const data = docSnap.data();
-                        if (data.sport) {
-                            document.getElementById('challengeSport').value = data.sport;
-                        }
+        const user = auth.currentUser;
+        if (user) {
+            getDoc(doc(db, "fighters", user.uid)).then(docSnap => {
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    if (data.sport) {
+                        document.getElementById('challengeSport').value = data.sport;
                     }
-                });
-            }
-        };
+                }
+            });
+        }
+    };
 
-        function closeChallengeModal() {
-            document.getElementById('challengeModal').style.display = 'none';
-            document.getElementById('challengeMessage').value = '';
-            document.getElementById('challengeDate').value = '';
+    function closeChallengeModal() {
+        document.getElementById('challengeModal').style.display = 'none';
+        document.getElementById('challengeMessage').value = '';
+        document.getElementById('challengeDate').value = '';
+    }
+
+    async function sendChallenge() {
+        const user = auth.currentUser;
+        if (!user) {
+            showError('Войдите в аккаунт', 'warning');
+            return;
         }
 
-        async function sendChallenge() {
-            const user = auth.currentUser;
-            if (!user) {
-                alert('Войдите в аккаунт');
-                return;
-            }
+        const sport = document.getElementById('challengeSport').value;
+        const place = document.getElementById('challengePlace').value;
+        const date = document.getElementById('challengeDate').value;
+        const message = document.getElementById('challengeMessage').value.trim();
 
-            const sport = document.getElementById('challengeSport').value;
-            const place = document.getElementById('challengePlace').value;
-            const date = document.getElementById('challengeDate').value;
-            const message = document.getElementById('challengeMessage').value.trim();
-
-            if (!sport) {
-                alert('Выберите вид спорта');
-                return;
-            }
-            if (!place) {
-                alert('Выберите место проведения');
-                return;
-            }
-            if (!date) {
-                alert('Выберите дату и время');
-                return;
-            }
-
-            // Проверяем вызовы
-            const userDoc = await getDoc(doc(db, "fighters", user.uid));
-            const userData = userDoc.data();
-            let freeChallenges = userData.freeChallenges || 0;
-            let purchasedChallenges = userData.purchasedChallenges || 0;
-            let totalChallenges = freeChallenges + purchasedChallenges;
-
-            if (totalChallenges <= 0) {
-                alert('❌ У вас закончились вызовы!');
-                return;
-            }
-
-            // Проверяем вес
-            const targetDoc = await getDoc(doc(db, "fighters", selectedFighterId));
-            const targetData = targetDoc.data();
-            const currentWeight = parseInt(userData.weightClass) || 0;
-            const targetWeight = parseInt(targetData.weightClass) || 0;
-            const weightDiff = Math.abs(currentWeight - targetWeight);
-            if (weightDiff > 15) {
-                alert(`⚠️ Слишком большая разница в весе (${weightDiff} кг). Спарринг небезопасен.`);
-                return;
-            }
-
-            // Проверяем, не вызывали ли уже
-            const existingQuery = await getDocs(query(
-                collection(db, "challenges"),
-                where("fromUserId", "==", user.uid),
-                where("toUserId", "==", selectedFighterId),
-                where("status", "in", ["pending", "accepted"])
-            ));
-            if (!existingQuery.empty) {
-                alert('Вы уже вызывали этого бойца');
-                return;
-            }
-
-            // Отправляем вызов
-            try {
-                await addDoc(collection(db, "challenges"), {
-                    fromUserId: user.uid,
-                    fromName: userData.name || 'Боец',
-                    fromWeight: currentWeight,
-                    toUserId: selectedFighterId,
-                    toName: selectedFighterName,
-                    toWeight: targetWeight,
-                    sport: sport,
-                    place: place,
-                    date: date,
-                    message: message || '',
-                    status: 'pending',
-                    createdAt: new Date(),
-                    updatedAt: new Date()
-                });
-
-                // Списываем вызов
-                if (freeChallenges > 0) {
-                    await updateDoc(doc(db, "fighters", user.uid), {
-                        freeChallenges: freeChallenges - 1
-                    });
-                } else {
-                    await updateDoc(doc(db, "fighters", user.uid), {
-                        purchasedChallenges: purchasedChallenges - 1
-                    });
-                }
-
-                // Уведомление в Telegram
-                if (targetData.telegramId) {
-                    try {
-                        await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({
-                                chat_id: targetData.telegramId,
-                                text: `🥊 *НОВЫЙ ВЫЗОВ!*\n\nБоец *${userData.name}* вызывает тебя на спарринг!\n\n📋 Вид спорта: ${sport}\n📍 Место: ${place}\n📅 Дата: ${new Date(date).toLocaleString('ru-RU')}\n💬 Сообщение: ${message || '—'}\n\n👉 Зайди в раздел "Вызовы" в приложении, чтобы ответить.`,
-                                parse_mode: 'Markdown'
-                            })
-                        });
-                    } catch (e) { console.log('Telegram уведомление не отправлено'); }
-                }
-
-                alert('✅ Вызов отправлен!');
-                closeChallengeModal();
-                
-                // Обновляем баланс вызовов
-                if (window.updateHeaderBalance) window.updateHeaderBalance();
-
-            } catch (err) {
-                console.error('Ошибка отправки вызова:', err);
-                alert('❌ Ошибка при отправке вызова');
-            }
+        if (!sport) {
+            showError('Выберите вид спорта', 'warning');
+            return;
+        }
+        if (!place) {
+            showError('Выберите место проведения', 'warning');
+            return;
+        }
+        if (!date) {
+            showError('Выберите дату и время', 'warning');
+            return;
         }
 
-        document.getElementById('closeChallengeModal')?.addEventListener('click', closeChallengeModal);
-        document.getElementById('sendChallengeBtn')?.addEventListener('click', sendChallenge);
-        
-        // Закрытие модалки по клику вне
-        window.addEventListener('click', (e) => {
-            const modal = document.getElementById('challengeModal');
-            if (e.target === modal) closeChallengeModal();
-        });
+        const userDoc = await getDoc(doc(db, "fighters", user.uid));
+        const userData = userDoc.data();
+        let freeChallenges = userData.freeChallenges || 0;
+        let purchasedChallenges = userData.purchasedChallenges || 0;
+        let totalChallenges = freeChallenges + purchasedChallenges;
 
-        // ===== ОСТАЛЬНЫЕ ФУНКЦИИ =====
-        window.loadBioToModal = function(bioText) {
-            if (editBio) editBio.value = bioText || '';
-        };
-        
-        if (saveProfileBtn) {
-            saveProfileBtn.addEventListener('click', async () => {
-                const userId = currentProfileUserId;
-                if (!userId) return;
-                
-                const newName = document.getElementById('editName').value;
-                const newCity = document.getElementById('editCity').value;
-                const newWeight = document.getElementById('editWeightClass').value;
-                const newSport = document.getElementById('editSport').value;
-                const newBio = document.getElementById('editBio').value;
-                
+        if (totalChallenges <= 0) {
+            showError('❌ У вас закончились вызовы!', 'error');
+            setTimeout(() => {
+                window.location.href = 'shop.html';
+            }, 1500);
+            return;
+        }
+
+        const targetDoc = await getDoc(doc(db, "fighters", selectedFighterId));
+        const targetData = targetDoc.data();
+        const currentWeight = parseInt(userData.weightClass) || 0;
+        const targetWeight = parseInt(targetData.weightClass) || 0;
+        const weightDiff = Math.abs(currentWeight - targetWeight);
+        if (weightDiff > 15) {
+            showError(`⚠️ Слишком большая разница в весе (${weightDiff} кг). Спарринг небезопасен.`, 'warning');
+            return;
+        }
+
+        const existingQuery = await getDocs(query(
+            collection(db, "challenges"),
+            where("fromUserId", "==", user.uid),
+            where("toUserId", "==", selectedFighterId),
+            where("status", "in", ["pending", "accepted"])
+        ));
+        if (!existingQuery.empty) {
+            showError('Вы уже вызывали этого бойца', 'warning');
+            return;
+        }
+
+        try {
+            await addDoc(collection(db, "challenges"), {
+                fromUserId: user.uid,
+                fromName: userData.name || 'Боец',
+                fromWeight: currentWeight,
+                toUserId: selectedFighterId,
+                toName: selectedFighterName,
+                toWeight: targetWeight,
+                sport: sport,
+                place: place,
+                date: date,
+                message: message || '',
+                status: 'pending',
+                createdAt: new Date(),
+                updatedAt: new Date()
+            });
+
+            if (freeChallenges > 0) {
+                await updateDoc(doc(db, "fighters", user.uid), {
+                    freeChallenges: freeChallenges - 1
+                });
+            } else {
+                await updateDoc(doc(db, "fighters", user.uid), {
+                    purchasedChallenges: purchasedChallenges - 1
+                });
+            }
+
+            if (targetData.telegramId) {
                 try {
-                    const userRef = doc(db, "fighters", userId);
-                    await updateDoc(userRef, {
-                        name: newName,
-                        city: newCity,
-                        weightClass: newWeight,
-                        sport: newSport,
-                        bio: newBio
+                    await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            chat_id: targetData.telegramId,
+                            text: `🥊 *НОВЫЙ ВЫЗОВ!*\n\nБоец *${userData.name}* вызывает тебя на спарринг!\n\n📋 Вид спорта: ${sport}\n📍 Место: ${place}\n📅 Дата: ${new Date(date).toLocaleString('ru-RU')}\n💬 Сообщение: ${message || '—'}\n\n👉 Зайди в раздел "Вызовы" в приложении, чтобы ответить.`,
+                            parse_mode: 'Markdown'
+                        })
                     });
-                    
-                    document.getElementById('fighterName').textContent = newName;
-                    document.getElementById('profCity').textContent = newCity;
-                    document.getElementById('profWeight').textContent = newWeight;
-                    document.getElementById('profSport').textContent = newSport;
-                    document.getElementById('bioText').textContent = newBio || 'Тут пока пусто...';
-                    
-                    editProfileModal.style.display = 'none';
-                } catch (err) {
-                    console.error('Ошибка сохранения:', err);
-                    alert('Ошибка сохранения профиля');
-                }
-            });
-        }
-        
-        if (cancelProfileBtn) {
-            cancelProfileBtn.addEventListener('click', () => {
-                editProfileModal.style.display = 'none';
-            });
-        }
-        
-        if (editProfileBtn) {
-            editProfileBtn.addEventListener('click', () => {
-                document.getElementById('editName').value = document.getElementById('fighterName').textContent;
-                document.getElementById('editCity').value = document.getElementById('profCity').textContent;
-                document.getElementById('editWeightClass').value = document.getElementById('profWeight').textContent;
-                document.getElementById('editSport').value = document.getElementById('profSport').textContent;
-                document.getElementById('editBio').value = document.getElementById('bioText').textContent === 'Тут пока пусто...' ? '' : document.getElementById('bioText').textContent;
-                editProfileModal.style.display = 'flex';
-            });
-        }
-        
-        window.onclick = function(event) {
-            if (event.target === editProfileModal) {
-                editProfileModal.style.display = 'none';
+                } catch (e) { console.log('Telegram уведомление не отправлено'); }
             }
+
+            showError('✅ Вызов отправлен!', 'success');
+            closeChallengeModal();
             
-            const badgeModal = document.getElementById('badgeSelectModal');
-            if (event.target === badgeModal) {
-                badgeModal.style.display = 'none';
+            if (window.updateHeaderBalance) window.updateHeaderBalance();
+
+        } catch (err) {
+            console.error('Ошибка отправки вызова:', err);
+            showError(handleFirebaseError(err), 'error');
+        }
+    }
+
+    document.getElementById('closeChallengeModal')?.addEventListener('click', closeChallengeModal);
+    document.getElementById('sendChallengeBtn')?.addEventListener('click', sendChallenge);
+    
+    window.addEventListener('click', (e) => {
+        const modal = document.getElementById('challengeModal');
+        if (e.target === modal) closeChallengeModal();
+    });
+
+    // ===== ОСТАЛЬНЫЕ ФУНКЦИИ =====
+    window.loadBioToModal = function(bioText) {
+        if (editBio) editBio.value = bioText || '';
+    };
+    
+    if (saveProfileBtn) {
+        saveProfileBtn.addEventListener('click', async () => {
+            const userId = currentProfileUserId;
+            if (!userId) return;
+            
+            const newName = document.getElementById('editName').value;
+            const newCity = document.getElementById('editCity').value;
+            const newWeight = document.getElementById('editWeightClass').value;
+            const newSport = document.getElementById('editSport').value;
+            const newBio = document.getElementById('editBio').value;
+            
+            try {
+                const userRef = doc(db, "fighters", userId);
+                await updateDoc(userRef, {
+                    name: newName,
+                    city: newCity,
+                    weightClass: newWeight,
+                    sport: newSport,
+                    bio: newBio
+                });
+                
+                document.getElementById('fighterName').textContent = newName;
+                document.getElementById('profCity').textContent = newCity;
+                document.getElementById('profWeight').textContent = newWeight;
+                document.getElementById('profSport').textContent = newSport;
+                document.getElementById('bioText').textContent = newBio || 'Тут пока пусто...';
+                
+                editProfileModal.style.display = 'none';
+                showError('✅ Профиль сохранён!', 'success');
+            } catch (err) {
+                console.error('Ошибка сохранения:', err);
+                showError(handleFirebaseError(err), 'error');
             }
-        };
+        });
+    }
+    
+    if (cancelProfileBtn) {
+        cancelProfileBtn.addEventListener('click', () => {
+            editProfileModal.style.display = 'none';
+        });
+    }
+    
+    if (editProfileBtn) {
+        editProfileBtn.addEventListener('click', () => {
+            document.getElementById('editName').value = document.getElementById('fighterName').textContent;
+            document.getElementById('editCity').value = document.getElementById('profCity').textContent;
+            document.getElementById('editWeightClass').value = document.getElementById('profWeight').textContent;
+            document.getElementById('editSport').value = document.getElementById('profSport').textContent;
+            document.getElementById('editBio').value = document.getElementById('bioText').textContent === 'Тут пока пусто...' ? '' : document.getElementById('bioText').textContent;
+            editProfileModal.style.display = 'flex';
+        });
+    }
+    
+    window.onclick = function(event) {
+        if (event.target === editProfileModal) {
+            editProfileModal.style.display = 'none';
+        }
         
-        document.getElementById('closeBadgeSelectBtn').addEventListener('click', () => {
-            document.getElementById('badgeSelectModal').style.display = 'none';
+        const badgeModal = document.getElementById('badgeSelectModal');
+        if (event.target === badgeModal) {
+            badgeModal.style.display = 'none';
+        }
+    };
+    
+    document.getElementById('closeBadgeSelectBtn').addEventListener('click', () => {
+        document.getElementById('badgeSelectModal').style.display = 'none';
+    });
+    
+    async function loadWalletBalance(userId) {
+        try {
+            const balanceDoc = await getDoc(doc(db, "wallet_balances", userId));
+            if (balanceDoc.exists()) {
+                const balance = balanceDoc.data();
+                const available = balance.available || 0;
+                document.getElementById('profileWalletBalance').innerHTML = `${available.toLocaleString()} ₽`;
+                document.getElementById('walletBlock').style.display = 'flex';
+            }
+        } catch (err) {
+            console.error('Ошибка загрузки баланса кошелька:', err);
+        }
+    }
+
+    window.checkWalletOwner = async function(profileUserId, currentUserId) {
+        currentProfileUserId = profileUserId;
+        if (profileUserId === currentUserId) {
+            await loadWalletBalance(profileUserId);
+        }
+    };
+
+    const menuToggle = document.getElementById('menuToggle');
+    const navLinks = document.getElementById('navLinks');
+    if (menuToggle && navLinks) {
+        menuToggle.addEventListener('click', () => {
+            navLinks.classList.toggle('show');
         });
         
-        async function loadWalletBalance(userId) {
-            try {
-                const balanceDoc = await getDoc(doc(db, "wallet_balances", userId));
-                if (balanceDoc.exists()) {
-                    const balance = balanceDoc.data();
-                    const available = balance.available || 0;
-                    document.getElementById('profileWalletBalance').innerHTML = `${available.toLocaleString()} ₽`;
-                    document.getElementById('walletBlock').style.display = 'flex';
-                }
-            } catch (err) {
-                console.error('Ошибка загрузки баланса кошелька:', err);
-            }
-        }
-
-        window.checkWalletOwner = async function(profileUserId, currentUserId) {
-            currentProfileUserId = profileUserId;
-            if (profileUserId === currentUserId) {
-                await loadWalletBalance(profileUserId);
-            }
-        };
-
-        const menuToggle = document.getElementById('menuToggle');
-        const navLinks = document.getElementById('navLinks');
-        if (menuToggle && navLinks) {
-            menuToggle.addEventListener('click', () => {
-                navLinks.classList.toggle('show');
+        navLinks.querySelectorAll('a').forEach(link => {
+            link.addEventListener('click', () => {
+                navLinks.classList.remove('show');
             });
-            
-            navLinks.querySelectorAll('a').forEach(link => {
-                link.addEventListener('click', () => {
-                    navLinks.classList.remove('show');
-                });
-            });
-        }
-        
-        const plusBtn = document.getElementById('balancePlusBtn');
-        if (plusBtn) plusBtn.onclick = () => window.location.href = 'shop.html';
-    </script>
+        });
+    }
+    
+    const plusBtn = document.getElementById('balancePlusBtn');
+    if (plusBtn) plusBtn.onclick = () => window.location.href = 'shop.html';
+</script>
 </body>
 </html>

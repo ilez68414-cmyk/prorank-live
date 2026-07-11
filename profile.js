@@ -3,6 +3,7 @@ import { getFirestore, doc, getDoc, updateDoc, collection, query, where, getDocs
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { ensureUserFields, getAvailableBadges, selectBadge, getSelectedBadge, ALL_BADGES, getBadgeImage } from './payment.js';
 import { applyAllPremiumBonuses } from './premium.js';
+import { showError, handleFirebaseError, withErrorHandling } from './error-handler.js';
 
 const firebaseConfig = {
     apiKey: "AIzaSyDUGYJY7pX7q02MS5SACMIIQXpjpQ97mPw",
@@ -68,7 +69,7 @@ async function checkAndAwardLeagueRewards(userId, oldFrs, newFrs) {
             await updateDoc(userRef, {
                 purchasedChallenges: currentPurchased + newLeague.reward.amount
             });
-            alert(`🎉 Поздравляем! Вы достигли ${newLeague.name} ЛИГИ и получили +${newLeague.reward.amount} вызовов!`);
+            showError(`🎉 Поздравляем! Вы достигли ${newLeague.name} ЛИГИ и получили +${newLeague.reward.amount} вызовов!`, 'success');
         }
         
         if (newLeague.reward.type === 'premium') {
@@ -77,7 +78,7 @@ async function checkAndAwardLeagueRewards(userId, oldFrs, newFrs) {
                 premium: true,
                 premiumUntil: premiumUntil
             });
-            alert(`🎉 ПОЗДРАВЛЯЕМ! Вы достигли ЛЕГЕНДАРНОЙ ЛИГИ и получили ПРЕМИУМ на ${newLeague.reward.days} дней!`);
+            showError(`🎉 ПОЗДРАВЛЯЕМ! Вы достигли ЛЕГЕНДАРНОЙ ЛИГИ и получили ПРЕМИУМ на ${newLeague.reward.days} дней!`, 'success');
         }
         
         if (window.updateHeaderBalance) window.updateHeaderBalance();
@@ -150,7 +151,7 @@ function setupAvatarUpload() {
         e.preventDefault();
         const user = auth.currentUser;
         if (!user || user.uid !== profileId) {
-            alert('Только владелец профиля может изменить аватар');
+            showError('Только владелец профиля может изменить аватар', 'warning');
             return;
         }
         fileInput.click();
@@ -159,7 +160,7 @@ function setupAvatarUpload() {
         const file = e.target.files[0];
         if (!file) return;
         if (file.size > 20 * 1024 * 1024) {
-            alert('❌ Файл больше 20MB');
+            showError('❌ Файл больше 20MB', 'error');
             return;
         }
         const originalSrc = avatarImg.src;
@@ -168,10 +169,10 @@ function setupAvatarUpload() {
             const url = await uploadAvatar(file, profileId);
             await updateDoc(doc(db, "fighters", profileId), { avatar: url });
             avatarImg.src = url;
-            alert('✅ Аватар обновлён!');
+            showError('✅ Аватар обновлён!', 'success');
         } catch (err) {
             avatarImg.src = originalSrc;
-            alert('❌ Ошибка: ' + err.message);
+            showError('❌ Ошибка: ' + err.message, 'error');
         }
         avatarImg.style.opacity = '1';
         fileInput.value = '';
@@ -443,10 +444,10 @@ async function openBadgeSelector() {
                             await selectBadge(currentFighterId, badge.id);
                             await loadUserBadge(currentFighterId);
                             modal.style.display = 'none';
-                            alert(`✅ Бейдж "${badge.name}" выбран!`);
+                            showError(`✅ Бейдж "${badge.name}" выбран!`, 'success');
                             await updateProfileName();
                         } catch (err) {
-                            alert('❌ ' + err.message);
+                            showError('❌ ' + err.message, 'error');
                         }
                     });
                 } else {
@@ -459,7 +460,7 @@ async function openBadgeSelector() {
         modal.style.display = 'flex';
     } catch (err) {
         console.error(err);
-        alert('❌ Ошибка загрузки бейджей');
+        showError('❌ Ошибка загрузки бейджей', 'error');
     }
 }
 
@@ -473,7 +474,7 @@ async function initBadgeDisplay(userId) {
 }
 
 // ============================================================
-// ИМЯ + ЛИГА + БЕЙДЖ — НОВАЯ ВЕРСИЯ
+// ИМЯ + ЛИГА + БЕЙДЖ
 // ============================================================
 async function updateProfileName() {
     const fighter = currentFighterData;
@@ -486,18 +487,15 @@ async function updateProfileName() {
         const league = getLeague(fighter.frs || 0);
         const selectedBadgeId = await getSelectedBadge(currentFighterId);
         
-        // === Имя ===
         const nameEl = document.getElementById('fighterName');
         if (nameEl) nameEl.textContent = fighter.name || 'Без имени';
         
-        // === Лига (справа) ===
         const leagueIcon = document.getElementById('leagueIcon');
         if (leagueIcon) {
             leagueIcon.className = `fas ${league.icon} league-icon`;
             leagueIcon.style.color = league.color;
         }
         
-        // === Бейдж (слева) ===
         const badgeImg = document.getElementById('profileBadgeImg');
         const badgeEmoji = document.getElementById('badgeEmoji');
         const badgeWrapper = document.getElementById('badgeWrapper');
@@ -580,19 +578,11 @@ async function loadProfileData(user) {
         currentFighterData = fighterSnap.data();
         const fighter = currentFighterData;
         
-        // Добавляем недостающие поля
         await ensureUserFields(profileId);
-        
-        // Применяем премиум-бонусы
         await applyAllPremiumBonuses(profileId);
-        
-        // Отображаем бейдж
         await initBadgeDisplay(profileId);
-        
-        // Обновляем имя
         await updateProfileName();
         
-        // Остальные данные
         document.getElementById('profSport').textContent = fighter.sport || '—';
         document.getElementById('profCity').textContent = fighter.city || '—';
         
@@ -711,14 +701,19 @@ function setupEditProfile(fighterRef, fighter) {
     const save = document.getElementById('saveProfileBtn');
     if (save) {
         save.onclick = async () => {
-            await updateDoc(fighterRef, {
-                name: document.getElementById('editName').value,
-                city: document.getElementById('editCity').value,
-                weightClass: document.getElementById('editWeightClass').value,
-                sport: document.getElementById('editSport').value
-            });
-            document.getElementById('editProfileModal').style.display = 'none';
-            loadProfileData(auth.currentUser);
+            try {
+                await updateDoc(fighterRef, {
+                    name: document.getElementById('editName').value,
+                    city: document.getElementById('editCity').value,
+                    weightClass: document.getElementById('editWeightClass').value,
+                    sport: document.getElementById('editSport').value
+                });
+                document.getElementById('editProfileModal').style.display = 'none';
+                loadProfileData(auth.currentUser);
+                showError('✅ Профиль сохранён!', 'success');
+            } catch (err) {
+                showError(handleFirebaseError(err), 'error');
+            }
         };
     }
     const cancel = document.getElementById('cancelProfileBtn');
@@ -739,12 +734,17 @@ function setupEditBio() {
         saveBtn.classList.remove('hidden');
     };
     saveBtn.onclick = async () => {
-        await updateDoc(doc(db, "fighters", currentFighterId), { bio: bioInput.value });
-        bioText.innerText = bioInput.value || "Тут пока пусто...";
-        bioText.classList.remove('hidden');
-        bioInput.classList.add('hidden');
-        editBtn.classList.remove('hidden');
-        saveBtn.classList.add('hidden');
+        try {
+            await updateDoc(doc(db, "fighters", currentFighterId), { bio: bioInput.value });
+            bioText.innerText = bioInput.value || "Тут пока пусто...";
+            bioText.classList.remove('hidden');
+            bioInput.classList.add('hidden');
+            editBtn.classList.remove('hidden');
+            saveBtn.classList.add('hidden');
+            showError('✅ Био обновлено!', 'success');
+        } catch (err) {
+            showError(handleFirebaseError(err), 'error');
+        }
     };
 }
 
@@ -753,13 +753,16 @@ function setupVerifyRecord() {
     if (!btn) return;
     btn.onclick = () => {
         const user = auth.currentUser;
-        if (!user) return alert('Войдите');
+        if (!user) {
+            showError('Войдите в аккаунт', 'warning');
+            return;
+        }
         window.open(`https://t.me/${BOT_USERNAME}?start=verify_${user.uid}`, '_blank');
     };
 }
 
 // ============================================================
-// ВЫЗОВ (ИСПРАВЛЕННАЯ ВЕРСИЯ)
+// ВЫЗОВ (ИСПРАВЛЕННАЯ ВЕРСИЯ — БЕЗ CONFIRM)
 // ============================================================
 async function setupChallengeButton(targetId) {
     const btn = document.getElementById('btnChallenge');
@@ -768,11 +771,10 @@ async function setupChallengeButton(targetId) {
     btn.onclick = async () => {
         const user = auth.currentUser;
         if (!user) {
-            alert('Вы не авторизованы');
+            showError('Вы не авторизованы', 'warning');
             return;
         }
         
-        // Проверяем, есть ли вызовы
         try {
             const currentDoc = await getDoc(doc(db, "fighters", user.uid));
             const current = currentDoc.data();
@@ -781,33 +783,31 @@ async function setupChallengeButton(targetId) {
             let totalChallenges = freeChallenges + purchasedChallenges;
             
             if (totalChallenges <= 0) {
-                if (confirm(`❌ У вас закончились вызовы!\nПерейти в магазин?`)) {
+                showError('❌ У вас закончились вызовы!', 'error');
+                setTimeout(() => {
                     window.location.href = 'shop.html';
-                }
+                }, 1500);
                 return;
             }
         } catch (err) {
             console.error(err);
-            alert('Ошибка проверки вызовов');
+            showError('Ошибка проверки вызовов', 'error');
             return;
         }
         
-        // Получаем имя соперника
         try {
             const targetDoc = await getDoc(doc(db, "fighters", targetId));
             const target = targetDoc.data();
             const targetName = target?.name || 'Соперник';
             
-            // Открываем модалку (функция определена в profile.html)
             if (typeof window.openChallengeModal === 'function') {
                 window.openChallengeModal(targetId, targetName);
             } else {
-                // Фолбэк — переходим на страницу вызовов
                 window.location.href = `challenges.html?target=${targetId}&name=${encodeURIComponent(targetName)}`;
             }
         } catch (err) {
             console.error(err);
-            alert('Ошибка получения данных соперника');
+            showError('Ошибка получения данных соперника', 'error');
         }
     };
 }
@@ -817,8 +817,14 @@ async function setupMessageButton(targetId) {
     if (!messageBtn) return;
     messageBtn.onclick = async () => {
         const user = auth.currentUser;
-        if (!user) { alert('Войдите в аккаунт'); return; }
-        if (user.uid === targetId) { alert('Нельзя написать самому себе'); return; }
+        if (!user) {
+            showError('Войдите в аккаунт', 'warning');
+            return;
+        }
+        if (user.uid === targetId) {
+            showError('Нельзя написать самому себе', 'warning');
+            return;
+        }
         const chatId = `${user.uid}_${targetId}`;
         const chatRef = doc(db, "chats", chatId);
         const chatSnap = await getDoc(chatRef);
@@ -875,8 +881,14 @@ function setupLikeButton() {
     if (!btn) return;
     btn.onclick = async () => {
         const user = auth.currentUser;
-        if (!user) return alert('Войдите');
-        if (user.uid === currentFighterId) return alert('Нельзя лайкать себя');
+        if (!user) {
+            showError('Войдите в аккаунт', 'warning');
+            return;
+        }
+        if (user.uid === currentFighterId) {
+            showError('Нельзя лайкать себя', 'warning');
+            return;
+        }
         const ref = doc(db, "likes", `${user.uid}_${currentFighterId}`);
         if (!(await getDoc(ref)).exists()) {
             await setDoc(ref, { fighterId: currentFighterId, userId: user.uid, createdAt: new Date() });
@@ -890,8 +902,14 @@ function setupSubscribeButton() {
     if (!btn) return;
     btn.onclick = async () => {
         const user = auth.currentUser;
-        if (!user) return alert('Войдите');
-        if (user.uid === currentFighterId) return alert('Нельзя подписаться на себя');
+        if (!user) {
+            showError('Войдите в аккаунт', 'warning');
+            return;
+        }
+        if (user.uid === currentFighterId) {
+            showError('Нельзя подписаться на себя', 'warning');
+            return;
+        }
         const ref = doc(db, "subscriptions", `${user.uid}_${currentFighterId}`);
         const exists = (await getDoc(ref)).exists();
         const cur = currentFighterData?.subscribers || 0;
@@ -922,7 +940,7 @@ async function setupReferral() {
     if (referralInput) referralInput.value = referralLink;
     const copyBtn = document.getElementById('copyReferralBtn');
     if (copyBtn) {
-        copyBtn.onclick = () => { const input = document.getElementById('referralLink'); if (input) { input.select(); document.execCommand('copy'); alert('✅ Ссылка скопирована!'); } };
+        copyBtn.onclick = () => { const input = document.getElementById('referralLink'); if (input) { input.select(); document.execCommand('copy'); showError('✅ Ссылка скопирована!', 'success'); } };
     }
     const userDoc = await getDoc(doc(db, "fighters", user.uid));
     const refCount = userDoc.data()?.referralCount || 0;

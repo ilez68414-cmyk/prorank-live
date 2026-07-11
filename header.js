@@ -404,7 +404,23 @@ function escapeHtml(str) {
     if (!str) return '';
     return str;
 }
+// ===== ИНИЦИАЛИЗАЦИЯ PUSH-УВЕДОМЛЕНИЙ =====
+async function initPushNotifications() {
+    // Проверяем, авторизован ли пользователь
+    const user = auth.currentUser;
+    if (!user) return;
 
+    // Проверяем, есть ли уже разрешение
+    const status = await getPushStatus();
+    
+    // Если разрешение уже есть — подписываемся
+    if (status.permission === 'granted' && !status.subscribed) {
+        await subscribeToPush();
+    }
+
+    // Добавляем кнопку для ручного включения (если нужно)
+    // Можно добавить в меню или в настройки
+}
 async function initHeader() {
     ensureMobileNavContainer();
     

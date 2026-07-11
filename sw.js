@@ -1,8 +1,8 @@
 // sw.js - Service Worker для PRORANK PWA
-const CACHE_NAME = 'prorank-v1.1.0';  // Обновил версию для обновления кеша
+const CACHE_NAME = 'prorank-v1.1.0';
 const OFFLINE_URL = '/prorank-live/offline.html';
 
-// Файлы для кэширования при установке (обновлён список)
+// Файлы для кэширования при установке
 const STATIC_FILES = [
   '/prorank-live/',
   '/prorank-live/index.html',
@@ -40,7 +40,9 @@ const STATIC_FILES = [
   'https://www.gstatic.com/firebasejs/11.0.2/firebase-storage.js'
 ];
 
-// Установка — кэшируем файлы
+// ============================================================
+// УСТАНОВКА
+// ============================================================
 self.addEventListener('install', event => {
   console.log('[SW] Установка...');
   event.waitUntil(
@@ -54,7 +56,9 @@ self.addEventListener('install', event => {
   self.skipWaiting();
 });
 
-// Активация — удаляем старые кэши
+// ============================================================
+// АКТИВАЦИЯ
+// ============================================================
 self.addEventListener('activate', event => {
   console.log('[SW] Активация...');
   event.waitUntil(
@@ -72,23 +76,25 @@ self.addEventListener('activate', event => {
   self.clients.claim();
 });
 
-// Стратегия загрузки: сначала сеть, при ошибке — кэш или офлайн-страница
+// ============================================================
+// FETCH — СТРАТЕГИЯ ЗАГРУЗКИ
+// ============================================================
 self.addEventListener('fetch', event => {
   const url = new URL(event.request.url);
   
-  // Firebase и внешние API не кэшируем (только сеть)
+  // Firebase и внешние API — только сеть
   if (url.hostname.includes('firebase') || 
       url.hostname.includes('googleapis') ||
-      url.hostname.includes('cloudinary')) {
+      url.hostname.includes('cloudinary') ||
+      url.hostname.includes('api.telegram.org')) {
     return;
   }
   
-  // HTML страницы — специальная обработка для офлайн-режима
+  // HTML страницы — сеть с fallback на кэш или офлайн
   if (event.request.mode === 'navigate') {
     event.respondWith(
       fetch(event.request)
         .then(response => {
-          // Если запрос успешен, кэшируем страницу для будущего офлайн-доступа
           if (response && response.status === 200) {
             const responseClone = response.clone();
             caches.open(CACHE_NAME).then(cache => {
@@ -99,17 +105,10 @@ self.addEventListener('fetch', event => {
         })
         .catch(async () => {
           console.log('[SW] Офлайн-режим: показываем кэш или offline.html');
-          // Пытаемся найти запрошенную страницу в кэше
           const cachedResponse = await caches.match(event.request);
-          if (cachedResponse) {
-            return cachedResponse;
-          }
-          // Если нет в кэше — показываем offline.html
+          if (cachedResponse) return cachedResponse;
           const offlinePage = await caches.match(OFFLINE_URL);
-          if (offlinePage) {
-            return offlinePage;
-          }
-          // Если и offline.html нет — возвращаем заглушку
+          if (offlinePage) return offlinePage;
           return new Response('Нет соединения с интернетом', { 
             status: 503, 
             statusText: 'Service Unavailable',
@@ -120,15 +119,12 @@ self.addEventListener('fetch', event => {
     return;
   }
   
-  // Статика (CSS, JS, изображения) — сначала кэш, потом сеть
+  // Статика — кэш, потом сеть
   event.respondWith(
     caches.match(event.request)
       .then(response => {
-        if (response) {
-          return response;
-        }
+        if (response) return response;
         return fetch(event.request).then(networkResponse => {
-          // Кэшируем успешные ответы для будущего офлайн-доступа
           if (networkResponse && networkResponse.status === 200) {
             const responseClone = networkResponse.clone();
             caches.open(CACHE_NAME).then(cache => {
@@ -142,24 +138,49 @@ self.addEventListener('fetch', event => {
         if (event.request.destination === 'image') {
           return new Response('', { status: 404 });
         }
-        // Для CSS/JS при офлайн-режиме возвращаем заглушку
         if (event.request.destination === 'style' || event.request.destination === 'script') {
-          return new Response('', { status: 200, headers: new Headers({ 'Content-Type': event.request.destination === 'style' ? 'text/css' : 'application/javascript' }) });
+          return new Response('', { 
+            status: 200, 
+            headers: new Headers({ 
+              'Content-Type': event.request.destination === 'style' ? 'text/css' : 'application/javascript' 
+            }) 
+          });
         }
         return new Response('Офлайн. Проверьте соединение.', { status: 404 });
       })
   );
 });
 
-// Push-уведомления
+// ============================================================
+// PUSH-УВЕДОМЛЕНИЯ
+// ============================================================
 self.addEventListener('push', event => {
-  const data = event.data?.json() || {};
+  console.log('[SW] Получено push-уведомление');
+  
+  let data = {};
+  try {
+    data = event.data?.json() || {};
+  } catch (e) {
+    data = { 
+      title: 'PRORANK', 
+      body: event.data?.text() || 'Новое уведомление' 
+    };
+  }
+  
   const options = {
     body: data.body || 'Новое уведомление от PRORANK',
     icon: '/prorank-live/icons/icon-192.png',
     badge: '/prorank-live/icons/icon-72.png',
     vibrate: [200, 100, 200],
-    data: { url: data.url || '/prorank-live/' }
+    data: { 
+      url: data.url || '/prorank-live/',
+      messageId: data.messageId || null,
+      challengeId: data.challengeId || null
+    },
+    actions: [
+      { action: 'open', title: '📱 Открыть' },
+      { action: 'close', title: '❌ Закрыть' }
+    ]
   };
   
   event.waitUntil(
@@ -167,21 +188,48 @@ self.addEventListener('push', event => {
   );
 });
 
-// Клик по уведомлению
+// ============================================================
+// КЛИК ПО УВЕДОМЛЕНИЮ
+// ============================================================
 self.addEventListener('notificationclick', event => {
+  console.log('[SW] Клик по уведомлению:', event.action);
   event.notification.close();
+  
+  // Закрыть — ничего не делаем
+  if (event.action === 'close') {
+    return;
+  }
+  
   const url = event.notification.data?.url || '/prorank-live/';
+  
   event.waitUntil(
     clients.matchAll({ type: 'window' })
       .then(windowClients => {
+        // Если есть открытое окно — фокусируем его
         for (let client of windowClients) {
           if (client.url === url && 'focus' in client) {
             return client.focus();
           }
         }
+        // Иначе открываем новое окно
         if (clients.openWindow) {
           return clients.openWindow(url);
         }
       })
   );
 });
+
+// ============================================================
+// ОБРАБОТКА СООБЩЕНИЙ ОТ КЛИЕНТА
+// ============================================================
+self.addEventListener('message', event => {
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
+  
+  if (event.data && event.data.type === 'GET_VERSION') {
+    event.ports[0].postMessage({ version: CACHE_NAME });
+  }
+});
+
+console.log('[SW] Service Worker загружен, версия:', CACHE_NAME);
