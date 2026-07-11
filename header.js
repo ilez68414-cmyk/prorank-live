@@ -266,6 +266,7 @@ async function renderMobileBottomNav() {
                     { text: 'Премиум и вызовы', icon: 'fa-gem', url: 'shop.html' },
                     { text: 'Кинуть вызов', icon: 'fa-fist-raised', url: 'challenges.html' },
                     { text: 'Мой рейтинг', icon: 'fa-chart-line', url: 'rating.html' },
+                    { text: 'Лиги', icon: 'fa-trophy', url: 'leagues.html' },      // ← ДОБАВИТЬ
                     { text: 'Кошелёк', icon: 'fa-wallet', url: 'buyer-wallet.html' },
                     { text: 'Мои заказы', icon: 'fa-box', url: 'my-orders.html' },
                     { text: 'О проекте', icon: 'fa-info-circle', url: 'about.html' }

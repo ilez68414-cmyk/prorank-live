@@ -3,7 +3,7 @@
 <head>
     <!-- PWA Manifest & Icons -->
     <link rel="manifest" href="/prorank-live/manifest.json">
-<link rel="apple-touch-icon" href="/prorank-live/icons/icon-192.png">
+    <link rel="apple-touch-icon" href="/prorank-live/icons/icon-192.png">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="PRORANK">
@@ -60,7 +60,6 @@
             width: 100%;
         }
 
-        /* ===== ШАПКА ===== */
         .navbar {
             display: flex;
             justify-content: space-between;
@@ -200,7 +199,6 @@
             transform: scale(1.1);
         }
 
-        /* ===== ЗАГОЛОВОК ===== */
         .page-header {
             text-align: center;
             padding: 50px 20px 30px;
@@ -227,7 +225,70 @@
             font-size: clamp(0.8rem, 3vw, 0.95rem);
         }
 
-        /* ===== ЛИГИ ===== */
+        /* ===== ТЕКУЩАЯ ЛИГА ===== */
+        .current-league-banner {
+            background: linear-gradient(135deg, rgba(251,191,36,0.12), rgba(251,191,36,0.04));
+            border: 2px solid rgba(251,191,36,0.3);
+            border-radius: 28px;
+            padding: 20px 28px;
+            margin-bottom: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 16px;
+            animation: fadeInUp 0.5s ease;
+            transition: all 0.3s ease;
+        }
+
+        .current-league-banner:hover {
+            border-color: rgba(251,191,36,0.5);
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        .current-league-banner .info {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .current-league-banner .info img {
+            width: 50px;
+            height: 50px;
+            object-fit: contain;
+        }
+
+        .current-league-banner .info .text {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .current-league-banner .info .text .label {
+            font-size: 0.7rem;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .current-league-banner .info .text .name {
+            font-size: 1.3rem;
+            font-weight: 800;
+            color: #fbbf24;
+        }
+
+        .current-league-banner .frs {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #fbbf24;
+        }
+
+        .current-league-banner .frs span {
+            font-size: 0.8rem;
+            color: #888;
+            font-weight: 400;
+        }
+
         .leagues-grid {
             display: flex;
             flex-direction: column;
@@ -276,11 +337,39 @@
             transform: translateY(-2px) scale(0.99);
         }
 
+        .league-card.current {
+            background: rgba(251,191,36,0.08);
+            border-color: #fbbf24 !important;
+            box-shadow: 0 0 30px rgba(251,191,36,0.1);
+        }
+
+        .league-card.current::after {
+            content: '⭐ Текущая';
+            position: absolute;
+            top: 12px;
+            right: 16px;
+            font-size: 0.65rem;
+            font-weight: 700;
+            color: #fbbf24;
+            background: rgba(251,191,36,0.15);
+            padding: 4px 12px;
+            border-radius: 40px;
+        }
+
         .league-icon {
-            font-size: 2.8rem;
-            width: 80px;
-            text-align: center;
+            width: 70px;
+            height: 70px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
             transition: transform 0.3s ease;
+        }
+
+        .league-icon img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
         }
 
         .league-card:hover .league-icon {
@@ -301,11 +390,6 @@
             flex-wrap: wrap;
         }
 
-        .league-name span {
-            position: relative;
-            display: inline-block;
-        }
-
         .league-range {
             color: #aaa;
             font-size: 0.85rem;
@@ -313,6 +397,7 @@
             display: flex;
             align-items: center;
             gap: 8px;
+            flex-wrap: wrap;
         }
 
         .league-rewards {
@@ -339,15 +424,6 @@
             transform: translateY(-2px);
         }
 
-        /* Цвета лиг */
-        .league-bronze { color: #cd7f32; text-shadow: 0 0 10px rgba(205,127,50,0.3); }
-        .league-silver { color: #c0c0c0; text-shadow: 0 0 10px rgba(192,192,192,0.3); }
-        .league-gold { color: #ffd700; text-shadow: 0 0 10px rgba(255,215,0,0.3); }
-        .league-diamond { color: #00ffff; text-shadow: 0 0 10px rgba(0,255,255,0.3); }
-        .league-elite { color: #9400d3; text-shadow: 0 0 10px rgba(148,0,211,0.3); }
-        .league-legendary { color: #ff4500; text-shadow: 0 0 10px rgba(255,69,0,0.3); }
-
-        /* FRS КАЛЬКУЛЯТОР */
         .frs-calc {
             background: rgba(15,15,15,0.7);
             backdrop-filter: blur(8px);
@@ -417,7 +493,6 @@
             color: #ffdd77;
         }
 
-        /* ===== ПОДВАЛ ===== */
         .main-footer {
             background: #0a0a0a;
             border-top: 1px solid rgba(251,191,36,0.15);
@@ -486,7 +561,6 @@
             color: #555;
         }
 
-        /* АНИМАЦИИ */
         @keyframes fadeInUp {
             from {
                 opacity: 0;
@@ -503,12 +577,6 @@
             to { opacity: 1; }
         }
 
-        @keyframes shine {
-            0% { background-position: -100%; }
-            100% { background-position: 100%; }
-        }
-
-        /* АДАПТИВ */
         @media (max-width: 768px) {
             .container {
                 padding: 0 16px;
@@ -574,12 +642,30 @@
                 text-align: center;
                 align-items: center;
             }
+
+            .current-league-banner {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .current-league-banner .info {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .league-card.current::after {
+                position: relative;
+                top: auto;
+                right: auto;
+                margin-top: 8px;
+                display: inline-block;
+            }
         }
 
         @media (max-width: 480px) {
             .league-icon {
-                width: 60px;
-                font-size: 2rem;
+                width: 55px;
+                height: 55px;
             }
             
             .league-name {
@@ -606,6 +692,19 @@
             .frs-calc p {
                 font-size: 0.8rem;
             }
+
+            .current-league-banner {
+                padding: 16px;
+            }
+
+            .current-league-banner .info img {
+                width: 40px;
+                height: 40px;
+            }
+
+            .current-league-banner .info .text .name {
+                font-size: 1.1rem;
+            }
         }
 
         ::-webkit-scrollbar {
@@ -622,27 +721,6 @@
         }
         
         .icon-gold { color: #fbbf24; }
-        
-        /* Бейджи для карточек */
-        .league-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            background: rgba(0,0,0,0.3);
-            padding: 4px 12px;
-            border-radius: 30px;
-            font-size: 0.7rem;
-        }
-        
-        /* Эффект мерцания для легендарной лиги */
-        .league-card[style*="#ff4500"] .league-icon {
-            animation: legendaryGlow 2s ease-in-out infinite;
-        }
-        
-        @keyframes legendaryGlow {
-            0%, 100% { filter: drop-shadow(0 0 2px #ff4500); }
-            50% { filter: drop-shadow(0 0 15px #ff4500); }
-        }
     </style>
 </head>
 <body>
@@ -665,81 +743,22 @@
             <p>Путь к вершине начинается здесь. Каждая лига открывает новые возможности!</p>
         </div>
 
-        <div class="leagues-grid">
-            <div class="league-card" style="border-left-color: #cd7f32;" onclick="window.location.href='rating.html?league=bronze'">
-                <div class="league-icon"><i class="fas fa-medal" style="color:#cd7f32;"></i></div>
-                <div class="league-info">
-                    <div class="league-name"><span class="league-bronze">🏅 БРОНЗОВАЯ ЛИГА</span></div>
-                    <div class="league-range"><i class="fas fa-chart-simple"></i> 0 – 499 FRS | <i class="fas fa-users"></i> Начальный уровень</div>
-                    <div class="league-rewards">
-                        <span class="reward-tag"><i class="fas fa-gift"></i> Награда: Доступ в рейтинг</span>
-                    </div>
+        <!-- ТЕКУЩАЯ ЛИГА -->
+        <div id="currentLeagueBanner" class="current-league-banner" style="display: none;">
+            <div class="info">
+                <img id="currentLeagueIcon" src="" alt="Лига">
+                <div class="text">
+                    <span class="label">Ваша текущая лига</span>
+                    <span class="name" id="currentLeagueName">—</span>
                 </div>
             </div>
+            <div class="frs">
+                <span id="currentFrs">0</span> <span>FRS</span>
+            </div>
+        </div>
 
-            <div class="league-card" style="border-left-color: #c0c0c0;" onclick="window.location.href='rating.html?league=silver'">
-                <div class="league-icon"><i class="fas fa-medal" style="color:#c0c0c0;"></i></div>
-                <div class="league-info">
-                    <div class="league-name"><span class="league-silver">🥈 СЕРЕБРЯНАЯ ЛИГА</span></div>
-                    <div class="league-range"><i class="fas fa-chart-simple"></i> 500 – 999 FRS | <i class="fas fa-fire"></i> Первые достижения</div>
-                    <div class="league-rewards">
-                        <span class="reward-tag"><i class="fas fa-crosshairs"></i> +1 вызов в месяц</span>
-                        <span class="reward-tag"><i class="fas fa-certificate"></i> Серебряный бейдж</span>
-                    </div>
-                </div>
-            </div>
-
-            <div class="league-card" style="border-left-color: #ffd700;" onclick="window.location.href='rating.html?league=gold'">
-                <div class="league-icon"><i class="fas fa-crown" style="color:#ffd700;"></i></div>
-                <div class="league-info">
-                    <div class="league-name"><span class="league-gold">👑 ЗОЛОТАЯ ЛИГА</span></div>
-                    <div class="league-range"><i class="fas fa-chart-simple"></i> 1000 – 1999 FRS | <i class="fas fa-star"></i> Уважение сообщества</div>
-                    <div class="league-rewards">
-                        <span class="reward-tag"><i class="fas fa-crosshairs"></i> +3 вызова</span>
-                        <span class="reward-tag"><i class="fas fa-certificate"></i> Золотой бейдж в профиле</span>
-                        <span class="reward-tag"><i class="fas fa-chart-line"></i> Топ 100</span>
-                    </div>
-                </div>
-            </div>
-
-            <div class="league-card" style="border-left-color: #00ffff;" onclick="window.location.href='rating.html?league=diamond'">
-                <div class="league-icon"><i class="fas fa-gem" style="color:#00ffff;"></i></div>
-                <div class="league-info">
-                    <div class="league-name"><span class="league-diamond">💎 АЛМАЗНАЯ ЛИГА</span></div>
-                    <div class="league-range"><i class="fas fa-chart-simple"></i> 2000 – 3499 FRS | <i class="fas fa-skull"></i> Элита любителей</div>
-                    <div class="league-rewards">
-                        <span class="reward-tag"><i class="fas fa-crosshairs"></i> +5 вызовов</span>
-                        <span class="reward-tag"><i class="fas fa-lock-open"></i> Доступ в закрытый чат</span>
-                        <span class="reward-tag"><i class="fas fa-trophy"></i> Топ 50</span>
-                    </div>
-                </div>
-            </div>
-
-            <div class="league-card" style="border-left-color: #9400d3;" onclick="window.location.href='rating.html?league=elite'">
-                <div class="league-icon"><i class="fas fa-dragon" style="color:#9400d3;"></i></div>
-                <div class="league-info">
-                    <div class="league-name"><span class="league-elite">🐉 ЭЛИТНАЯ ЛИГА</span></div>
-                    <div class="league-range"><i class="fas fa-chart-simple"></i> 3500 – 4999 FRS | <i class="fas fa-crown"></i> Легенды любительского спорта</div>
-                    <div class="league-rewards">
-                        <span class="reward-tag"><i class="fas fa-crosshairs"></i> +10 вызовов</span>
-                        <span class="reward-tag"><i class="fas fa-star"></i> Премиум-значок</span>
-                        <span class="reward-tag"><i class="fas fa-calendar"></i> Приоритет в событиях</span>
-                    </div>
-                </div>
-            </div>
-
-            <div class="league-card" style="border-left-color: #ff4500;" onclick="window.location.href='rating.html?league=legendary'">
-                <div class="league-icon"><i class="fas fa-skull" style="color:#ff4500;"></i></div>
-                <div class="league-info">
-                    <div class="league-name"><span class="league-legendary">⚡ ЛЕГЕНДАРНАЯ ЛИГА</span></div>
-                    <div class="league-range"><i class="fas fa-chart-simple"></i> 5000+ FRS | <i class="fas fa-infinity"></i> Абсолютная элита</div>
-                    <div class="league-rewards">
-                        <span class="reward-tag"><i class="fas fa-gem"></i> Премиум бесплатно</span>
-                        <span class="reward-tag"><i class="fab fa-telegram"></i> Публикация в ТГ-канале</span>
-                        <span class="reward-tag"><i class="fas fa-handshake"></i> Партнёрские предложения</span>
-                    </div>
-                </div>
-            </div>
+        <div class="leagues-grid" id="leaguesGrid">
+            <!-- Заполняется через JS -->
         </div>
 
         <div class="frs-calc">
@@ -780,8 +799,9 @@
             </div>
         </div>
     </footer>
- <!-- Нижнее мобильное меню -->
-<div id="mobileBottomNavContainer"></div>
+
+    <div id="mobileBottomNavContainer"></div>
+
     <script type="importmap">
         {
             "imports": {
@@ -810,6 +830,84 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
 
+        // ===== ДАННЫЕ ЛИГ =====
+        const LEAGUES = [
+            {
+                id: 'bronze',
+                name: 'БРОНЗОВАЯ ЛИГА',
+                minFrs: 0,
+                maxFrs: 499,
+                icon: './league-icons/bronze.png',
+                color: '#cd7f32',
+                range: '0 – 499 FRS',
+                desc: 'Начальный уровень',
+                rewards: ['Доступ в рейтинг']
+            },
+            {
+                id: 'silver',
+                name: 'СЕРЕБРЯНАЯ ЛИГА',
+                minFrs: 500,
+                maxFrs: 999,
+                icon: './league-icons/silver.png',
+                color: '#c0c0c0',
+                range: '500 – 999 FRS',
+                desc: 'Первые достижения',
+                rewards: ['+1 вызов в месяц', 'Серебряный бейдж']
+            },
+            {
+                id: 'gold',
+                name: 'ЗОЛОТАЯ ЛИГА',
+                minFrs: 1000,
+                maxFrs: 1999,
+                icon: './league-icons/gold.png',
+                color: '#ffd700',
+                range: '1000 – 1999 FRS',
+                desc: 'Уважение сообщества',
+                rewards: ['+3 вызова', 'Золотой бейдж', 'Топ 100']
+            },
+            {
+                id: 'diamond',
+                name: 'АЛМАЗНАЯ ЛИГА',
+                minFrs: 2000,
+                maxFrs: 3499,
+                icon: './league-icons/diamond.png',
+                color: '#00ffff',
+                range: '2000 – 3499 FRS',
+                desc: 'Элита любителей',
+                rewards: ['+5 вызовов', 'Доступ в закрытый чат', 'Топ 50']
+            },
+            {
+                id: 'elite',
+                name: 'ЭЛИТНАЯ ЛИГА',
+                minFrs: 3500,
+                maxFrs: 4999,
+                icon: './league-icons/elite.png',
+                color: '#9400d3',
+                range: '3500 – 4999 FRS',
+                desc: 'Легенды любительского спорта',
+                rewards: ['+10 вызовов', 'Премиум-значок', 'Приоритет в событиях']
+            },
+            {
+                id: 'legendary',
+                name: 'ЛЕГЕНДАРНАЯ ЛИГА',
+                minFrs: 5000,
+                maxFrs: Infinity,
+                icon: './league-icons/legendary.png',
+                color: '#ff4500',
+                range: '5000+ FRS',
+                desc: 'Абсолютная элита',
+                rewards: ['Премиум бесплатно', 'Публикация в ТГ-канале', 'Партнёрские предложения']
+            }
+        ];
+
+        function getLeagueByFrs(frs) {
+            return LEAGUES.find(l => frs >= l.minFrs && frs < l.maxFrs + 1);
+        }
+
+        function getLeagueIconPath(id) {
+            return `./league-icons/${id}.png`;
+        }
+
         async function updateHeaderBalance() {
             const user = auth.currentUser;
             const balanceDiv = document.getElementById('balanceIndicator');
@@ -827,19 +925,97 @@
             }
         }
 
-        onAuthStateChanged(auth, (user) => {
+        function renderLeagues(currentFrs) {
+            const grid = document.getElementById('leaguesGrid');
+            grid.innerHTML = '';
+
+            LEAGUES.forEach((league, index) => {
+                const isCurrent = currentFrs !== null && currentFrs >= league.minFrs && (currentFrs <= league.maxFrs || league.maxFrs === Infinity);
+                const iconPath = getLeagueIconPath(league.id);
+
+                const rewardsHtml = league.rewards.map(r => 
+                    `<span class="reward-tag"><i class="fas fa-gift"></i> ${r}</span>`
+                ).join('');
+
+                const card = document.createElement('div');
+                card.className = `league-card ${isCurrent ? 'current' : ''}`;
+                card.style.borderLeftColor = league.color;
+                card.style.animation = `fadeInUp 0.5s ease ${index * 0.1}s both`;
+                card.innerHTML = `
+                    <div class="league-icon">
+                        <img src="${iconPath}" alt="${league.name}" onerror="this.style.display='none'; this.parentElement.innerHTML='<i class=\\'fas fa-medal\\' style=\\'font-size: 2.5rem; color: ${league.color};\\'></i>';">
+                    </div>
+                    <div class="league-info">
+                        <div class="league-name">
+                            <span style="color: ${league.color};">${league.name}</span>
+                        </div>
+                        <div class="league-range">
+                            <i class="fas fa-chart-simple"></i> ${league.range} | <i class="fas fa-users"></i> ${league.desc}
+                        </div>
+                        <div class="league-rewards">
+                            ${rewardsHtml}
+                        </div>
+                    </div>
+                `;
+                card.onclick = () => window.location.href = `rating.html?league=${league.id}`;
+                grid.appendChild(card);
+            });
+        }
+
+        function updateCurrentLeague(frs) {
+            const banner = document.getElementById('currentLeagueBanner');
+            const nameEl = document.getElementById('currentLeagueName');
+            const iconEl = document.getElementById('currentLeagueIcon');
+            const frsEl = document.getElementById('currentFrs');
+
+            if (frs === null || frs === undefined) {
+                banner.style.display = 'none';
+                return;
+            }
+
+            const league = getLeagueByFrs(frs);
+            if (!league) {
+                banner.style.display = 'none';
+                return;
+            }
+
+            banner.style.display = 'flex';
+            nameEl.textContent = league.name;
+            iconEl.src = getLeagueIconPath(league.id);
+            iconEl.onerror = () => {
+                iconEl.style.display = 'none';
+                iconEl.parentElement.innerHTML = `<i class="fas fa-medal" style="font-size: 1.8rem; color: ${league.color};"></i>`;
+            };
+            frsEl.textContent = frs;
+        }
+
+        // ===== ИНИЦИАЛИЗАЦИЯ =====
+        onAuthStateChanged(auth, async (user) => {
             if (user) {
                 setTimeout(updateHeaderBalance, 500);
+                
+                try {
+                    const userDoc = await getDoc(doc(db, "fighters", user.uid));
+                    const data = userDoc.data();
+                    const frs = data?.frs || 0;
+                    renderLeagues(frs);
+                    updateCurrentLeague(frs);
+                } catch (err) {
+                    console.error('Ошибка загрузки FRS:', err);
+                    renderLeagues(null);
+                    updateCurrentLeague(null);
+                }
             } else {
                 const balanceDiv = document.getElementById('balanceIndicator');
                 if (balanceDiv) balanceDiv.style.display = 'none';
+                renderLeagues(null);
+                updateCurrentLeague(null);
             }
         });
 
         const plusBtn = document.getElementById('balancePlusBtn');
         if (plusBtn) plusBtn.onclick = () => window.location.href = 'shop.html';
 
-        // Бургер-меню
         const menuToggle = document.getElementById('menuToggle');
         const navLinks = document.getElementById('navLinks');
         if (menuToggle && navLinks) {
@@ -853,13 +1029,6 @@
                 });
             });
         }
-        
-        // Анимация появления карточек с задержкой
-        const cards = document.querySelectorAll('.league-card');
-        cards.forEach((card, index) => {
-            card.style.animation = `fadeInUp 0.5s ease ${index * 0.1}s both`;
-        });
     </script>
-    
 </body>
 </html>
