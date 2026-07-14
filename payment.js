@@ -5,6 +5,8 @@
 import { initializeApp } from "firebase/app";
 import { getFirestore, doc, setDoc, getDoc, updateDoc, collection, addDoc, query, where, getDocs, serverTimestamp, runTransaction } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
+// ===== ДОБАВЛЕНО: ИМПОРТ ДЛЯ PUSH-УВЕДОМЛЕНИЙ =====
+import { notifyAboutPremium } from './push-sender.js';
 
 const firebaseConfig = {
     apiKey: "AIzaSyDUGYJY7pX7q02MS5SACMIIQXpjpQ97mPw",
@@ -197,6 +199,9 @@ export async function applyProduct(userId, product, orderId) {
             const currentFree = userData.freeChallenges || 0;
             updates.freeChallenges = currentFree + 5;
             updates.lastPremiumRefresh = new Date();
+            
+            // ===== ДОБАВЛЕНО: УВЕДОМЛЕНИЕ О ПРЕМИУМЕ =====
+            await notifyAboutPremium(userId, 'activated');
             break;
         }
         case 'pack': {
@@ -216,6 +221,9 @@ export async function applyProduct(userId, product, orderId) {
             }
             updates.totalPaid = (userData.totalPaid || 0) + product.price;
             updates.lastPremiumRefresh = new Date();
+            
+            // ===== ДОБАВЛЕНО: УВЕДОМЛЕНИЕ О ПРЕМИУМЕ =====
+            await notifyAboutPremium(userId, 'activated');
             break;
         }
         default:

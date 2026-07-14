@@ -810,6 +810,8 @@
         import { getFirestore, collection, query, where, getDocs, updateDoc, doc, setDoc, getDoc, orderBy, addDoc, deleteDoc, Timestamp } from "firebase/firestore";
         import { getAuth, onAuthStateChanged } from "firebase/auth";
         import { showError, handleFirebaseError, withErrorHandling } from './error-handler.js';
+        // ===== ДОБАВЛЕНО: ИМПОРТ ДЛЯ PUSH-УВЕДОМЛЕНИЙ =====
+        import { notifyAboutChallenge, notifyAboutChallengeAccepted } from './push-sender.js';
 
         const firebaseConfig = {
             apiKey: "AIzaSyDUGYJY7pX7q02MS5SACMIIQXpjpQ97mPw",
@@ -1063,6 +1065,9 @@ function initTabs() {
                             lastMessageTime: new Date()
                         });
                     }
+
+                    // ===== ДОБАВЛЕНО: УВЕДОМЛЕНИЕ О ПРИНЯТИИ ВЫЗОВА =====
+                    await notifyAboutChallengeAccepted(challenge.fromUserId, challenge.toUserId, challenge.toName || 'Соперник');
                 }
 
                 alert(`✅ Вызов ${newStatus === 'accepted' ? 'принят' : 'отклонён'}`);
@@ -1250,6 +1255,9 @@ function initTabs() {
                     createdAt: new Date(),
                     updatedAt: new Date()
                 });
+
+                // ===== ДОБАВЛЕНО: УВЕДОМЛЕНИЕ О ВЫЗОВЕ =====
+                await notifyAboutChallenge(currentUser.uid, userId, currentUserData?.name || 'Боец');
 
                 if (freeChallenges > 0) {
                     await updateDoc(doc(db, "fighters", currentUser.uid), {

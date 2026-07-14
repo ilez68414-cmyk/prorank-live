@@ -20,7 +20,7 @@ const db = getFirestore(app);
 const auth = getAuth(app);
 
 // ===== ВАШ VAPID КЛЮЧ (получить в Firebase Console → Project Settings → Cloud Messaging) =====
-const VAPID_KEY = 'ВАШ_VAPID_КЛЮЧ';
+const VAPID_KEY = 'BEc0VMnnJAe2-6mi4JKR8fu6XJzf8C7a9znurNwYahcJ9nsoNlrcfCcvD2mRCKpGDSpjsG-uW1qWWHarLpJnXsI';
 
 // ===== ПРОВЕРКА ПОДДЕРЖКИ =====
 export function isPushSupported() {
@@ -36,7 +36,6 @@ export async function requestNotificationPermission() {
         return null;
     }
 
-    // Проверяем текущий статус
     if (Notification.permission === 'denied') {
         console.log('❌ Разрешение на уведомления отклонено');
         return null;
@@ -47,7 +46,6 @@ export async function requestNotificationPermission() {
         return await subscribeToPush();
     }
 
-    // Запрашиваем разрешение
     const permission = await Notification.requestPermission();
     if (permission !== 'granted') {
         console.log('❌ Пользователь отклонил уведомления');
@@ -66,18 +64,14 @@ export async function subscribeToPush() {
 
     try {
         const registration = await navigator.serviceWorker.ready;
-        
-        // Проверяем существующую подписку
         let subscription = await registration.pushManager.getSubscription();
         
         if (subscription) {
             console.log('✅ Подписка уже существует');
-            // Обновляем в Firestore
             await saveSubscription(subscription);
             return subscription;
         }
 
-        // Создаём новую подписку
         subscription = await registration.pushManager.subscribe({
             userVisibleOnly: true,
             applicationServerKey: VAPID_KEY
@@ -117,7 +111,7 @@ async function saveSubscription(subscription) {
 // ===== ОТПИСКА ОТ PUSH =====
 export async function unsubscribeFromPush() {
     if (!isPushSupported()) {
-        return;
+        return false;
     }
 
     try {
@@ -129,7 +123,6 @@ export async function unsubscribeFromPush() {
             console.log('✅ Отписка успешна');
         }
 
-        // Удаляем из Firestore
         const user = auth.currentUser;
         if (user) {
             await setDoc(doc(db, "users", user.uid, "push_subscription", "default"), {
@@ -137,8 +130,11 @@ export async function unsubscribeFromPush() {
                 unsubscribedAt: new Date()
             });
         }
+        
+        return true;
     } catch (err) {
         console.error('❌ Ошибка отписки:', err);
+        return false;
     }
 }
 
@@ -159,6 +155,19 @@ export async function getPushStatus() {
     } catch (err) {
         console.error('❌ Ошибка проверки статуса:', err);
         return { supported: true, subscribed: false, permission: Notification.permission };
+    }
+}
+
+// ===== ПРОВЕРКА, ПОДПИСАН ЛИ ПОЛЬЗОВАТЕЛЬ =====
+export async function isUserSubscribed() {
+    if (!isPushSupported()) return false;
+    try {
+        const registration = await navigator.serviceWorker.ready;
+        const subscription = await registration.pushManager.getSubscription();
+        return !!subscription;
+    } catch (err) {
+        console.error('Ошибка проверки подписки:', err);
+        return false;
     }
 }
 

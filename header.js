@@ -106,6 +106,10 @@ function createIndicators() {
             <span class="partner-wallet-amount" id="partnerWalletAmount">0 ₽</span>
             <i class="fas fa-chevron-right" style="font-size: 0.7rem;"></i>
         </div>
+        <!-- ===== КНОПКА УВЕДОМЛЕНИЙ ===== -->
+        <button class="notification-btn" id="notificationToggle" style="display: none;" title="Включить уведомления">
+            <i class="fas fa-bell"></i>
+        </button>
     `;
     
     const menuToggle = document.getElementById('menuToggle');
@@ -121,6 +125,102 @@ function createIndicators() {
     
     const plusBtn = document.getElementById('balancePlusBtn');
     if (plusBtn) plusBtn.onclick = () => window.location.href = 'shop.html';
+    
+    // Инициализация кнопки уведомлений
+    initNotificationButton();
+}
+
+// ===== КНОПКА УВЕДОМЛЕНИЙ (TOGGLE) =====
+async function initNotificationButton() {
+    const btn = document.getElementById('notificationToggle');
+    if (!btn) return;
+    
+    const user = auth.currentUser;
+    if (!user) {
+        btn.style.display = 'none';
+        return;
+    }
+    
+    try {
+        const { isPushSupported, getPushStatus, subscribeToPush, unsubscribeFromPush } = await import('./push-notifications.js');
+        
+        if (!isPushSupported()) {
+            btn.style.display = 'none';
+            return;
+        }
+        
+        const status = await getPushStatus();
+        
+        // Обновляем внешний вид кнопки
+        function updateButtonUI(isSubscribed, permission = 'granted') {
+            if (permission === 'denied') {
+                btn.innerHTML = '<i class="fas fa-bell-slash" style="color: #dc2626;"></i>';
+                btn.title = 'Уведомления заблокированы в браузере';
+                btn.disabled = true;
+                btn.style.opacity = '0.5';
+                btn.style.cursor = 'not-allowed';
+                return;
+            }
+            
+            if (isSubscribed) {
+                btn.innerHTML = '<i class="fas fa-bell" style="color: #16a34a;"></i>';
+                btn.title = 'Уведомления включены (нажмите чтобы отключить)';
+                btn.disabled = false;
+                btn.style.opacity = '1';
+                btn.style.cursor = 'pointer';
+            } else {
+                btn.innerHTML = '<i class="fas fa-bell" style="color: #888;"></i>';
+                btn.title = 'Уведомления выключены (нажмите чтобы включить)';
+                btn.disabled = false;
+                btn.style.opacity = '1';
+                btn.style.cursor = 'pointer';
+            }
+        }
+        
+        // Начальное состояние
+        const isSubscribed = status.subscribed && status.permission === 'granted';
+        updateButtonUI(isSubscribed, status.permission);
+        btn.style.display = 'flex';
+        
+        // Клик — переключение
+        btn.onclick = async () => {
+            if (btn.disabled) return;
+            
+            const currentStatus = await getPushStatus();
+            
+            // Если уведомления заблокированы — не даём ничего сделать
+            if (currentStatus.permission === 'denied') {
+                alert('Уведомления заблокированы в браузере. Разрешите их в настройках браузера.');
+                return;
+            }
+            
+            const currentlySubscribed = currentStatus.subscribed && currentStatus.permission === 'granted';
+            
+            if (currentlySubscribed) {
+                // Отключаем уведомления
+                const result = await unsubscribeFromPush();
+                if (result) {
+                    updateButtonUI(false);
+                    console.log('🔕 Уведомления отключены');
+                } else {
+                    alert('Не удалось отключить уведомления');
+                }
+            } else {
+                // Включаем уведомления
+                const result = await subscribeToPush();
+                if (result) {
+                    updateButtonUI(true);
+                    console.log('🔔 Уведомления включены');
+                } else {
+                    alert('Не удалось включить уведомления');
+                }
+            }
+        };
+        
+    } catch (err) {
+        console.error('Ошибка инициализации кнопки уведомлений:', err);
+        btn.style.display = 'none';
+    }
 }
 
 window.updateHeaderBalance = async function() {
@@ -266,7 +366,7 @@ async function renderMobileBottomNav() {
                     { text: 'Премиум и вызовы', icon: 'fa-gem', url: 'shop.html' },
                     { text: 'Кинуть вызов', icon: 'fa-fist-raised', url: 'challenges.html' },
                     { text: 'Мой рейтинг', icon: 'fa-chart-line', url: 'rating.html' },
-                    { text: 'Лиги', icon: 'fa-trophy', url: 'leagues.html' },      // ← ДОБАВИТЬ
+                    { text: 'Лиги', icon: 'fa-trophy', url: 'leagues.html' },
                     { text: 'Кошелёк', icon: 'fa-wallet', url: 'buyer-wallet.html' },
                     { text: 'Мои заказы', icon: 'fa-box', url: 'my-orders.html' },
                     { text: 'О проекте', icon: 'fa-info-circle', url: 'about.html' }
@@ -404,23 +504,7 @@ function escapeHtml(str) {
     if (!str) return '';
     return str;
 }
-// ===== ИНИЦИАЛИЗАЦИЯ PUSH-УВЕДОМЛЕНИЙ =====
-async function initPushNotifications() {
-    // Проверяем, авторизован ли пользователь
-    const user = auth.currentUser;
-    if (!user) return;
 
-    // Проверяем, есть ли уже разрешение
-    const status = await getPushStatus();
-    
-    // Если разрешение уже есть — подписываемся
-    if (status.permission === 'granted' && !status.subscribed) {
-        await subscribeToPush();
-    }
-
-    // Добавляем кнопку для ручного включения (если нужно)
-    // Можно добавить в меню или в настройки
-}
 async function initHeader() {
     ensureMobileNavContainer();
     

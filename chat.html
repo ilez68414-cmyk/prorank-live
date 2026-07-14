@@ -332,6 +332,8 @@
         import { getFirestore, doc, getDoc, collection, query, orderBy, onSnapshot, addDoc, updateDoc } from "firebase/firestore";
         import { getAuth, onAuthStateChanged } from "firebase/auth";
         import { showError, handleFirebaseError, withErrorHandling } from './error-handler.js';
+        // ===== ДОБАВЛЕНО: ИМПОРТ ДЛЯ PUSH-УВЕДОМЛЕНИЙ =====
+        import { notifyAboutNewMessage } from './push-sender.js';
 
 
         const firebaseConfig = {
@@ -729,6 +731,16 @@
             }
             
             await addDoc(messagesRef, messageData);
+
+            // ===== ДОБАВЛЕНО: УВЕДОМЛЕНИЕ О НОВОМ СООБЩЕНИИ =====
+            const chatSnapForNotify = await getDoc(doc(db, "chats", chatId));
+            const chatDataForNotify = chatSnapForNotify.data();
+            const participantsForNotify = chatDataForNotify.participants || [];
+            const otherIdForNotify = participantsForNotify.find(id => id !== currentUser.uid);
+
+            if (otherIdForNotify) {
+                await notifyAboutNewMessage(otherIdForNotify, userName, text, chatId);
+            }
             
             const chatRef = doc(db, "chats", chatId);
             const chatSnap = await getDoc(chatRef);

@@ -4,6 +4,8 @@ import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { ensureUserFields, getAvailableBadges, selectBadge, getSelectedBadge, ALL_BADGES, getBadgeImage } from './payment.js';
 import { applyAllPremiumBonuses } from './premium.js';
 import { showError, handleFirebaseError, withErrorHandling } from './error-handler.js';
+// ===== ДОБАВЛЕНО: ИМПОРТ ДЛЯ PUSH-УВЕДОМЛЕНИЙ =====
+import { notifyAboutPremium } from './push-sender.js';
 
 const firebaseConfig = {
     apiKey: "AIzaSyDUGYJY7pX7q02MS5SACMIIQXpjpQ97mPw",
@@ -79,6 +81,9 @@ async function checkAndAwardLeagueRewards(userId, oldFrs, newFrs) {
                 premiumUntil: premiumUntil
             });
             showError(`🎉 ПОЗДРАВЛЯЕМ! Вы достигли ЛЕГЕНДАРНОЙ ЛИГИ и получили ПРЕМИУМ на ${newLeague.reward.days} дней!`, 'success');
+            
+            // ===== ДОБАВЛЕНО: УВЕДОМЛЕНИЕ О ПРЕМИУМЕ =====
+            await notifyAboutPremium(userId, 'activated');
         }
         
         if (window.updateHeaderBalance) window.updateHeaderBalance();
@@ -98,7 +103,10 @@ function updateLeagueDisplay(frs) {
     
     if (!leagueBadge) return;
     
-    leagueIcon.className = `fas ${league.icon}`;
+    // Используем PNG вместо Font Awesome
+    const iconPath = getLeagueIconPath(league.icon);
+    leagueIcon.className = ''; // убираем старый класс
+    leagueIcon.innerHTML = `<img src="${iconPath}" alt="${league.name}" style="width: 24px; height: 24px; object-fit: contain; display: inline-block;">`;
     leagueIcon.style.color = league.color;
     leagueName.innerText = `${league.name} ЛИГА`;
     
@@ -118,6 +126,32 @@ function updateLeagueDisplay(frs) {
         progressBar.style.width = '100%';
         progressText.innerText = `Максимальная лига! 🔥`;
     }
+}
+
+// Вспомогательная функция для получения пути к иконке лиги
+function getLeagueIconPath(leagueName) {
+    const icons = {
+        'fa-medal': 'bronze.png',
+        'fa-medal': 'silver.png',   // будет перезаписан ниже
+        'fa-crown': 'gold.png',
+        'fa-gem': 'diamond.png',
+        'fa-dragon': 'elite.png',
+        'fa-skull': 'legendary.png'
+    };
+    // Уточняем по имени
+    const leagueMap = {
+        'БРОНЗОВАЯ': 'bronze.png',
+        'СЕРЕБРЯНАЯ': 'silver.png',
+        'ЗОЛОТАЯ': 'gold.png',
+        'АЛМАЗНАЯ': 'diamond.png',
+        'ЭЛИТНАЯ': 'elite.png',
+        'ЛЕГЕНДАРНАЯ': 'legendary.png'
+    };
+    const league = getLeague(0);
+    // Более точное определение
+    const name = league.name || '';
+    const fileName = leagueMap[name] || 'bronze.png';
+    return `./league-icons/${fileName}`;
 }
 
 async function uploadAvatar(file, userId) {
@@ -487,15 +521,19 @@ async function updateProfileName() {
         const league = getLeague(fighter.frs || 0);
         const selectedBadgeId = await getSelectedBadge(currentFighterId);
         
+        // === Имя ===
         const nameEl = document.getElementById('fighterName');
         if (nameEl) nameEl.textContent = fighter.name || 'Без имени';
         
+        // === Лига (справа) — используем PNG ===
         const leagueIcon = document.getElementById('leagueIcon');
         if (leagueIcon) {
-            leagueIcon.className = `fas ${league.icon} league-icon`;
-            leagueIcon.style.color = league.color;
+            const iconPath = getLeagueImagePath(league.name);
+            leagueIcon.className = 'league-icon';
+            leagueIcon.innerHTML = `<img src="${iconPath}" alt="${league.name}" style="width: 34px; height: 34px; object-fit: contain; display: inline-block; vertical-align: middle;">`;
         }
         
+        // === Бейдж (слева) ===
         const badgeImg = document.getElementById('profileBadgeImg');
         const badgeEmoji = document.getElementById('badgeEmoji');
         const badgeWrapper = document.getElementById('badgeWrapper');
@@ -532,6 +570,19 @@ async function updateProfileName() {
         const nameEl = document.getElementById('fighterName');
         if (nameEl) nameEl.textContent = fighter.name || 'Без имени';
     }
+}
+
+// ===== ВСПОМОГАТЕЛЬНАЯ ФУНКЦИЯ ДЛЯ ИКОНОК ЛИГ (УНИКАЛЬНОЕ ИМЯ) =====
+function getLeagueImagePath(leagueName) {
+    const leagueMap = {
+        'БРОНЗОВАЯ': 'bronze.png',
+        'СЕРЕБРЯНАЯ': 'silver.png',
+        'ЗОЛОТАЯ': 'gold.png',
+        'АЛМАЗНАЯ': 'diamond.png',
+        'ЭЛИТНАЯ': 'elite.png',
+        'ЛЕГЕНДАРНАЯ': 'legendary.png'
+    };
+    return `./league-icons/${leagueMap[leagueName] || 'bronze.png'}`;
 }
 
 // ============================================================

@@ -232,4 +232,7 @@ self.addEventListener('message', event => {
   }
 });
 
+// VAPID-ключ для push-уведомлений
+const VAPID_KEY = 'BEc0VMnnJAe2-6mi4JKR8fu6XJzf8C7a9znurNwYahcJ9nsoNlrcfCcvD2mRCKpGDSpjsG-uW1qWWHarLpJnXsI';
+
 console.log('[SW] Service Worker загружен, версия:', CACHE_NAME);

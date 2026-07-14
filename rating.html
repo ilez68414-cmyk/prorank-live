@@ -1078,6 +1078,18 @@
             return { name: 'БРОНЗОВАЯ', icon: 'fa-medal', color: '#cd7f32' };
         }
 
+        function getLeagueIconPath(leagueName) {
+            const leagueMap = {
+                'БРОНЗОВАЯ': 'bronze.png',
+                'СЕРЕБРЯНАЯ': 'silver.png',
+                'ЗОЛОТАЯ': 'gold.png',
+                'АЛМАЗНАЯ': 'diamond.png',
+                'ЭЛИТНАЯ': 'elite.png',
+                'ЛЕГЕНДАРНАЯ': 'legendary.png'
+            };
+            return `./league-icons/${leagueMap[leagueName] || 'bronze.png'}`;
+        }
+
         async function updateHeaderBalance() {
             const user = auth.currentUser;
             const balanceDiv = document.getElementById('balanceIndicator');
@@ -1185,7 +1197,8 @@
                 
                 // Имя + лига + премиум (премиум СЛЕВА)
                 const league = getLeague(f.frs || 0);
-                const leagueIcon = `<i class="fas ${league.icon}" style="color:${league.color}; font-size:0.5rem;"></i>`;
+                const iconPath = getLeagueIconPath(league.name);
+                const leagueIcon = `<img src="${iconPath}" alt="${league.name}" style="width:14px; height:14px; object-fit:contain; display:inline-block; vertical-align:middle;">`;
                 const sportIcon = f.sport === 'Бокс' ? 'fa-fist-raised' : (f.sport === 'Борьба' ? 'fa-handshake' : 'fa-shield-alt');
                 const isPremium = f.premium === true;
                 const premiumBadge = isPremium ? `<span class="premium-badge">👑</span>` : '';
