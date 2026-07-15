@@ -2,14 +2,32 @@
 // ОТПРАВКА PUSH-УВЕДОМЛЕНИЙ
 // ============================================================
 
+import { initializeApp } from "firebase/app";
 import { getFirestore, doc, getDoc } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
-// Временно отключаем Cloud Functions, используем Service Worker
-// import { getFunctions, httpsCallable } from "firebase/functions";
 
-const db = getFirestore();
-const auth = getAuth();
-// const functions = getFunctions();
+// ===== КОНФИГ FIREBASE (ДОЛЖЕН БЫТЬ ЗДЕСЬ!) =====
+const firebaseConfig = {
+    apiKey: "AIzaSyDUGYJY7pX7q02MS5SACMIIQXpjpQ97mPw",
+    authDomain: "proranklive.firebaseapp.com",
+    projectId: "proranklive",
+    storageBucket: "proranklive.firebasestorage.app",
+    messagingSenderId: "716836144015",
+    appId: "1:716836144015:web:f1575147750608d0f881fa"
+};
+
+// ===== ИНИЦИАЛИЗАЦИЯ (ЕСЛИ ЕЩЁ НЕ ИНИЦИАЛИЗИРОВАНА) =====
+let app;
+try {
+    app = initializeApp(firebaseConfig);
+    console.log('✅ Firebase инициализирован из push-sender.js');
+} catch (err) {
+    // Если уже инициализирован — просто используем существующий
+    console.log('ℹ️ Firebase уже инициализирован');
+}
+
+const db = getFirestore(app);
+const auth = getAuth(app);
 
 // ===== ПОЛУЧИТЬ ПОДПИСКУ ПОЛЬЗОВАТЕЛЯ =====
 export async function getUserPushSubscription(userId) {
@@ -34,7 +52,12 @@ export async function sendPushNotification(userId, title, body, url = '/', icon 
     }
     
     try {
-        // Отправляем через Service Worker (работает без сервера)
+        // Проверяем, что Service Worker готов
+        if (!('serviceWorker' in navigator)) {
+            console.warn('⚠️ Service Worker не поддерживается');
+            return false;
+        }
+        
         const registration = await navigator.serviceWorker.ready;
         await registration.showNotification(title, {
             body: body,

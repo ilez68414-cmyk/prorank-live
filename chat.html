@@ -118,7 +118,6 @@
             -webkit-user-select: none;
         }
         
-        /* Свайп-индикатор */
         .message.swiping {
             transform: translateX(20px);
             background: rgba(251,191,36,0.15);
@@ -315,7 +314,6 @@
         </div>
     </div>
 
-<<!-- Контейнер для ошибок — ВСЕГДА СВЕРХУ -->
 <div id="errorContainer" style="position: fixed; top: 15px; left: 50%; transform: translateX(-50%); z-index: 9999; max-width: 90%; width: 480px; padding: 14px 20px; border-radius: 16px; font-weight: 600; font-size: 0.9rem; animation: slideDown 0.3s ease; box-shadow: 0 10px 30px rgba(0,0,0,0.4); backdrop-filter: blur(8px); display: none; text-align: center; border: 1px solid rgba(255,255,255,0.1);"></div>
 
     <script type="importmap">
@@ -332,9 +330,9 @@
         import { getFirestore, doc, getDoc, collection, query, orderBy, onSnapshot, addDoc, updateDoc } from "firebase/firestore";
         import { getAuth, onAuthStateChanged } from "firebase/auth";
         import { showError, handleFirebaseError, withErrorHandling } from './error-handler.js';
-        // ===== ДОБАВЛЕНО: ИМПОРТ ДЛЯ PUSH-УВЕДОМЛЕНИЙ =====
+        
+        // ===== ИСПРАВЛЕНО: импортируем функцию из push-sender.js =====
         import { notifyAboutNewMessage } from './push-sender.js';
-
 
         const firebaseConfig = {
             apiKey: "AIzaSyDUGYJY7pX7q02MS5SACMIIQXpjpQ97mPw",
@@ -354,19 +352,9 @@
         let unsubscribe = null;
         let currentReplyTo = null;
 
-        // ===== СВАЙП ДЛЯ ОТВЕТА =====
-        let swipeData = {
-            element: null,
-            startX: 0,
-            startY: 0,
-            isSwiping: false,
-            threshold: 60
-        };
-
         function setupSwipeReply() {
             const messagesArea = document.getElementById('messagesArea');
             
-            // Обработка touch-событий (телефон)
             messagesArea.addEventListener('touchstart', (e) => {
                 const messageEl = e.target.closest('.message.other');
                 if (!messageEl || messageEl.closest('.reply-preview')) return;
@@ -385,7 +373,6 @@
                 const deltaX = touch.clientX - swipeData.startX;
                 const deltaY = touch.clientY - swipeData.startY;
                 
-                // Если свайп вертикальный - отключаем
                 if (Math.abs(deltaY) > 20 && Math.abs(deltaY) > Math.abs(deltaX)) {
                     resetSwipe();
                     return;
@@ -399,7 +386,6 @@
                     swipeData.element.style.borderLeft = `4px solid rgba(251,191,36,${progress})`;
                     swipeData.element.style.background = `rgba(251,191,36,${progress * 0.12})`;
                     
-                    // Показываем стрелку
                     let hint = swipeData.element.querySelector('.reply-hint');
                     if (!hint) {
                         hint = document.createElement('div');
@@ -419,7 +405,6 @@
                 const deltaX = touch.clientX - swipeData.startX;
                 
                 if (swipeData.isSwiping && deltaX > swipeData.threshold) {
-                    // Сработал свайп — отвечаем
                     const messageEl = swipeData.element;
                     const messageId = messageEl.dataset.messageId;
                     const messageText = messageEl.dataset.messageText;
@@ -433,7 +418,6 @@
                 resetSwipe();
             }, { passive: true });
 
-            // Обработка мыши (компьютер)
             let mouseDownEl = null;
             let mouseStartX = 0;
             
@@ -493,6 +477,14 @@
                 mouseDownEl = null;
             });
         }
+
+        let swipeData = {
+            element: null,
+            startX: 0,
+            startY: 0,
+            isSwiping: false,
+            threshold: 60
+        };
 
         function resetSwipe() {
             if (swipeData.element) {
@@ -558,7 +550,6 @@
                 return;
             }
             
-            // Обнуляем счётчик непрочитанных
             try {
                 const currentCounts = chatData.unreadCounts || {};
                 if (currentCounts[currentUser.uid] > 0) {
@@ -639,7 +630,6 @@
                 container.innerHTML = html;
                 container.scrollTop = container.scrollHeight;
                 
-                // Добавляем контекстное меню (правый клик)
                 document.querySelectorAll('.message.other').forEach(msgEl => {
                     msgEl.addEventListener('contextmenu', (e) => {
                         e.preventDefault();
@@ -732,14 +722,18 @@
             
             await addDoc(messagesRef, messageData);
 
-            // ===== ДОБАВЛЕНО: УВЕДОМЛЕНИЕ О НОВОМ СООБЩЕНИИ =====
+            // ===== УВЕДОМЛЕНИЕ О НОВОМ СООБЩЕНИИ =====
             const chatSnapForNotify = await getDoc(doc(db, "chats", chatId));
             const chatDataForNotify = chatSnapForNotify.data();
             const participantsForNotify = chatDataForNotify.participants || [];
             const otherIdForNotify = participantsForNotify.find(id => id !== currentUser.uid);
 
             if (otherIdForNotify) {
-                await notifyAboutNewMessage(otherIdForNotify, userName, text, chatId);
+                try {
+                    await notifyAboutNewMessage(otherIdForNotify, userName, text, chatId);
+                } catch (err) {
+                    console.warn('⚠️ Уведомление не отправлено:', err);
+                }
             }
             
             const chatRef = doc(db, "chats", chatId);
