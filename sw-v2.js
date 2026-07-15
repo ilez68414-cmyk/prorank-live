@@ -1,29 +1,29 @@
-// sw.js - Service Worker для PRORANK PWA
-const CACHE_NAME = 'prorank-v2.0.0'; // ← ИЗМЕНЕНО! Это форсирует обновление
+// sw-v2.js - Service Worker для PRORANK PWA (v2.0.0)
+const CACHE_NAME = 'prorank-v2.0.0';
 const OFFLINE_URL = '/prorank-live/offline.html';
 
 // ============================================================
-// ВСЕ ФАЙЛЫ ДЛЯ КЭШИРОВАНИЯ (полный список)
+// ФАЙЛЫ ДЛЯ КЭШИРОВАНИЯ (только фронтенд)
 // ============================================================
 const STATIC_FILES = [
   // === HTML СТРАНИЦЫ ===
   '/prorank-live/',
   '/prorank-live/index.html',
   '/prorank-live/about.html',
-  '/prorank-live/achievements.html',      // ← НОВОЕ
-  '/prorank-live/admin.html',             // ← НОВОЕ
-  '/prorank-live/boxing.html',            // ← НОВОЕ
+  '/prorank-live/achievements.html',
+  '/prorank-live/admin.html',
+  '/prorank-live/boxing.html',
   '/prorank-live/buyer-wallet.html',
   '/prorank-live/cart.html',
   '/prorank-live/catalog.html',
   '/prorank-live/challenges.html',
-  '/prorank-live/chat.html',              // ← НОВОЕ
+  '/prorank-live/chat.html',
   '/prorank-live/chats.html',
   '/prorank-live/disclaimer.html',
   '/prorank-live/halls.html',
   '/prorank-live/leagues.html',
   '/prorank-live/login.html',
-  '/prorank-live/mma.html',               // ← НОВОЕ
+  '/prorank-live/mma.html',
   '/prorank-live/my-orders.html',
   '/prorank-live/offline.html',
   '/prorank-live/partner-dashboard.html',
@@ -33,43 +33,39 @@ const STATIC_FILES = [
   '/prorank-live/privacy.html',
   '/prorank-live/profile.html',
   '/prorank-live/rating.html',
-  '/prorank-live/reset-password.html',    // ← НОВОЕ
+  '/prorank-live/reset-password.html',
   '/prorank-live/rules.html',
   '/prorank-live/shop.html',
   '/prorank-live/wallet.html',
-  '/prorank-live/wrestling.html',         // ← НОВОЕ
+  '/prorank-live/wrestling.html',
 
   // === JAVASCRIPT ===
   '/prorank-live/header.js',
-  '/prorank-live/script.js',              // ← НОВОЕ
-  '/prorank-live/profile.js',             // ← НОВОЕ
-  '/prorank-live/payment.js',             // ← НОВОЕ
-  '/prorank-live/wallet.js',              // ← НОВОЕ
-  '/prorank-live/premium.js',             // ← НОВОЕ
-  '/prorank-live/error-handler.js',       // ← НОВОЕ
-  '/prorank-live/push-notifications.js',  // ← НОВОЕ
-  '/prorank-live/push-sender.js',         // ← НОВОЕ
-  '/prorank-live/server.js',              // ← НОВОЕ
+  '/prorank-live/script.js',
+  '/prorank-live/profile.js',
+  '/prorank-live/payment.js',
+  '/prorank-live/wallet.js',
+  '/prorank-live/premium.js',
+  '/prorank-live/error-handler.js',
+  '/prorank-live/push-notifications.js',
+  '/prorank-live/push-sender.js',
 
   // === CSS ===
   '/prorank-live/style.css',
 
-  // === ИКОНКИ И ГРАФИКА ===
+  // === ГРАФИКА ===
   '/prorank-live/Avatar.png',
   '/prorank-live/favicon.ico',
 
-  // === ПАПКИ С ИКОНКАМИ (ВАЖНО!) ===
-  '/prorank-live/icons/icon-72.png',      // ← НОВОЕ
-  '/prorank-live/icons/icon-96.png',      // ← НОВОЕ
-  '/prorank-live/icons/icon-128.png',     // ← НОВОЕ
-  '/prorank-live/icons/icon-144.png',     // ← НОВОЕ
-  '/prorank-live/icons/icon-152.png',     // ← НОВОЕ
-  '/prorank-live/icons/icon-192.png',     // ← НОВОЕ
-  '/prorank-live/icons/icon-384.png',     // ← НОВОЕ
-  '/prorank-live/icons/icon-512.png',     // ← НОВОЕ
-  
-  // Если в папках много файлов, добавьте основные
-  // Или используйте динамическое кэширование (см. fetch ниже)
+  // === ОСНОВНЫЕ ИКОНКИ PWA ===
+  '/prorank-live/icons/icon-72.png',
+  '/prorank-live/icons/icon-96.png',
+  '/prorank-live/icons/icon-128.png',
+  '/prorank-live/icons/icon-144.png',
+  '/prorank-live/icons/icon-152.png',
+  '/prorank-live/icons/icon-192.png',
+  '/prorank-live/icons/icon-384.png',
+  '/prorank-live/icons/icon-512.png',
 
   // === MANIFEST ===
   '/prorank-live/manifest.json',
@@ -84,46 +80,23 @@ const STATIC_FILES = [
 ];
 
 // ============================================================
-// ДИНАМИЧЕСКОЕ КЭШИРОВАНИЕ ДЛЯ ПАПОК С ИКОНКАМИ
+// УСТАНОВКА
 // ============================================================
 self.addEventListener('install', event => {
   console.log('[SW] Установка v2.0.0...');
   event.waitUntil(
     caches.open(CACHE_NAME)
-      .then(async cache => {
+      .then(cache => {
         console.log('[SW] Кэширование статических файлов...');
-        try {
-          await cache.addAll(STATIC_FILES);
-          console.log('[SW] Статика закэширована');
-          
-          // Дополнительно кэшируем иконки из папок рекурсивно
-          console.log('[SW] Кэширование иконок из папок...');
-          const iconFolders = [
-            '/prorank-live/icons/',
-            '/prorank-live/league-icons/',
-            '/prorank-live/achiev-icons/',
-            '/prorank-live/functions/'
-          ];
-          
-          for (const folder of iconFolders) {
-            try {
-              const response = await fetch(folder);
-              // Это не сработает для папок, поэтому используем стратегию в fetch
-            } catch (e) {
-              console.log('[SW] Папка не доступна для предкэширования:', folder);
-            }
-          }
-          
-        } catch (err) {
-          console.error('[SW] Ошибка кэширования:', err);
-        }
+        return cache.addAll(STATIC_FILES);
       })
+      .catch(err => console.error('[SW] Ошибка кэширования:', err))
   );
   self.skipWaiting();
 });
 
 // ============================================================
-// АКТИВАЦИЯ - удаляем старые кэши
+// АКТИВАЦИЯ - удаляем все старые кэши
 // ============================================================
 self.addEventListener('activate', event => {
   console.log('[SW] Активация v2.0.0...');
@@ -138,58 +111,57 @@ self.addEventListener('activate', event => {
         })
       );
     }).then(() => {
-      // Забираем контроль над всеми клиентами
       return self.clients.claim();
     })
   );
 });
 
 // ============================================================
-// FETCH — ОБНОВЛЕННАЯ СТРАТЕГИЯ
+// FETCH - ОБНОВЛЕННАЯ СТРАТЕГИЯ
 // ============================================================
 self.addEventListener('fetch', event => {
   const url = new URL(event.request.url);
   
-  // === Firebase и внешние API — только сеть ===
-  if (url.hostname.includes('firebase') || 
+  // === ИГНОРИРУЕМ БЭКЕНД И НЕНУЖНЫЕ ФАЙЛЫ ===
+  if (url.pathname.includes('/node_modules/') ||
+      url.pathname.includes('/functions/') ||
+      url.pathname.includes('/server.js') ||
+      url.pathname.includes('/package.json') ||
+      url.pathname.includes('/package-lock.json') ||
+      url.hostname.includes('firebase') || 
       url.hostname.includes('googleapis') ||
       url.hostname.includes('cloudinary') ||
       url.hostname.includes('api.telegram.org')) {
+    event.respondWith(fetch(event.request));
     return;
   }
   
-  // === Иконки и изображения — кэш с приоритетом ===
+  // === ИКОНКИ ИЗ ПАПОК - динамическое кэширование ===
   if (url.pathname.includes('/icons/') || 
       url.pathname.includes('/league-icons/') ||
-      url.pathname.includes('/achiev-icons/') ||
-      url.pathname.includes('/functions/')) {
+      url.pathname.includes('/achiev-icons/')) {
     event.respondWith(
       caches.match(event.request)
         .then(response => {
-          if (response) {
-            return response;
-          }
-          // Если нет в кэше - грузим из сети и сохраняем
-          return fetch(event.request)
-            .then(networkResponse => {
-              if (networkResponse && networkResponse.status === 200) {
-                const clone = networkResponse.clone();
-                caches.open(CACHE_NAME).then(cache => {
-                  cache.put(event.request, clone);
-                });
-              }
-              return networkResponse;
-            })
-            .catch(() => {
-              // Если иконка не загрузилась - возвращаем заглушку
-              return new Response('', { status: 404 });
-            });
+          if (response) return response;
+          return fetch(event.request).then(networkResponse => {
+            if (networkResponse && networkResponse.status === 200) {
+              const clone = networkResponse.clone();
+              caches.open(CACHE_NAME).then(cache => {
+                cache.put(event.request, clone);
+              });
+            }
+            return networkResponse;
+          });
+        })
+        .catch(() => {
+          return new Response('', { status: 404 });
         })
     );
     return;
   }
   
-  // === HTML страницы — сеть с fallback на кэш ===
+  // === HTML СТРАНИЦЫ - сеть с fallback на кэш ===
   if (event.request.mode === 'navigate') {
     event.respondWith(
       fetch(event.request)
@@ -218,12 +190,12 @@ self.addEventListener('fetch', event => {
     return;
   }
   
-  // === Статика (CSS, JS) — кэш с обновлением из сети ===
+  // === СТАТИКА (CSS, JS) - кэш с фоновым обновлением ===
   event.respondWith(
     caches.match(event.request)
       .then(response => {
         if (response) {
-          // Фоновое обновление кэша
+          // Фоновое обновление
           fetch(event.request).then(networkResponse => {
             if (networkResponse && networkResponse.status === 200) {
               caches.open(CACHE_NAME).then(cache => {
@@ -261,7 +233,7 @@ self.addEventListener('fetch', event => {
 });
 
 // ============================================================
-// PUSH-УВЕДОМЛЕНИЯ (без изменений)
+// PUSH-УВЕДОМЛЕНИЯ
 // ============================================================
 self.addEventListener('push', event => {
   console.log('[SW] Получено push-уведомление');
@@ -337,7 +309,5 @@ self.addEventListener('message', event => {
     event.ports[0].postMessage({ version: CACHE_NAME });
   }
 });
-
-const VAPID_KEY = 'BEc0VMnnJAe2-6mi4JKR8fu6XJzf8C7a9znurNwYahcJ9nsoNlrcfCcvD2mRCKpGDSpjsG-uW1qWWHarLpJnXsI';
 
 console.log('[SW] Service Worker загружен, версия:', CACHE_NAME);
