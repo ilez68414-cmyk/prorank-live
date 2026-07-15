@@ -496,7 +496,7 @@ window.addEventListener('appinstalled', () => {
 
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/sw.js').catch(err => console.error('SW error:', err));
+        navigator.serviceWorker.register('/prorank-live/sw-v2.js').catch(err => console.error('SW error:', err));
     });
 }
 
