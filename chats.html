@@ -247,6 +247,7 @@
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             border: 1px solid rgba(251,191,36,0.15);
             animation: fadeInUp 0.4s ease both;
+            position: relative;
         }
 
         .chat-item:nth-child(1) { animation-delay: 0.05s; }
@@ -305,6 +306,7 @@
             font-size: 0.65rem;
             color: #666;
             flex-shrink: 0;
+            margin-right: 8px;
         }
 
         .unread-badge {
@@ -315,6 +317,68 @@
             padding: 2px 8px;
             border-radius: 20px;
             margin-left: 8px;
+        }
+
+        /* ===== КНОПКИ ДЕЙСТВИЙ ===== */
+        .chat-actions {
+            display: flex;
+            gap: 6px;
+            flex-shrink: 0;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+
+        .chat-item:hover .chat-actions {
+            opacity: 1;
+        }
+
+        @media (max-width: 600px) {
+            .chat-actions {
+                opacity: 1;
+            }
+        }
+
+        .chat-actions button {
+            background: rgba(255,255,255,0.05);
+            border: none;
+            color: #888;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 0.8rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .chat-actions button:hover {
+            background: rgba(251,191,36,0.15);
+            color: #fbbf24;
+        }
+
+        .chat-actions .clear-btn:hover {
+            color: #f59e0b;
+            background: rgba(251,191,36,0.15);
+        }
+
+        .chat-actions .block-btn:hover {
+            color: #ef4444;
+            background: rgba(239,68,68,0.15);
+        }
+
+        .chat-actions .delete-btn:hover {
+            color: #ef4444;
+            background: rgba(239,68,68,0.15);
+        }
+
+        .chat-item.blocked {
+            opacity: 0.5;
+        }
+
+        .chat-item.blocked .chat-last-message {
+            color: #ef4444;
         }
 
         .empty-state {
@@ -331,6 +395,88 @@
 
         .empty-state p {
             margin-top: 8px;
+        }
+
+        /* ===== МОДАЛЬНОЕ ОКНО ===== */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.7);
+            backdrop-filter: blur(8px);
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: fadeIn 0.2s ease;
+        }
+
+        .modal {
+            background: #1a1a2e;
+            border: 1px solid rgba(251,191,36,0.2);
+            border-radius: 20px;
+            padding: 32px 24px;
+            max-width: 400px;
+            width: 90%;
+            text-align: center;
+            animation: fadeInUp 0.2s ease;
+        }
+
+        .modal h3 {
+            font-size: 1.2rem;
+            margin-bottom: 8px;
+            color: #fff;
+        }
+
+        .modal p {
+            color: #888;
+            font-size: 0.9rem;
+            margin-bottom: 24px;
+            line-height: 1.5;
+        }
+
+        .modal .actions {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+        }
+
+        .modal .actions button {
+            padding: 10px 32px;
+            border-radius: 40px;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 0.9rem;
+        }
+
+        .modal .cancel-btn {
+            background: rgba(255,255,255,0.08);
+            color: #fff;
+        }
+
+        .modal .cancel-btn:hover {
+            background: rgba(255,255,255,0.15);
+        }
+
+        .modal .danger-btn {
+            background: #ef4444;
+            color: #fff;
+        }
+
+        .modal .danger-btn:hover {
+            background: #dc2626;
+            transform: scale(1.02);
+        }
+
+        .modal .warning-btn {
+            background: #f59e0b;
+            color: #000;
+        }
+
+        .modal .warning-btn:hover {
+            background: #d97706;
+            transform: scale(1.02);
         }
 
         /* ===== ПОДВАЛ ===== */
@@ -506,6 +652,12 @@
             .chat-time {
                 font-size: 0.55rem;
             }
+
+            .chat-actions button {
+                width: 30px;
+                height: 30px;
+                font-size: 0.7rem;
+            }
         }
 
         ::-webkit-scrollbar {
@@ -570,6 +722,18 @@
         </div>
     </main>
 
+    <!-- ===== МОДАЛЬНОЕ ОКНО ===== -->
+    <div id="modal" class="modal-overlay" style="display:none;">
+        <div class="modal">
+            <h3 id="modalTitle">Подтверждение</h3>
+            <p id="modalMessage">Вы уверены?</p>
+            <div class="actions">
+                <button class="cancel-btn" id="modalCancel">Отмена</button>
+                <button class="danger-btn" id="modalConfirm">Удалить</button>
+            </div>
+        </div>
+    </div>
+
     <footer class="main-footer">
         <div class="container">
             <div class="footer-inner">
@@ -595,11 +759,12 @@
             </div>
         </div>
     </footer>
- <!-- Нижнее мобильное меню -->
-<div id="mobileBottomNavContainer"></div>
 
-<!-- Контейнер для ошибок — ВСЕГДА СВЕРХУ -->
-<div id="errorContainer" style="position: fixed; top: 15px; left: 50%; transform: translateX(-50%); z-index: 9999; max-width: 90%; width: 480px; padding: 14px 20px; border-radius: 16px; font-weight: 600; font-size: 0.9rem; animation: slideDown 0.3s ease; box-shadow: 0 10px 30px rgba(0,0,0,0.4); backdrop-filter: blur(8px); display: none; text-align: center; border: 1px solid rgba(255,255,255,0.1);"></div>
+    <!-- Нижнее мобильное меню -->
+    <div id="mobileBottomNavContainer"></div>
+
+    <!-- Контейнер для ошибок -->
+    <div id="errorContainer" style="position: fixed; top: 15px; left: 50%; transform: translateX(-50%); z-index: 9999; max-width: 90%; width: 480px; padding: 14px 20px; border-radius: 16px; font-weight: 600; font-size: 0.9rem; animation: slideDown 0.3s ease; box-shadow: 0 10px 30px rgba(0,0,0,0.4); backdrop-filter: blur(8px); display: none; text-align: center; border: 1px solid rgba(255,255,255,0.1);"></div>
 
     <script type="importmap">
         {
@@ -613,8 +778,16 @@
     <script type="module" src="header.js"></script>
     <script type="module">
         import { initializeApp } from "firebase/app";
-        import { getFirestore, collection, getDocs, query, where, doc, getDoc, orderBy, updateDoc } from "firebase/firestore";
+        import { 
+            getFirestore, 
+            collection, getDocs, getDoc, 
+            query, where, orderBy, 
+            doc, updateDoc, deleteDoc, setDoc,
+            writeBatch, 
+            onSnapshot
+        } from "firebase/firestore";
         import { getAuth, onAuthStateChanged } from "firebase/auth";
+        import { showError } from './error-handler.js';
 
         const firebaseConfig = {
             apiKey: "AIzaSyDUGYJY7pX7q02MS5SACMIIQXpjpQ97mPw",
@@ -630,7 +803,140 @@
         const auth = getAuth(app);
 
         let currentUser = null;
+        let unsubscribeChats = null;
 
+        // ===== МОДАЛЬНОЕ ОКНО =====
+        let modalResolve = null;
+
+        function showModal(title, message, type = 'danger') {
+            return new Promise((resolve) => {
+                const modal = document.getElementById('modal');
+                document.getElementById('modalTitle').textContent = title;
+                document.getElementById('modalMessage').textContent = message;
+                
+                const confirmBtn = document.getElementById('modalConfirm');
+                confirmBtn.className = type === 'danger' ? 'danger-btn' : 'warning-btn';
+                confirmBtn.textContent = type === 'danger' ? 'Удалить' : 'Очистить';
+                
+                modal.style.display = 'flex';
+                modalResolve = resolve;
+            });
+        }
+
+        document.getElementById('modalCancel').addEventListener('click', () => {
+            document.getElementById('modal').style.display = 'none';
+            if (modalResolve) modalResolve(false);
+        });
+
+        document.getElementById('modalConfirm').addEventListener('click', () => {
+            document.getElementById('modal').style.display = 'none';
+            if (modalResolve) modalResolve(true);
+        });
+
+        // ===== УДАЛИТЬ ЧАТ =====
+        async function deleteChat(chatId) {
+            if (!currentUser || !chatId) return;
+            
+            const confirmed = await showModal(
+                'Удалить чат?',
+                'Все сообщения в этом чате будут удалены безвозвратно. Вы уверены?',
+                'danger'
+            );
+            if (!confirmed) return;
+
+            try {
+                await deleteDoc(doc(db, "chats", chatId));
+                showNotification('✅ Чат удалён', 'success');
+            } catch (err) {
+                console.error('❌ Ошибка удаления чата:', err);
+                showNotification('Не удалось удалить чат', 'error');
+            }
+        }
+
+        // ===== ОЧИСТИТЬ ИСТОРИЮ ЧАТА =====
+        async function clearChatHistory(chatId) {
+            if (!currentUser || !chatId) return;
+            
+            const confirmed = await showModal(
+                'Очистить историю?',
+                'Все сообщения в этом чате будут удалены, но чат останется. Вы уверены?',
+                'warning'
+            );
+            if (!confirmed) return;
+
+            try {
+                const messagesRef = collection(db, "chats", chatId, "messages");
+                const snapshot = await getDocs(messagesRef);
+                
+                const batch = writeBatch(db);
+                snapshot.forEach(doc => {
+                    batch.delete(doc.ref);
+                });
+                await batch.commit();
+                
+                await updateDoc(doc(db, "chats", chatId), {
+                    lastMessage: '',
+                    lastMessageTime: null,
+                    lastMessageAuthor: null
+                });
+                
+                showNotification('✅ История очищена', 'success');
+            } catch (err) {
+                console.error('❌ Ошибка очистки истории:', err);
+                showNotification('Не удалось очистить историю', 'error');
+            }
+        }
+
+        // ===== ЗАБЛОКИРОВАТЬ ПОЛЬЗОВАТЕЛЯ =====
+        async function blockUser(chatId, userId) {
+            if (!currentUser || !chatId || !userId) return;
+            
+            const confirmed = await showModal(
+                'Заблокировать пользователя?',
+                'Вы не сможете отправлять сообщения этому пользователю. Разблокировать можно будет позже.',
+                'danger'
+            );
+            if (!confirmed) return;
+
+            try {
+                const blockedRef = doc(db, "users", currentUser.uid, "blocked", userId);
+                await setDoc(blockedRef, {
+                    blockedAt: new Date(),
+                    userId: userId
+                });
+
+                await deleteDoc(doc(db, "chats", chatId));
+                
+                showNotification('🔒 Пользователь заблокирован', 'success');
+            } catch (err) {
+                console.error('❌ Ошибка блокировки:', err);
+                showNotification('Не удалось заблокировать', 'error');
+            }
+        }
+
+        // ===== УВЕДОМЛЕНИЯ =====
+        function showNotification(message, type = 'info') {
+            const container = document.getElementById('errorContainer');
+            if (!container) return;
+            
+            const colors = {
+                success: '#22c55e',
+                error: '#ef4444',
+                warning: '#f59e0b',
+                info: '#fbbf24'
+            };
+            
+            container.style.display = 'block';
+            container.style.background = colors[type] || colors.info;
+            container.style.color = '#000';
+            container.textContent = message;
+            
+            setTimeout(() => {
+                container.style.display = 'none';
+            }, 3000);
+        }
+
+        // ===== ОБНОВЛЕНИЕ БАЛАНСА =====
         async function updateHeaderBalance() {
             const user = auth.currentUser;
             const balanceDiv = document.getElementById('balanceIndicator');
@@ -648,20 +954,23 @@
             }
         }
 
-        async function loadChats() {
-            const container = document.getElementById('chatsList');
-            if (!currentUser) {
-                container.innerHTML = '<div class="empty-state"><i class="fas fa-lock"></i><p>Войдите, чтобы увидеть чаты</p></div>';
-                return;
+        // ===== ЗАГРУЗКА ЧАТОВ (с реальным временем) =====
+        function loadChatsRealtime() {
+            if (!currentUser) return;
+
+            if (unsubscribeChats) {
+                unsubscribeChats();
+                unsubscribeChats = null;
             }
 
-            try {
-                const q = query(
-                    collection(db, "chats"),
-                    where("participants", "array-contains", currentUser.uid),
-                    orderBy("lastMessageTime", "desc")
-                );
-                const snapshot = await getDocs(q);
+            const q = query(
+                collection(db, "chats"),
+                where("participants", "array-contains", currentUser.uid),
+                orderBy("lastMessageTime", "desc")
+            );
+
+            unsubscribeChats = onSnapshot(q, async (snapshot) => {
+                const container = document.getElementById('chatsList');
                 
                 if (snapshot.empty) {
                     container.innerHTML = `
@@ -677,10 +986,19 @@
                 let html = '';
                 for (const docSnap of snapshot.docs) {
                     const chat = docSnap.data();
+                    const chatId = docSnap.id;
                     const participants = chat.participants || [];
                     const otherId = participants.find(id => id !== currentUser.uid);
                     
                     if (!otherId) continue;
+                    
+                    // Проверяем, заблокирован ли пользователь
+                    let isBlocked = false;
+                    try {
+                        const blockedRef = doc(db, "users", currentUser.uid, "blocked", otherId);
+                        const blockedSnap = await getDoc(blockedRef);
+                        isBlocked = blockedSnap.exists();
+                    } catch (err) {}
                     
                     const otherFighterRef = doc(db, "fighters", otherId);
                     const otherFighterSnap = await getDoc(otherFighterRef);
@@ -688,7 +1006,6 @@
                     const otherName = otherData?.name || 'Соперник';
                     const otherAvatar = otherData?.avatar || 'Avatar.png';
                     
-                    // Проверяем онлайн (если есть поле lastSeen)
                     let isOnline = false;
                     if (otherData?.lastSeen) {
                         const lastSeen = otherData.lastSeen.toDate();
@@ -699,21 +1016,22 @@
                     const lastMessageTime = chat.lastMessageTime?.toDate();
                     const timeStr = lastMessageTime ? formatTime(lastMessageTime) : '';
                     
-                    // Проверяем автора последнего сообщения (если есть поле)
                     const lastMessageAuthor = chat.lastMessageAuthor || '';
                     const isMyMessage = lastMessageAuthor === currentUser.uid;
                     
-                    // Получаем счётчик непрочитанных (если есть)
                     const unreadCount = chat.unreadCounts?.[currentUser.uid] || 0;
                     
-                    // Формируем превью сообщения
                     let messagePreview = escapeHtml(lastMessage);
                     if (isMyMessage) {
                         messagePreview = `<span style="color: #fbbf24; font-weight: 600;">Вы: </span>${messagePreview}`;
                     }
                     
+                    if (isBlocked) {
+                        messagePreview = '🔒 Заблокирован';
+                    }
+                    
                     html += `
-                        <div class="chat-item" data-chat-id="${docSnap.id}">
+                        <div class="chat-item ${isBlocked ? 'blocked' : ''}" data-chat-id="${chatId}" data-other-id="${otherId}">
                             <div style="position: relative;">
                                 <img src="${otherAvatar}" class="chat-avatar" onerror="this.src='Avatar.png'">
                                 ${isOnline ? '<span style="position: absolute; bottom: 2px; right: 2px; width: 12px; height: 12px; background: #22c55e; border: 2px solid #0f0f0f; border-radius: 50%;"></span>' : ''}
@@ -721,37 +1039,70 @@
                             <div class="chat-info">
                                 <div class="chat-name">
                                     ${escapeHtml(otherName)}
-                                    ${unreadCount > 0 ? `<span class="unread-badge" style="background: #ef4444; color: white;">${unreadCount > 99 ? '99+' : unreadCount}</span>` : ''}
+                                    ${unreadCount > 0 ? `<span class="unread-badge">${unreadCount > 99 ? '99+' : unreadCount}</span>` : ''}
+                                    ${isBlocked ? '<span style="color:#ef4444;font-size:0.7rem;"><i class="fas fa-ban"></i></span>' : ''}
                                 </div>
                                 <div class="chat-last-message">${messagePreview}</div>
                             </div>
                             <div class="chat-time">${timeStr}</div>
+                            <div class="chat-actions">
+                                <button class="clear-btn" data-action="clear" title="Очистить историю">
+                                    <i class="fas fa-eraser"></i>
+                                </button>
+                                <button class="block-btn" data-action="block" title="Заблокировать">
+                                    <i class="fas fa-ban"></i>
+                                </button>
+                                <button class="delete-btn" data-action="delete" title="Удалить чат">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
                         </div>
                     `;
                 }
                 container.innerHTML = html;
-                
-                // Обработка кликов по чатам
-                for (const item of document.querySelectorAll('.chat-item')) {
-                    item.addEventListener('click', async () => {
-                        const chatId = item.dataset.chatId;
-                        // Пытаемся обнулить непрочитанные (если есть поле unreadCounts)
+
+                // Обработчики
+                container.querySelectorAll('.chat-item').forEach(item => {
+                    const chatId = item.dataset.chatId;
+                    const otherId = item.dataset.otherId;
+
+                    // Клик по чату
+                    item.addEventListener('click', async (e) => {
+                        if (e.target.closest('.chat-actions')) return;
+                        
                         try {
                             const chatRef = doc(db, "chats", chatId);
                             const updateData = {};
                             updateData[`unreadCounts.${currentUser.uid}`] = 0;
                             await updateDoc(chatRef, updateData);
-                        } catch (err) {
-                            // Если поля нет — просто игнорируем ошибку
-                            console.log('Нет поля unreadCounts, пропускаем обнуление');
-                        }
+                        } catch (err) {}
+                        
                         window.location.href = `chat.html?id=${chatId}`;
                     });
-                }
-            } catch (err) {
-                console.error('Ошибка загрузки чатов:', err);
+
+                    // Удаление чата
+                    item.querySelector('[data-action="delete"]')?.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        deleteChat(chatId);
+                    });
+
+                    // Очистка истории
+                    item.querySelector('[data-action="clear"]')?.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        clearChatHistory(chatId);
+                    });
+
+                    // Блокировка
+                    item.querySelector('[data-action="block"]')?.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        if (otherId) blockUser(chatId, otherId);
+                    });
+                });
+            }, (error) => {
+                console.error('Ошибка загрузки чатов:', error);
+                const container = document.getElementById('chatsList');
                 container.innerHTML = '<div class="empty-state"><i class="fas fa-exclamation-triangle"></i><p>Ошибка загрузки чатов</p></div>';
-            }
+            });
         }
 
         function formatTime(date) {
@@ -773,18 +1124,24 @@
             return str.replace(/[&<>]/g, m => m === '&' ? '&amp;' : m === '<' ? '&lt;' : '&gt;');
         }
 
+        // ===== АВТОРИЗАЦИЯ =====
         onAuthStateChanged(auth, async (user) => {
             currentUser = user;
             if (user) {
                 setTimeout(updateHeaderBalance, 1000);
-                await loadChats();
+                loadChatsRealtime();
             } else {
+                if (unsubscribeChats) {
+                    unsubscribeChats();
+                    unsubscribeChats = null;
+                }
                 const balanceDiv = document.getElementById('balanceIndicator');
                 if (balanceDiv) balanceDiv.style.display = 'none';
                 document.getElementById('chatsList').innerHTML = '<div class="empty-state"><i class="fas fa-lock"></i><p>Войдите, чтобы увидеть чаты</p></div>';
             }
         });
 
+        // ===== ОБРАБОТЧИКИ =====
         const plusBtn = document.getElementById('balancePlusBtn');
         if (plusBtn) plusBtn.onclick = () => window.location.href = 'shop.html';
 
@@ -801,6 +1158,8 @@
                 });
             });
         }
+
+        console.log('✅ Чаты загружены с функциями: удаление, очистка, блокировка');
     </script>
 </body>
 </html>
