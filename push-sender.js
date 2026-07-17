@@ -45,6 +45,19 @@ export async function getUserPushSubscription(userId) {
 
 // ===== ОТПРАВИТЬ PUSH-УВЕДОМЛЕНИЕ (через Service Worker) =====
 export async function sendPushNotification(userId, title, body, url = '/', icon = '/icons/icon-192.png') {
+    // ✅ ПРОВЕРКА: НЕ ОТПРАВЛЯЕМ САМОМУ СЕБЕ
+    const currentUser = auth.currentUser;
+    if (currentUser && userId === currentUser.uid) {
+        console.log('ℹ️ Не отправляем уведомление самому себе');
+        return false;
+    }
+
+    // ✅ ПРОВЕРКА: ЕСТЬ ЛИ ПОЛЬЗОВАТЕЛЬ
+    if (!userId) {
+        console.warn('⚠️ Не указан userId для отправки уведомления');
+        return false;
+    }
+
     const subscription = await getUserPushSubscription(userId);
     if (!subscription) {
         console.log(`⚠️ Нет подписки у пользователя ${userId}`);
@@ -77,22 +90,54 @@ export async function sendPushNotification(userId, title, body, url = '/', icon 
 
 // ===== ОТПРАВИТЬ УВЕДОМЛЕНИЕ О ВЫЗОВЕ =====
 export async function notifyAboutChallenge(fromUserId, toUserId, fromName) {
+    // ✅ ПРОВЕРКА: Не отправляем вызов самому себе
+    const currentUser = auth.currentUser;
+    if (currentUser && toUserId === currentUser.uid) {
+        console.log('ℹ️ Не отправляем вызов самому себе');
+        return false;
+    }
     return sendPushNotification(toUserId, '🥊 Новый вызов!', `${fromName} вызывает тебя на спарринг!`, '/challenges.html');
 }
 
 // ===== ОТПРАВИТЬ УВЕДОМЛЕНИЕ О ПРИНЯТИИ ВЫЗОВА =====
 export async function notifyAboutChallengeAccepted(fromUserId, toUserId, toName) {
+    // ✅ ПРОВЕРКА: Не отправляем уведомление самому себе
+    const currentUser = auth.currentUser;
+    if (currentUser && fromUserId === currentUser.uid) {
+        console.log('ℹ️ Не отправляем уведомление о принятии вызова самому себе');
+        return false;
+    }
     return sendPushNotification(fromUserId, '✅ Вызов принят!', `${toName} принял твой вызов!`, '/chats.html');
 }
 
 // ===== ОТПРАВИТЬ УВЕДОМЛЕНИЕ О НОВОМ СООБЩЕНИИ =====
 export async function notifyAboutNewMessage(userId, fromName, message, chatId) {
+    // ✅ ПРОВЕРКА: Не отправляем уведомление самому себе
+    const currentUser = auth.currentUser;
+    if (currentUser && userId === currentUser.uid) {
+        console.log('ℹ️ Не отправляем уведомление о сообщении самому себе');
+        return false;
+    }
+
+    // ✅ ПРОВЕРКА: ЕСТЬ ЛИ ТЕКСТ СООБЩЕНИЯ
+    if (!message) {
+        console.warn('⚠️ Пустое сообщение, уведомление не отправлено');
+        return false;
+    }
+
     const body = message.length > 50 ? message.substring(0, 50) + '...' : message;
     return sendPushNotification(userId, `💬 Новое сообщение от ${fromName}`, body, `/chat.html?id=${chatId}`);
 }
 
 // ===== ОТПРАВИТЬ УВЕДОМЛЕНИЕ О ПРЕМИУМЕ =====
 export async function notifyAboutPremium(userId, action, days = null) {
+    // ✅ ПРОВЕРКА: Не отправляем уведомление самому себе
+    const currentUser = auth.currentUser;
+    if (currentUser && userId === currentUser.uid) {
+        console.log('ℹ️ Не отправляем уведомление о премиуме самому себе');
+        return false;
+    }
+
     if (action === 'activated') {
         return sendPushNotification(userId, '👑 Премиум активирован!', 'Премиум-доступ открыт! Наслаждайся преимуществами.', '/shop.html');
     } else if (action === 'expiring_soon') {
