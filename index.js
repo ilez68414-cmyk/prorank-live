@@ -1,3 +1,4 @@
-// index.js - ТОЧКА ВХОДА ДЛЯ VERCEL
-import handler from './api/index.js';
+// server.js — ГЛАВНАЯ ТОЧКА ВХОДА
+import handler from './api/send-push.js';
+
 export default handler;
