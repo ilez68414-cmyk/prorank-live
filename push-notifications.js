@@ -20,7 +20,7 @@ const db = getFirestore(app);
 const auth = getAuth(app);
 
 // ===== ВАШ VAPID КЛЮЧ (получить в Firebase Console → Project Settings → Cloud Messaging) =====
-const VAPID_KEY = 'BEc0VMnnJAe2-6mi4JKR8fu6XJzf8C7a9znurNwYahcJ9nsoNlrcfCcvD2mRCKpGDSpjsG-uW1qWWHarLpJnXsI';
+const VAPID_KEY = 'BI1K-v-uHILgGwqXBGwoQ81w6AdA0mteR4pBe9xLMxY8QT6GqUTm2__Pwc-q9xkms-aACokXN01gsu_70wejKRI';
 
 // ===== ПРОВЕРКА ПОДДЕРЖКИ =====
 export function isPushSupported() {

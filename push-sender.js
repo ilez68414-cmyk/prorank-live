@@ -122,4 +122,42 @@ export async function notifyAboutPremium(userId, action, days = null) {
     return false;
 }
 
+// ============================================================
+// НОВАЯ ФУНКЦИЯ: ОТПРАВКА ЧЕРЕЗ VERCEL
+// ============================================================
+
+// Вызывай эту функцию, когда хочешь отправить уведомление через Vercel
+export async function sendPushViaVercel({ title, body, targetUid = null, icon = null, url = '/' }) {
+    try {
+        const response = await fetch('/api/send-push', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                title,
+                body,
+                targetUid,
+                icon: icon || '/prorank-live/icons/icon-192.png',
+                url
+            })
+        });
+
+        const data = await response.json();
+        
+        if (!response.ok) {
+            throw new Error(data.error || 'Ошибка отправки');
+        }
+
+        console.log('✅ Уведомление отправлено через Vercel:', data);
+        return data;
+
+    } catch (error) {
+        console.error('❌ Ошибка отправки через Vercel:', error);
+        return null;
+    }
+}
+
+
+
 console.log('📦 push-sender.js загружен');
