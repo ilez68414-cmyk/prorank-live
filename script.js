@@ -235,3 +235,117 @@ window.updateHeaderBalance = updateHeaderBalance;
 window.registerUser = registerUser;
 window.loginUser = loginUser;
 window.displayFighters = displayFighters;
+
+// ============================================================
+// АВТОМАТИЧЕСКИЕ УВЕДОМЛЕНИЯ (OneSignal) - РАБОТАЕТ БЕЗ СЕРВЕРА
+// ============================================================
+
+// 1. СОХРАНЯЕМ PLAYER ID ПРИ ВХОДЕ
+onAuthStateChanged(auth, async (user) => {
+    if (user) {
+        // Ждем загрузки OneSignal и сохраняем playerId
+        if (window.OneSignalDeferred) {
+            OneSignalDeferred.push(async function(OneSignal) {
+                const playerId = await OneSignal.getUserId();
+                if (playerId) {
+                    await setDoc(doc(db, "users", user.uid), { 
+                        onesignalPlayerId: playerId 
+                    }, { merge: true });
+                    console.log('✅ OneSignal PlayerId сохранен:', playerId);
+                }
+            });
+        }
+    }
+});
+
+// 2. ФУНКЦИЯ ОТПРАВКИ УВЕДОМЛЕНИЯ (ВЫЗЫВАЙ ВЕЗДЕ)
+async function sendNotification(userId, title, message, data = {}) {
+    if (!userId) return;
+    
+    try {
+        // Получаем playerId получателя из Firestore
+        const userDoc = await getDoc(doc(db, "users", userId));
+        const playerId = userDoc.data()?.onesignalPlayerId;
+        
+        if (!playerId) {
+            console.log(`❌ Пользователь ${userId} не подписан на уведомления`);
+            return;
+        }
+
+        // Отправляем через OneSignal
+        if (window.OneSignalDeferred) {
+            OneSignalDeferred.push(async function(OneSignal) {
+                const result = await OneSignal.sendSelfNotification({
+                    player_id: playerId,
+                    headings: { en: title },
+                    contents: { en: message },
+                    data: data,
+                    sound: 'default',
+                    vibrate: [200, 100, 200]
+                });
+                console.log(`✅ Уведомление для ${userId} отправлено:`, result);
+            });
+        }
+    } catch (error) {
+        console.error('❌ Ошибка отправки:', error);
+    }
+}
+
+// 3. АВТОМАТИЧЕСКИЙ СЛУШАТЕЛЬ НОВЫХ ВЫЗОВОВ
+// (Срабатывает при создании нового вызова)
+firebase.firestore()
+    .collection('challenges')
+    .where('status', '==', 'pending')
+    .onSnapshot((snapshot) => {
+        snapshot.docChanges().forEach((change) => {
+            if (change.type === 'added') {
+                const challenge = change.doc.data();
+                const opponentId = challenge.opponentId;
+                const challengerName = challenge.challengerName || 'Кто-то';
+                
+                if (opponentId) {
+                    sendNotification(
+                        opponentId,
+                        `⚔️ Новый вызов от ${challengerName}!`,
+                        'Нажми, чтобы принять или отклонить.',
+                        { 
+                            type: 'challenge', 
+                            challengeId: change.doc.id,
+                            challengerId: challenge.challengerId 
+                        }
+                    );
+                }
+            }
+        });
+    });
+
+// 4. АВТОМАТИЧЕСКАЯ ПРОВЕРКА ПРЕМИУМА (КАЖДЫЙ ДЕНЬ)
+// Проверяем раз в день пользователей с истекающим премиумом
+setInterval(async () => {
+    const now = new Date();
+    const threeDaysLater = new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000);
+    
+    try {
+        const usersRef = collection(db, "users");
+        const q = query(usersRef, 
+            where("premiumEndDate", ">=", now),
+            where("premiumEndDate", "<=", threeDaysLater)
+        );
+        const querySnapshot = await getDocs(q);
+        
+        querySnapshot.forEach((doc) => {
+            const user = doc.data();
+            const endDate = user.premiumEndDate.toDate ? user.premiumEndDate.toDate() : new Date(user.premiumEndDate);
+            const daysLeft = Math.ceil((endDate - now) / (1000 * 60 * 60 * 24));
+            
+            sendNotification(
+                doc.id,
+                '⚠️ Твой премиум заканчивается!',
+                `Осталось ${daysLeft} дней. Продли сейчас.`,
+                { type: 'premium_warning', daysLeft: daysLeft }
+            );
+        });
+    } catch (error) {
+        console.error('Ошибка проверки премиума:', error);
+    }
+}, 24 * 60 * 60 * 1000); // 24 часа
