@@ -125,7 +125,7 @@
         
         .page-header { 
             text-align: center; 
-            padding: 24px 16px 16px; 
+            padding: 20px 16px 8px; 
         }
         
         .page-header h1 { 
@@ -135,36 +135,158 @@
             background-clip: text; 
             color: transparent; 
         }
+
+        /* ===== БОНУСНЫЙ БАННЕР ===== */
+        .bonus-banner {
+            background: linear-gradient(135deg, rgba(251,191,36,0.15), rgba(251,191,36,0.05));
+            border: 1px solid rgba(251,191,36,0.3);
+            border-radius: 20px;
+            padding: 16px 20px;
+            margin: 12px 0 16px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            animation: bannerGlow 2.5s ease-in-out infinite;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
         
+        .bonus-banner:active {
+            transform: scale(0.98);
+        }
+        
+        @keyframes bannerGlow {
+            0%, 100% { box-shadow: 0 0 20px rgba(251,191,36,0.05); }
+            50% { box-shadow: 0 0 40px rgba(251,191,36,0.15); }
+        }
+        
+        .bonus-banner .bonus-icon {
+            font-size: 2rem;
+            color: #fbbf24;
+            animation: giftBounce 2s ease-in-out infinite;
+            flex-shrink: 0;
+        }
+        
+        @keyframes giftBounce {
+            0%, 100% { transform: scale(1) rotate(0deg); }
+            25% { transform: scale(1.1) rotate(-5deg); }
+            75% { transform: scale(1.1) rotate(5deg); }
+        }
+        
+        .bonus-banner .bonus-content {
+            flex: 1;
+        }
+        
+        .bonus-banner .bonus-content h4 {
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: #fbbf24;
+            margin-bottom: 2px;
+        }
+        
+        .bonus-banner .bonus-content p {
+            font-size: 0.7rem;
+            color: #aaa;
+        }
+        
+        .bonus-banner .btn-bonus {
+            background: #fbbf24;
+            color: #000;
+            border: none;
+            padding: 8px 18px;
+            border-radius: 40px;
+            font-weight: 700;
+            font-size: 0.75rem;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.2s;
+            min-height: 36px;
+        }
+        
+        .bonus-banner .btn-bonus:active {
+            transform: scale(0.95);
+        }
+
+        /* ===== КАРТОЧКА БАЛАНСА ===== */
         .balance-card {
             background: rgba(20, 20, 20, 0.7);
             backdrop-filter: blur(4px);
             border-radius: 24px;
             padding: 24px 20px;
             text-align: center;
-            margin: 16px 0;
+            margin: 8px 0 16px;
             border: 1px solid rgba(251, 191, 36, 0.3);
             box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            position: relative;
+            overflow: hidden;
         }
         
-        .balance-label { 
-            font-size: 0.8rem; 
+        .balance-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle at 30% 40%, rgba(251,191,36,0.05), transparent 70%);
+            animation: balanceBg 8s ease-in-out infinite;
+        }
+        
+        @keyframes balanceBg {
+            0%, 100% { transform: translate(0, 0); }
+            50% { transform: translate(10%, 10%); }
+        }
+        
+        .balance-card .balance-icon {
+            font-size: 2rem;
+            color: #fbbf24;
+            margin-bottom: 4px;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .balance-card .balance-content {
+            position: relative;
+            z-index: 1;
+        }
+        
+        .balance-card .balance-label { 
+            font-size: 0.75rem; 
             color: #aaa; 
-            margin-bottom: 8px; 
+            margin-bottom: 4px; 
             letter-spacing: 1px;
         }
         
-        .balance-amount { 
-            font-size: 2.8rem; 
-            font-weight: 800; 
-            color: #fbbf24; 
+        .balance-card .balance-amount { 
+            font-size: 3rem; 
+            font-weight: 900; 
+            background: linear-gradient(135deg, #fbbf24, #ffdd77, #fbbf24);
+            background-size: 200% 200%;
+            background-clip: text;
+            color: transparent;
             line-height: 1.2;
+            animation: balanceGradient 3s ease-in-out infinite;
+        }
+        
+        @keyframes balanceGradient {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+        
+        .balance-card .balance-sub {
+            font-size: 0.6rem;
+            color: #666;
+            margin-top: 4px;
+            position: relative;
+            z-index: 1;
         }
         
         .balance-actions {
             display: flex;
             gap: 12px;
-            margin-top: 20px;
+            margin-top: 18px;
+            position: relative;
+            z-index: 1;
         }
         
         .btn-deposit, .btn-withdraw {
@@ -184,31 +306,178 @@
         }
         
         .btn-deposit {
-            background: #fbbf24;
+            background: linear-gradient(135deg, #fbbf24, #f59e0b);
             color: #000;
+            box-shadow: 0 4px 15px rgba(251,191,36,0.3);
         }
         
         .btn-deposit:active {
-            background: #e5a800;
             transform: scale(0.97);
+            box-shadow: 0 2px 10px rgba(251,191,36,0.2);
         }
         
         .btn-withdraw {
-            background: rgba(251, 191, 36, 0.15);
-            border: 1px solid #fbbf24;
+            background: rgba(251, 191, 36, 0.12);
+            border: 1px solid rgba(251, 191, 36, 0.4);
             color: #fbbf24;
         }
         
         .btn-withdraw:active {
-            background: rgba(251, 191, 36, 0.3);
+            background: rgba(251, 191, 36, 0.25);
             transform: scale(0.97);
         }
+
+        /* ===== СТАТУС ПОЛЬЗОВАТЕЛЯ ===== */
+        .status-card {
+            background: rgba(15, 15, 15, 0.6);
+            border-radius: 20px;
+            padding: 16px 18px;
+            margin: 12px 0;
+            border: 1px solid rgba(251,191,36,0.1);
+        }
         
+        .status-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+        
+        .status-header i {
+            font-size: 1.5rem;
+            color: #fbbf24;
+        }
+        
+        .status-header .status-name {
+            font-size: 1rem;
+            font-weight: 700;
+            color: #fbbf24;
+        }
+        
+        .status-header .status-level {
+            margin-left: auto;
+            font-size: 0.65rem;
+            color: #666;
+            background: rgba(255,255,255,0.05);
+            padding: 4px 12px;
+            border-radius: 20px;
+        }
+        
+        .status-progress {
+            margin-bottom: 10px;
+        }
+        
+        .status-progress .progress-bar-bg {
+            width: 100%;
+            height: 6px;
+            background: rgba(255,255,255,0.08);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        
+        .status-progress .progress-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #fbbf24, #ffdd77);
+            border-radius: 10px;
+            transition: width 0.8s ease;
+            width: 0%;
+        }
+        
+        .status-progress .progress-text {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.6rem;
+            color: #888;
+            margin-top: 4px;
+        }
+        
+        .status-benefits {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+            font-size: 0.65rem;
+            color: #10b981;
+        }
+        
+        .status-benefits span {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        /* ===== БЫСТРЫЕ ПОКУПКИ ===== */
+        .quick-purchases {
+            margin: 16px 0;
+        }
+        
+        .quick-purchases h4 {
+            font-size: 0.9rem;
+            color: #fbbf24;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .purchase-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+        
+        .purchase-item {
+            background: rgba(15, 15, 15, 0.6);
+            border: 1px solid rgba(251,191,36,0.15);
+            border-radius: 16px;
+            padding: 14px 12px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            min-height: 80px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+        }
+        
+        .purchase-item:active {
+            transform: scale(0.96);
+            border-color: rgba(251,191,36,0.4);
+        }
+        
+        .purchase-item i {
+            font-size: 1.4rem;
+            color: #fbbf24;
+        }
+        
+        .purchase-item .purchase-name {
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: #ddd;
+        }
+        
+        .purchase-item .purchase-price {
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: #fbbf24;
+        }
+        
+        .purchase-item .purchase-badge {
+            font-size: 0.5rem;
+            background: #10b981;
+            color: #fff;
+            padding: 2px 8px;
+            border-radius: 20px;
+            margin-top: 2px;
+        }
+
+        /* ===== СТАТИСТИКА ===== */
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
             gap: 12px;
-            margin: 20px 0;
+            margin: 16px 0;
         }
         
         .stat-card {
@@ -219,104 +488,208 @@
             backdrop-filter: blur(4px);
         }
         
-        .stat-value { 
-            font-size: 1.3rem; 
+        .stat-card .stat-icon {
+            font-size: 1.2rem;
+            color: #fbbf24;
+            margin-bottom: 4px;
+        }
+        
+        .stat-card .stat-value { 
+            font-size: 1.2rem; 
             font-weight: 700; 
             color: #fbbf24; 
         }
         
-        .stat-label { 
-            font-size: 0.7rem; 
+        .stat-card .stat-label { 
+            font-size: 0.65rem; 
             color: #888; 
-            margin-top: 6px; 
+            margin-top: 4px; 
+        }
+
+        /* ===== ДОСТИЖЕНИЯ ===== */
+        .achievements-section {
+            margin: 16px 0 20px;
         }
         
+        .achievements-section h4 {
+            font-size: 0.9rem;
+            color: #fbbf24;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .achievement-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+        
+        .achievement {
+            background: rgba(15, 15, 15, 0.6);
+            border-radius: 16px;
+            padding: 12px;
+            text-align: center;
+            border: 1px solid rgba(255,255,255,0.05);
+            transition: all 0.2s;
+        }
+        
+        .achievement.unlocked {
+            border-color: rgba(251,191,36,0.3);
+            background: rgba(251,191,36,0.05);
+        }
+        
+        .achievement.locked {
+            opacity: 0.4;
+        }
+        
+        .achievement i {
+            font-size: 1.5rem;
+            margin-bottom: 4px;
+            display: block;
+        }
+        
+        .achievement.unlocked i {
+            color: #fbbf24;
+        }
+        
+        .achievement.locked i {
+            color: #555;
+        }
+        
+        .achievement .ach-name {
+            font-size: 0.6rem;
+            font-weight: 600;
+            color: #ddd;
+        }
+        
+        .achievement .ach-progress {
+            font-size: 0.5rem;
+            color: #666;
+            margin-top: 2px;
+        }
+
+        /* ===== ТРАНЗАКЦИИ ===== */
         .transactions-list {
             background: rgba(15, 15, 15, 0.6);
             border-radius: 20px;
             padding: 20px;
-            margin: 24px 0 40px;
+            margin: 16px 0 40px;
         }
         
         .transactions-list h3 {
             margin-bottom: 16px;
-            font-size: 1.1rem;
+            font-size: 1rem;
             color: #fbbf24;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
         
         .transaction-item {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 14px 0;
+            padding: 12px 0;
             border-bottom: 1px solid rgba(255,255,255,0.06);
             flex-wrap: wrap;
-            gap: 8px;
-        }
-        
-        .transaction-type { 
-            display: flex; 
-            align-items: center; 
-            gap: 10px; 
-            font-size: 0.85rem;
-            flex: 2;
-        }
-        
-        .transaction-amount { 
-            font-weight: 700; 
-            font-size: 0.95rem;
-        }
-        
-        .transaction-date { 
-            font-size: 0.65rem; 
-            color: #666; 
-        }
-        
-        .transaction-actions {
-            width: 100%;
-            display: flex;
-            justify-content: flex-end;
-        }
-        
-        .refund-btn {
-            background: rgba(251, 191, 36, 0.15);
-            border: 1px solid #fbbf24;
-            color: #fbbf24;
-            padding: 6px 12px;
-            border-radius: 40px;
-            font-size: 0.7rem;
-            cursor: pointer;
-            transition: all 0.2s;
-            min-height: 36px;
-            display: inline-flex;
-            align-items: center;
             gap: 6px;
         }
         
-        .refund-btn:active {
-            background: rgba(251, 191, 36, 0.3);
-            transform: scale(0.96);
+        .transaction-item:last-child {
+            border-bottom: none;
         }
         
-        .refund-btn.disabled {
-            opacity: 0.4;
-            pointer-events: none;
-        }
-        
-        .refund-badge {
-            font-size: 0.65rem;
-            color: #10b981;
-            display: inline-flex;
+        .transaction-left {
+            display: flex;
             align-items: center;
-            gap: 4px;
+            gap: 10px;
+            flex: 2;
+        }
+        
+        .transaction-left .tx-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+            flex-shrink: 0;
+        }
+        
+        .transaction-left .tx-icon.deposit {
+            background: rgba(16, 185, 129, 0.15);
+            color: #10b981;
+        }
+        
+        .transaction-left .tx-icon.payment {
+            background: rgba(245, 158, 11, 0.15);
+            color: #f59e0b;
+        }
+        
+        .transaction-left .tx-icon.refund {
+            background: rgba(59, 130, 246, 0.15);
+            color: #3b82f6;
+        }
+        
+        .transaction-left .tx-icon.withdrawal {
+            background: rgba(239, 68, 68, 0.15);
+            color: #ef4444;
+        }
+        
+        .transaction-left .tx-info {
+            flex: 1;
+        }
+        
+        .transaction-left .tx-name {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: #ddd;
+        }
+        
+        .transaction-left .tx-date {
+            font-size: 0.6rem;
+            color: #666;
+        }
+        
+        .transaction-right {
+            text-align: right;
+        }
+        
+        .transaction-right .tx-amount {
+            font-weight: 700;
+            font-size: 0.9rem;
+        }
+        
+        .transaction-right .tx-amount.positive {
+            color: #10b981;
+        }
+        
+        .transaction-right .tx-amount.negative {
+            color: #f59e0b;
+        }
+        
+        .transaction-right .tx-status {
+            font-size: 0.5rem;
+            color: #f59e0b;
         }
         
         .empty-state { 
             text-align: center; 
-            padding: 40px 20px; 
+            padding: 30px 20px; 
             color: #666; 
         }
         
+        .empty-state i {
+            font-size: 2rem;
+            color: #444;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        /* ===== МОДАЛКИ ===== */
         .modal-overlay {
             display: none;
             position: fixed;
@@ -342,17 +715,17 @@
             max-width: 400px;
             padding: 24px 20px 28px;
             border: 1px solid rgba(251, 191, 36, 0.3);
-            animation: modalFadeIn 0.2s ease;
+            animation: modalFadeIn 0.25s ease;
         }
         
         @keyframes modalFadeIn {
             from {
                 opacity: 0;
-                transform: scale(0.95);
+                transform: scale(0.95) translateY(10px);
             }
             to {
                 opacity: 1;
-                transform: scale(1);
+                transform: scale(1) translateY(0);
             }
         }
         
@@ -360,18 +733,18 @@
             color: #fbbf24;
             text-align: center;
             margin-bottom: 20px;
-            font-size: 1.3rem;
+            font-size: 1.2rem;
         }
         
         .amount-input {
-            margin-bottom: 20px;
+            margin-bottom: 16px;
         }
         
         .amount-input label {
             display: block;
             color: #aaa;
-            font-size: 0.8rem;
-            margin-bottom: 8px;
+            font-size: 0.75rem;
+            margin-bottom: 6px;
         }
         
         .amount-input input {
@@ -394,21 +767,21 @@
         .preset-amounts {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
-            gap: 10px;
-            margin-bottom: 20px;
+            gap: 8px;
+            margin-bottom: 16px;
         }
         
         .preset-btn {
             background: #1a1a1a;
-            border: 1px solid rgba(251, 191, 36, 0.3);
+            border: 1px solid rgba(251, 191, 36, 0.2);
             color: #fbbf24;
-            padding: 10px;
+            padding: 8px;
             border-radius: 40px;
             cursor: pointer;
             font-weight: 600;
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             transition: all 0.2s;
-            min-height: 44px;
+            min-height: 40px;
         }
         
         .preset-btn:active {
@@ -417,28 +790,28 @@
         }
         
         .payment-methods {
-            margin-bottom: 24px;
+            margin-bottom: 20px;
         }
         
         .payment-methods label {
             display: block;
             color: #aaa;
-            font-size: 0.8rem;
-            margin-bottom: 8px;
+            font-size: 0.75rem;
+            margin-bottom: 6px;
         }
         
         .method-option {
             display: flex;
             align-items: center;
             gap: 12px;
-            padding: 12px;
+            padding: 12px 14px;
             background: #1a1a1a;
             border-radius: 16px;
-            margin-bottom: 8px;
+            margin-bottom: 6px;
             cursor: pointer;
             border: 1px solid rgba(251, 191, 36, 0.1);
             transition: all 0.2s;
-            min-height: 56px;
+            min-height: 52px;
         }
         
         .method-option:active {
@@ -448,26 +821,26 @@
         
         .method-option.selected {
             border-color: #fbbf24;
-            background: rgba(251, 191, 36, 0.1);
+            background: rgba(251, 191, 36, 0.08);
         }
         
         .method-option i {
-            font-size: 1.5rem;
+            font-size: 1.3rem;
             color: #fbbf24;
-            width: 40px;
+            width: 36px;
         }
         
         .method-option .method-info {
             flex: 1;
         }
         
-        .method-name {
+        .method-option .method-name {
             font-weight: 600;
-            margin-bottom: 4px;
+            font-size: 0.85rem;
         }
         
-        .method-desc {
-            font-size: 0.7rem;
+        .method-option .method-desc {
+            font-size: 0.6rem;
             color: #888;
         }
         
@@ -484,7 +857,7 @@
             font-weight: 700;
             cursor: pointer;
             border: none;
-            font-size: 0.95rem;
+            font-size: 0.9rem;
             min-height: 48px;
         }
         
@@ -510,9 +883,14 @@
         
         .commission-info {
             text-align: center;
-            margin-top: 16px;
-            font-size: 0.65rem;
+            margin-top: 14px;
+            font-size: 0.6rem;
             color: #555;
+        }
+        
+        .commission-info i {
+            color: #fbbf24;
+            margin-right: 4px;
         }
         
         .loading-spinner {
@@ -526,7 +904,58 @@
         }
         
         @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* ===== FOOTER ===== */
+        .main-footer {
+            background: #0a0a0a;
+            border-top: 1px solid rgba(251,191,36,0.15);
+            margin-top: 20px;
+            padding: 24px 0 16px;
+        }
         
+        .footer-inner {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+        
+        .footer-links {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+        
+        .footer-links a {
+            color: #888;
+            text-decoration: none;
+            font-size: 0.7rem;
+        }
+        
+        .footer-social {
+            display: flex;
+            gap: 12px;
+        }
+        
+        .social-icon {
+            color: #aaa;
+            font-size: 1rem;
+            min-width: 36px;
+            min-height: 36px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .footer-bottom {
+            text-align: center;
+            margin-top: 16px;
+            font-size: 0.6rem;
+            color: #444;
+        }
+
+        /* ===== АДАПТИВ ===== */
         @media (max-width: 768px) {
             .navbar { padding: 10px 16px; }
             .menu-toggle { display: block; }
@@ -552,19 +981,18 @@
                 justify-content: center;
             }
             .container { padding: 0 16px; }
-            .balance-amount { font-size: 2.2rem; }
-            .stats-grid { grid-template-columns: 1fr; gap: 10px; }
-            .balance-card { padding: 20px 16px; }
-            .balance-actions { flex-direction: column; gap: 10px; }
+            .balance-amount { font-size: 2.4rem; }
+            .stats-grid { grid-template-columns: 1fr 1fr; gap: 8px; }
+            .balance-actions { flex-direction: column; gap: 8px; }
             .preset-amounts { grid-template-columns: repeat(2, 1fr); }
+            .purchase-grid { grid-template-columns: 1fr 1fr; gap: 8px; }
+            .achievement-grid { grid-template-columns: 1fr 1fr; gap: 8px; }
             .deposit-modal { padding: 20px 16px; }
-            .transaction-item {
-                flex-direction: column;
-                align-items: flex-start;
-            }
-            .transaction-actions {
-                justify-content: flex-start;
-            }
+            .bonus-banner { padding: 14px 16px; flex-wrap: wrap; justify-content: center; }
+            .bonus-banner .btn-bonus { width: 100%; justify-content: center; }
+            .transaction-item { flex-direction: column; align-items: flex-start; }
+            .transaction-right { width: 100%; display: flex; justify-content: space-between; align-items: center; }
+            .footer-inner { flex-direction: column; text-align: center; gap: 12px; }
         }
         
         @media (min-width: 600px) {
@@ -574,48 +1002,6 @@
         ::-webkit-scrollbar { width: 4px; }
         ::-webkit-scrollbar-track { background: #1a1a1a; }
         ::-webkit-scrollbar-thumb { background: #fbbf24; border-radius: 10px; }
-        
-        .footer-inner {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 20px;
-        }
-        
-        .main-footer {
-            background: #0a0a0a;
-            border-top: 1px solid rgba(251,191,36,0.15);
-            margin-top: 40px;
-            padding: 30px 0 20px;
-        }
-        
-        .footer-links {
-            display: flex;
-            gap: 20px;
-            flex-wrap: wrap;
-        }
-        
-        .footer-links a {
-            color: #888;
-            text-decoration: none;
-            font-size: 0.8rem;
-        }
-        
-        .footer-social {
-            display: flex;
-            gap: 16px;
-        }
-        
-        .social-icon {
-            color: #aaa;
-            font-size: 1.2rem;
-            min-width: 44px;
-            min-height: 44px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-        }
     </style>
 </head>
 <body>
@@ -632,9 +1018,30 @@
             <h1><i class="fas fa-wallet"></i> Мой кошелёк</h1>
         </div>
 
+        <!-- ===== БОНУСНЫЙ БАННЕР ===== -->
+        <div class="bonus-banner" id="bonusBanner">
+            <div class="bonus-icon">
+                <i class="fas fa-gift"></i>
+            </div>
+            <div class="bonus-content">
+                <h4>🔥 Бонус 15%</h4>
+                <p>При первом пополнении от 500 ₽</p>
+            </div>
+            <button class="btn-bonus" id="bonusDepositBtn">
+                Пополнить
+            </button>
+        </div>
+
+        <!-- ===== КАРТОЧКА БАЛАНСА ===== -->
         <div class="balance-card">
-            <div class="balance-label">Доступно средств</div>
-            <div class="balance-amount" id="balanceAmount">0 ₽</div>
+            <div class="balance-icon">
+                <i class="fas fa-coins"></i>
+            </div>
+            <div class="balance-content">
+                <div class="balance-label">Доступно средств</div>
+                <div class="balance-amount" id="balanceAmount">0 ₽</div>
+                <div class="balance-sub" id="balanceSub">💰 Без комиссии</div>
+            </div>
             <div class="balance-actions">
                 <button class="btn-deposit" id="depositBtn">
                     <i class="fas fa-plus-circle"></i> Пополнить
@@ -645,24 +1052,112 @@
             </div>
         </div>
 
+        <!-- ===== СТАТУС ПОЛЬЗОВАТЕЛЯ ===== -->
+        <div class="status-card" id="statusCard">
+            <div class="status-header">
+                <i class="fas fa-crown"></i>
+                <span class="status-name" id="statusName">Bronze</span>
+                <span class="status-level" id="statusLevel">Уровень 1</span>
+            </div>
+            <div class="status-progress">
+                <div class="progress-bar-bg">
+                    <div class="progress-bar-fill" id="progressFill" style="width: 0%;"></div>
+                </div>
+                <div class="progress-text">
+                    <span id="progressCurrent">0 ₽</span>
+                    <span id="progressNext">До Silver: 500 ₽</span>
+                </div>
+            </div>
+            <div class="status-benefits" id="statusBenefits">
+                <span>✅ Без комиссии</span>
+                <span>✅ 5 бесплатных вызовов</span>
+            </div>
+        </div>
+
+        <!-- ===== БЫСТРЫЕ ПОКУПКИ ===== -->
+        <div class="quick-purchases">
+            <h4><i class="fas fa-bolt"></i> Быстрые покупки</h4>
+            <div class="purchase-grid">
+                <div class="purchase-item" data-product="challenge_5">
+                    <i class="fas fa-crosshairs"></i>
+                    <span class="purchase-name">5 вызовов</span>
+                    <span class="purchase-price">100 ₽</span>
+                </div>
+                <div class="purchase-item" data-product="challenge_10">
+                    <i class="fas fa-crosshairs"></i>
+                    <span class="purchase-name">10 вызовов</span>
+                    <span class="purchase-price">180 ₽</span>
+                    <span class="purchase-badge">🔥 Выгода</span>
+                </div>
+                <div class="purchase-item" data-product="premium_month">
+                    <i class="fas fa-crown"></i>
+                    <span class="purchase-name">Премиум 1 мес</span>
+                    <span class="purchase-price">200 ₽</span>
+                    <span class="purchase-badge">⭐ ТОП</span>
+                </div>
+                <div class="purchase-item" data-product="fighter_pack">
+                    <i class="fas fa-box"></i>
+                    <span class="purchase-name">Набор «Боец»</span>
+                    <span class="purchase-price">400 ₽</span>
+                    <span class="purchase-badge">🎁 Эконом</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== СТАТИСТИКА ===== -->
         <div class="stats-grid">
             <div class="stat-card">
+                <div class="stat-icon"><i class="fas fa-shopping-cart"></i></div>
                 <div class="stat-value" id="totalSpent">0 ₽</div>
                 <div class="stat-label">Всего потрачено</div>
             </div>
             <div class="stat-card">
+                <div class="stat-icon"><i class="fas fa-undo"></i></div>
                 <div class="stat-value" id="totalRefunded">0 ₽</div>
                 <div class="stat-label">Возвращено</div>
             </div>
         </div>
 
+        <!-- ===== ДОСТИЖЕНИЯ ===== -->
+        <div class="achievements-section">
+            <h4><i class="fas fa-trophy"></i> Достижения</h4>
+            <div class="achievement-grid" id="achievementGrid">
+                <div class="achievement unlocked" id="achFirstDeposit">
+                    <i class="fas fa-coins"></i>
+                    <span class="ach-name">Первый депозит</span>
+                    <span class="ach-progress">✅ Выполнено</span>
+                </div>
+                <div class="achievement locked" id="achSpend500">
+                    <i class="fas fa-rocket"></i>
+                    <span class="ach-name">500 ₽ на счету</span>
+                    <span class="ach-progress">0 / 500 ₽</span>
+                </div>
+                <div class="achievement locked" id="achSpend1000">
+                    <i class="fas fa-star"></i>
+                    <span class="ach-name">1000 ₽ на счету</span>
+                    <span class="ach-progress">0 / 1000 ₽</span>
+                </div>
+                <div class="achievement locked" id="achFirstPurchase">
+                    <i class="fas fa-shopping-bag"></i>
+                    <span class="ach-name">Первая покупка</span>
+                    <span class="ach-progress">⏳ Ждём</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== ИСТОРИЯ ОПЕРАЦИЙ ===== -->
         <div class="transactions-list">
             <h3><i class="fas fa-history"></i> История операций</h3>
-            <div id="transactionsList">Загрузка...</div>
+            <div id="transactionsList">
+                <div class="empty-state">
+                    <i class="fas fa-inbox"></i>
+                    История операций пуста
+                </div>
+            </div>
         </div>
     </main>
 
-    <!-- Модалка пополнения -->
+    <!-- ===== МОДАЛКА ПОПОЛНЕНИЯ ===== -->
     <div id="depositModal" class="modal-overlay">
         <div class="deposit-modal">
             <h3><i class="fas fa-credit-card"></i> Пополнение</h3>
@@ -710,7 +1205,7 @@
         </div>
     </div>
 
-    <!-- Модалка вывода средств -->
+    <!-- ===== МОДАЛКА ВЫВОДА СРЕДСТВ ===== -->
     <div id="withdrawModal" class="modal-overlay">
         <div class="deposit-modal">
             <h3><i class="fas fa-arrow-up"></i> Вывод средств</h3>
@@ -754,7 +1249,7 @@
             <div class="footer-inner">
                 <div class="footer-logo">
                     <div class="logo">PRO<span>RANK</span></div>
-                    <p style="font-size: 0.7rem; color: #666;">Рейтинг спортсменов-любителей</p>
+                    <p style="font-size: 0.6rem; color: #666;">Рейтинг спортсменов-любителей</p>
                 </div>
                 <div class="footer-social">
                     <a href="#" class="social-icon"><i class="fab fa-telegram"></i></a>
@@ -768,16 +1263,16 @@
                     <a href="disclaimer.html">Дисклеймер</a>
                 </div>
             </div>
-            <div style="text-align: center; margin-top: 24px;">
-                <p style="font-size: 0.7rem; color: #444;">© 2026 PRORANK. Все права защищены.</p>
+            <div class="footer-bottom">
+                © 2026 PRORANK. Все права защищены.
             </div>
         </div>
     </footer>
 
     <div id="mobileBottomNavContainer"></div>
 
-<!-- Контейнер для ошибок — ВСЕГДА СВЕРХУ -->
-<div id="errorContainer" style="position: fixed; top: 15px; left: 50%; transform: translateX(-50%); z-index: 9999; max-width: 90%; width: 480px; padding: 14px 20px; border-radius: 16px; font-weight: 600; font-size: 0.9rem; animation: slideDown 0.3s ease; box-shadow: 0 10px 30px rgba(0,0,0,0.4); backdrop-filter: blur(8px); display: none; text-align: center; border: 1px solid rgba(255,255,255,0.1);"></div>
+    <!-- Контейнер для ошибок -->
+    <div id="errorContainer" style="position: fixed; top: 15px; left: 50%; transform: translateX(-50%); z-index: 9999; max-width: 90%; width: 480px; padding: 14px 20px; border-radius: 16px; font-weight: 600; font-size: 0.9rem; animation: slideDown 0.3s ease; box-shadow: 0 10px 30px rgba(0,0,0,0.4); backdrop-filter: blur(8px); display: none; text-align: center; border: 1px solid rgba(255,255,255,0.1);"></div>
 
     <script type="importmap">
         {
@@ -812,23 +1307,143 @@
         let currentUser = null;
         let selectedMethod = 'card';
         let selectedWithdrawMethod = 'card';
+        let currentBalance = 0;
 
+        // ===== СТАТУСЫ ПОЛЬЗОВАТЕЛЯ =====
+        const LEVELS = [
+            { name: 'Bronze', min: 0, icon: '🥉', benefits: ['✅ Без комиссии', '✅ 5 бесплатных вызовов'] },
+            { name: 'Silver', min: 500, icon: '🥈', benefits: ['✅ Без комиссии', '✅ 10 бесплатных вызовов', '✅ Скидка 5%'] },
+            { name: 'Gold', min: 1500, icon: '🥇', benefits: ['✅ Без комиссии', '✅ 20 бесплатных вызовов', '✅ Скидка 10%', '✅ Премиум статус'] },
+            { name: 'Platinum', min: 5000, icon: '💎', benefits: ['✅ Без комиссии', '✅ 50 бесплатных вызовов', '✅ Скидка 15%', '✅ Премиум статус', '✅ Эксклюзивные бейджи'] }
+        ];
+
+        function getUserLevel(spent) {
+            let level = LEVELS[0];
+            for (let l of LEVELS) {
+                if (spent >= l.min) level = l;
+            }
+            return level;
+        }
+
+        function getNextLevel(spent) {
+            for (let l of LEVELS) {
+                if (spent < l.min) return l;
+            }
+            return null;
+        }
+
+        function updateStatus(spent) {
+            const currentLevel = getUserLevel(spent);
+            const nextLevel = getNextLevel(spent);
+            
+            document.getElementById('statusName').textContent = `${currentLevel.icon} ${currentLevel.name}`;
+            document.getElementById('statusLevel').textContent = `Уровень ${LEVELS.indexOf(currentLevel) + 1}`;
+            
+            // Прогресс
+            const progressFill = document.getElementById('progressFill');
+            const progressCurrent = document.getElementById('progressCurrent');
+            const progressNext = document.getElementById('progressNext');
+            
+            if (nextLevel) {
+                const prevMin = currentLevel.min;
+                const nextMin = nextLevel.min;
+                const progress = ((spent - prevMin) / (nextMin - prevMin)) * 100;
+                progressFill.style.width = Math.min(progress, 100) + '%';
+                progressCurrent.textContent = `${spent.toLocaleString()} ₽`;
+                progressNext.textContent = `До ${nextLevel.name}: ${(nextMin - spent).toLocaleString()} ₽`;
+            } else {
+                progressFill.style.width = '100%';
+                progressCurrent.textContent = `${spent.toLocaleString()} ₽`;
+                progressNext.textContent = '👑 Максимальный уровень!';
+            }
+            
+            // Бонусы
+            const benefitsContainer = document.getElementById('statusBenefits');
+            benefitsContainer.innerHTML = currentLevel.benefits.map(b => `<span>${b}</span>`).join('');
+        }
+
+        // ===== ДОСТИЖЕНИЯ =====
+        function updateAchievements(spent, hasDeposit, hasPurchase) {
+            const achFirstDeposit = document.getElementById('achFirstDeposit');
+            const achSpend500 = document.getElementById('achSpend500');
+            const achSpend1000 = document.getElementById('achSpend1000');
+            const achFirstPurchase = document.getElementById('achFirstPurchase');
+            
+            // Первый депозит
+            if (hasDeposit) {
+                achFirstDeposit.className = 'achievement unlocked';
+                achFirstDeposit.querySelector('.ach-progress').textContent = '✅ Выполнено';
+            }
+            
+            // 500 ₽
+            if (spent >= 500) {
+                achSpend500.className = 'achievement unlocked';
+                achSpend500.querySelector('.ach-progress').textContent = '✅ Выполнено';
+            } else {
+                achSpend500.querySelector('.ach-progress').textContent = `${spent.toLocaleString()} / 500 ₽`;
+            }
+            
+            // 1000 ₽
+            if (spent >= 1000) {
+                achSpend1000.className = 'achievement unlocked';
+                achSpend1000.querySelector('.ach-progress').textContent = '✅ Выполнено';
+            } else {
+                achSpend1000.querySelector('.ach-progress').textContent = `${spent.toLocaleString()} / 1000 ₽`;
+            }
+            
+            // Первая покупка
+            if (hasPurchase) {
+                achFirstPurchase.className = 'achievement unlocked';
+                achFirstPurchase.querySelector('.ach-progress').textContent = '✅ Выполнено';
+            }
+        }
+
+        // ===== БЫСТРЫЕ ПОКУПКИ =====
+        document.querySelectorAll('.purchase-item').forEach(item => {
+            item.addEventListener('click', () => {
+                const productId = item.dataset.product;
+                if (!currentUser) {
+                    alert('Войдите в аккаунт');
+                    window.location.href = 'login.html';
+                    return;
+                }
+                window.location.href = `shop.html?product=${productId}`;
+            });
+        });
+
+        // ===== ЗАГРУЗКА КОШЕЛЬКА =====
         async function loadWallet() {
             if (!currentUser) return;
             
             try {
                 const balance = await getWalletBalance(currentUser.uid);
                 if (balance) {
+                    currentBalance = balance.available || 0;
                     document.getElementById('balanceAmount').innerHTML = `${(balance.available || 0).toLocaleString()} ₽`;
                     document.getElementById('totalSpent').innerHTML = `${(balance.totalSpent || 0).toLocaleString()} ₽`;
                     document.getElementById('totalRefunded').innerHTML = `${(balance.totalRefunded || 0).toLocaleString()} ₽`;
+                    
+                    // Обновляем статус
+                    updateStatus(balance.totalSpent || 0);
+                    
+                    // Обновляем достижения
+                    updateAchievements(
+                        balance.totalSpent || 0,
+                        balance.hasDeposit || false,
+                        balance.hasPurchase || false
+                    );
                 }
                 
                 const transactions = await getWalletTransactions(currentUser.uid, 'fighter');
                 const container = document.getElementById('transactionsList');
                 
                 if (transactions.length === 0) {
-                    container.innerHTML = '<div class="empty-state"><i class="fas fa-inbox"></i><br>История операций пуста</div>';
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <i class="fas fa-inbox"></i>
+                            История операций пуста
+                        </div>
+                    `;
                     return;
                 }
                 
@@ -842,24 +1457,41 @@
                         'hold': 'Заморозка',
                         'release': 'Поступление'
                     };
-                    const icon = t.type === 'deposit' ? 'fa-arrow-down' : 
-                                 (t.type === 'refund' ? 'fa-undo' : 
-                                 (t.type === 'withdrawal' ? 'fa-arrow-up' : 
-                                 (t.type === 'hold' ? 'fa-lock' : 'fa-shopping-cart')));
+                    
+                    const typeIcons = {
+                        'deposit': 'deposit',
+                        'payment': 'payment',
+                        'refund': 'refund',
+                        'withdrawal': 'withdrawal',
+                        'hold': 'payment',
+                        'release': 'deposit'
+                    };
+                    
+                    const iconClass = typeIcons[t.type] || 'payment';
                     const sign = (t.type === 'deposit' || t.type === 'refund' || t.type === 'release') ? '+' : '−';
-                    const amountColor = (t.type === 'deposit' || t.type === 'refund' || t.type === 'release') ? '#10b981' : '#f59e0b';
+                    const isPositive = (t.type === 'deposit' || t.type === 'refund' || t.type === 'release');
+                    const amountColor = isPositive ? 'positive' : 'negative';
                     const date = t.createdAt?.toLocaleString('ru-RU') || '—';
                     
                     html += `
                         <div class="transaction-item">
-                            <div class="transaction-type">
-                                <i class="fas ${icon}" style="color: ${amountColor};"></i>
-                                <span>${typeNames[t.type] || t.type}</span>
-                                ${t.status === 'pending' ? '<span style="font-size:0.6rem;color:#f59e0b;">⏳</span>' : ''}
+                            <div class="transaction-left">
+                                <div class="tx-icon ${iconClass}">
+                                    <i class="fas ${t.type === 'deposit' ? 'fa-arrow-down' : 
+                                        (t.type === 'refund' ? 'fa-undo' : 
+                                        (t.type === 'withdrawal' ? 'fa-arrow-up' : 
+                                        (t.type === 'hold' ? 'fa-lock' : 'fa-shopping-cart')))}"></i>
+                                </div>
+                                <div class="tx-info">
+                                    <div class="tx-name">${typeNames[t.type] || t.type}</div>
+                                    <div class="tx-date">${date}</div>
+                                </div>
                             </div>
-                            <div class="transaction-amount" style="color: ${amountColor};">${sign} ${(t.amount || 0).toLocaleString()} ₽</div>
-                            <div class="transaction-date">${date}</div>
-                            ${t.description ? `<div style="width:100%;font-size:0.65rem;color:#666;">${t.description}</div>` : ''}
+                            <div class="transaction-right">
+                                <div class="tx-amount ${amountColor}">${sign} ${(t.amount || 0).toLocaleString()} ₽</div>
+                                ${t.status === 'pending' ? '<div class="tx-status">⏳ Обработка</div>' : ''}
+                            </div>
+                            ${t.description ? `<div style="width:100%;font-size:0.6rem;color:#666;padding-left:46px;">${t.description}</div>` : ''}
                         </div>
                     `;
                 });
@@ -870,6 +1502,7 @@
             }
         }
 
+        // ===== ПОПОЛНЕНИЕ =====
         async function processPayment() {
             if (!currentUser) {
                 alert('Войдите в аккаунт');
@@ -890,7 +1523,7 @@
             
             try {
                 await depositFunds(currentUser.uid, amount, selectedMethod === 'card' ? 'card' : 'sbp');
-                alert(`✅ Баланс пополнен на ${amount} ₽!`);
+                alert(`✅ Баланс пополнен на ${amount.toLocaleString()} ₽!`);
                 
                 document.getElementById('depositModal').classList.remove('active');
                 document.getElementById('modalAmount').value = '';
@@ -904,6 +1537,7 @@
             }
         }
 
+        // ===== ВЫВОД =====
         async function requestWithdraw() {
             if (!currentUser) {
                 alert('Войдите в аккаунт');
@@ -916,11 +1550,8 @@
                 return;
             }
             
-            const balance = await getWalletBalance(currentUser.uid);
-            const currentBalance = balance?.available || 0;
-            
             if (amount > currentBalance) {
-                alert(`Недостаточно средств. Доступно: ${currentBalance} ₽`);
+                alert(`Недостаточно средств. Доступно: ${currentBalance.toLocaleString()} ₽`);
                 return;
             }
             
@@ -952,6 +1583,17 @@
             }
         }
 
+        // ===== СОБЫТИЯ =====
+        // Бонусный баннер
+        document.getElementById('bonusDepositBtn')?.addEventListener('click', () => {
+            document.getElementById('depositBtn').click();
+        });
+
+        document.getElementById('bonusBanner')?.addEventListener('click', (e) => {
+            if (e.target.closest('.btn-bonus')) return;
+            document.getElementById('depositBtn').click();
+        });
+
         // Пополнение
         document.getElementById('depositBtn')?.addEventListener('click', () => {
             if (!currentUser) { 
@@ -974,6 +1616,8 @@
             }
         });
 
+        document.getElementById('confirmModalBtn')?.addEventListener('click', processPayment);
+
         // Вывод
         document.getElementById('withdrawBtn')?.addEventListener('click', async () => {
             if (!currentUser) {
@@ -981,8 +1625,6 @@
                 window.location.href = 'login.html';
                 return;
             }
-            const balance = await getWalletBalance(currentUser.uid);
-            const currentBalance = balance?.available || 0;
             document.getElementById('availableBalanceDisplay').innerHTML = currentBalance.toLocaleString();
             document.getElementById('withdrawModal').classList.add('active');
         });
@@ -1026,8 +1668,7 @@
             });
         });
 
-        document.getElementById('confirmModalBtn')?.addEventListener('click', processPayment);
-
+        // ===== АВТОРИЗАЦИЯ =====
         onAuthStateChanged(auth, (user) => {
             currentUser = user;
             if (user) {
@@ -1036,10 +1677,16 @@
                 document.getElementById('balanceAmount').innerHTML = '0 ₽';
                 document.getElementById('totalSpent').innerHTML = '0 ₽';
                 document.getElementById('totalRefunded').innerHTML = '0 ₽';
-                document.getElementById('transactionsList').innerHTML = '<div class="empty-state">Войдите в аккаунт</div>';
+                document.getElementById('transactionsList').innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-user"></i>
+                        Войдите в аккаунт
+                    </div>
+                `;
             }
         });
 
+        // ===== БУРГЕР МЕНЮ =====
         const menuToggle = document.getElementById('menuToggle');
         const navLinks = document.getElementById('navLinks');
         if (menuToggle && navLinks) {
