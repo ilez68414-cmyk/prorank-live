@@ -1074,36 +1074,6 @@
             </div>
         </div>
 
-        <!-- ===== БЫСТРЫЕ ПОКУПКИ ===== -->
-        <div class="quick-purchases">
-            <h4><i class="fas fa-bolt"></i> Быстрые покупки</h4>
-            <div class="purchase-grid">
-                <div class="purchase-item" data-product="challenge_5">
-                    <i class="fas fa-crosshairs"></i>
-                    <span class="purchase-name">5 вызовов</span>
-                    <span class="purchase-price">100 ₽</span>
-                </div>
-                <div class="purchase-item" data-product="challenge_10">
-                    <i class="fas fa-crosshairs"></i>
-                    <span class="purchase-name">10 вызовов</span>
-                    <span class="purchase-price">180 ₽</span>
-                    <span class="purchase-badge">🔥 Выгода</span>
-                </div>
-                <div class="purchase-item" data-product="premium_month">
-                    <i class="fas fa-crown"></i>
-                    <span class="purchase-name">Премиум 1 мес</span>
-                    <span class="purchase-price">200 ₽</span>
-                    <span class="purchase-badge">⭐ ТОП</span>
-                </div>
-                <div class="purchase-item" data-product="fighter_pack">
-                    <i class="fas fa-box"></i>
-                    <span class="purchase-name">Набор «Боец»</span>
-                    <span class="purchase-price">400 ₽</span>
-                    <span class="purchase-badge">🎁 Эконом</span>
-                </div>
-            </div>
-        </div>
-
         <!-- ===== СТАТИСТИКА ===== -->
         <div class="stats-grid">
             <div class="stat-card">
@@ -1205,7 +1175,7 @@
         </div>
     </div>
 
-    <!-- ===== МОДАЛКА ВЫВОДА СРЕДСТВ ===== -->
+    <!-- ===== МОДАЛКА ВЫВОДА СРЕДСТВ (ИСПРАВЛЕНА) ===== -->
     <div id="withdrawModal" class="modal-overlay">
         <div class="deposit-modal">
             <h3><i class="fas fa-arrow-up"></i> Вывод средств</h3>
@@ -1213,6 +1183,12 @@
             <div class="amount-input">
                 <label>Доступно: <span id="availableBalanceDisplay">0</span> ₽</label>
                 <input type="number" id="withdrawAmount" placeholder="Сумма вывода" min="100" step="100">
+            </div>
+
+            <!-- ДОБАВЛЕНО ПОЛЕ ДЛЯ РЕКВИЗИТОВ -->
+            <div class="amount-input">
+                <label>Реквизиты для вывода</label>
+                <input type="text" id="withdrawDetails" placeholder="Номер карты или Telegram ID">
             </div>
 
             <div class="payment-methods">
@@ -1285,418 +1261,576 @@
     </script>
     <script type="module" src="header.js"></script>
     <script type="module">
-        import { initializeApp } from "firebase/app";
-        import { getFirestore, doc, getDoc, getDocs, collection, query, where, orderBy, updateDoc, addDoc, setDoc } from "firebase/firestore";
-        import { getAuth, onAuthStateChanged } from "firebase/auth";
-        import { getWalletBalance, depositFunds, createWithdrawalRequest, getWalletTransactions, formatAmount } from './wallet.js';
-        import { showError, handleFirebaseError, withErrorHandling } from './error-handler.js';
+import { initializeApp } from "firebase/app";
+import { getFirestore, doc, getDoc, getDocs, collection, query, where, orderBy, updateDoc, addDoc, setDoc, runTransaction } from "firebase/firestore";
+import { getAuth, onAuthStateChanged } from "firebase/auth";
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyDUGYJY7pX7q02MS5SACMIIQXpjpQ97mPw",
-            authDomain: "proranklive.firebaseapp.com",
-            projectId: "proranklive",
-            storageBucket: "proranklive.firebasestorage.app",
-            messagingSenderId: "716836144015",
-            appId: "1:716836144015:web:f1575147750608d0f881fa"
+const firebaseConfig = {
+    apiKey: "AIzaSyDUGYJY7pX7q02MS5SACMIIQXpjpQ97mPw",
+    authDomain: "proranklive.firebaseapp.com",
+    projectId: "proranklive",
+    storageBucket: "proranklive.firebasestorage.app",
+    messagingSenderId: "716836144015",
+    appId: "1:716836144015:web:f1575147750608d0f881fa"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const auth = getAuth(app);
+
+let currentUser = null;
+let selectedMethod = 'card';
+let selectedWithdrawMethod = 'card';
+let currentBalance = 0;
+
+// ============================================================
+// ФУНКЦИИ КОШЕЛЬКА ДЛЯ ПОКУПАТЕЛЯ (ПРЯМО В СТРАНИЦЕ)
+// ============================================================
+
+// Получить баланс покупателя
+async function getBuyerBalance(userId) {
+    try {
+        const balanceDoc = await getDoc(doc(db, "wallet_balances", userId));
+        if (balanceDoc.exists()) {
+            return balanceDoc.data();
+        }
+        // Создаём баланс по умолчанию
+        const defaultBalance = {
+            userId: userId,
+            userType: "fighter",
+            available: 0,
+            pending: 0,
+            totalSpent: 0,
+            totalRefunded: 0,
+            hasDeposit: false,
+            hasPurchase: false,
+            updatedAt: new Date()
         };
+        await setDoc(doc(db, "wallet_balances", userId), defaultBalance);
+        return defaultBalance;
+    } catch (err) {
+        console.error("Ошибка получения баланса:", err);
+        return { available: 0, pending: 0, totalSpent: 0, totalRefunded: 0 };
+    }
+}
 
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-        const auth = getAuth(app);
-
-        let currentUser = null;
-        let selectedMethod = 'card';
-        let selectedWithdrawMethod = 'card';
-        let currentBalance = 0;
-
-        // ===== СТАТУСЫ ПОЛЬЗОВАТЕЛЯ =====
-        const LEVELS = [
-            { name: 'Bronze', min: 0, icon: '🥉', benefits: ['✅ Без комиссии', '✅ 5 бесплатных вызовов'] },
-            { name: 'Silver', min: 500, icon: '🥈', benefits: ['✅ Без комиссии', '✅ 10 бесплатных вызовов', '✅ Скидка 5%'] },
-            { name: 'Gold', min: 1500, icon: '🥇', benefits: ['✅ Без комиссии', '✅ 20 бесплатных вызовов', '✅ Скидка 10%', '✅ Премиум статус'] },
-            { name: 'Platinum', min: 5000, icon: '💎', benefits: ['✅ Без комиссии', '✅ 50 бесплатных вызовов', '✅ Скидка 15%', '✅ Премиум статус', '✅ Эксклюзивные бейджи'] }
-        ];
-
-        function getUserLevel(spent) {
-            let level = LEVELS[0];
-            for (let l of LEVELS) {
-                if (spent >= l.min) level = l;
-            }
-            return level;
-        }
-
-        function getNextLevel(spent) {
-            for (let l of LEVELS) {
-                if (spent < l.min) return l;
-            }
-            return null;
-        }
-
-        function updateStatus(spent) {
-            const currentLevel = getUserLevel(spent);
-            const nextLevel = getNextLevel(spent);
+// Пополнить баланс покупателя
+async function depositBuyerFunds(userId, amount, method) {
+    if (!userId) throw new Error('Не указан ID пользователя');
+    if (!amount || amount < 100) throw new Error('Минимальная сумма пополнения — 100 ₽');
+    
+    const balanceRef = doc(db, "wallet_balances", userId);
+    
+    try {
+        await runTransaction(db, async (transaction) => {
+            const balanceDoc = await transaction.get(balanceRef);
+            const currentBalance = balanceDoc.exists() ? balanceDoc.data() : { available: 0, hasDeposit: false };
             
-            document.getElementById('statusName').textContent = `${currentLevel.icon} ${currentLevel.name}`;
-            document.getElementById('statusLevel').textContent = `Уровень ${LEVELS.indexOf(currentLevel) + 1}`;
-            
-            // Прогресс
-            const progressFill = document.getElementById('progressFill');
-            const progressCurrent = document.getElementById('progressCurrent');
-            const progressNext = document.getElementById('progressNext');
-            
-            if (nextLevel) {
-                const prevMin = currentLevel.min;
-                const nextMin = nextLevel.min;
-                const progress = ((spent - prevMin) / (nextMin - prevMin)) * 100;
-                progressFill.style.width = Math.min(progress, 100) + '%';
-                progressCurrent.textContent = `${spent.toLocaleString()} ₽`;
-                progressNext.textContent = `До ${nextLevel.name}: ${(nextMin - spent).toLocaleString()} ₽`;
-            } else {
-                progressFill.style.width = '100%';
-                progressCurrent.textContent = `${spent.toLocaleString()} ₽`;
-                progressNext.textContent = '👑 Максимальный уровень!';
-            }
-            
-            // Бонусы
-            const benefitsContainer = document.getElementById('statusBenefits');
-            benefitsContainer.innerHTML = currentLevel.benefits.map(b => `<span>${b}</span>`).join('');
-        }
-
-        // ===== ДОСТИЖЕНИЯ =====
-        function updateAchievements(spent, hasDeposit, hasPurchase) {
-            const achFirstDeposit = document.getElementById('achFirstDeposit');
-            const achSpend500 = document.getElementById('achSpend500');
-            const achSpend1000 = document.getElementById('achSpend1000');
-            const achFirstPurchase = document.getElementById('achFirstPurchase');
-            
-            // Первый депозит
-            if (hasDeposit) {
-                achFirstDeposit.className = 'achievement unlocked';
-                achFirstDeposit.querySelector('.ach-progress').textContent = '✅ Выполнено';
-            }
-            
-            // 500 ₽
-            if (spent >= 500) {
-                achSpend500.className = 'achievement unlocked';
-                achSpend500.querySelector('.ach-progress').textContent = '✅ Выполнено';
-            } else {
-                achSpend500.querySelector('.ach-progress').textContent = `${spent.toLocaleString()} / 500 ₽`;
-            }
-            
-            // 1000 ₽
-            if (spent >= 1000) {
-                achSpend1000.className = 'achievement unlocked';
-                achSpend1000.querySelector('.ach-progress').textContent = '✅ Выполнено';
-            } else {
-                achSpend1000.querySelector('.ach-progress').textContent = `${spent.toLocaleString()} / 1000 ₽`;
-            }
-            
-            // Первая покупка
-            if (hasPurchase) {
-                achFirstPurchase.className = 'achievement unlocked';
-                achFirstPurchase.querySelector('.ach-progress').textContent = '✅ Выполнено';
-            }
-        }
-
-        // ===== БЫСТРЫЕ ПОКУПКИ =====
-        document.querySelectorAll('.purchase-item').forEach(item => {
-            item.addEventListener('click', () => {
-                const productId = item.dataset.product;
-                if (!currentUser) {
-                    alert('Войдите в аккаунт');
-                    window.location.href = 'login.html';
-                    return;
-                }
-                window.location.href = `shop.html?product=${productId}`;
+            transaction.update(balanceRef, {
+                available: (currentBalance.available || 0) + amount,
+                hasDeposit: true,
+                updatedAt: new Date()
             });
-        });
-
-        // ===== ЗАГРУЗКА КОШЕЛЬКА =====
-        async function loadWallet() {
-            if (!currentUser) return;
-            
-            try {
-                const balance = await getWalletBalance(currentUser.uid);
-                if (balance) {
-                    currentBalance = balance.available || 0;
-                    document.getElementById('balanceAmount').innerHTML = `${(balance.available || 0).toLocaleString()} ₽`;
-                    document.getElementById('totalSpent').innerHTML = `${(balance.totalSpent || 0).toLocaleString()} ₽`;
-                    document.getElementById('totalRefunded').innerHTML = `${(balance.totalRefunded || 0).toLocaleString()} ₽`;
-                    
-                    // Обновляем статус
-                    updateStatus(balance.totalSpent || 0);
-                    
-                    // Обновляем достижения
-                    updateAchievements(
-                        balance.totalSpent || 0,
-                        balance.hasDeposit || false,
-                        balance.hasPurchase || false
-                    );
-                }
-                
-                const transactions = await getWalletTransactions(currentUser.uid, 'fighter');
-                const container = document.getElementById('transactionsList');
-                
-                if (transactions.length === 0) {
-                    container.innerHTML = `
-                        <div class="empty-state">
-                            <i class="fas fa-inbox"></i>
-                            История операций пуста
-                        </div>
-                    `;
-                    return;
-                }
-                
-                let html = '';
-                transactions.forEach(t => {
-                    const typeNames = { 
-                        'deposit': 'Пополнение', 
-                        'payment': 'Оплата', 
-                        'refund': 'Возврат',
-                        'withdrawal': 'Вывод средств',
-                        'hold': 'Заморозка',
-                        'release': 'Поступление'
-                    };
-                    
-                    const typeIcons = {
-                        'deposit': 'deposit',
-                        'payment': 'payment',
-                        'refund': 'refund',
-                        'withdrawal': 'withdrawal',
-                        'hold': 'payment',
-                        'release': 'deposit'
-                    };
-                    
-                    const iconClass = typeIcons[t.type] || 'payment';
-                    const sign = (t.type === 'deposit' || t.type === 'refund' || t.type === 'release') ? '+' : '−';
-                    const isPositive = (t.type === 'deposit' || t.type === 'refund' || t.type === 'release');
-                    const amountColor = isPositive ? 'positive' : 'negative';
-                    const date = t.createdAt?.toLocaleString('ru-RU') || '—';
-                    
-                    html += `
-                        <div class="transaction-item">
-                            <div class="transaction-left">
-                                <div class="tx-icon ${iconClass}">
-                                    <i class="fas ${t.type === 'deposit' ? 'fa-arrow-down' : 
-                                        (t.type === 'refund' ? 'fa-undo' : 
-                                        (t.type === 'withdrawal' ? 'fa-arrow-up' : 
-                                        (t.type === 'hold' ? 'fa-lock' : 'fa-shopping-cart')))}"></i>
-                                </div>
-                                <div class="tx-info">
-                                    <div class="tx-name">${typeNames[t.type] || t.type}</div>
-                                    <div class="tx-date">${date}</div>
-                                </div>
-                            </div>
-                            <div class="transaction-right">
-                                <div class="tx-amount ${amountColor}">${sign} ${(t.amount || 0).toLocaleString()} ₽</div>
-                                ${t.status === 'pending' ? '<div class="tx-status">⏳ Обработка</div>' : ''}
-                            </div>
-                            ${t.description ? `<div style="width:100%;font-size:0.6rem;color:#666;padding-left:46px;">${t.description}</div>` : ''}
-                        </div>
-                    `;
-                });
-                container.innerHTML = html;
-            } catch (err) {
-                console.error('Ошибка загрузки кошелька:', err);
-                document.getElementById('transactionsList').innerHTML = '<div class="empty-state">Ошибка загрузки</div>';
-            }
-        }
-
-        // ===== ПОПОЛНЕНИЕ =====
-        async function processPayment() {
-            if (!currentUser) {
-                alert('Войдите в аккаунт');
-                window.location.href = 'login.html';
-                return;
-            }
-            
-            const amount = parseInt(document.getElementById('modalAmount').value);
-            if (!amount || amount < 100) {
-                alert('Минимальная сумма пополнения — 100 ₽');
-                return;
-            }
-            
-            const confirmBtn = document.getElementById('confirmModalBtn');
-            const originalText = confirmBtn.innerHTML;
-            confirmBtn.innerHTML = '<div class="loading-spinner"></div>';
-            confirmBtn.disabled = true;
-            
-            try {
-                await depositFunds(currentUser.uid, amount, selectedMethod === 'card' ? 'card' : 'sbp');
-                alert(`✅ Баланс пополнен на ${amount.toLocaleString()} ₽!`);
-                
-                document.getElementById('depositModal').classList.remove('active');
-                document.getElementById('modalAmount').value = '';
-                await loadWallet();
-            } catch (err) {
-                console.error('Ошибка:', err);
-                alert('❌ Ошибка при пополнении баланса');
-            } finally {
-                confirmBtn.innerHTML = originalText;
-                confirmBtn.disabled = false;
-            }
-        }
-
-        // ===== ВЫВОД =====
-        async function requestWithdraw() {
-            if (!currentUser) {
-                alert('Войдите в аккаунт');
-                return;
-            }
-            
-            const amount = parseInt(document.getElementById('withdrawAmount').value);
-            if (!amount || amount < 100) {
-                alert('Минимальная сумма вывода — 100 ₽');
-                return;
-            }
-            
-            if (amount > currentBalance) {
-                alert(`Недостаточно средств. Доступно: ${currentBalance.toLocaleString()} ₽`);
-                return;
-            }
-            
-            if (!confirm(`Вывести ${amount.toLocaleString()} ₽ на ${selectedWithdrawMethod === 'card' ? 'карту' : 'СБП'}?`)) return;
-            
-            const confirmBtn = document.getElementById('confirmWithdrawBtn');
-            const originalText = confirmBtn.innerHTML;
-            confirmBtn.innerHTML = '<div class="loading-spinner"></div>';
-            confirmBtn.disabled = true;
-            
-            try {
-                const result = await createWithdrawalRequest(
-                    currentUser.uid, 
-                    amount, 
-                    selectedWithdrawMethod,
-                    `Вывод на ${selectedWithdrawMethod === 'card' ? 'карту' : 'СБП'}`
-                );
-                
-                alert(`✅ Заявка на вывод ${amount.toLocaleString()} ₽ принята!`);
-                
-                document.getElementById('withdrawModal').classList.remove('active');
-                document.getElementById('withdrawAmount').value = '';
-                await loadWallet();
-            } catch (err) {
-                alert(`❌ ${err.message}`);
-            } finally {
-                confirmBtn.innerHTML = originalText;
-                confirmBtn.disabled = false;
-            }
-        }
-
-        // ===== СОБЫТИЯ =====
-        // Бонусный баннер
-        document.getElementById('bonusDepositBtn')?.addEventListener('click', () => {
-            document.getElementById('depositBtn').click();
-        });
-
-        document.getElementById('bonusBanner')?.addEventListener('click', (e) => {
-            if (e.target.closest('.btn-bonus')) return;
-            document.getElementById('depositBtn').click();
-        });
-
-        // Пополнение
-        document.getElementById('depositBtn')?.addEventListener('click', () => {
-            if (!currentUser) { 
-                alert('Войдите в аккаунт'); 
-                window.location.href = 'login.html'; 
-                return; 
-            }
-            document.getElementById('depositModal').classList.add('active');
-        });
-
-        document.getElementById('cancelModalBtn')?.addEventListener('click', () => {
-            document.getElementById('depositModal').classList.remove('active');
-            document.getElementById('modalAmount').value = '';
         });
         
-        document.getElementById('depositModal')?.addEventListener('click', (e) => {
-            if (e.target === document.getElementById('depositModal')) {
-                document.getElementById('depositModal').classList.remove('active');
-                document.getElementById('modalAmount').value = '';
-            }
-        });
-
-        document.getElementById('confirmModalBtn')?.addEventListener('click', processPayment);
-
-        // Вывод
-        document.getElementById('withdrawBtn')?.addEventListener('click', async () => {
-            if (!currentUser) {
-                alert('Войдите в аккаунт');
-                window.location.href = 'login.html';
-                return;
-            }
-            document.getElementById('availableBalanceDisplay').innerHTML = currentBalance.toLocaleString();
-            document.getElementById('withdrawModal').classList.add('active');
-        });
-
-        document.getElementById('cancelWithdrawBtn')?.addEventListener('click', () => {
-            document.getElementById('withdrawModal').classList.remove('active');
-            document.getElementById('withdrawAmount').value = '';
+        // Добавляем транзакцию
+        await addDoc(collection(db, "wallet_transactions"), {
+            userId: userId,
+            userType: "fighter",
+            type: "deposit",
+            amount: amount,
+            status: "completed",
+            description: `Пополнение баланса на ${amount} ₽ (${method})`,
+            createdAt: new Date()
         });
         
-        document.getElementById('withdrawModal')?.addEventListener('click', (e) => {
-            if (e.target === document.getElementById('withdrawModal')) {
-                document.getElementById('withdrawModal').classList.remove('active');
-                document.getElementById('withdrawAmount').value = '';
+        return { success: true, amount: amount };
+    } catch (err) {
+        console.error('Ошибка пополнения:', err);
+        throw new Error('Не удалось пополнить баланс');
+    }
+}
+
+// Создать заявку на вывод для покупателя
+async function createBuyerWithdrawal(userId, amount, method, details) {
+    if (!userId) throw new Error('Не указан ID пользователя');
+    if (!amount || amount < 100) throw new Error('Минимальная сумма вывода — 100 ₽');
+    if (!details) throw new Error('Укажите реквизиты для вывода');
+    
+    const balanceRef = doc(db, "wallet_balances", userId);
+    
+    try {
+        let result = null;
+        
+        await runTransaction(db, async (transaction) => {
+            const balanceDoc = await transaction.get(balanceRef);
+            if (!balanceDoc.exists()) {
+                throw new Error('Кошелёк не найден');
             }
-        });
-
-        document.getElementById('confirmWithdrawBtn')?.addEventListener('click', requestWithdraw);
-
-        // Выбор метода пополнения
-        document.querySelectorAll('[data-method]').forEach(opt => {
-            opt.addEventListener('click', () => {
-                document.querySelectorAll('[data-method]').forEach(o => o.classList.remove('selected'));
-                opt.classList.add('selected');
-                selectedMethod = opt.dataset.method;
+            
+            const data = balanceDoc.data();
+            const available = data.available || 0;
+            
+            if (available < amount) {
+                throw new Error(`Недостаточно средств. Доступно: ${available} ₽`);
+            }
+            
+            transaction.update(balanceRef, {
+                available: available - amount,
+                pendingWithdraw: (data.pendingWithdraw || 0) + amount,
+                updatedAt: new Date()
             });
         });
+        
+        // Создаём заявку на вывод
+        const withdrawalRef = await addDoc(collection(db, "withdrawals"), {
+            userId: userId,
+            userType: "fighter",
+            amount: amount,
+            method: method,
+            details: details,
+            status: 'pending',
+            createdAt: new Date(),
+            updatedAt: new Date()
+        });
+        
+        // Добавляем транзакцию
+        await addDoc(collection(db, "wallet_transactions"), {
+            userId: userId,
+            userType: "fighter",
+            type: "withdrawal",
+            amount: amount,
+            status: "pending",
+            withdrawalId: withdrawalRef.id,
+            description: `Заявка на вывод ${amount} ₽ (${method})`,
+            createdAt: new Date()
+        });
+        
+        return { id: withdrawalRef.id, status: 'pending' };
+    } catch (err) {
+        console.error('Ошибка создания заявки:', err);
+        throw err;
+    }
+}
 
-        // Выбор метода вывода
-        document.querySelectorAll('[data-withdraw-method]').forEach(opt => {
-            opt.addEventListener('click', () => {
-                document.querySelectorAll('[data-withdraw-method]').forEach(o => o.classList.remove('selected'));
-                opt.classList.add('selected');
-                selectedWithdrawMethod = opt.dataset.withdrawMethod;
+// Получить транзакции покупателя
+async function getBuyerTransactions(userId, limit = 50) {
+    if (!userId) return [];
+    
+    try {
+        const q = query(
+            collection(db, "wallet_transactions"),
+            where("userId", "==", userId),
+            where("userType", "==", "fighter"),
+            orderBy("createdAt", "desc"),
+            limit(limit)
+        );
+        
+        const snapshot = await getDocs(q);
+        const transactions = [];
+        snapshot.forEach(doc => {
+            const data = doc.data();
+            transactions.push({
+                id: doc.id,
+                ...data,
+                createdAt: data.createdAt?.toDate() || new Date()
             });
         });
+        
+        return transactions;
+    } catch (err) {
+        console.error('Ошибка получения транзакций:', err);
+        return [];
+    }
+}
 
-        // Предустановленные суммы
-        document.querySelectorAll('.preset-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                document.getElementById('modalAmount').value = btn.dataset.amount;
-            });
-        });
+// ============================================================
+// СТАТУСЫ ПОЛЬЗОВАТЕЛЯ
+// ============================================================
 
-        // ===== АВТОРИЗАЦИЯ =====
-        onAuthStateChanged(auth, (user) => {
-            currentUser = user;
-            if (user) {
-                loadWallet();
-            } else {
-                document.getElementById('balanceAmount').innerHTML = '0 ₽';
-                document.getElementById('totalSpent').innerHTML = '0 ₽';
-                document.getElementById('totalRefunded').innerHTML = '0 ₽';
-                document.getElementById('transactionsList').innerHTML = `
-                    <div class="empty-state">
-                        <i class="fas fa-user"></i>
-                        Войдите в аккаунт
+const LEVELS = [
+    { name: 'Bronze', min: 0, icon: '🥉', benefits: ['✅ Без комиссии', '✅ 5 бесплатных вызовов'] },
+    { name: 'Silver', min: 500, icon: '🥈', benefits: ['✅ Без комиссии', '✅ 10 бесплатных вызовов'] },
+    { name: 'Gold', min: 1500, icon: '🥇', benefits: ['✅ Без комиссии', '✅ 20 бесплатных вызовов', '✅ Скидка 10%',] },
+    { name: 'Platinum', min: 5000, icon: '💎', benefits: ['✅ Без комиссии', '✅ 50 бесплатных вызовов', '✅ Скидка 15%',] }
+];
+
+function getUserLevel(spent) {
+    let level = LEVELS[0];
+    for (let l of LEVELS) {
+        if (spent >= l.min) level = l;
+    }
+    return level;
+}
+
+function getNextLevel(spent) {
+    for (let l of LEVELS) {
+        if (spent < l.min) return l;
+    }
+    return null;
+}
+
+function updateStatus(spent) {
+    const currentLevel = getUserLevel(spent);
+    const nextLevel = getNextLevel(spent);
+    
+    document.getElementById('statusName').textContent = `${currentLevel.icon} ${currentLevel.name}`;
+    document.getElementById('statusLevel').textContent = `Уровень ${LEVELS.indexOf(currentLevel) + 1}`;
+    
+    const progressFill = document.getElementById('progressFill');
+    const progressCurrent = document.getElementById('progressCurrent');
+    const progressNext = document.getElementById('progressNext');
+    
+    if (nextLevel) {
+        const prevMin = currentLevel.min;
+        const nextMin = nextLevel.min;
+        const progress = ((spent - prevMin) / (nextMin - prevMin)) * 100;
+        progressFill.style.width = Math.min(progress, 100) + '%';
+        progressCurrent.textContent = `${spent.toLocaleString()} ₽`;
+        progressNext.textContent = `До ${nextLevel.name}: ${(nextMin - spent).toLocaleString()} ₽`;
+    } else {
+        progressFill.style.width = '100%';
+        progressCurrent.textContent = `${spent.toLocaleString()} ₽`;
+        progressNext.textContent = '👑 Максимальный уровень!';
+    }
+    
+    const benefitsContainer = document.getElementById('statusBenefits');
+    benefitsContainer.innerHTML = currentLevel.benefits.map(b => `<span>${b}</span>`).join('');
+}
+
+// ===== ДОСТИЖЕНИЯ =====
+function updateAchievements(spent, hasDeposit, hasPurchase) {
+    const achFirstDeposit = document.getElementById('achFirstDeposit');
+    const achSpend500 = document.getElementById('achSpend500');
+    const achSpend1000 = document.getElementById('achSpend1000');
+    const achFirstPurchase = document.getElementById('achFirstPurchase');
+    
+    if (hasDeposit) {
+        achFirstDeposit.className = 'achievement unlocked';
+        achFirstDeposit.querySelector('.ach-progress').textContent = '✅ Выполнено';
+    }
+    
+    if (spent >= 500) {
+        achSpend500.className = 'achievement unlocked';
+        achSpend500.querySelector('.ach-progress').textContent = '✅ Выполнено';
+    } else {
+        achSpend500.querySelector('.ach-progress').textContent = `${spent.toLocaleString()} / 500 ₽`;
+    }
+    
+    if (spent >= 1000) {
+        achSpend1000.className = 'achievement unlocked';
+        achSpend1000.querySelector('.ach-progress').textContent = '✅ Выполнено';
+    } else {
+        achSpend1000.querySelector('.ach-progress').textContent = `${spent.toLocaleString()} / 1000 ₽`;
+    }
+    
+    if (hasPurchase) {
+        achFirstPurchase.className = 'achievement unlocked';
+        achFirstPurchase.querySelector('.ach-progress').textContent = '✅ Выполнено';
+    }
+}
+
+// ===== БЫСТРЫЕ ПОКУПКИ =====
+document.querySelectorAll('.purchase-item').forEach(item => {
+    item.addEventListener('click', () => {
+        const productId = item.dataset.product;
+        if (!currentUser) {
+            alert('Войдите в аккаунт');
+            window.location.href = 'login.html';
+            return;
+        }
+        window.location.href = `shop.html?product=${productId}`;
+    });
+});
+
+// ===== ЗАГРУЗКА КОШЕЛЬКА =====
+async function loadWallet() {
+    if (!currentUser) return;
+    
+    try {
+        const balance = await getBuyerBalance(currentUser.uid);
+        if (balance) {
+            currentBalance = balance.available || 0;
+            document.getElementById('balanceAmount').innerHTML = `${(balance.available || 0).toLocaleString()} ₽`;
+            document.getElementById('totalSpent').innerHTML = `${(balance.totalSpent || 0).toLocaleString()} ₽`;
+            document.getElementById('totalRefunded').innerHTML = `${(balance.totalRefunded || 0).toLocaleString()} ₽`;
+            
+            updateStatus(balance.totalSpent || 0);
+            updateAchievements(
+                balance.totalSpent || 0,
+                balance.hasDeposit || false,
+                balance.hasPurchase || false
+            );
+        }
+        
+        const transactions = await getBuyerTransactions(currentUser.uid);
+        const container = document.getElementById('transactionsList');
+        
+        if (transactions.length === 0) {
+            container.innerHTML = `
+                <div class="empty-state">
+                    <i class="fas fa-inbox"></i>
+                    История операций пуста
+                </div>
+            `;
+            return;
+        }
+        
+        let html = '';
+        transactions.forEach(t => {
+            const typeNames = { 
+                'deposit': 'Пополнение', 
+                'payment': 'Оплата', 
+                'refund': 'Возврат',
+                'withdrawal': 'Вывод средств',
+                'hold': 'Заморозка',
+                'release': 'Поступление'
+            };
+            
+            const typeIcons = {
+                'deposit': 'deposit',
+                'payment': 'payment',
+                'refund': 'refund',
+                'withdrawal': 'withdrawal',
+                'hold': 'payment',
+                'release': 'deposit'
+            };
+            
+            const iconClass = typeIcons[t.type] || 'payment';
+            const sign = (t.type === 'deposit' || t.type === 'refund' || t.type === 'release') ? '+' : '−';
+            const isPositive = (t.type === 'deposit' || t.type === 'refund' || t.type === 'release');
+            const amountColor = isPositive ? 'positive' : 'negative';
+            const date = t.createdAt?.toLocaleString('ru-RU') || '—';
+            
+            html += `
+                <div class="transaction-item">
+                    <div class="transaction-left">
+                        <div class="tx-icon ${iconClass}">
+                            <i class="fas ${t.type === 'deposit' ? 'fa-arrow-down' : 
+                                (t.type === 'refund' ? 'fa-undo' : 
+                                (t.type === 'withdrawal' ? 'fa-arrow-up' : 
+                                (t.type === 'hold' ? 'fa-lock' : 'fa-shopping-cart')))}"></i>
+                        </div>
+                        <div class="tx-info">
+                            <div class="tx-name">${typeNames[t.type] || t.type}</div>
+                            <div class="tx-date">${date}</div>
+                        </div>
                     </div>
-                `;
-            }
+                    <div class="transaction-right">
+                        <div class="tx-amount ${amountColor}">${sign} ${(t.amount || 0).toLocaleString()} ₽</div>
+                        ${t.status === 'pending' ? '<div class="tx-status">⏳ Обработка</div>' : ''}
+                    </div>
+                    ${t.description ? `<div style="width:100%;font-size:0.6rem;color:#666;padding-left:46px;">${t.description}</div>` : ''}
+                </div>
+            `;
         });
+        container.innerHTML = html;
+    } catch (err) {
+        console.error('Ошибка загрузки кошелька:', err);
+        document.getElementById('transactionsList').innerHTML = '<div class="empty-state">Ошибка загрузки</div>';
+    }
+}
 
-        // ===== БУРГЕР МЕНЮ =====
-        const menuToggle = document.getElementById('menuToggle');
-        const navLinks = document.getElementById('navLinks');
-        if (menuToggle && navLinks) {
-            menuToggle.addEventListener('click', () => navLinks.classList.toggle('show'));
-            document.addEventListener('click', (e) => {
-                if (!menuToggle.contains(e.target) && !navLinks.contains(e.target)) {
-                    navLinks.classList.remove('show');
-                }
-            });
+// ===== ПОПОЛНЕНИЕ =====
+async function processPayment() {
+    if (!currentUser) {
+        alert('Войдите в аккаунт');
+        window.location.href = 'login.html';
+        return;
+    }
+    
+    const amount = parseInt(document.getElementById('modalAmount').value);
+    if (!amount || amount < 100) {
+        alert('Минимальная сумма пополнения — 100 ₽');
+        return;
+    }
+    
+    const confirmBtn = document.getElementById('confirmModalBtn');
+    const originalText = confirmBtn.innerHTML;
+    confirmBtn.innerHTML = '<div class="loading-spinner"></div>';
+    confirmBtn.disabled = true;
+    
+    try {
+        await depositBuyerFunds(currentUser.uid, amount, selectedMethod === 'card' ? 'card' : 'sbp');
+        alert(`✅ Баланс пополнен на ${amount.toLocaleString()} ₽!`);
+        
+        document.getElementById('depositModal').classList.remove('active');
+        document.getElementById('modalAmount').value = '';
+        await loadWallet();
+    } catch (err) {
+        console.error('Ошибка:', err);
+        alert(`❌ ${err.message || 'Ошибка при пополнении баланса'}`);
+    } finally {
+        confirmBtn.innerHTML = originalText;
+        confirmBtn.disabled = false;
+    }
+}
+
+// ===== ВЫВОД =====
+async function requestWithdraw() {
+    if (!currentUser) {
+        alert('Войдите в аккаунт');
+        return;
+    }
+    
+    const amount = parseInt(document.getElementById('withdrawAmount').value);
+    const details = document.getElementById('withdrawDetails').value.trim();
+    
+    if (!amount || amount < 100) {
+        alert('Минимальная сумма вывода — 100 ₽');
+        return;
+    }
+    
+    if (!details) {
+        alert('Укажите реквизиты для вывода (номер карты или Telegram ID)');
+        return;
+    }
+    
+    if (amount > currentBalance) {
+        alert(`Недостаточно средств. Доступно: ${currentBalance.toLocaleString()} ₽`);
+        return;
+    }
+    
+    if (!confirm(`Вывести ${amount.toLocaleString()} ₽ на ${selectedWithdrawMethod === 'card' ? 'карту' : 'СБП'}?`)) return;
+    
+    const confirmBtn = document.getElementById('confirmWithdrawBtn');
+    const originalText = confirmBtn.innerHTML;
+    confirmBtn.innerHTML = '<div class="loading-spinner"></div>';
+    confirmBtn.disabled = true;
+    
+    try {
+        await createBuyerWithdrawal(
+            currentUser.uid, 
+            amount, 
+            selectedWithdrawMethod,
+            details
+        );
+        
+        alert(`✅ Заявка на вывод ${amount.toLocaleString()} ₽ принята!`);
+        
+        document.getElementById('withdrawModal').classList.remove('active');
+        document.getElementById('withdrawAmount').value = '';
+        document.getElementById('withdrawDetails').value = '';
+        await loadWallet();
+    } catch (err) {
+        alert(`❌ ${err.message}`);
+    } finally {
+        confirmBtn.innerHTML = originalText;
+        confirmBtn.disabled = false;
+    }
+}
+
+// ============================================================
+// СОБЫТИЯ
+// ============================================================
+
+document.getElementById('bonusDepositBtn')?.addEventListener('click', () => {
+    document.getElementById('depositBtn').click();
+});
+
+document.getElementById('bonusBanner')?.addEventListener('click', (e) => {
+    if (e.target.closest('.btn-bonus')) return;
+    document.getElementById('depositBtn').click();
+});
+
+document.getElementById('depositBtn')?.addEventListener('click', () => {
+    if (!currentUser) { 
+        alert('Войдите в аккаунт'); 
+        window.location.href = 'login.html'; 
+        return; 
+    }
+    document.getElementById('depositModal').classList.add('active');
+});
+
+document.getElementById('cancelModalBtn')?.addEventListener('click', () => {
+    document.getElementById('depositModal').classList.remove('active');
+    document.getElementById('modalAmount').value = '';
+});
+
+document.getElementById('depositModal')?.addEventListener('click', (e) => {
+    if (e.target === document.getElementById('depositModal')) {
+        document.getElementById('depositModal').classList.remove('active');
+        document.getElementById('modalAmount').value = '';
+    }
+});
+
+document.getElementById('confirmModalBtn')?.addEventListener('click', processPayment);
+
+document.getElementById('withdrawBtn')?.addEventListener('click', async () => {
+    if (!currentUser) {
+        alert('Войдите в аккаунт');
+        window.location.href = 'login.html';
+        return;
+    }
+    document.getElementById('availableBalanceDisplay').innerHTML = currentBalance.toLocaleString();
+    document.getElementById('withdrawModal').classList.add('active');
+});
+
+document.getElementById('cancelWithdrawBtn')?.addEventListener('click', () => {
+    document.getElementById('withdrawModal').classList.remove('active');
+    document.getElementById('withdrawAmount').value = '';
+    document.getElementById('withdrawDetails').value = '';
+});
+
+document.getElementById('withdrawModal')?.addEventListener('click', (e) => {
+    if (e.target === document.getElementById('withdrawModal')) {
+        document.getElementById('withdrawModal').classList.remove('active');
+        document.getElementById('withdrawAmount').value = '';
+        document.getElementById('withdrawDetails').value = '';
+    }
+});
+
+document.getElementById('confirmWithdrawBtn')?.addEventListener('click', requestWithdraw);
+
+document.querySelectorAll('[data-method]').forEach(opt => {
+    opt.addEventListener('click', () => {
+        document.querySelectorAll('[data-method]').forEach(o => o.classList.remove('selected'));
+        opt.classList.add('selected');
+        selectedMethod = opt.dataset.method;
+    });
+});
+
+document.querySelectorAll('[data-withdraw-method]').forEach(opt => {
+    opt.addEventListener('click', () => {
+        document.querySelectorAll('[data-withdraw-method]').forEach(o => o.classList.remove('selected'));
+        opt.classList.add('selected');
+        selectedWithdrawMethod = opt.dataset.withdrawMethod;
+    });
+});
+
+document.querySelectorAll('.preset-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+        document.getElementById('modalAmount').value = btn.dataset.amount;
+    });
+});
+
+onAuthStateChanged(auth, (user) => {
+    currentUser = user;
+    if (user) {
+        loadWallet();
+    } else {
+        document.getElementById('balanceAmount').innerHTML = '0 ₽';
+        document.getElementById('totalSpent').innerHTML = '0 ₽';
+        document.getElementById('totalRefunded').innerHTML = '0 ₽';
+        document.getElementById('transactionsList').innerHTML = `
+            <div class="empty-state">
+                <i class="fas fa-user"></i>
+                Войдите в аккаунт
+            </div>
+        `;
+    }
+});
+
+const menuToggle = document.getElementById('menuToggle');
+const navLinks = document.getElementById('navLinks');
+if (menuToggle && navLinks) {
+    menuToggle.addEventListener('click', () => navLinks.classList.toggle('show'));
+    document.addEventListener('click', (e) => {
+        if (!menuToggle.contains(e.target) && !navLinks.contains(e.target)) {
+            navLinks.classList.remove('show');
         }
-    </script>
+    });
+}
+</script>
 </body>
 </html>

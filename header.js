@@ -551,32 +551,56 @@ function animatePageIn() {
 }
 
 function setupGlobalNavigation() {
-    // Все ссылки в навигации
-    document.querySelectorAll('.nav-links a, .logo, [data-navigate], .mobile-nav-item, .mobile-nav-center .center-button, .mobile-submenu-content a, .quick-action-item[data-url]').forEach(link => {
+    // Функция для обработки кликов
+    function handleLinkClick(e) {
+        const link = e.currentTarget;
+        const href = link.getAttribute('href');
+        if (!href) return;
+        
+        if (link.target === '_blank' || 
+            href.startsWith('#') || 
+            link.hasAttribute('data-no-animation') ||
+            href === '#' ||
+            href === '' ||
+            href.includes('javascript:')) {
+            return;
+        }
+        
+        if (!href.startsWith('http') || href.includes(window.location.hostname) || href.startsWith('/')) {
+            e.preventDefault();
+            navigateWithAnimation(href);
+        }
+    }
+    
+    // Обрабатываем ссылки в верхней навигации
+    document.querySelectorAll('.nav-links a, .logo, [data-navigate]').forEach(link => {
         const newLink = link.cloneNode(true);
         link.parentNode.replaceChild(newLink, link);
-        
+        newLink.addEventListener('click', handleLinkClick);
+    });
+    
+    // Обрабатываем ссылки в мобильной нижней навигации (важно!)
+    document.querySelectorAll('.mobile-nav-item, .mobile-nav-center .center-button').forEach(link => {
+        const newLink = link.cloneNode(true);
+        link.parentNode.replaceChild(newLink, link);
+        newLink.addEventListener('click', handleLinkClick);
+    });
+    
+    // Обрабатываем ссылки в мобильных подменю
+    document.querySelectorAll('.mobile-submenu-content a, .quick-action-item[data-url]').forEach(link => {
+        const newLink = link.cloneNode(true);
+        link.parentNode.replaceChild(newLink, link);
         newLink.addEventListener('click', function(e) {
             const href = this.getAttribute('href');
             if (!href) return;
             
-            if (this.target === '_blank' || 
-                href.startsWith('#') || 
-                this.hasAttribute('data-no-animation') ||
-                href === '#' ||
-                href === '' ||
-                href.includes('javascript:')) {
-                return;
-            }
-            
-            // Закрываем мобильное меню если открыто
+            // Закрываем мобильное меню
             const mobileMenu = this.closest('.mobile-submenu-content');
             if (mobileMenu) {
                 const parent = mobileMenu.closest('.mobile-submenu');
                 if (parent) parent.classList.remove('open');
             }
             
-            // Закрываем бургер меню
             const navLinks = document.getElementById('navLinks');
             if (navLinks) navLinks.classList.remove('show');
             

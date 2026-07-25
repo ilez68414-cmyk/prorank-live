@@ -62,15 +62,15 @@ export const ALL_BADGES = [
 // ТОВАРЫ
 // ============================================================
 export const PRODUCTS = {
-    CHALLENGE_5: { id: 'challenge_5', name: '5 вызовов', price: 100, type: 'challenge', amount: 5 },
-    CHALLENGE_10: { id: 'challenge_10', name: '10 вызовов', price: 180, type: 'challenge', amount: 10 },
-    CHALLENGE_25: { id: 'challenge_25', name: '25 вызовов', price: 350, type: 'challenge', amount: 25 },
+    CHALLENGE_5: { id: 'challenge_5', name: '5 вызовов', price: 500, type: 'challenge', amount: 5 },
+    CHALLENGE_10: { id: 'challenge_10', name: '10 вызовов', price: 900, type: 'challenge', amount: 10 },
+    CHALLENGE_25: { id: 'challenge_25', name: '25 вызовов', price: 2000, type: 'challenge', amount: 25 },
     PREMIUM_MONTH: { id: 'premium_month', name: 'Премиум 1 месяц', price: 200, type: 'premium', duration: 30 },
     PREMIUM_3MONTHS: { id: 'premium_3months', name: 'Премиум 3 месяца', price: 500, type: 'premium', duration: 90 },
     PREMIUM_6MONTHS: { id: 'premium_6months', name: 'Премиум 6 месяцев', price: 850, type: 'premium', duration: 180 },
     PREMIUM_YEAR: { id: 'premium_year', name: 'Премиум 12 месяцев', price: 1500, type: 'premium', duration: 365 },
-    FIGHTER_PACK: { id: 'fighter_pack', name: 'Набор "Боец"', price: 400, type: 'pack', challenges: 15, premiumDays: 30 },
-    CHAMPION_PACK: { id: 'champion_pack', name: 'Набор "Чемпион"', price: 1000, type: 'pack', challenges: 40, premiumDays: 90 },
+    FIGHTER_PACK: { id: 'fighter_pack', name: 'Набор "Боец"', price: 1400, type: 'pack', challenges: 15, premiumDays: 30 },
+    CHAMPION_PACK: { id: 'champion_pack', name: 'Набор "Чемпион"', price: 3500, type: 'pack', challenges: 40, premiumDays: 90 },
 };
 
 // ============================================================
