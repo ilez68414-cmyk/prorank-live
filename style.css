@@ -1821,3 +1821,67 @@ body {
 .notification-btn i {
     font-size: 1rem;
 }
+/* ===== СВЕТОВАЯ ДОРОЖКА - АНИМАЦИЯ ПЕРЕХОДА ===== */
+
+.page-transition {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 9999;
+    pointer-events: none;
+    background: #0a0a0a;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    overflow: hidden;
+}
+
+.page-transition .light {
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, 
+        transparent 0%, 
+        rgba(251,191,36,0.05) 10%,
+        rgba(251,191,36,0.3) 30%,
+        #fbbf24 45%, 
+        #ffdd77 50%,
+        #fbbf24 55%, 
+        rgba(251,191,36,0.3) 70%,
+        rgba(251,191,36,0.05) 90%,
+        transparent 100%
+    );
+    box-shadow: 0 0 80px rgba(251,191,36,0.2);
+    transition: left 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    will-change: left;
+}
+
+.page-transition.active .light {
+    left: 100%;
+}
+
+.page-fade-in {
+    animation: pageFadeIn 0.35s ease forwards;
+}
+
+@keyframes pageFadeIn {
+    from { 
+        opacity: 0.5;
+        filter: blur(2px);
+    }
+    to { 
+        opacity: 1;
+        filter: blur(0px);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .page-transition .light,
+    .page-fade-in {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+    }
+}

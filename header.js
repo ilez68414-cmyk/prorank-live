@@ -106,7 +106,6 @@ function createIndicators() {
             <span class="partner-wallet-amount" id="partnerWalletAmount">0 ₽</span>
             <i class="fas fa-chevron-right" style="font-size: 0.7rem;"></i>
         </div>
-        <!-- ===== КНОПКА УВЕДОМЛЕНИЙ ===== -->
         <button class="notification-btn" id="notificationToggle" style="display: none;" title="Включить уведомления">
             <i class="fas fa-bell"></i>
         </button>
@@ -124,13 +123,13 @@ function createIndicators() {
     partnerWalletIndicator = document.getElementById('partnerWalletIndicator');
     
     const plusBtn = document.getElementById('balancePlusBtn');
-    if (plusBtn) plusBtn.onclick = () => window.location.href = 'shop.html';
+    if (plusBtn) plusBtn.onclick = () => {
+        navigateWithAnimation('shop.html');
+    };
     
-    // Инициализация кнопки уведомлений
     initNotificationButton();
 }
 
-// ===== КНОПКА УВЕДОМЛЕНИЙ (TOGGLE) =====
 async function initNotificationButton() {
     const btn = document.getElementById('notificationToggle');
     if (!btn) return;
@@ -151,7 +150,6 @@ async function initNotificationButton() {
         
         const status = await getPushStatus();
         
-        // Обновляем внешний вид кнопки
         function updateButtonUI(isSubscribed, permission = 'granted') {
             if (permission === 'denied') {
                 btn.innerHTML = '<i class="fas fa-bell-slash" style="color: #dc2626;"></i>';
@@ -177,18 +175,15 @@ async function initNotificationButton() {
             }
         }
         
-        // Начальное состояние
         const isSubscribed = status.subscribed && status.permission === 'granted';
         updateButtonUI(isSubscribed, status.permission);
         btn.style.display = 'flex';
         
-        // Клик — переключение
         btn.onclick = async () => {
             if (btn.disabled) return;
             
             const currentStatus = await getPushStatus();
             
-            // Если уведомления заблокированы — не даём ничего сделать
             if (currentStatus.permission === 'denied') {
                 alert('Уведомления заблокированы в браузере. Разрешите их в настройках браузера.');
                 return;
@@ -197,7 +192,6 @@ async function initNotificationButton() {
             const currentlySubscribed = currentStatus.subscribed && currentStatus.permission === 'granted';
             
             if (currentlySubscribed) {
-                // Отключаем уведомления
                 const result = await unsubscribeFromPush();
                 if (result) {
                     updateButtonUI(false);
@@ -206,7 +200,6 @@ async function initNotificationButton() {
                     alert('Не удалось отключить уведомления');
                 }
             } else {
-                // Включаем уведомления
                 const result = await subscribeToPush();
                 if (result) {
                     updateButtonUI(true);
@@ -343,8 +336,9 @@ async function renderMobileBottomNav() {
     
     const mobileProfileBtn = document.getElementById('mobileProfileBtn');
     if (mobileProfileBtn) {
-        mobileProfileBtn.onclick = () => {
-            window.location.href = profileLink;
+        mobileProfileBtn.onclick = (e) => {
+            e.preventDefault();
+            navigateWithAnimation(profileLink);
         };
     }
     
@@ -409,8 +403,10 @@ async function renderMobileBottomNav() {
                         window.location.href = 'index.html';
                     };
                 } else if (url) {
-                    item.onclick = () => {
-                        window.location.href = url;
+                    item.onclick = (e) => {
+                        e.stopPropagation();
+                        menu.remove();
+                        navigateWithAnimation(url);
                     };
                 }
             });
@@ -505,6 +501,93 @@ function escapeHtml(str) {
     return str;
 }
 
+// ============================================================
+// 🔥 АНИМАЦИЯ ПЕРЕХОДОВ - СВЕТОВАЯ ДОРОЖКА
+// ============================================================
+
+function createTransitionElement() {
+    if (document.querySelector('.page-transition')) {
+        return document.querySelector('.page-transition');
+    }
+    
+    const transition = document.createElement('div');
+    transition.className = 'page-transition';
+    transition.innerHTML = '<div class="light"></div>';
+    document.body.appendChild(transition);
+    return transition;
+}
+
+function navigateWithAnimation(url) {
+    const transition = createTransitionElement();
+    
+    transition.style.opacity = '1';
+    transition.style.pointerEvents = 'auto';
+    
+    setTimeout(() => {
+        transition.classList.add('active');
+    }, 50);
+    
+    setTimeout(() => {
+        window.location.href = url;
+    }, 700);
+}
+
+function animatePageIn() {
+    const body = document.body;
+    body.classList.add('page-fade-in');
+    
+    setTimeout(() => {
+        body.classList.remove('page-fade-in');
+    }, 400);
+    
+    const transition = document.querySelector('.page-transition');
+    if (transition) {
+        setTimeout(() => {
+            transition.classList.remove('active');
+            transition.style.opacity = '0';
+            transition.style.pointerEvents = 'none';
+        }, 350);
+    }
+}
+
+function setupGlobalNavigation() {
+    // Все ссылки в навигации
+    document.querySelectorAll('.nav-links a, .logo, [data-navigate], .mobile-nav-item, .mobile-nav-center .center-button, .mobile-submenu-content a, .quick-action-item[data-url]').forEach(link => {
+        const newLink = link.cloneNode(true);
+        link.parentNode.replaceChild(newLink, link);
+        
+        newLink.addEventListener('click', function(e) {
+            const href = this.getAttribute('href');
+            if (!href) return;
+            
+            if (this.target === '_blank' || 
+                href.startsWith('#') || 
+                this.hasAttribute('data-no-animation') ||
+                href === '#' ||
+                href === '' ||
+                href.includes('javascript:')) {
+                return;
+            }
+            
+            // Закрываем мобильное меню если открыто
+            const mobileMenu = this.closest('.mobile-submenu-content');
+            if (mobileMenu) {
+                const parent = mobileMenu.closest('.mobile-submenu');
+                if (parent) parent.classList.remove('open');
+            }
+            
+            // Закрываем бургер меню
+            const navLinks = document.getElementById('navLinks');
+            if (navLinks) navLinks.classList.remove('show');
+            
+            if (!href.startsWith('http') || href.includes(window.location.hostname) || href.startsWith('/')) {
+                e.preventDefault();
+                navigateWithAnimation(href);
+            }
+        });
+    });
+}
+
 async function initHeader() {
     ensureMobileNavContainer();
     
@@ -556,6 +639,7 @@ async function initHeader() {
         initMobileSubmenus();
         await renderMobileBottomNav();
         initPWABanner();
+        setupGlobalNavigation();
         return;
     }
 
@@ -728,6 +812,16 @@ async function initHeader() {
     initBurger();
     await renderMobileBottomNav();
     initPWABanner();
+    setupGlobalNavigation();
+}
+
+// ===== АНИМАЦИЯ ВХОДА НА СТРАНИЦУ =====
+if (document.readyState === 'complete') {
+    setTimeout(animatePageIn, 100);
+} else {
+    window.addEventListener('load', () => {
+        setTimeout(animatePageIn, 100);
+    });
 }
 
 setInterval(() => {
@@ -746,3 +840,5 @@ document.addEventListener('DOMContentLoaded', () => {
 
 window.updateFighterMoneyBalance = updateFighterMoneyBalance;
 window.updatePartnerWalletBalance = updatePartnerWalletBalance;
+window.navigateWithAnimation = navigateWithAnimation;
+window.animatePageIn = animatePageIn;

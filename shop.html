@@ -204,39 +204,72 @@
             color: #fbbf24;
         }
 
+        /* ===== ГОРИЗОНТАЛЬНЫЙ СКРОЛЛ КАРТОЧЕК ===== */
         .products-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            display: flex;
             gap: 14px;
+            overflow-x: auto;
+            overflow-y: hidden;
+            scroll-snap-type: x mandatory;
+            -webkit-overflow-scrolling: touch;
+            padding: 8px 4px 20px 4px;
             margin-bottom: 30px;
+            scrollbar-width: thin;
+            scrollbar-color: #fbbf24 transparent;
+            flex-wrap: nowrap;
         }
-        .product-card {
+
+        .products-grid::-webkit-scrollbar {
+            height: 4px;
+        }
+        .products-grid::-webkit-scrollbar-track {
+            background: rgba(255,255,255,0.05);
+            border-radius: 10px;
+        }
+        .products-grid::-webkit-scrollbar-thumb {
+            background: #fbbf24;
+            border-radius: 10px;
+        }
+
+        .products-grid .product-card {
+            flex: 0 0 auto;
+            width: 200px;
+            scroll-snap-align: start;
+            transition: transform 0.2s, border-color 0.2s;
+            min-height: 240px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
             background: rgba(15,15,15,0.7);
             backdrop-filter: blur(8px);
             border-radius: 20px;
             padding: 16px;
             text-align: center;
             border: 1px solid rgba(251,191,36,0.15);
-            transition: all 0.2s;
             cursor: pointer;
         }
-        .product-card:hover {
-            transform: translateY(-3px);
-            border-color: rgba(251,191,36,0.4);
-            background: rgba(25,25,35,0.9);
+
+        @media (hover: hover) {
+            .products-grid .product-card:hover {
+                transform: translateY(-3px);
+                border-color: rgba(251,191,36,0.4);
+                background: rgba(25,25,35,0.9);
+            }
         }
-        .product-card.hot {
+
+        .products-grid .product-card.hot {
             border: 1px solid #fbbf24;
             box-shadow: 0 0 12px rgba(251,191,36,0.1);
         }
-        .product-card.premium-card {
+        .products-grid .product-card.premium-card {
             border-color: rgba(251,191,36,0.4);
             background: linear-gradient(135deg, rgba(251,191,36,0.08), rgba(251,191,36,0.02));
         }
-        .product-card.badge-card {
+        .products-grid .product-card.badge-card {
             border-color: rgba(139,92,246,0.3);
             background: linear-gradient(135deg, rgba(139,92,246,0.08), rgba(139,92,246,0.02));
         }
+
         .product-badge {
             display: inline-block;
             background: #fbbf24;
@@ -382,6 +415,45 @@
         .btn-confirm { background: #fbbf24; color: #000; }
         .btn-cancel { background: #333; color: #fff; }
 
+        /* Бейджи в модалке */
+        .badge-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin: 12px 0;
+        }
+        .badge-option {
+            background: rgba(255,255,255,0.05);
+            border-radius: 16px;
+            padding: 12px 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 2px solid transparent;
+            text-align: center;
+        }
+        .badge-option:hover {
+            background: rgba(255,255,255,0.1);
+        }
+        .badge-option.selected {
+            border-color: #fbbf24;
+            background: rgba(251,191,36,0.15);
+        }
+        .badge-option img {
+            width: 48px;
+            height: 48px;
+            object-fit: contain;
+            margin-bottom: 4px;
+        }
+        .badge-option .badge-name {
+            font-size: 0.6rem;
+            font-weight: 600;
+            color: #fff;
+        }
+        .badge-option .badge-price {
+            font-size: 0.55rem;
+            color: #888;
+        }
+
         .main-footer {
             background: #0a0a0a;
             border-top: 1px solid rgba(251,191,36,0.15);
@@ -412,6 +484,7 @@
             color: #555;
         }
 
+        /* ===== АДАПТИВ ===== */
         @media (max-width: 768px) {
             .container { padding: 0 12px; }
             .navbar { padding: 10px 16px; }
@@ -434,11 +507,19 @@
             .nav-links a { width: 100%; text-align: center; padding: 10px; font-size: 0.85rem; }
             .shop-header { padding: 20px 16px 10px; }
             .shop-header h1 { font-size: 1.4rem; }
+            
             .products-grid {
-                grid-template-columns: repeat(2, 1fr);
                 gap: 10px;
+                padding: 8px 0 16px 0;
+                margin: 0 -12px 20px -12px;
+                padding-left: 12px;
+                padding-right: 12px;
             }
-            .product-card { padding: 12px; border-radius: 16px; }
+            .products-grid .product-card {
+                width: 160px;
+                min-height: 200px;
+                padding: 12px;
+            }
             .product-icon { font-size: 1.5rem; margin-bottom: 6px; }
             .product-title { font-size: 0.8rem; }
             .product-desc { font-size: 0.55rem; min-height: 24px; margin-bottom: 6px; }
@@ -450,20 +531,31 @@
             .premium-banner .info h3 { font-size: 0.85rem; }
             .footer-inner { flex-direction: column; text-align: center; gap: 16px; }
             .footer-links { justify-content: center; }
+            .badge-grid { grid-template-columns: repeat(2, 1fr); }
         }
+
         @media (max-width: 480px) {
-            .products-grid { gap: 8px; }
-            .product-card { padding: 10px; }
+            .products-grid .product-card {
+                width: 140px;
+                min-height: 180px;
+                padding: 10px;
+            }
             .product-icon { font-size: 1.3rem; }
             .product-title { font-size: 0.7rem; }
             .product-price { font-size: 0.85rem; }
             .btn-buy { padding: 5px 8px; font-size: 0.6rem; min-height: 30px; }
         }
-        @media (min-width: 769px) and (max-width: 1024px) {
-            .products-grid { grid-template-columns: repeat(3, 1fr); gap: 14px; }
+
+        @media (min-width: 769px) {
+            .products-grid .product-card {
+                width: 220px;
+                min-height: 260px;
+            }
         }
-        @media (min-width: 1025px) {
-            .products-grid { grid-template-columns: repeat(4, 1fr); gap: 18px; }
+
+        @keyframes pulse-arrow {
+            0%, 100% { transform: translateX(0); opacity: 0.6; }
+            50% { transform: translateX(6px); opacity: 1; }
         }
 
         ::-webkit-scrollbar { width: 4px; }
@@ -482,6 +574,27 @@
         @keyframes spin { to { transform: rotate(360deg); } }
         .catalog-link { color: #fbbf24; text-decoration: none; }
         .catalog-link:hover { text-decoration: underline; }
+
+
+        .scroll-indicator {
+            display: flex;
+            justify-content: center;
+            gap: 6px;
+            margin: -10px 0 20px 0;
+        }
+        .scroll-indicator .dot {
+            display: inline-block;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: rgba(251,191,36,0.2);
+            transition: all 0.3s ease;
+        }
+        .scroll-indicator .dot.active {
+            width: 20px;
+            border-radius: 3px;
+            background: #fbbf24;
+        }
     </style>
 </head>
 <body>
@@ -522,100 +635,155 @@
             <i class="fas fa-info-circle"></i> С Премиумом вы получаете <strong>бесплатные вызовы каждый месяц</strong> + <strong>скидку 15%</strong> на все покупки!
         </div>
 
-        <!-- ТОВАРЫ -->
+        
+
+        <!-- ТОВАРЫ - ГОРИЗОНТАЛЬНЫЙ СКРОЛЛ -->
         <div class="products-grid">
             <!-- ВЫЗОВЫ -->
             <div class="product-card">
-                <div class="product-icon"><i class="fas fa-crosshairs icon-gold"></i> x5</div>
-                <div class="product-title">5 вызовов</div>
-                <div class="product-desc">+5 к purchasedChallenges</div>
-                <div class="product-price">100 ₽</div>
-                <button class="btn-buy" data-product-id="challenge_5">Купить</button>
+                <div>
+                    <div class="product-icon"><i class="fas fa-crosshairs icon-gold"></i> x5</div>
+                    <div class="product-title">5 вызовов</div>
+                    <div class="product-desc">+5 к purchasedChallenges</div>
+                </div>
+                <div>
+                    <div class="product-price">100 ₽</div>
+                    <button class="btn-buy" data-product-id="challenge_5">Купить</button>
+                </div>
             </div>
 
             <div class="product-card hot">
-                <div class="product-badge">🔥 ВЫГОДА</div>
-                <div class="product-icon"><i class="fas fa-crosshairs icon-gold"></i> x10</div>
-                <div class="product-title">10 вызовов</div>
-                <div class="product-desc">+10 к purchasedChallenges</div>
-                <div class="product-price">180 ₽</div>
-                <button class="btn-buy" data-product-id="challenge_10">Купить</button>
+                <div>
+                    <div class="product-badge">🔥 ВЫГОДА</div>
+                    <div class="product-icon"><i class="fas fa-crosshairs icon-gold"></i> x10</div>
+                    <div class="product-title">10 вызовов</div>
+                    <div class="product-desc">+10 к purchasedChallenges</div>
+                </div>
+                <div>
+                    <div class="product-price">180 ₽</div>
+                    <button class="btn-buy" data-product-id="challenge_10">Купить</button>
+                </div>
             </div>
 
             <div class="product-card hot">
-                <div class="product-badge">🔥 СУПЕР</div>
-                <div class="product-icon"><i class="fas fa-crosshairs icon-gold"></i> x25</div>
-                <div class="product-title">25 вызовов</div>
-                <div class="product-desc">+25 к purchasedChallenges</div>
-                <div class="product-price">350 ₽</div>
-                <button class="btn-buy" data-product-id="challenge_25">Купить</button>
+                <div>
+                    <div class="product-badge">🔥 СУПЕР</div>
+                    <div class="product-icon"><i class="fas fa-crosshairs icon-gold"></i> x25</div>
+                    <div class="product-title">25 вызовов</div>
+                    <div class="product-desc">+25 к purchasedChallenges</div>
+                </div>
+                <div>
+                    <div class="product-price">350 ₽</div>
+                    <button class="btn-buy" data-product-id="challenge_25">Купить</button>
+                </div>
             </div>
 
             <!-- ПРЕМИУМ -->
             <div class="product-card premium-card hot">
-                <div class="product-badge">⭐ ТОП</div>
-                <div class="product-icon"><i class="fas fa-crown icon-gold"></i></div>
-                <div class="product-title">Премиум 1 месяц</div>
-                <div class="product-desc">5 выз./мес + все бейджи + скидка 15%</div>
-                <div class="product-price">200 ₽ <span class="saving">🔥 -60%</span></div>
-                <button class="btn-buy" data-product-id="premium_month">Купить</button>
+                <div>
+                    <div class="product-badge">⭐ ТОП</div>
+                    <div class="product-icon"><i class="fas fa-crown icon-gold"></i></div>
+                    <div class="product-title">Премиум 1 месяц</div>
+                    <div class="product-desc">5 выз./мес + все бейджи + скидка 15%</div>
+                </div>
+                <div>
+                    <div class="product-price">200 ₽ <span class="saving">🔥 -60%</span></div>
+                    <button class="btn-buy" data-product-id="premium_month">Купить</button>
+                </div>
             </div>
 
             <div class="product-card premium-card hot">
-                <div class="product-badge">⭐ МЕГА ВЫГОДА</div>
-                <div class="product-icon"><i class="fas fa-crown icon-gold"></i> x3</div>
-                <div class="product-title">Премиум 3 месяца</div>
-                <div class="product-desc">15 выз./мес + все бейджи + скидка 15%</div>
-                <div class="product-price">500 ₽ <span class="saving">🔥 -65%</span></div>
-                <button class="btn-buy" data-product-id="premium_3months">Купить</button>
+                <div>
+                    <div class="product-badge">⭐ МЕГА ВЫГОДА</div>
+                    <div class="product-icon"><i class="fas fa-crown icon-gold"></i> x3</div>
+                    <div class="product-title">Премиум 3 месяца</div>
+                    <div class="product-desc">15 выз./мес + все бейджи + скидка 15%</div>
+                </div>
+                <div>
+                    <div class="product-price">500 ₽ <span class="saving">🔥 -65%</span></div>
+                    <button class="btn-buy" data-product-id="premium_3months">Купить</button>
+                </div>
             </div>
 
             <div class="product-card premium-card hot">
-                <div class="product-badge">⭐ МАКСИМУМ</div>
-                <div class="product-icon"><i class="fas fa-crown icon-gold"></i> x6</div>
-                <div class="product-title">Премиум 6 месяцев</div>
-                <div class="product-desc">30 выз./мес + все бейджи + скидка 15%</div>
-                <div class="product-price">850 ₽ <span class="saving">🔥 -70%</span></div>
-                <button class="btn-buy" data-product-id="premium_6months">Купить</button>
+                <div>
+                    <div class="product-badge">⭐ МАКСИМУМ</div>
+                    <div class="product-icon"><i class="fas fa-crown icon-gold"></i> x6</div>
+                    <div class="product-title">Премиум 6 месяцев</div>
+                    <div class="product-desc">30 выз./мес + все бейджи + скидка 15%</div>
+                </div>
+                <div>
+                    <div class="product-price">850 ₽ <span class="saving">🔥 -70%</span></div>
+                    <button class="btn-buy" data-product-id="premium_6months">Купить</button>
+                </div>
             </div>
 
             <div class="product-card premium-card hot">
-                <div class="product-badge">👑 ЛЕГЕНДА</div>
-                <div class="product-icon"><i class="fas fa-crown icon-gold"></i> x12</div>
-                <div class="product-title">Премиум 12 месяцев</div>
-                <div class="product-desc">60 выз./год + все бейджи + скидка 15%</div>
-                <div class="product-price">1500 ₽ <span class="saving">🔥🔥 -75%</span></div>
-                <button class="btn-buy" data-product-id="premium_year">Купить</button>
+                <div>
+                    <div class="product-badge">👑 ЛЕГЕНДА</div>
+                    <div class="product-icon"><i class="fas fa-crown icon-gold"></i> x12</div>
+                    <div class="product-title">Премиум 12 месяцев</div>
+                    <div class="product-desc">60 выз./год + все бейджи + скидка 15%</div>
+                </div>
+                <div>
+                    <div class="product-price">1500 ₽ <span class="saving">🔥🔥 -75%</span></div>
+                    <button class="btn-buy" data-product-id="premium_year">Купить</button>
+                </div>
             </div>
 
             <!-- НАБОРЫ -->
             <div class="product-card hot">
-                <div class="product-badge">🎁 СТАРТ</div>
-                <div class="product-icon"><i class="fas fa-box icon-gold"></i></div>
-                <div class="product-title">Набор «Боец»</div>
-                <div class="product-desc">15 выз. + Премиум 1 мес</div>
-                <div class="product-price">400 ₽ <span class="saving">🔥 -40%</span></div>
-                <button class="btn-buy" data-product-id="fighter_pack">Купить</button>
+                <div>
+                    <div class="product-badge">🎁 СТАРТ</div>
+                    <div class="product-icon"><i class="fas fa-box icon-gold"></i></div>
+                    <div class="product-title">Набор «Боец»</div>
+                    <div class="product-desc">15 выз. + Премиум 1 мес</div>
+                </div>
+                <div>
+                    <div class="product-price">400 ₽ <span class="saving">🔥 -40%</span></div>
+                    <button class="btn-buy" data-product-id="fighter_pack">Купить</button>
+                </div>
             </div>
 
             <div class="product-card hot">
-                <div class="product-badge">🏆 ПРО</div>
-                <div class="product-icon"><i class="fas fa-box icon-gold"></i></div>
-                <div class="product-title">Набор «Чемпион»</div>
-                <div class="product-desc">40 выз. + Премиум 3 мес</div>
-                <div class="product-price">1000 ₽ <span class="saving">🔥 -65%</span></div>
-                <button class="btn-buy" data-product-id="champion_pack">Купить</button>
+                <div>
+                    <div class="product-badge">🏆 ПРО</div>
+                    <div class="product-icon"><i class="fas fa-box icon-gold"></i></div>
+                    <div class="product-title">Набор «Чемпион»</div>
+                    <div class="product-desc">40 выз. + Премиум 3 мес</div>
+                </div>
+                <div>
+                    <div class="product-price">1000 ₽ <span class="saving">🔥 -65%</span></div>
+                    <button class="btn-buy" data-product-id="champion_pack">Купить</button>
+                </div>
             </div>
 
-            <!-- БЕЙДЖИ (ОДНА КАРТОЧКА) -->
+            <!-- БЕЙДЖИ -->
             <div class="product-card badge-card">
-                <div class="product-badge purple">🎨 ЭКСКЛЮЗИВ</div>
-                <div class="product-icon"><i class="fas fa-certificate" style="color: #8b5cf6;"></i></div>
-                <div class="product-title">Купить бейдж</div>
-                <div class="product-desc">Выбери стиль для своего профиля</div>
-                <div class="product-price">100-200 ₽</div>
-                <button class="btn-buy purple" id="openBadgeModalBtn">Выбрать</button>
+                <div>
+                    <div class="product-badge purple">🎨 ЭКСКЛЮЗИВ</div>
+                    <div class="product-icon"><i class="fas fa-certificate" style="color: #8b5cf6;"></i></div>
+                    <div class="product-title">Купить бейдж</div>
+                    <div class="product-desc">Выбери стиль для своего профиля</div>
+                </div>
+                <div>
+                    <div class="product-price">100-200 ₽</div>
+                    <button class="btn-buy purple" id="openBadgeModalBtn">Выбрать</button>
+                </div>
             </div>
+        </div>
+
+        <!-- Индикатор прокрутки -->
+        <div class="scroll-indicator" id="scrollIndicator">
+            <span class="dot active"></span>
+            <span class="dot"></span>
+            <span class="dot"></span>
+            <span class="dot"></span>
+            <span class="dot"></span>
+            <span class="dot"></span>
+            <span class="dot"></span>
+            <span class="dot"></span>
+            <span class="dot"></span>
         </div>
 
         <!-- История покупок -->
@@ -688,8 +856,8 @@
 
     <div id="mobileBottomNavContainer"></div>
 
-<!-- Контейнер для ошибок — ВСЕГДА СВЕРХУ -->
-<div id="errorContainer" style="position: fixed; top: 15px; left: 50%; transform: translateX(-50%); z-index: 9999; max-width: 90%; width: 480px; padding: 14px 20px; border-radius: 16px; font-weight: 600; font-size: 0.9rem; animation: slideDown 0.3s ease; box-shadow: 0 10px 30px rgba(0,0,0,0.4); backdrop-filter: blur(8px); display: none; text-align: center; border: 1px solid rgba(255,255,255,0.1);"></div>
+    <!-- Контейнер для ошибок -->
+    <div id="errorContainer" style="position: fixed; top: 15px; left: 50%; transform: translateX(-50%); z-index: 9999; max-width: 90%; width: 480px; padding: 14px 20px; border-radius: 16px; font-weight: 600; font-size: 0.9rem; animation: slideDown 0.3s ease; box-shadow: 0 10px 30px rgba(0,0,0,0.4); backdrop-filter: blur(8px); display: none; text-align: center; border: 1px solid rgba(255,255,255,0.1);"></div>
 
     <script type="importmap">
         {
@@ -708,7 +876,6 @@
         import { PRODUCTS, createPayment, checkPremium, ensureUserFields, ALL_BADGES, getBadgeImage } from './payment.js';
         import { showError, handleFirebaseError, withErrorHandling } from './error-handler.js';
 
-    
         const firebaseConfig = {
             apiKey: "AIzaSyDUGYJY7pX7q02MS5SACMIIQXpjpQ97mPw",
             authDomain: "proranklive.firebaseapp.com",
@@ -806,6 +973,51 @@
             }
         }
 
+
+        // ===== УПРАВЛЕНИЕ ИНДИКАТОРОМ ПРОКРУТКИ =====
+        function updateScrollIndicator() {
+            const grid = document.querySelector('.products-grid');
+            const dots = document.querySelectorAll('.scroll-indicator .dot');
+            if (!grid || dots.length === 0) return;
+
+            const scrollWidth = grid.scrollWidth - grid.clientWidth;
+            const scrollLeft = grid.scrollLeft;
+            
+            // Если скролла нет или товаров мало
+            if (scrollWidth <= 0) {
+                dots.forEach((dot, i) => {
+                    dot.classList.toggle('active', i === 0);
+                });
+                return;
+            }
+
+            // Определяем текущую позицию (0 - 1)
+            const position = scrollLeft / scrollWidth;
+            
+            // Определяем индекс активной точки
+            const totalDots = dots.length;
+            const activeIndex = Math.min(
+                Math.floor(position * totalDots),
+                totalDots - 1
+            );
+
+            dots.forEach((dot, i) => {
+                dot.classList.toggle('active', i === activeIndex);
+            });
+        }
+
+        // Слушаем событие скролла
+        document.addEventListener('DOMContentLoaded', () => {
+            const grid = document.querySelector('.products-grid');
+            if (grid) {
+                grid.addEventListener('scroll', updateScrollIndicator);
+                // Обновляем при загрузке и изменении размера
+                window.addEventListener('resize', updateScrollIndicator);
+                setTimeout(updateScrollIndicator, 100);
+            }
+        });
+
+
         // ===== МОДАЛКА БЕЙДЖЕЙ =====
         function openBadgeModal() {
             const grid = document.getElementById('badgeGrid');
@@ -898,7 +1110,6 @@
                 return;
             }
 
-            // Находим соответствующий продукт в PRODUCTS
             const product = Object.values(PRODUCTS).find(p => p.id === selectedBadgeId);
             if (!product) {
                 alert('❌ Товар не найден');
