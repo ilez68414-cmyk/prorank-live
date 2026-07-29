@@ -106,9 +106,6 @@ function createIndicators() {
             <span class="partner-wallet-amount" id="partnerWalletAmount">0 ₽</span>
             <i class="fas fa-chevron-right" style="font-size: 0.7rem;"></i>
         </div>
-        <button class="notification-btn" id="notificationToggle" style="display: none;" title="Включить уведомления">
-            <i class="fas fa-bell"></i>
-        </button>
     `;
     
     const menuToggle = document.getElementById('menuToggle');
@@ -126,95 +123,70 @@ function createIndicators() {
     if (plusBtn) plusBtn.onclick = () => {
         navigateWithAnimation('shop.html');
     };
-    
-    initNotificationButton();
 }
 
-async function initNotificationButton() {
-    const btn = document.getElementById('notificationToggle');
-    if (!btn) return;
-    
-    const user = auth.currentUser;
-    if (!user) {
-        btn.style.display = 'none';
-        return;
-    }
-    
+// ============================================================
+// ФУНКЦИИ УВЕДОМЛЕНИЙ (ДЛЯ ИСПОЛЬЗОВАНИЯ В PROFILE.HTML)
+// ============================================================
+
+export async function getNotificationStatus() {
     try {
-        const { isPushSupported, getPushStatus, subscribeToPush, unsubscribeFromPush } = await import('./push-notifications.js');
+        const { isPushSupported, getPushStatus } = await import('./push-notifications.js');
+        if (!isPushSupported()) {
+            return { supported: false, subscribed: false, permission: 'unsupported' };
+        }
+        const status = await getPushStatus();
+        return {
+            supported: true,
+            subscribed: status.subscribed && status.permission === 'granted',
+            permission: status.permission
+        };
+    } catch (err) {
+        console.error('Ошибка получения статуса уведомлений:', err);
+        return { supported: false, subscribed: false, permission: 'error' };
+    }
+}
+
+export async function toggleNotifications() {
+    try {
+        const { isPushSupported, subscribeToPush, unsubscribeFromPush, getPushStatus } = await import('./push-notifications.js');
         
         if (!isPushSupported()) {
-            btn.style.display = 'none';
-            return;
+            throw new Error('Push-уведомления не поддерживаются в этом браузере');
         }
         
         const status = await getPushStatus();
         
-        function updateButtonUI(isSubscribed, permission = 'granted') {
-            if (permission === 'denied') {
-                btn.innerHTML = '<i class="fas fa-bell-slash" style="color: #dc2626;"></i>';
-                btn.title = 'Уведомления заблокированы в браузере';
-                btn.disabled = true;
-                btn.style.opacity = '0.5';
-                btn.style.cursor = 'not-allowed';
-                return;
-            }
-            
-            if (isSubscribed) {
-                btn.innerHTML = '<i class="fas fa-bell" style="color: #16a34a;"></i>';
-                btn.title = 'Уведомления включены (нажмите чтобы отключить)';
-                btn.disabled = false;
-                btn.style.opacity = '1';
-                btn.style.cursor = 'pointer';
-            } else {
-                btn.innerHTML = '<i class="fas fa-bell" style="color: #888;"></i>';
-                btn.title = 'Уведомления выключены (нажмите чтобы включить)';
-                btn.disabled = false;
-                btn.style.opacity = '1';
-                btn.style.cursor = 'pointer';
-            }
+        if (status.permission === 'denied') {
+            throw new Error('Уведомления заблокированы в браузере. Разрешите их в настройках браузера.');
         }
         
-        const isSubscribed = status.subscribed && status.permission === 'granted';
-        updateButtonUI(isSubscribed, status.permission);
-        btn.style.display = 'flex';
+        const currentlySubscribed = status.subscribed && status.permission === 'granted';
         
-        btn.onclick = async () => {
-            if (btn.disabled) return;
-            
-            const currentStatus = await getPushStatus();
-            
-            if (currentStatus.permission === 'denied') {
-                alert('Уведомления заблокированы в браузере. Разрешите их в настройках браузера.');
-                return;
-            }
-            
-            const currentlySubscribed = currentStatus.subscribed && currentStatus.permission === 'granted';
-            
-            if (currentlySubscribed) {
-                const result = await unsubscribeFromPush();
-                if (result) {
-                    updateButtonUI(false);
-                    console.log('🔕 Уведомления отключены');
-                } else {
-                    alert('Не удалось отключить уведомления');
-                }
+        if (currentlySubscribed) {
+            const result = await unsubscribeFromPush();
+            if (result) {
+                return { success: true, action: 'unsubscribed', message: 'Уведомления отключены' };
             } else {
-                const result = await subscribeToPush();
-                if (result) {
-                    updateButtonUI(true);
-                    console.log('🔔 Уведомления включены');
-                } else {
-                    alert('Не удалось включить уведомления');
-                }
+                throw new Error('Не удалось отключить уведомления');
             }
-        };
-        
+        } else {
+            const result = await subscribeToPush();
+            if (result) {
+                return { success: true, action: 'subscribed', message: 'Уведомления включены' };
+            } else {
+                throw new Error('Не удалось включить уведомления');
+            }
+        }
     } catch (err) {
-        console.error('Ошибка инициализации кнопки уведомлений:', err);
-        btn.style.display = 'none';
+        console.error('Ошибка переключения уведомлений:', err);
+        return { success: false, error: err.message };
     }
 }
+
+// Делаем функции доступными глобально для использования в profile.html
+window.getNotificationStatus = getNotificationStatus;
+window.toggleNotifications = toggleNotifications;
 
 window.updateHeaderBalance = async function() {
     const user = auth.currentUser;
@@ -551,7 +523,6 @@ function animatePageIn() {
 }
 
 function setupGlobalNavigation() {
-    // Функция для обработки кликов
     function handleLinkClick(e) {
         const link = e.currentTarget;
         const href = link.getAttribute('href');
@@ -572,21 +543,18 @@ function setupGlobalNavigation() {
         }
     }
     
-    // Обрабатываем ссылки в верхней навигации
     document.querySelectorAll('.nav-links a, .logo, [data-navigate]').forEach(link => {
         const newLink = link.cloneNode(true);
         link.parentNode.replaceChild(newLink, link);
         newLink.addEventListener('click', handleLinkClick);
     });
     
-    // Обрабатываем ссылки в мобильной нижней навигации (важно!)
     document.querySelectorAll('.mobile-nav-item, .mobile-nav-center .center-button').forEach(link => {
         const newLink = link.cloneNode(true);
         link.parentNode.replaceChild(newLink, link);
         newLink.addEventListener('click', handleLinkClick);
     });
     
-    // Обрабатываем ссылки в мобильных подменю
     document.querySelectorAll('.mobile-submenu-content a, .quick-action-item[data-url]').forEach(link => {
         const newLink = link.cloneNode(true);
         link.parentNode.replaceChild(newLink, link);
@@ -594,7 +562,6 @@ function setupGlobalNavigation() {
             const href = this.getAttribute('href');
             if (!href) return;
             
-            // Закрываем мобильное меню
             const mobileMenu = this.closest('.mobile-submenu-content');
             if (mobileMenu) {
                 const parent = mobileMenu.closest('.mobile-submenu');

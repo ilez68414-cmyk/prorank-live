@@ -4,7 +4,6 @@ import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { ensureUserFields, getAvailableBadges, selectBadge, getSelectedBadge, ALL_BADGES, getBadgeImage } from './payment.js';
 import { applyAllPremiumBonuses } from './premium.js';
 import { showError, handleFirebaseError, withErrorHandling } from './error-handler.js';
-// ===== ДОБАВЛЕНО: ИМПОРТ ДЛЯ PUSH-УВЕДОМЛЕНИЙ =====
 import { notifyAboutPremium } from './push-sender.js';
 
 const firebaseConfig = {
@@ -81,8 +80,6 @@ async function checkAndAwardLeagueRewards(userId, oldFrs, newFrs) {
                 premiumUntil: premiumUntil
             });
             showError(`🎉 ПОЗДРАВЛЯЕМ! Вы достигли ЛЕГЕНДАРНОЙ ЛИГИ и получили ПРЕМИУМ на ${newLeague.reward.days} дней!`, 'success');
-            
-            // ===== ДОБАВЛЕНО: УВЕДОМЛЕНИЕ О ПРЕМИУМЕ =====
             await notifyAboutPremium(userId, 'activated');
         }
         
@@ -103,9 +100,8 @@ function updateLeagueDisplay(frs) {
     
     if (!leagueBadge) return;
     
-    // Используем PNG вместо Font Awesome
-    const iconPath = getLeagueIconPath(league.icon);
-    leagueIcon.className = ''; // убираем старый класс
+    const iconPath = getLeagueImagePath(league.name);
+    leagueIcon.className = '';
     leagueIcon.innerHTML = `<img src="${iconPath}" alt="${league.name}" style="width: 24px; height: 24px; object-fit: contain; display: inline-block;">`;
     leagueIcon.style.color = league.color;
     leagueName.innerText = `${league.name} ЛИГА`;
@@ -128,17 +124,7 @@ function updateLeagueDisplay(frs) {
     }
 }
 
-// Вспомогательная функция для получения пути к иконке лиги
-function getLeagueIconPath(leagueName) {
-    const icons = {
-        'fa-medal': 'bronze.png',
-        'fa-medal': 'silver.png',   // будет перезаписан ниже
-        'fa-crown': 'gold.png',
-        'fa-gem': 'diamond.png',
-        'fa-dragon': 'elite.png',
-        'fa-skull': 'legendary.png'
-    };
-    // Уточняем по имени
+function getLeagueImagePath(leagueName) {
     const leagueMap = {
         'БРОНЗОВАЯ': 'bronze.png',
         'СЕРЕБРЯНАЯ': 'silver.png',
@@ -147,11 +133,7 @@ function getLeagueIconPath(leagueName) {
         'ЭЛИТНАЯ': 'elite.png',
         'ЛЕГЕНДАРНАЯ': 'legendary.png'
     };
-    const league = getLeague(0);
-    // Более точное определение
-    const name = league.name || '';
-    const fileName = leagueMap[name] || 'bronze.png';
-    return `./league-icons/${fileName}`;
+    return `./league-icons/${leagueMap[leagueName] || 'bronze.png'}`;
 }
 
 async function uploadAvatar(file, userId) {
@@ -273,12 +255,21 @@ async function loadFightHistory() {
 
 async function loadAchievements() {
     const userId = currentFighterId;
-    if (!userId) return;
+    if (!userId) {
+        console.warn('❌ loadAchievements: нет userId');
+        return;
+    }
     
     const container = document.getElementById('achievementsList');
-    if (!container) return;
+    if (!container) {
+        console.warn('❌ loadAchievements: контейнер achievementsList не найден');
+        return;
+    }
     
     try {
+        // Показываем загрузку
+        container.innerHTML = '<div class="loading"><div class="loading-spinner"></div> Загрузка...</div>';
+        
         const achievementsSnap = await getDocs(collection(db, "achievements"));
         const allAchievements = [];
         achievementsSnap.forEach(doc => allAchievements.push({ id: doc.id, ...doc.data() }));
@@ -291,6 +282,11 @@ async function loadAchievements() {
         const totalCount = allAchievements.length;
         const countSpan = document.getElementById('achievementsCount');
         if (countSpan) countSpan.innerText = `${earnedCount}/${totalCount}`;
+        
+        if (allAchievements.length === 0) {
+            container.innerHTML = '<div class="empty-state" style="text-align:center;padding:20px;color:#888;">🏆 Достижений пока нет</div>';
+            return;
+        }
         
         let html = '';
         for (const ach of allAchievements) {
@@ -323,8 +319,8 @@ async function loadAchievements() {
         
         container.innerHTML = html;
     } catch (err) {
-        console.error('Ошибка загрузки ачивок:', err);
-        container.innerHTML = '<div class="empty-state">Ошибка загрузки достижений</div>';
+        console.error('❌ Ошибка загрузки ачивок:', err);
+        container.innerHTML = `<div class="empty-state" style="text-align:center;padding:20px;color:#ef4444;">⚠️ Ошибка загрузки достижений: ${err.message}</div>`;
     }
 }
 
@@ -521,11 +517,9 @@ async function updateProfileName() {
         const league = getLeague(fighter.frs || 0);
         const selectedBadgeId = await getSelectedBadge(currentFighterId);
         
-        // === Имя ===
         const nameEl = document.getElementById('fighterName');
         if (nameEl) nameEl.textContent = fighter.name || 'Без имени';
         
-        // === Лига (справа) — используем PNG ===
         const leagueIcon = document.getElementById('leagueIcon');
         if (leagueIcon) {
             const iconPath = getLeagueImagePath(league.name);
@@ -533,7 +527,6 @@ async function updateProfileName() {
             leagueIcon.innerHTML = `<img src="${iconPath}" alt="${league.name}" style="width: 34px; height: 34px; object-fit: contain; display: inline-block; vertical-align: middle;">`;
         }
         
-        // === Бейдж (слева) ===
         const badgeImg = document.getElementById('profileBadgeImg');
         const badgeEmoji = document.getElementById('badgeEmoji');
         const badgeWrapper = document.getElementById('badgeWrapper');
@@ -564,6 +557,12 @@ async function updateProfileName() {
             badgeWrapper.style.display = 'none';
         }
         
+        // Обновляем FRS на карточке
+        const frsCard = document.getElementById('statFRSCard');
+        if (frsCard) {
+            frsCard.textContent = fighter.frs || 0;
+        }
+        
         console.log('✅ Имя обновлено:', fighter.name);
     } catch (err) {
         console.error('❌ Ошибка обновления имени:', err);
@@ -572,21 +571,82 @@ async function updateProfileName() {
     }
 }
 
-// ===== ВСПОМОГАТЕЛЬНАЯ ФУНКЦИЯ ДЛЯ ИКОНОК ЛИГ (УНИКАЛЬНОЕ ИМЯ) =====
-function getLeagueImagePath(leagueName) {
-    const leagueMap = {
-        'БРОНЗОВАЯ': 'bronze.png',
-        'СЕРЕБРЯНАЯ': 'silver.png',
-        'ЗОЛОТАЯ': 'gold.png',
-        'АЛМАЗНАЯ': 'diamond.png',
-        'ЭЛИТНАЯ': 'elite.png',
-        'ЛЕГЕНДАРНАЯ': 'legendary.png'
-    };
-    return `./league-icons/${leagueMap[leagueName] || 'bronze.png'}`;
+// ============================================================
+// УПРАВЛЕНИЕ ВКЛАДКАМИ (ИСПРАВЛЕНО)
+// ============================================================
+
+function switchTab(tabId) {
+    console.log('🔄 Переключение на вкладку:', tabId);
+    
+    // Скрываем все вкладки
+    document.querySelectorAll('.tab-content').forEach(el => {
+        el.classList.remove('active');
+    });
+    
+    // Показываем нужную
+    const targetTab = document.getElementById(`tab-${tabId}`);
+    if (targetTab) {
+        targetTab.classList.add('active');
+        console.log('✅ Показана вкладка:', tabId);
+    } else {
+        console.warn('⚠️ Вкладка не найдена:', tabId);
+    }
+    
+    // Обновляем кнопки
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.remove('active');
+        if (btn.dataset.tab === tabId) {
+            btn.classList.add('active');
+        }
+    });
+    
+    // Сохраняем в localStorage
+    try {
+        localStorage.setItem('prorank_active_tab', tabId);
+    } catch (e) {
+        // Игнорируем ошибки localStorage
+    }
+}
+
+function restoreActiveTab() {
+    let savedTab = 'statistics';
+    
+    try {
+        const stored = localStorage.getItem('prorank_active_tab');
+        if (stored) {
+            savedTab = stored;
+        }
+    } catch (e) {
+        // Игнорируем
+    }
+    
+    const tabExists = document.querySelector(`.tab-btn[data-tab="${savedTab}"]`);
+    if (tabExists) {
+        switchTab(savedTab);
+    } else {
+        switchTab('statistics');
+    }
+}
+
+function initTabs() {
+    console.log('🔧 Инициализация вкладок...');
+    
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const tabId = btn.dataset.tab;
+            if (tabId) {
+                switchTab(tabId);
+            }
+        });
+    });
+    
+    // Восстанавливаем активную вкладку
+    restoreActiveTab();
+    console.log('✅ Вкладки инициализированы');
 }
 
 // ============================================================
-// ГЛАВНАЯ ФУНКЦИЯ
+// ГЛАВНАЯ ФУНКЦИЯ ЗАГРУЗКИ ПРОФИЛЯ
 // ============================================================
 async function loadProfileData(user) {
     const loadingDiv = document.getElementById('profileLoading');
@@ -658,10 +718,14 @@ async function loadProfileData(user) {
         await checkAndAwardLeagueRewards(profileId, oldFrs, newFrs);
         updateLeagueDisplay(newFrs);
         
-        document.getElementById('statWinsHeader').textContent = fighter.wins || 0;
-        document.getElementById('statLossesHeader').textContent = fighter.losses || 0;
-        document.getElementById('statFinishesHeader').textContent = fighter.finishes || 0;
-        document.getElementById('statFRSHeader').textContent = fighter.frs || 0;
+        // Обновляем статистику на карточке (только FRS)
+        document.getElementById('statFRSCard').textContent = fighter.frs || 0;
+        
+        // Обновляем полную статистику во вкладке
+        document.getElementById('statWins').textContent = fighter.wins || 0;
+        document.getElementById('statLosses').textContent = fighter.losses || 0;
+        document.getElementById('statFinishes').textContent = fighter.finishes || 0;
+        // FRS в статистике НЕ ДОБАВЛЯЕМ (он уже на карточке)
         
         await updateLikesUI();
         await updateSubscribeUI();
@@ -714,14 +778,19 @@ async function loadProfileData(user) {
         setupSubscribeButton();
         setupAvatarUpload();
         setupOnboardingClose();
+        setupLogout();
+        setupPrivacySetting();
         await loadFightHistory();
         await loadAchievements();
         await checkAndAwardAchievements(profileId);
         
+        // ===== ИНИЦИАЛИЗАЦИЯ ВКЛАДОК =====
+        initTabs();
+        
         if (loadingDiv) loadingDiv.style.display = 'none';
         if (profileContent) profileContent.style.display = 'block';
     } catch (error) {
-        console.error(error);
+        console.error('Ошибка загрузки профиля:', error);
         if (loadingDiv) loadingDiv.style.display = 'none';
         if (profileContent) profileContent.style.display = 'block';
     }
@@ -813,7 +882,51 @@ function setupVerifyRecord() {
 }
 
 // ============================================================
-// ВЫЗОВ (ИСПРАВЛЕННАЯ ВЕРСИЯ — БЕЗ CONFIRM)
+// ВЫХОД ИЗ АККАУНТА
+// ============================================================
+function setupLogout() {
+    const logoutBtn = document.getElementById('logoutBtn');
+    if (!logoutBtn) return;
+    logoutBtn.addEventListener('click', async () => {
+        if (confirm('Вы уверены, что хотите выйти?')) {
+            try {
+                await auth.signOut();
+                window.location.href = 'index.html';
+            } catch (err) {
+                console.error('Ошибка выхода:', err);
+                showError(handleFirebaseError(err), 'error');
+            }
+        }
+    });
+}
+
+// ============================================================
+// НАСТРОЙКА ПРИВАТНОСТИ
+// ============================================================
+function setupPrivacySetting() {
+    const privacySetting = document.getElementById('privacySetting');
+    if (!privacySetting) return;
+    
+    if (currentFighterData?.privacy) {
+        privacySetting.value = currentFighterData.privacy;
+    }
+    
+    privacySetting.addEventListener('change', async () => {
+        if (!currentFighterId) return;
+        try {
+            await updateDoc(doc(db, "fighters", currentFighterId), {
+                privacy: privacySetting.value
+            });
+            showError('✅ Настройки приватности сохранены', 'success');
+        } catch (err) {
+            console.error('Ошибка сохранения приватности:', err);
+            showError(handleFirebaseError(err), 'error');
+        }
+    });
+}
+
+// ============================================================
+// ВЫЗОВ
 // ============================================================
 async function setupChallengeButton(targetId) {
     const btn = document.getElementById('btnChallenge');
@@ -1009,7 +1122,7 @@ async function setupTelegramVerify() {
     const telegramBtn = document.getElementById('telegramVerifyBtn');
     if (telegramBtn) {
         telegramBtn.style.display = 'inline-flex';
-        telegramBtn.innerHTML = '<i class="fab fa-telegram"></i> Привязать Telegram';
+        telegramBtn.innerHTML = '<i class="fab fa-telegram"></i> Привязать';
         telegramBtn.onclick = () => window.open(`https://t.me/ProRankBot?start=verify_${user.uid}`, '_blank');
     }
 }
