@@ -915,7 +915,7 @@
 
         .tab-content.active { display: block; }
 
-        /* ===== НАСТРОЙКИ ===== */
+        /* ===== НАСТРОЙКИ (только для владельца) ===== */
         .settings-card {
             background: rgba(15,15,15,0.7);
             backdrop-filter: blur(8px);
@@ -1551,7 +1551,6 @@
             transform: translateY(-2px);
         }
 
-        /* Стили для кнопок лайка и подписки на карточке */
         .stats-row-card {
             display: flex;
             gap: 12px;
@@ -1580,6 +1579,31 @@
             color: #fbbf24;
             font-size: 0.95rem;
         }
+
+        /* ===== УПРАВЛЕНИЕ ВИДИМОСТЬЮ ДЛЯ ГОСТЯ ===== */
+        .guest-mode .settings-tab-btn {
+            display: none !important;
+        }
+
+        .guest-mode .settings-tab-content {
+            display: none !important;
+        }
+
+        .guest-mode .edit-bio-btn {
+            display: none !important;
+        }
+
+        .guest-mode .owner-only {
+            display: none !important;
+        }
+
+        .guest-mode .guest-only {
+            display: flex !important;
+        }
+
+        .guest-only {
+            display: none !important;
+        }
     </style>
 </head>
 <body>
@@ -1597,7 +1621,7 @@
     </header>
 
     <main>
-        <div class="profile-container">
+        <div class="profile-container" id="profileContainer">
             <div id="unauthorizedMessage" class="unauthorized-message">
                 <i class="fas fa-lock" style="font-size: 3rem; color: #fbbf24; margin-bottom: 16px;"></i>
                 <h2 style="font-size: 1.5rem; margin-bottom: 8px;">Войдите в аккаунт</h2>
@@ -1646,11 +1670,13 @@
                                 </div>
                             </div>
                             
-                            <div class="action-buttons" id="ownerButtons">
+                            <!-- Кнопки для ВЛАДЕЛЬЦА -->
+                            <div class="action-buttons owner-only" id="ownerButtons">
                                 <button id="verifyRecordBtn" class="btn-verify"><i class="fas fa-check-circle"></i> Подтвердить рекорд</button>
                             </div>
                             
-                            <div class="action-buttons hidden" id="visitorButtons">
+                            <!-- Кнопки для ГОСТЯ -->
+                            <div class="action-buttons guest-only" id="visitorButtons">
                                 <button id="btnChallenge" class="btn-challenge"><i class="fas fa-fist-raised"></i> Вызвать</button>
                                 <button id="btnMessage" class="btn-message"><i class="fas fa-comment-dots"></i> Написать</button>
                             </div>
@@ -1659,21 +1685,22 @@
                 </div>
 
                 <!-- ===== ВКЛАДКИ ===== -->
-                <div class="profile-tabs">
+                <div class="profile-tabs" id="profileTabs">
                     <button class="tab-btn active" data-tab="statistics">
                         <i class="fas fa-chart-bar"></i> <span>Статистика</span>
                     </button>
                     <button class="tab-btn" data-tab="about">
                         <i class="fas fa-user"></i> <span>О себе</span>
                     </button>
-                    <button class="tab-btn" data-tab="settings">
+                    <button class="tab-btn settings-tab-btn" data-tab="settings" id="settingsTabBtn">
                         <i class="fas fa-cog"></i> <span>Настройки</span>
                     </button>
                 </div>
 
                 <!-- ===== ВКЛАДКА: СТАТИСТИКА ===== -->
                 <div class="tab-content active" id="tab-statistics">
-                    <div id="walletBlock" class="wallet-card" style="display: none;">
+                    <!-- Кошелёк (только для владельца) -->
+                    <div id="walletBlock" class="wallet-card owner-only" style="display: none;">
                         <div class="wallet-info">
                             <i class="fas fa-wallet"></i>
                             <div>
@@ -1728,7 +1755,7 @@
                     <div class="profile-bio">
                         <div class="bio-header">
                             <h3><i class="fas fa-address-card icon-gold"></i> О себе</h3>
-                            <button id="editBtn" class="btn-edit" style="padding: 6px 16px; font-size: 0.8rem;">
+                            <button id="editBtn" class="btn-edit edit-bio-btn" style="padding: 6px 16px; font-size: 0.8rem;">
                                 <i class="fas fa-pen"></i> Редактировать
                             </button>
                         </div>
@@ -1745,8 +1772,8 @@
                     </div>
                 </div>
 
-                <!-- ===== ВКЛАДКА: НАСТРОЙКИ ===== -->
-                <div class="tab-content" id="tab-settings">
+                <!-- ===== ВКЛАДКА: НАСТРОЙКИ (только для владельца) ===== -->
+                <div class="tab-content settings-tab-content" id="tab-settings">
                     <div class="settings-card">
                         <h3><i class="fas fa-sliders-h icon-gold"></i> Настройки</h3>
                         
@@ -2321,6 +2348,23 @@
     const plusBtn = document.getElementById('balancePlusBtn');
     if (plusBtn) plusBtn.onclick = () => window.location.href = 'shop.html';
 
+    // ============================================================
+    // УПРАВЛЕНИЕ РЕЖИМОМ (ВЛАДЕЛЕЦ / ГОСТЬ)
+    // ============================================================
+    
+    function setProfileMode(isOwner) {
+        const container = document.getElementById('profileContainer');
+        
+        if (isOwner) {
+            container.classList.remove('guest-mode');
+        } else {
+            container.classList.add('guest-mode');
+        }
+    }
+
+    // Вызываем эту функцию из profile.js при загрузке
+    window.setProfileMode = setProfileMode;
+
     onAuthStateChanged(auth, async (user) => {
         if (user) {
             setTimeout(() => {
@@ -2332,6 +2376,6 @@
             if (notificationSection) notificationSection.style.display = 'none';
         }
     });
-</script>
+    </script>
 </body>
 </html>

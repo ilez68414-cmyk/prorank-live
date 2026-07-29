@@ -267,7 +267,6 @@ async function loadAchievements() {
     }
     
     try {
-        // Показываем загрузку
         container.innerHTML = '<div class="loading"><div class="loading-spinner"></div> Загрузка...</div>';
         
         const achievementsSnap = await getDocs(collection(db, "achievements"));
@@ -504,7 +503,7 @@ async function initBadgeDisplay(userId) {
 }
 
 // ============================================================
-// ИМЯ + ЛИГА + БЕЙДЖ
+// ИМЯ + ЛИГА + БЕЙДЖ + FRS
 // ============================================================
 async function updateProfileName() {
     const fighter = currentFighterData;
@@ -572,18 +571,16 @@ async function updateProfileName() {
 }
 
 // ============================================================
-// УПРАВЛЕНИЕ ВКЛАДКАМИ (ИСПРАВЛЕНО)
+// УПРАВЛЕНИЕ ВКЛАДКАМИ
 // ============================================================
 
 function switchTab(tabId) {
     console.log('🔄 Переключение на вкладку:', tabId);
     
-    // Скрываем все вкладки
     document.querySelectorAll('.tab-content').forEach(el => {
         el.classList.remove('active');
     });
     
-    // Показываем нужную
     const targetTab = document.getElementById(`tab-${tabId}`);
     if (targetTab) {
         targetTab.classList.add('active');
@@ -592,7 +589,6 @@ function switchTab(tabId) {
         console.warn('⚠️ Вкладка не найдена:', tabId);
     }
     
-    // Обновляем кнопки
     document.querySelectorAll('.tab-btn').forEach(btn => {
         btn.classList.remove('active');
         if (btn.dataset.tab === tabId) {
@@ -600,12 +596,9 @@ function switchTab(tabId) {
         }
     });
     
-    // Сохраняем в localStorage
     try {
         localStorage.setItem('prorank_active_tab', tabId);
-    } catch (e) {
-        // Игнорируем ошибки localStorage
-    }
+    } catch (e) {}
 }
 
 function restoreActiveTab() {
@@ -616,9 +609,7 @@ function restoreActiveTab() {
         if (stored) {
             savedTab = stored;
         }
-    } catch (e) {
-        // Игнорируем
-    }
+    } catch (e) {}
     
     const tabExists = document.querySelector(`.tab-btn[data-tab="${savedTab}"]`);
     if (tabExists) {
@@ -640,10 +631,29 @@ function initTabs() {
         });
     });
     
-    // Восстанавливаем активную вкладку
     restoreActiveTab();
     console.log('✅ Вкладки инициализированы');
 }
+
+// ============================================================
+// УПРАВЛЕНИЕ РЕЖИМОМ (ВЛАДЕЛЕЦ / ГОСТЬ)
+// ============================================================
+
+function setProfileMode(isOwner) {
+    const container = document.getElementById('profileContainer');
+    if (!container) return;
+    
+    if (isOwner) {
+        container.classList.remove('guest-mode');
+        console.log('👑 Режим: Владелец');
+    } else {
+        container.classList.add('guest-mode');
+        console.log('👤 Режим: Гость');
+    }
+}
+
+// Делаем функцию доступной глобально для вызова из HTML
+window.setProfileMode = setProfileMode;
 
 // ============================================================
 // ГЛАВНАЯ ФУНКЦИЯ ЗАГРУЗКИ ПРОФИЛЯ
@@ -689,6 +699,10 @@ async function loadProfileData(user) {
         currentFighterData = fighterSnap.data();
         const fighter = currentFighterData;
         
+        // ===== ОПРЕДЕЛЯЕМ, ВЛАДЕЛЕЦ ИЛИ ГОСТЬ =====
+        const isOwner = user && user.uid === profileId;
+        setProfileMode(isOwner);
+        
         await ensureUserFields(profileId);
         await applyAllPremiumBonuses(profileId);
         await initBadgeDisplay(profileId);
@@ -721,11 +735,10 @@ async function loadProfileData(user) {
         // Обновляем статистику на карточке (только FRS)
         document.getElementById('statFRSCard').textContent = fighter.frs || 0;
         
-        // Обновляем полную статистику во вкладке
+        // Обновляем полную статистику во вкладке (без FRS)
         document.getElementById('statWins').textContent = fighter.wins || 0;
         document.getElementById('statLosses').textContent = fighter.losses || 0;
         document.getElementById('statFinishes').textContent = fighter.finishes || 0;
-        // FRS в статистике НЕ ДОБАВЛЯЕМ (он уже на карточке)
         
         await updateLikesUI();
         await updateSubscribeUI();
@@ -736,15 +749,27 @@ async function loadProfileData(user) {
 
         if (authListenerUnsub) authListenerUnsub();
         authListenerUnsub = onAuthStateChanged(auth, async (user) => {
-            const isOwner = user && user.uid === profileId;
+            const isOwnerNow = user && user.uid === profileId;
             const isLogged = !!user;
+            
+            // Обновляем режим при смене пользователя
+            setProfileMode(isOwnerNow);
+            
             if (navBtn) {
-                if (!isLogged) { navBtn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Войти'; navBtn.href = 'login.html'; navBtn.classList.remove('hidden'); }
-                else if (isOwner) { navBtn.classList.add('hidden'); }
-                else { navBtn.innerHTML = '<i class="fas fa-user"></i> Мой профиль'; navBtn.href = `profile.html?id=${user.uid}`; navBtn.classList.remove('hidden'); }
+                if (!isLogged) { 
+                    navBtn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Войти'; 
+                    navBtn.href = 'login.html'; 
+                    navBtn.classList.remove('hidden'); 
+                } else if (isOwnerNow) { 
+                    navBtn.classList.add('hidden'); 
+                } else { 
+                    navBtn.innerHTML = '<i class="fas fa-user"></i> Мой профиль'; 
+                    navBtn.href = `profile.html?id=${user.uid}`; 
+                    navBtn.classList.remove('hidden'); 
+                }
             }
             if (ownerDiv && visitorDiv) {
-                if (isOwner) {
+                if (isOwnerNow) {
                     ownerDiv.classList.remove('hidden');
                     visitorDiv.classList.add('hidden');
                     const shown = localStorage.getItem('frs_onboarding_shown');
@@ -784,7 +809,7 @@ async function loadProfileData(user) {
         await loadAchievements();
         await checkAndAwardAchievements(profileId);
         
-        // ===== ИНИЦИАЛИЗАЦИЯ ВКЛАДОК =====
+        // Инициализация вкладок
         initTabs();
         
         if (loadingDiv) loadingDiv.style.display = 'none';
