@@ -3,7 +3,7 @@
 <head>
     <!-- PWA Manifest & Icons -->
     <link rel="manifest" href="/prorank-live/manifest.json">
-<link rel="apple-touch-icon" href="/prorank-live/icons/icon-192.png">
+    <link rel="apple-touch-icon" href="/prorank-live/icons/icon-192.png">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="PRORANK">
@@ -187,10 +187,159 @@
             font-size: clamp(0.85rem, 3vw, 0.95rem);
         }
         
+        /* ===== ФИЛЬТР - ДРОПДАУН ===== */
+        .filter-dropdown {
+            margin-bottom: 16px;
+            position: relative;
+        }
+
+        .filter-toggle {
+            width: 100%;
+            padding: 12px 18px;
+            background: rgba(15,15,15,0.7);
+            border: 1px solid rgba(251,191,36,0.15);
+            border-radius: 16px;
+            color: #fff;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-family: 'Inter', sans-serif;
+            transition: all 0.2s ease;
+            min-height: 50px;
+        }
+
+        .filter-toggle:hover {
+            background: rgba(25,25,35,0.8);
+            border-color: rgba(251,191,36,0.3);
+        }
+
+        .filter-toggle-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .filter-toggle-left i {
+            color: #fbbf24;
+            font-size: 0.9rem;
+        }
+
+        .filter-toggle-right {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .filter-count {
+            background: rgba(251,191,36,0.15);
+            color: #fbbf24;
+            padding: 2px 10px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+
+        #filterArrow {
+            color: #555;
+            font-size: 0.8rem;
+            transition: transform 0.3s ease;
+        }
+
+        #filterArrow.open {
+            transform: rotate(180deg);
+        }
+
+        /* ===== ВЫПАДАЮЩИЙ СПИСОК ===== */
+        .filter-options {
+            display: none;
+            margin-top: 8px;
+            background: rgba(15,15,15,0.95);
+            border: 1px solid rgba(251,191,36,0.1);
+            border-radius: 16px;
+            padding: 6px;
+            animation: slideDown 0.25s ease;
+            backdrop-filter: blur(12px);
+            overflow: hidden;
+            position: relative;
+            z-index: 100;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+        }
+
+        .filter-options.open {
+            display: block;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-8px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .filter-option {
+            width: 100%;
+            padding: 10px 14px;
+            background: none;
+            border: none;
+            border-radius: 12px;
+            color: #aaa;
+            font-size: 0.85rem;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            transition: all 0.15s ease;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .filter-option:hover {
+            background: rgba(255,255,255,0.05);
+            color: #fff;
+        }
+
+        .filter-option.active {
+            background: rgba(251,191,36,0.12);
+            color: #fbbf24;
+        }
+
+        .filter-option .count {
+            background: rgba(255,255,255,0.06);
+            padding: 1px 8px;
+            border-radius: 12px;
+            font-size: 0.6rem;
+            color: #666;
+        }
+
+        .filter-option.active .count {
+            background: rgba(251,191,36,0.15);
+            color: #fbbf24;
+        }
+
+        .filter-option i {
+            width: 20px;
+            text-align: center;
+            font-size: 0.85rem;
+        }
+
+        .filter-option .option-label {
+            flex: 1;
+            text-align: left;
+        }
+
+        /* ===== ТАБЫ ===== */
         .orders-tabs {
             display: flex;
             gap: 12px;
-            margin-bottom: 24px;
+            margin-bottom: 16px;
             background: rgba(15,15,15,0.5);
             padding: 6px;
             border-radius: 60px;
@@ -232,6 +381,7 @@
             display: block;
         }
         
+        /* ===== СПИСОК ЗАКАЗОВ ===== */
         .orders-list {
             display: flex;
             flex-direction: column;
@@ -252,6 +402,32 @@
             transform: translateX(3px);
         }
         
+        /* ===== ПРОДАВЕЦ ===== */
+        .order-seller {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            margin-bottom: 12px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+        }
+        .order-seller .avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid rgba(251,191,36,0.2);
+        }
+        .order-seller .name {
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+        .order-seller .role {
+            font-size: 0.6rem;
+            color: #666;
+        }
+
         .order-header {
             display: flex;
             justify-content: space-between;
@@ -259,8 +435,6 @@
             flex-wrap: wrap;
             gap: 12px;
             margin-bottom: 12px;
-            padding-bottom: 12px;
-            border-bottom: 1px solid rgba(255,255,255,0.08);
         }
         
         .order-number {
@@ -287,9 +461,8 @@
         .status-cancelled { background: #dc2626; color: #fff; }
         .status-rejected { background: #dc2626; color: #fff; }
         
-        .order-items-list {
-            margin: 10px 0;
-        }
+        /* ===== ТОВАРЫ ===== */
+        .order-items-list { margin: 10px 0; }
         
         .order-item-row {
             display: flex;
@@ -299,9 +472,7 @@
             font-size: 0.85rem;
         }
         
-        .order-item-row:last-child {
-            border-bottom: none;
-        }
+        .order-item-row:last-child { border-bottom: none; }
         
         .item-name-small {
             display: flex;
@@ -336,6 +507,7 @@
             color: #fbbf24;
         }
         
+        /* ===== НИЗ КАРТОЧКИ ===== */
         .order-footer {
             margin-top: 12px;
             display: flex;
@@ -351,14 +523,22 @@
             padding: 8px 12px;
             background: rgba(0,0,0,0.3);
             border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .tracking-info:hover {
+            background: rgba(0,0,0,0.5);
+            color: #fff;
+        }
+        .tracking-info i { color: #fbbf24; margin-right: 4px; }
+        
+        .order-actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
         }
         
-        .tracking-info i {
-            color: #fbbf24;
-            margin-right: 4px;
-        }
-        
-        .btn-confirm, .btn-cancel {
+        .btn-confirm, .btn-cancel, .btn-chat, .btn-review {
             padding: 8px 16px;
             border-radius: 30px;
             font-weight: 600;
@@ -366,15 +546,38 @@
             cursor: pointer;
             transition: all 0.2s;
             min-height: 38px;
+            border: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
         }
         
         .btn-confirm {
             background: #10b981;
             color: #fff;
         }
-        
         .btn-confirm:hover {
             background: #059669;
+            transform: translateY(-2px);
+        }
+        
+        .btn-chat {
+            background: rgba(251,191,36,0.15);
+            color: #fbbf24;
+            border: 1px solid rgba(251,191,36,0.2);
+        }
+        .btn-chat:hover {
+            background: rgba(251,191,36,0.25);
+            transform: translateY(-2px);
+        }
+        
+        .btn-review {
+            background: rgba(34,197,94,0.15);
+            color: #22c55e;
+            border: 1px solid rgba(34,197,94,0.2);
+        }
+        .btn-review:hover {
+            background: rgba(34,197,94,0.25);
             transform: translateY(-2px);
         }
         
@@ -382,7 +585,6 @@
             background: #dc2626;
             color: #fff;
         }
-        
         .btn-cancel:hover {
             background: #b91c1c;
             transform: translateY(-2px);
@@ -401,7 +603,6 @@
             min-height: 38px;
             margin-left: auto;
         }
-        
         .clear-history-btn:hover {
             background: #b91c1c;
             transform: translateY(-2px);
@@ -424,6 +625,77 @@
             background: rgba(220,38,38,0.1);
             border-radius: 12px;
         }
+
+        /* ===== МОДАЛ ОТЗЫВА ===== */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.7);
+            backdrop-filter: blur(8px);
+            z-index: 9999;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .modal-overlay.show { display: flex; }
+        .modal {
+            background: #1a1a2e;
+            border: 1px solid rgba(251,191,36,0.2);
+            border-radius: 20px;
+            padding: 32px 24px;
+            max-width: 400px;
+            width: 100%;
+            text-align: center;
+        }
+        .modal h3 { margin-bottom: 8px; }
+        .modal p { color: #888; font-size: 0.85rem; margin-bottom: 20px; }
+        .modal .stars {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            margin-bottom: 16px;
+        }
+        .modal .stars i {
+            font-size: 2rem;
+            color: #333;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .modal .stars i.active { color: #fbbf24; }
+        .modal .stars i:hover { transform: scale(1.1); }
+        .modal textarea {
+            width: 100%;
+            padding: 12px;
+            background: #0f0f1a;
+            border: 1px solid rgba(251,191,36,0.15);
+            border-radius: 12px;
+            color: #fff;
+            font-size: 0.85rem;
+            resize: vertical;
+            min-height: 80px;
+            font-family: 'Inter', sans-serif;
+        }
+        .modal textarea:focus { outline: none; border-color: #fbbf24; }
+        .modal .actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 16px;
+        }
+        .modal .actions button {
+            flex: 1;
+            padding: 12px;
+            border-radius: 40px;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 0.9rem;
+        }
+        .modal .cancel-btn { background: rgba(255,255,255,0.08); color: #fff; }
+        .modal .cancel-btn:hover { background: rgba(255,255,255,0.15); }
+        .modal .submit-btn { background: #fbbf24; color: #000; }
+        .modal .submit-btn:hover { background: #ffdd44; transform: scale(1.02); }
         
         .empty-state {
             text-align: center;
@@ -560,7 +832,14 @@
                 flex-direction: column;
                 align-items: stretch;
             }
-            .btn-confirm, .btn-cancel, .clear-history-btn {
+            .order-actions {
+                justify-content: center;
+            }
+            .btn-confirm, .btn-cancel, .btn-chat, .btn-review {
+                width: 100%;
+                justify-content: center;
+            }
+            .clear-history-btn {
                 width: 100%;
                 justify-content: center;
             }
@@ -572,6 +851,78 @@
                 flex-direction: column;
                 text-align: center;
                 gap: 16px;
+            }
+            .filter-toggle {
+                padding: 10px 14px;
+                min-height: 44px;
+                border-radius: 14px;
+            }
+            .filter-toggle-left {
+                font-size: 0.8rem;
+                gap: 8px;
+            }
+            .filter-option {
+                padding: 8px 12px;
+                font-size: 0.75rem;
+            }
+            .filter-option i {
+                font-size: 0.75rem;
+                width: 18px;
+            }
+            .filter-count {
+                font-size: 0.6rem;
+                padding: 1px 8px;
+            }
+            .orders-tabs {
+                gap: 6px;
+                padding: 4px;
+                border-radius: 40px;
+            }
+            .tab-btn {
+                padding: 6px 14px;
+                font-size: 0.75rem;
+                min-height: 34px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .order-card {
+                padding: 14px;
+                border-radius: 16px;
+            }
+            .order-seller .avatar {
+                width: 30px;
+                height: 30px;
+            }
+            .order-seller .name {
+                font-size: 0.75rem;
+            }
+            .order-number {
+                font-size: 0.75rem;
+            }
+            .order-status {
+                font-size: 0.6rem;
+                padding: 2px 10px;
+            }
+            .btn-confirm, .btn-chat, .btn-review {
+                font-size: 0.65rem;
+                padding: 6px 12px;
+                min-height: 32px;
+            }
+            .filter-option {
+                font-size: 0.7rem;
+                padding: 6px 10px;
+            }
+            .filter-option i {
+                font-size: 0.7rem;
+                width: 16px;
+            }
+            .filter-toggle-left {
+                font-size: 0.75rem;
+            }
+            .filter-count {
+                font-size: 0.55rem;
+                padding: 1px 6px;
             }
         }
         
@@ -619,7 +970,47 @@
     <main class="container">
         <div class="page-header">
             <h1><i class="fas fa-box"></i> Мои заказы</h1>
-            <p>Отслеживайте статус и историю покупок</p>
+            <p>Отслеживайте статус и историю покупок на маркетплейсе</p>
+        </div>
+
+        <!-- ФИЛЬТР - ДРОПДАУН -->
+        <div class="filter-dropdown" id="filterContainer">
+            <button class="filter-toggle" id="filterToggle">
+                <span class="filter-toggle-left">
+                    <i class="fas fa-filter"></i>
+                    <span id="currentFilterLabel">Все заказы</span>
+                </span>
+                <span class="filter-toggle-right">
+                    <span class="filter-count" id="filterTotalCount">0</span>
+                    <i class="fas fa-chevron-down" id="filterArrow"></i>
+                </span>
+            </button>
+            <div class="filter-options" id="filterOptions">
+                <button class="filter-option active" data-filter="all">
+                    <i class="fas fa-list"></i> Все заказы
+                    <span class="count" id="countAll">0</span>
+                </button>
+                <button class="filter-option" data-filter="paid">
+                    <i class="fas fa-check-circle" style="color:#f59e0b;"></i> Оплачен
+                    <span class="count" id="countPaid">0</span>
+                </button>
+                <button class="filter-option" data-filter="shipped">
+                    <i class="fas fa-truck" style="color:#8b5cf6;"></i> Отправлен
+                    <span class="count" id="countShipped">0</span>
+                </button>
+                <button class="filter-option" data-filter="completed">
+                    <i class="fas fa-check-double" style="color:#10b981;"></i> Завершён
+                    <span class="count" id="countCompleted">0</span>
+                </button>
+                <button class="filter-option" data-filter="cancelled">
+                    <i class="fas fa-times-circle" style="color:#dc2626;"></i> Отменён
+                    <span class="count" id="countCancelled">0</span>
+                </button>
+                <button class="filter-option" data-filter="rejected">
+                    <i class="fas fa-ban" style="color:#dc2626;"></i> Отклонён
+                    <span class="count" id="countRejected">0</span>
+                </button>
+            </div>
         </div>
 
         <div class="orders-tabs">
@@ -665,21 +1056,45 @@
             </div>
         </div>
     </footer>
- <!-- Нижнее мобильное меню -->
-<div id="mobileBottomNavContainer"></div>
+
+    <div id="mobileBottomNavContainer"></div>
+
+    <!-- МОДАЛ ОТЗЫВА -->
+    <div class="modal-overlay" id="reviewModal">
+        <div class="modal">
+            <h3><i class="fas fa-star" style="color:#fbbf24;"></i> Оставить отзыв</h3>
+            <p>Оцените качество товара и работу продавца</p>
+            <div class="stars" id="starRating">
+                <i class="fas fa-star" data-star="1"></i>
+                <i class="fas fa-star" data-star="2"></i>
+                <i class="fas fa-star" data-star="3"></i>
+                <i class="fas fa-star" data-star="4"></i>
+                <i class="fas fa-star" data-star="5"></i>
+            </div>
+            <textarea id="reviewText" placeholder="Напишите ваш отзыв..."></textarea>
+            <div class="actions">
+                <button class="cancel-btn" id="cancelReviewBtn">Отмена</button>
+                <button class="submit-btn" id="submitReviewBtn">Отправить отзыв</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="errorContainer" style="position: fixed; top: 15px; left: 50%; transform: translateX(-50%); z-index: 9999; max-width: 90%; width: 480px; padding: 14px 20px; border-radius: 16px; font-weight: 600; font-size: 0.9rem; animation: slideDown 0.3s ease; box-shadow: 0 10px 30px rgba(0,0,0,0.4); backdrop-filter: blur(8px); display: none; text-align: center; border: 1px solid rgba(255,255,255,0.1);"></div>
+
     <script type="importmap">
         {
             "imports": {
                 "firebase/app": "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js",
                 "firebase/firestore": "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js",
-                "firebase/auth": "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js"
+                "firebase/auth": "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js",
+                "firebase/analytics": "https://www.gstatic.com/firebasejs/11.0.2/firebase-analytics.js"
             }
         }
     </script>
     <script type="module" src="header.js?v=3"></script>
     <script type="module">
     import { initializeApp } from "firebase/app";
-    import { getFirestore, collection, getDocs, query, where, orderBy, doc, getDoc, updateDoc, deleteDoc } from "firebase/firestore";
+    import { getFirestore, collection, getDocs, query, where, orderBy, doc, getDoc, updateDoc, deleteDoc, addDoc, setDoc } from "firebase/firestore";
     import { getAuth, onAuthStateChanged } from "firebase/auth";
     import { releaseFunds } from './wallet.js';
 
@@ -697,316 +1112,30 @@
     const auth = getAuth(app);
 
     let currentUser = null;
+    let allOrders = [];
+    let currentFilter = 'all';
+    let selectedOrderId = null;
+    let selectedRating = 0;
+    let sellerCache = {};
 
-    async function updateHeaderBalance() {
-        const user = auth.currentUser;
-        const balanceDiv = document.getElementById('balanceIndicator');
-        const balanceCount = document.getElementById('headerChallengesCount');
-        if (!user || !balanceDiv) return;
-        try {
-            const userDoc = await getDoc(doc(db, "fighters", user.uid));
-            const data = userDoc.data();
-            const total = (data.freeChallenges || 0) + (data.purchasedChallenges || 0);
-            balanceCount.innerText = total;
-            balanceDiv.style.display = 'flex';
-        } catch (err) { 
-            console.error(err);
-            balanceDiv.style.display = 'none';
-        }
+    // ===== УВЕДОМЛЕНИЯ =====
+    function showNotification(message, type = 'info') {
+        const container = document.getElementById('errorContainer');
+        if (!container) return;
+        const colors = { success: '#22c55e', error: '#ef4444', warning: '#f59e0b', info: '#fbbf24' };
+        container.style.display = 'block';
+        container.style.background = colors[type] || colors.info;
+        container.style.color = '#000';
+        container.textContent = message;
+        clearTimeout(container._timeout);
+        container._timeout = setTimeout(() => { container.style.display = 'none'; }, 3000);
     }
 
-    async function loadOrders() {
-        if (!currentUser) return;
-        
-        try {
-            const ordersQuery = query(
-                collection(db, "orders"),
-                where("userId", "==", currentUser.uid),
-                orderBy("createdAt", "desc")
-            );
-            const snapshot = await getDocs(ordersQuery);
-            
-            const activeOrders = [];
-            const historyOrders = [];
-            const activeStatuses = ['paid', 'shipped'];
-            
-            snapshot.forEach(docSnap => {
-                const order = { id: docSnap.id, ...docSnap.data() };
-                if (activeStatuses.includes(order.status)) {
-                    activeOrders.push(order);
-                } else {
-                    historyOrders.push(order);
-                }
-            });
-            
-            renderActiveOrders(activeOrders);
-            renderHistoryOrders(historyOrders);
-        } catch (err) {
-            console.error('Ошибка загрузки заказов:', err);
-            document.getElementById('activeOrdersList').innerHTML = '<div class="empty-state"><i class="fas fa-exclamation-triangle"></i><p>Ошибка загрузки</p></div>';
-            document.getElementById('historyOrdersList').innerHTML = '<div class="empty-state"><i class="fas fa-exclamation-triangle"></i><p>Ошибка загрузки</p></div>';
-        }
-    }
-
-    function renderActiveOrders(orders) {
-        const container = document.getElementById('activeOrdersList');
-        
-        if (orders.length === 0) {
-            container.innerHTML = `<div class="empty-state"><i class="fas fa-inbox"></i><p>У вас нет активных заказов</p><p><a href="catalog.html" style="color: #fbbf24;">Перейти в каталог →</a></p></div>`;
-            return;
-        }
-        
-        let html = '';
-        orders.forEach(order => {
-            const date = order.createdAt?.toDate().toLocaleDateString() || '—';
-            const statusText = getStatusText(order.status);
-            const statusClass = `status-${order.status}`;
-            
-            let itemsHtml = '';
-            if (order.items && order.items.length > 0) {
-                itemsHtml = '<div class="order-items-list">';
-                order.items.forEach(item => {
-                    itemsHtml += `
-                        <div class="order-item-row">
-                            <div class="item-name-small">
-                                <span>${escapeHtml(item.productName)}</span>
-                                ${item.quantity > 1 ? `<span class="item-quantity-badge">×${item.quantity}</span>` : ''}
-                            </div>
-                            <span class="item-price">${(item.price * item.quantity).toLocaleString()} ₽</span>
-                        </div>
-                    `;
-                });
-                itemsHtml += '</div>';
-            } else {
-                itemsHtml = `
-                    <div class="order-item-row">
-                        <span>${escapeHtml(order.productName)} ${order.quantity > 1 ? `× ${order.quantity}` : ''}</span>
-                        <span class="item-price">${(order.totalPrice || order.price || 0).toLocaleString()} ₽</span>
-                    </div>
-                `;
-            }
-            
-            // НАХОДИМ ID ПРОДАВЦА (из items или partnerId)
-            let sellerId = null;
-            if (order.partnerId) {
-                sellerId = order.partnerId;
-            } else if (order.items && order.items.length > 0) {
-                sellerId = order.items[0]?.partnerId || null;
-            }
-            
-            // ⚠️ ВАЖНО: Если sellerId всё ещё null, пытаемся найти в partnerIds
-            if (!sellerId && order.partnerIds && order.partnerIds.length > 0) {
-                sellerId = order.partnerIds[0];
-            }
-            
-            html += `
-                <div class="order-card">
-                    <div class="order-header">
-                        <span class="order-number"><i class="fas fa-receipt"></i> Заказ #${order.id.slice(0, 8)}</span>
-                        <span class="order-date"><i class="fas fa-calendar-alt"></i> ${date}</span>
-                        <span class="order-status ${statusClass}">${statusText}</span>
-                    </div>
-                    ${itemsHtml}
-                    <div class="order-total">
-                        <span>Итого: ${(order.totalPrice || 0).toLocaleString()} ₽</span>
-                    </div>
-                    <div class="order-footer">
-                        ${order.trackingNumber ? `<div class="tracking-info"><i class="fas fa-box"></i> Трек: ${escapeHtml(order.trackingNumber)}</div>` : '<div></div>'}
-                        <div style="display: flex; gap: 8px;">
-                            ${renderActiveButtons(order, sellerId)}
-                        </div>
-                    </div>
-                </div>
-            `;
-        });
-        container.innerHTML = html;
-        
-        attachActiveHandlers();
-    }
-
-    function renderHistoryOrders(orders) {
-        const container = document.getElementById('historyOrdersList');
-        
-        if (orders.length === 0) {
-            container.innerHTML = `<div class="empty-state"><i class="fas fa-history"></i><p>У вас нет истории заказов</p></div>`;
-            return;
-        }
-        
-        let html = `<div class="history-header"><h3><i class="fas fa-history"></i> История заказов</h3><button id="clearHistoryBtn" class="clear-history-btn"><i class="fas fa-trash"></i> Очистить историю</button></div>`;
-        
-        orders.forEach(order => {
-            const date = order.createdAt?.toDate().toLocaleDateString() || '—';
-            const statusText = getStatusText(order.status);
-            const statusClass = `status-${order.status}`;
-            
-            let itemsHtml = '';
-            if (order.items && order.items.length > 0) {
-                itemsHtml = '<div class="order-items-list">';
-                order.items.forEach(item => {
-                    itemsHtml += `
-                        <div class="order-item-row">
-                            <div class="item-name-small">
-                                <span>${escapeHtml(item.productName)}</span>
-                                ${item.quantity > 1 ? `<span class="item-quantity-badge">×${item.quantity}</span>` : ''}
-                            </div>
-                            <span class="item-price">${(item.price * item.quantity).toLocaleString()} ₽</span>
-                        </div>
-                    `;
-                });
-                itemsHtml += '</div>';
-            } else {
-                itemsHtml = `
-                    <div class="order-item-row">
-                        <span>${escapeHtml(order.productName)} ${order.quantity > 1 ? `× ${order.quantity}` : ''}</span>
-                        <span class="item-price">${(order.totalPrice || order.price || 0).toLocaleString()} ₽</span>
-                    </div>
-                `;
-            }
-            
-            html += `
-                <div class="order-card">
-                    <div class="order-header">
-                        <span class="order-number"><i class="fas fa-receipt"></i> Заказ #${order.id.slice(0, 8)}</span>
-                        <span class="order-date"><i class="fas fa-calendar-alt"></i> ${date}</span>
-                        <span class="order-status ${statusClass}">${statusText}</span>
-                    </div>
-                    ${itemsHtml}
-                    <div class="order-total">
-                        <span>Итого: ${(order.totalPrice || 0).toLocaleString()} ₽</span>
-                    </div>
-                    <div class="order-footer">
-                        ${order.trackingNumber ? `<div class="tracking-info"><i class="fas fa-box"></i> Трек: ${escapeHtml(order.trackingNumber)}</div>` : '<div></div>'}
-                        <div>
-                            ${order.status === 'completed' ? '<span style="color:#10b981;"><i class="fas fa-check-circle"></i> Завершён</span>' : ''}
-                            ${order.status === 'cancelled' ? '<span style="color:#dc2626;"><i class="fas fa-ban"></i> Отменён</span>' : ''}
-                            ${order.status === 'rejected' ? '<span style="color:#dc2626;"><i class="fas fa-ban"></i> Отклонён продавцом</span>' : ''}
-                            ${order.rejectReason ? `<div class="reject-reason"><i class="fas fa-info-circle"></i> Причина: ${escapeHtml(order.rejectReason)}</div>` : ''}
-                        </div>
-                    </div>
-                </div>
-            `;
-        });
-        container.innerHTML = html;
-        
-        const clearBtn = document.getElementById('clearHistoryBtn');
-        if (clearBtn) {
-            clearBtn.addEventListener('click', async () => {
-                if (confirm('Вы уверены, что хотите очистить всю историю заказов? Это действие нельзя отменить.')) {
-                    await clearOrderHistory();
-                }
-            });
-        }
-    }
-
-    async function clearOrderHistory() {
-        if (!currentUser) return;
-        
-        try {
-            const ordersQuery = query(
-                collection(db, "orders"),
-                where("userId", "==", currentUser.uid),
-                where("status", "in", ['completed', 'cancelled', 'rejected'])
-            );
-            const snapshot = await getDocs(ordersQuery);
-            
-            let deletedCount = 0;
-            for (const docSnap of snapshot.docs) {
-                await deleteDoc(doc(db, "orders", docSnap.id));
-                deletedCount++;
-            }
-            
-            alert(`✅ Удалено ${deletedCount} заказов из истории`);
-            await loadOrders();
-        } catch (err) {
-            console.error('Ошибка очистки:', err);
-            alert('❌ Ошибка при очистке истории');
-        }
-    }
-
-    function renderActiveButtons(order, sellerId) {
-        const status = order.status;
-        
-        if (status === 'paid') {
-            return `<span style="color: #fbbf24;"><i class="fas fa-clock"></i> Ожидает отправки...</span>`;
-        }
-        if (status === 'shipped') {
-            // ✅ ИСПРАВЛЕНО: передаём sellerId как data-seller-id
-            return `<button class="btn-confirm" 
-                data-order-id="${order.id}" 
-                data-total="${order.totalPrice}" 
-                data-seller-id="${sellerId || ''}">
-                <i class="fas fa-check-circle"></i> Подтвердить получение
-            </button>`;
-        }
-        return '';
-    }
-
-    async function attachActiveHandlers() {
-        for (const btn of document.querySelectorAll('.btn-confirm')) {
-            // Удаляем старые обработчики, чтобы не было дублей
-            btn.removeEventListener('click', handleConfirmClick);
-            btn.addEventListener('click', handleConfirmClick);
-        }
-    }
-    
-    async function handleConfirmClick(e) {
-        const btn = e.currentTarget;
-        // ✅ ИСПРАВЛЕНО: читаем правильное название dataset
-        const orderId = btn.dataset.orderId;
-        const totalPrice = parseFloat(btn.dataset.total);
-        const sellerId = btn.dataset.sellerId;  // <-- ГЛАВНОЕ ИСПРАВЛЕНИЕ!
-        
-        console.log('🔍 Подтверждение получения:', { orderId, totalPrice, sellerId });
-        
-        if (!sellerId || sellerId === 'null' || sellerId === 'undefined' || sellerId === '') {
-            alert('❌ Ошибка: не удалось определить продавца для этого заказа');
-            return;
-        }
-        
-        if (confirm('Подтвердите получение товара? После этого заказ будет завершён, а средства переведены продавцу.')) {
-            // Показываем индикатор загрузки на кнопке
-            const originalText = btn.innerHTML;
-            btn.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> Обработка...';
-            btn.disabled = true;
-            
-            try {
-                // 1. Обновляем статус заказа
-                await updateDoc(doc(db, "orders", orderId), { 
-                    status: 'completed',
-                    completedAt: new Date()
-                });
-                
-                console.log('📦 Статус заказа обновлён на completed');
-                
-                // 2. ВЫПОЛНЯЕМ РЕЛИЗ СРЕДСТВ (перевод продавцу 90% и комиссия 10%)
-                // releaseFunds(buyerId, sellerId, totalAmount, orderId)
-                await releaseFunds(currentUser.uid, sellerId, totalPrice, orderId);
-                
-                console.log('💰 releaseFunds выполнен успешно');
-                
-                alert('✅ Спасибо за покупку! Заказ завершён. Средства переведены продавцу.');
-                
-                // 3. Перезагружаем заказы
-                await loadOrders();
-                
-            } catch (err) {
-                console.error('❌ Ошибка при подтверждении получения:', err);
-                alert('❌ Ошибка при подтверждении получения товара: ' + err.message);
-                
-                // Откатываем статус, если релиз не удался
-                try {
-                    await updateDoc(doc(db, "orders", orderId), { status: 'shipped' });
-                } catch (rollbackErr) {
-                    console.error('❌ Не удалось откатить статус:', rollbackErr);
-                }
-            } finally {
-                // Восстанавливаем кнопку (если заказы не перезагрузились)
-                if (document.querySelector(`.btn-confirm[data-order-id="${orderId}"]`)) {
-                    btn.innerHTML = originalText;
-                    btn.disabled = false;
-                }
-            }
-        }
+    // ===== ФОРМАТИРОВАНИЕ =====
+    function formatDate(date) {
+        if (!date) return '';
+        const d = date.toDate ? date.toDate() : new Date(date);
+        return d.toLocaleDateString('ru-RU', { day: 'numeric', month: 'short', year: 'numeric' });
     }
 
     function getStatusText(status) {
@@ -1025,7 +1154,452 @@
         return String(str).replace(/[&<>]/g, m => m === '&' ? '&amp;' : m === '<' ? '&lt;' : '&gt;');
     }
 
-    // Табы
+    // ===== ЗАГРУЗКА ПРОДАВЦА =====
+    async function getSellerData(sellerId) {
+        if (!sellerId) return { name: 'Продавец', avatar: 'Avatar.png' };
+        if (sellerCache[sellerId]) return sellerCache[sellerId];
+        
+        try {
+            const docRef = doc(db, "fighters", sellerId);
+            const docSnap = await getDoc(docRef);
+            if (docSnap.exists()) {
+                const data = docSnap.data();
+                sellerCache[sellerId] = { name: data.name || 'Продавец', avatar: data.avatar || 'Avatar.png' };
+                return sellerCache[sellerId];
+            }
+        } catch (err) {}
+        
+        sellerCache[sellerId] = { name: 'Продавец', avatar: 'Avatar.png' };
+        return sellerCache[sellerId];
+    }
+
+    // ===== ЗАГРУЗКА ЗАКАЗОВ =====
+    async function loadOrders() {
+        if (!currentUser) return;
+        
+        try {
+            const ordersQuery = query(
+                collection(db, "orders"),
+                where("userId", "==", currentUser.uid),
+                where("type", "==", "physical"),
+                orderBy("createdAt", "desc")
+            );
+            const snapshot = await getDocs(ordersQuery);
+            
+            allOrders = [];
+            for (const docSnap of snapshot.docs) {
+                const order = { id: docSnap.id, ...docSnap.data() };
+                
+                let sellerId = order.partnerId || null;
+                if (!sellerId && order.items && order.items.length > 0) {
+                    sellerId = order.items[0]?.partnerId || null;
+                }
+                if (!sellerId && order.partnerIds && order.partnerIds.length > 0) {
+                    sellerId = order.partnerIds[0];
+                }
+                
+                order.sellerId = sellerId;
+                order.sellerData = await getSellerData(sellerId);
+                allOrders.push(order);
+            }
+            
+            updateFilterCounts(allOrders);
+            renderOrders('active', currentFilter);
+            renderOrders('history', currentFilter);
+            
+        } catch (err) {
+            console.error('Ошибка загрузки заказов:', err);
+            document.getElementById('activeOrdersList').innerHTML = '<div class="empty-state"><i class="fas fa-exclamation-triangle"></i><p>Ошибка загрузки</p></div>';
+            document.getElementById('historyOrdersList').innerHTML = '<div class="empty-state"><i class="fas fa-exclamation-triangle"></i><p>Ошибка загрузки</p></div>';
+        }
+    }
+
+    // ===== ОБНОВЛЕНИЕ СЧЁТЧИКОВ ДЛЯ ДРОПДАУНА =====
+    function updateFilterCounts(orders) {
+        const counts = {
+            all: orders.length,
+            paid: orders.filter(o => o.status === 'paid').length,
+            shipped: orders.filter(o => o.status === 'shipped').length,
+            completed: orders.filter(o => o.status === 'completed').length,
+            cancelled: orders.filter(o => o.status === 'cancelled').length,
+            rejected: orders.filter(o => o.status === 'rejected').length
+        };
+
+        document.getElementById('countAll').textContent = counts.all;
+        document.getElementById('countPaid').textContent = counts.paid;
+        document.getElementById('countShipped').textContent = counts.shipped;
+        document.getElementById('countCompleted').textContent = counts.completed;
+        document.getElementById('countCancelled').textContent = counts.cancelled;
+        document.getElementById('countRejected').textContent = counts.rejected;
+        
+        document.getElementById('filterTotalCount').textContent = counts.all;
+    }
+
+    // ===== РЕНДЕР ЗАКАЗОВ =====
+    function renderOrders(tab, filter) {
+        const container = document.getElementById(tab === 'active' ? 'activeOrdersList' : 'historyOrdersList');
+        
+        const activeStatuses = ['paid', 'shipped'];
+        let filtered = allOrders;
+        
+        if (filter !== 'all') {
+            filtered = filtered.filter(o => o.status === filter);
+        }
+        
+        if (tab === 'active') {
+            filtered = filtered.filter(o => activeStatuses.includes(o.status));
+        } else {
+            filtered = filtered.filter(o => !activeStatuses.includes(o.status));
+        }
+
+        if (filtered.length === 0) {
+            const messages = {
+                active: 'У вас нет активных заказов',
+                history: 'У вас нет истории заказов'
+            };
+            container.innerHTML = `
+                <div class="empty-state">
+                    <i class="fas ${tab === 'active' ? 'fa-inbox' : 'fa-history'}"></i>
+                    <p>${messages[tab]}</p>
+                    ${tab === 'active' ? '<p><a href="catalog.html" style="color: #fbbf24;">Перейти в каталог →</a></p>' : ''}
+                </div>
+            `;
+            return;
+        }
+
+        let html = '';
+        
+        if (tab === 'history') {
+            html += `<div class="history-header"><h3><i class="fas fa-history"></i> История заказов</h3>
+                <button id="clearHistoryBtn" class="clear-history-btn"><i class="fas fa-trash"></i> Очистить историю</button>
+            </div>`;
+        }
+
+        filtered.forEach((order, index) => {
+            const date = order.createdAt ? formatDate(order.createdAt) : '—';
+            const statusText = getStatusText(order.status);
+            const statusClass = `status-${order.status}`;
+            const seller = order.sellerData || { name: 'Продавец', avatar: 'Avatar.png' };
+            const canReview = order.status === 'completed' && !order.hasReview;
+            
+            let itemsHtml = '';
+            if (order.items && order.items.length > 0) {
+                itemsHtml = '<div class="order-items-list">';
+                order.items.forEach(item => {
+                    itemsHtml += `
+                        <div class="order-item-row">
+                            <div class="item-name-small">
+                                <span>${escapeHtml(item.productName)}</span>
+                                ${item.quantity > 1 ? `<span class="item-quantity-badge">×${item.quantity}</span>` : ''}
+                            </div>
+                            <span class="item-price">${(item.price * item.quantity).toLocaleString()} ₽</span>
+                        </div>
+                    `;
+                });
+                itemsHtml += '</div>';
+            } else {
+                itemsHtml = `
+                    <div class="order-item-row">
+                        <span>${escapeHtml(order.productName || 'Товар')} ${order.quantity > 1 ? `× ${order.quantity}` : ''}</span>
+                        <span class="item-price">${(order.totalPrice || order.price || 0).toLocaleString()} ₽</span>
+                    </div>
+                `;
+            }
+
+            html += `
+                <div class="order-card" style="animation-delay: ${(index % 10) * 0.03}s;">
+                    <div class="order-seller" data-seller-id="${order.sellerId || ''}">
+                        <img src="${seller.avatar || 'Avatar.png'}" class="avatar" onerror="this.src='Avatar.png'">
+                        <div>
+                            <div class="name">${escapeHtml(seller.name || 'Продавец')}</div>
+                            <div class="role">${date}</div>
+                        </div>
+                    </div>
+                    <div class="order-header">
+                        <span class="order-number"><i class="fas fa-receipt"></i> Заказ #${order.id.slice(0, 8)}</span>
+                        <span class="order-status ${statusClass}">${statusText}</span>
+                    </div>
+                    ${itemsHtml}
+                    <div class="order-total">
+                        <span>Итого: ${(order.totalPrice || 0).toLocaleString()} ₽</span>
+                    </div>
+                    <div class="order-footer">
+                        ${order.trackingNumber ? `<div class="tracking-info"><i class="fas fa-box"></i> Трек: ${escapeHtml(order.trackingNumber)}</div>` : '<div></div>'}
+                        <div class="order-actions">
+                            ${tab === 'active' ? renderActiveButtons(order) : ''}
+                            ${canReview ? `<button class="btn-review" data-order-id="${order.id}"><i class="fas fa-star"></i> Отзыв</button>` : ''}
+                            ${order.sellerId ? `<button class="btn-chat" data-seller-id="${order.sellerId}"><i class="fas fa-comment"></i> Чат</button>` : ''}
+                        </div>
+                    </div>
+                    ${order.rejectReason ? `<div class="reject-reason"><i class="fas fa-info-circle"></i> Причина: ${escapeHtml(order.rejectReason)}</div>` : ''}
+                </div>
+            `;
+        });
+
+        container.innerHTML = html;
+        attachHandlers(tab);
+    }
+
+    // ===== КНОПКИ ДЛЯ АКТИВНЫХ =====
+    function renderActiveButtons(order) {
+        if (order.status === 'paid') {
+            return `<span style="color: #fbbf24;"><i class="fas fa-clock"></i> Ожидает отправки...</span>`;
+        }
+        if (order.status === 'shipped') {
+            return `<button class="btn-confirm" data-order-id="${order.id}" data-total="${order.totalPrice}" data-seller-id="${order.sellerId || ''}">
+                <i class="fas fa-check-circle"></i> Подтвердить получение
+            </button>`;
+        }
+        return '';
+    }
+
+    // ===== ОБРАБОТЧИКИ =====
+    function attachHandlers(tab) {
+        const container = document.getElementById(tab === 'active' ? 'activeOrdersList' : 'historyOrdersList');
+
+        container.querySelectorAll('.order-seller').forEach(el => {
+            el.removeEventListener('click', handleSellerClick);
+            el.addEventListener('click', handleSellerClick);
+        });
+
+        container.querySelectorAll('.btn-confirm').forEach(btn => {
+            btn.removeEventListener('click', handleConfirmClick);
+            btn.addEventListener('click', handleConfirmClick);
+        });
+
+        container.querySelectorAll('.btn-chat').forEach(btn => {
+            btn.removeEventListener('click', handleChatClick);
+            btn.addEventListener('click', handleChatClick);
+        });
+
+        container.querySelectorAll('.btn-review').forEach(btn => {
+            btn.removeEventListener('click', handleReviewClick);
+            btn.addEventListener('click', handleReviewClick);
+        });
+
+        const clearBtn = document.getElementById('clearHistoryBtn');
+        if (clearBtn) {
+            clearBtn.removeEventListener('click', handleClearHistory);
+            clearBtn.addEventListener('click', handleClearHistory);
+        }
+    }
+
+    async function handleSellerClick(e) {
+        const el = e.currentTarget;
+        const sellerId = el.dataset.sellerId;
+        if (sellerId && sellerId !== 'null' && sellerId !== 'undefined') {
+            window.location.href = `profile.html?id=${sellerId}`;
+        }
+    }
+
+    async function handleConfirmClick(e) {
+        const btn = e.currentTarget;
+        const orderId = btn.dataset.orderId;
+        const totalPrice = parseFloat(btn.dataset.total);
+        const sellerId = btn.dataset.sellerId;
+
+        if (!sellerId || sellerId === 'null' || sellerId === 'undefined' || sellerId === '') {
+            showNotification('❌ Не удалось определить продавца', 'error');
+            return;
+        }
+
+        if (!confirm('Подтвердите получение товара? Средства будут переведены продавцу.')) return;
+
+        const originalText = btn.innerHTML;
+        btn.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> Обработка...';
+        btn.disabled = true;
+
+        try {
+            await updateDoc(doc(db, "orders", orderId), { 
+                status: 'completed',
+                completedAt: new Date()
+            });
+
+            await releaseFunds(currentUser.uid, sellerId, totalPrice, orderId);
+
+            showNotification('✅ Спасибо за покупку! Заказ завершён.', 'success');
+            await loadOrders();
+
+        } catch (err) {
+            console.error('❌ Ошибка:', err);
+            showNotification('❌ Ошибка: ' + err.message, 'error');
+            try {
+                await updateDoc(doc(db, "orders", orderId), { status: 'shipped' });
+            } catch (rollbackErr) {}
+        } finally {
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+        }
+    }
+
+    async function handleChatClick(e) {
+        const btn = e.currentTarget;
+        const sellerId = btn.dataset.sellerId;
+        if (!sellerId) {
+            showNotification('Не удалось найти продавца', 'error');
+            return;
+        }
+        await findOrCreateChat(sellerId);
+    }
+
+    async function findOrCreateChat(sellerId) {
+        try {
+            const chatsQuery = query(
+                collection(db, "chats"),
+                where("participants", "array-contains", currentUser.uid)
+            );
+            const chatsSnap = await getDocs(chatsQuery);
+            
+            for (const docSnap of chatsSnap.docs) {
+                const chat = docSnap.data();
+                if (chat.participants.includes(sellerId)) {
+                    window.location.href = `chat.html?id=${docSnap.id}`;
+                    return;
+                }
+            }
+
+            const newChatRef = doc(collection(db, "chats"));
+            await setDoc(newChatRef, {
+                participants: [currentUser.uid, sellerId],
+                createdAt: new Date(),
+                lastMessage: '',
+                lastMessageTime: null,
+                lastMessageAuthor: null,
+                unreadCounts: {},
+                pinned: {}
+            });
+            window.location.href = `chat.html?id=${newChatRef.id}`;
+        } catch (err) {
+            console.error('Ошибка создания чата:', err);
+            showNotification('Не удалось открыть чат', 'error');
+        }
+    }
+
+    function handleReviewClick(e) {
+        const btn = e.currentTarget;
+        selectedOrderId = btn.dataset.orderId;
+        openReviewModal();
+    }
+
+    async function handleClearHistory() {
+        if (!confirm('Вы уверены, что хотите очистить всю историю заказов?')) return;
+        
+        try {
+            const ordersQuery = query(
+                collection(db, "orders"),
+                where("userId", "==", currentUser.uid),
+                where("type", "==", "physical"),
+                where("status", "in", ['completed', 'cancelled', 'rejected'])
+            );
+            const snapshot = await getDocs(ordersQuery);
+            
+            let deleted = 0;
+            for (const docSnap of snapshot.docs) {
+                await deleteDoc(doc(db, "orders", docSnap.id));
+                deleted++;
+            }
+            
+            showNotification(`✅ Удалено ${deleted} заказов`, 'success');
+            await loadOrders();
+        } catch (err) {
+            console.error('Ошибка очистки:', err);
+            showNotification('❌ Ошибка очистки', 'error');
+        }
+    }
+
+    // ===== ОТЗЫВЫ =====
+    function openReviewModal() {
+        selectedRating = 0;
+        document.getElementById('reviewText').value = '';
+        document.querySelectorAll('#starRating i').forEach(el => el.classList.remove('active'));
+        document.getElementById('reviewModal').classList.add('show');
+    }
+
+    document.querySelectorAll('#starRating i').forEach(star => {
+        star.addEventListener('click', () => {
+            selectedRating = parseInt(star.dataset.star);
+            document.querySelectorAll('#starRating i').forEach((el, index) => {
+                el.classList.toggle('active', index < selectedRating);
+            });
+        });
+    });
+
+    document.getElementById('cancelReviewBtn').addEventListener('click', () => {
+        document.getElementById('reviewModal').classList.remove('show');
+    });
+
+    document.getElementById('submitReviewBtn').addEventListener('click', async () => {
+        if (selectedRating === 0) {
+            showNotification('Выберите оценку', 'warning');
+            return;
+        }
+        const text = document.getElementById('reviewText').value.trim();
+        if (!text) {
+            showNotification('Напишите текст отзыва', 'warning');
+            return;
+        }
+
+        try {
+            await addDoc(collection(db, "reviews"), {
+                orderId: selectedOrderId,
+                userId: currentUser.uid,
+                rating: selectedRating,
+                text: text,
+                createdAt: new Date()
+            });
+
+            await updateDoc(doc(db, "orders", selectedOrderId), {
+                hasReview: true,
+                reviewedAt: new Date()
+            });
+
+            showNotification('✅ Отзыв отправлен! Спасибо!', 'success');
+            document.getElementById('reviewModal').classList.remove('show');
+            await loadOrders();
+        } catch (err) {
+            console.error('Ошибка:', err);
+            showNotification('❌ Не удалось отправить отзыв', 'error');
+        }
+    });
+
+    // ===== ФИЛЬТР - ДРОПДАУН =====
+    const filterToggle = document.getElementById('filterToggle');
+    const filterOptions = document.getElementById('filterOptions');
+    const filterArrow = document.getElementById('filterArrow');
+    const currentFilterLabel = document.getElementById('currentFilterLabel');
+
+    filterToggle.addEventListener('click', () => {
+        filterOptions.classList.toggle('open');
+        filterArrow.classList.toggle('open');
+    });
+
+    document.addEventListener('click', (e) => {
+        if (!filterToggle.contains(e.target) && !filterOptions.contains(e.target)) {
+            filterOptions.classList.remove('open');
+            filterArrow.classList.remove('open');
+        }
+    });
+
+    document.querySelectorAll('.filter-option').forEach(option => {
+        option.addEventListener('click', () => {
+            const filter = option.dataset.filter;
+            const label = option.querySelector('.option-label')?.textContent || option.textContent.trim();
+            
+            document.querySelectorAll('.filter-option').forEach(o => o.classList.remove('active'));
+            option.classList.add('active');
+            
+            currentFilterLabel.textContent = label;
+            
+            filterOptions.classList.remove('open');
+            filterArrow.classList.remove('open');
+            
+            currentFilter = filter;
+            const activeTab = document.querySelector('.tab-btn.active')?.dataset.tab || 'active';
+            renderOrders(activeTab, currentFilter);
+        });
+    });
+
+    // ===== ТАБЫ =====
     document.querySelectorAll('.tab-btn').forEach(btn => {
         btn.addEventListener('click', () => {
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -1033,15 +1607,31 @@
             
             const tab = btn.dataset.tab;
             document.querySelectorAll('.tab-pane').forEach(pane => pane.classList.remove('active'));
-            if (tab === 'active') {
-                document.getElementById('activeOrders').classList.add('active');
-            } else {
-                document.getElementById('historyOrders').classList.add('active');
-            }
+            document.getElementById(tab === 'active' ? 'activeOrders' : 'historyOrders').classList.add('active');
+            
+            renderOrders(tab, currentFilter);
         });
     });
 
-    // Авторизация
+    // ===== БАЛАНС =====
+    async function updateHeaderBalance() {
+        const user = auth.currentUser;
+        const balanceDiv = document.getElementById('balanceIndicator');
+        const balanceCount = document.getElementById('headerChallengesCount');
+        if (!user || !balanceDiv) return;
+        try {
+            const userDoc = await getDoc(doc(db, "fighters", user.uid));
+            const data = userDoc.data();
+            const total = (data.freeChallenges || 0) + (data.purchasedChallenges || 0);
+            balanceCount.innerText = total;
+            balanceDiv.style.display = 'flex';
+        } catch (err) { 
+            console.error(err);
+            balanceDiv.style.display = 'none';
+        }
+    }
+
+    // ===== АВТОРИЗАЦИЯ =====
     onAuthStateChanged(auth, async (user) => {
         currentUser = user;
         if (user) {
@@ -1055,22 +1645,20 @@
         }
     });
 
+    // ===== ОБРАБОТЧИКИ МЕНЮ =====
     const plusBtn = document.getElementById('balancePlusBtn');
     if (plusBtn) plusBtn.onclick = () => window.location.href = 'shop.html';
 
     const menuToggle = document.getElementById('menuToggle');
     const navLinks = document.getElementById('navLinks');
     if (menuToggle && navLinks) {
-        menuToggle.addEventListener('click', () => {
-            navLinks.classList.toggle('show');
-        });
-        
+        menuToggle.addEventListener('click', () => navLinks.classList.toggle('show'));
         navLinks.querySelectorAll('a').forEach(link => {
-            link.addEventListener('click', () => {
-                navLinks.classList.remove('show');
-            });
+            link.addEventListener('click', () => navLinks.classList.remove('show'));
         });
     }
+
+    console.log('✅ Мои заказы обновлены: дропдаун-фильтр, продавцы, отзывы');
 </script>
 
 </body>

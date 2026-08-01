@@ -280,6 +280,25 @@ async function renderMobileBottomNav() {
     const profileIcon = isPartner ? 'fa-chart-line' : 'fa-user';
     const profileText = isPartner ? 'Кабинет' : 'Профиль';
     
+    // ===== ПРОВЕРКА: мы на своей странице профиля? =====
+    let isMyProfile = false;
+    
+    // Если мы на profile.html
+    if (currentPage === 'profile.html') {
+        const urlParams = new URLSearchParams(window.location.search);
+        const profileId = urlParams.get('id');
+        
+        // Если id не указан ИЛИ id равен текущему пользователю - это наш профиль
+        if (!profileId || (userId && profileId === userId)) {
+            isMyProfile = true;
+        }
+    }
+    
+    // Если мы на partner-dashboard.html
+    if (currentPage === 'partner-dashboard.html' && isPartner) {
+        isMyProfile = true;
+    }
+    
     container.innerHTML = `
         <nav class="mobile-bottom-nav">
             <a href="index.html" class="mobile-nav-item ${currentPage === 'index.html' ? 'active' : ''}">
@@ -299,7 +318,7 @@ async function renderMobileBottomNav() {
                 <i class="fas fa-comments"></i>
                 <span>Чаты</span>
             </a>
-            <a href="${profileLink}" class="mobile-nav-item ${currentPage === 'profile.html' || (currentPage === 'partner-dashboard.html' && isPartner) ? 'active' : ''}" id="mobileProfileBtn">
+            <a href="${profileLink}" class="mobile-nav-item ${isMyProfile ? 'active' : ''}" id="mobileProfileBtn">
                 <i class="fas ${profileIcon}"></i>
                 <span>${profileText}</span>
             </a>
