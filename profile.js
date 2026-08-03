@@ -47,6 +47,184 @@ function getLeague(frs) {
     return { name: 'БРОНЗОВАЯ', min: 0, icon: 'fa-medal', color: '#cd7f32', reward: null };
 }
 
+// ===== ПРОВЕРКА ПРЕМИУМ СТАТУСА (ИСТЕК ИЛИ НЕТ) =====
+function checkPremiumStatus(fighterData) {
+    const premiumBadge = document.getElementById('premiumBadge');
+    if (!premiumBadge) return false;
+    
+    console.log('🔍 Проверка премиума:', fighterData?.premium, fighterData?.premiumUntil);
+    
+    // Если премиум отключен
+    if (!fighterData.premium) {
+        premiumBadge.style.display = 'none';
+        return false;
+    }
+    
+    // Если есть дата окончания премиума - проверяем
+    if (fighterData.premiumUntil) {
+        let premiumUntil;
+        
+        // Определяем тип данных (Firebase Timestamp или строка)
+        if (fighterData.premiumUntil.toDate) {
+            premiumUntil = fighterData.premiumUntil.toDate();
+        } else if (typeof fighterData.premiumUntil === 'string') {
+            premiumUntil = new Date(fighterData.premiumUntil);
+        } else if (fighterData.premiumUntil instanceof Date) {
+            premiumUntil = fighterData.premiumUntil;
+        } else {
+            premiumUntil = new Date(fighterData.premiumUntil);
+        }
+        
+        const now = new Date();
+        
+        // Если срок истек
+        if (premiumUntil < now) {
+            premiumBadge.style.display = 'none';
+            // Обновляем статус в БД (асинхронно)
+            updatePremiumStatusInDB(fighterData.uid || currentFighterId, false);
+            return false;
+        }
+    }
+    
+    // Если премиум активен
+    premiumBadge.style.display = 'inline-flex';
+    return true;
+}
+
+// ===== ОБНОВЛЕНИЕ СТАТУСА ПРЕМИУМ В БД =====
+async function updatePremiumStatusInDB(userId, isPremium) {
+    if (!userId) return;
+    try {
+        await updateDoc(doc(db, "fighters", userId), {
+            premium: isPremium,
+            premiumUntil: isPremium ? (currentFighterData?.premiumUntil || null) : null
+        });
+        console.log(`✅ Premium статус обновлен: ${isPremium}`);
+    } catch (err) {
+        console.error('Ошибка обновления премиум статуса:', err);
+    }
+}
+
+// ===== ПРИНУДИТЕЛЬНОЕ ОБНОВЛЕНИЕ СТАТУСА ПРЕМИУМА =====
+async function forceUpdatePremiumStatus(userId) {
+    if (!userId) return false;
+    
+    try {
+        const userRef = doc(db, "fighters", userId);
+        const userSnap = await getDoc(userRef);
+        if (!userSnap.exists()) return false;
+        
+        const userData = userSnap.data();
+        const premiumBadge = document.getElementById('premiumBadge');
+        
+        console.log('🔄 Проверка премиума в БД:', userData.premium, userData.premiumUntil);
+        
+        // Если премиум отключен - сразу скрываем
+        if (!userData.premium) {
+            if (premiumBadge) premiumBadge.style.display = 'none';
+            // Обновляем локальные данные
+            if (currentFighterData) {
+                currentFighterData.premium = false;
+                currentFighterData.premiumUntil = null;
+            }
+            // Скрываем бейдж и очищаем выбранный
+            await clearBadgeIfNoPremium(userId);
+            return false;
+        }
+        
+        // Проверяем дату окончания
+        let isActive = false;
+        if (userData.premiumUntil) {
+            let premiumUntil;
+            if (userData.premiumUntil.toDate) {
+                premiumUntil = userData.premiumUntil.toDate();
+            } else if (typeof userData.premiumUntil === 'string') {
+                premiumUntil = new Date(userData.premiumUntil);
+            } else if (userData.premiumUntil instanceof Date) {
+                premiumUntil = userData.premiumUntil;
+            } else {
+                premiumUntil = new Date(userData.premiumUntil);
+            }
+            
+            const now = new Date();
+            isActive = premiumUntil > now;
+            console.log('📅 Дата окончания:', premiumUntil, 'Текущая:', now, 'Активен:', isActive);
+        }
+        
+        // Если премиум истек - обновляем БД и скрываем бейдж
+        if (!isActive && userData.premium) {
+            await updateDoc(userRef, { 
+                premium: false,
+                premiumUntil: null,
+                selectedBadge: null  // Очищаем выбранный бейдж
+            });
+            if (premiumBadge) premiumBadge.style.display = 'none';
+            // Обновляем локальные данные
+            if (currentFighterData) {
+                currentFighterData.premium = false;
+                currentFighterData.premiumUntil = null;
+                currentFighterData.selectedBadge = null;
+            }
+            // Скрываем бейдж в интерфейсе
+            const badgeWrapper = document.getElementById('badgeWrapper');
+            if (badgeWrapper) badgeWrapper.style.display = 'none';
+            const badgeContainer = document.getElementById('badgeDisplay');
+            if (badgeContainer) badgeContainer.style.display = 'none';
+            console.log('🔓 Премиум истек, бейдж удален');
+            return false;
+        }
+        
+        // Если активен - показываем бейдж
+        if (isActive) {
+            if (premiumBadge) premiumBadge.style.display = 'inline-flex';
+            // Обновляем локальные данные
+            if (currentFighterData) {
+                currentFighterData.premium = true;
+                currentFighterData.premiumUntil = userData.premiumUntil;
+            }
+            console.log('👑 Премиум активен до:', userData.premiumUntil);
+            return true;
+        }
+        
+        // Если ничего не подошло - скрываем
+        if (premiumBadge) premiumBadge.style.display = 'none';
+        if (currentFighterData) {
+            currentFighterData.premium = false;
+            currentFighterData.premiumUntil = null;
+        }
+        return false;
+        
+    } catch (err) {
+        console.error('Ошибка обновления премиум статуса:', err);
+        return false;
+    }
+}
+
+// ===== ОЧИСТКА БЕЙДЖА ЕСЛИ НЕТ ПРЕМИУМА =====
+async function clearBadgeIfNoPremium(userId) {
+    try {
+        const userSnap = await getDoc(doc(db, "fighters", userId));
+        if (userSnap.exists()) {
+            const data = userSnap.data();
+            if (!data.premium && data.selectedBadge) {
+                await updateDoc(doc(db, "fighters", userId), {
+                    selectedBadge: null
+                });
+                console.log('🗑️ Бейдж очищен (нет премиума)');
+            }
+        }
+        // Скрываем в интерфейсе
+        const badgeWrapper = document.getElementById('badgeWrapper');
+        if (badgeWrapper) badgeWrapper.style.display = 'none';
+        const badgeContainer = document.getElementById('badgeDisplay');
+        if (badgeContainer) badgeContainer.style.display = 'none';
+        const badgeImg = document.getElementById('profileBadgeImg');
+        if (badgeImg) badgeImg.style.display = 'none';
+    } catch (err) {
+        console.error('Ошибка очистки бейджа:', err);
+    }
+}
+
 function getNextLeagueMin(frs) {
     if (frs < 500) return 500;
     if (frs < 1000) return 1000;
@@ -400,20 +578,45 @@ async function getLikesCount(userId) {
 }
 
 // ============================================================
-// БЕЙДЖИ
+// БЕЙДЖИ (ТОЛЬКО ДЛЯ ПРЕМИУМ)
 // ============================================================
 async function loadUserBadge(userId) {
     try {
         await ensureUserFields(userId);
-        const selectedBadgeId = await getSelectedBadge(userId);
-        const badgeImg = document.getElementById('profileBadgeImg');
-        const badgeContainer = document.getElementById('badgeDisplay');
         
-        if (!badgeImg || !badgeContainer) return;
+        // ===== ПРОВЕРЯЕМ ПРЕМИУМ =====
+        const userSnap = await getDoc(doc(db, "fighters", userId));
+        const userData = userSnap.data();
+        const hasPremium = userData?.premium || false;
+        
+        const badgeWrapper = document.getElementById('badgeWrapper');
+        const badgeContainer = document.getElementById('badgeDisplay');
+        const badgeImg = document.getElementById('profileBadgeImg');
+        
+        // Если премиум НЕ активен - скрываем бейдж
+        if (!hasPremium) {
+            if (badgeWrapper) badgeWrapper.style.display = 'none';
+            if (badgeContainer) badgeContainer.style.display = 'none';
+            if (badgeImg) badgeImg.style.display = 'none';
+            
+            // Также сбрасываем выбранный бейдж в БД
+            await updateDoc(doc(db, "fighters", userId), {
+                selectedBadge: null
+            });
+            
+            console.log('🔓 Бейдж скрыт - нет премиума');
+            return;
+        }
+        
+        // Если премиум активен - показываем бейдж
+        if (!badgeImg || !badgeContainer || !badgeWrapper) return;
+        
+        const selectedBadgeId = await getSelectedBadge(userId);
         
         if (selectedBadgeId) {
             const badge = ALL_BADGES.find(b => b.id === selectedBadgeId);
             if (badge) {
+                badgeWrapper.style.display = 'inline-flex';
                 badgeImg.src = getBadgeImage(selectedBadgeId);
                 badgeImg.style.display = 'block';
                 badgeImg.onerror = () => {
@@ -423,8 +626,10 @@ async function loadUserBadge(userId) {
                 badgeContainer.style.display = 'flex';
                 badgeImg.style.cursor = 'pointer';
                 badgeImg.onclick = () => openBadgeSelector();
+                console.log('👑 Бейдж активен:', badge.name);
             }
         } else {
+            badgeWrapper.style.display = 'none';
             badgeContainer.style.display = 'none';
         }
     } catch (err) {
@@ -434,6 +639,16 @@ async function loadUserBadge(userId) {
 
 async function openBadgeSelector() {
     if (!currentFighterId) return;
+    
+    // ===== ПРОВЕРЯЕМ ПРЕМИУМ =====
+    const userSnap = await getDoc(doc(db, "fighters", currentFighterId));
+    const userData = userSnap.data();
+    const hasPremium = userData?.premium || false;
+    
+    if (!hasPremium) {
+        showError('🔒 Бейджи доступны только с премиум-подпиской!', 'warning');
+        return;
+    }
     
     const modal = document.getElementById('badgeSelectModal');
     const grid = document.getElementById('badgeSelectGrid');
@@ -530,7 +745,10 @@ async function updateProfileName() {
         const badgeEmoji = document.getElementById('badgeEmoji');
         const badgeWrapper = document.getElementById('badgeWrapper');
         
-        if (selectedBadgeId && badgeWrapper) {
+        // Проверяем премиум перед показом бейджа
+        const hasPremium = fighter.premium || false;
+        
+        if (hasPremium && selectedBadgeId && badgeWrapper) {
             const badge = ALL_BADGES.find(b => b.id === selectedBadgeId);
             if (badge) {
                 badgeWrapper.style.display = 'inline-flex';
@@ -656,7 +874,37 @@ function setProfileMode(isOwner) {
 window.setProfileMode = setProfileMode;
 
 // ============================================================
-// ГЛАВНАЯ ФУНКЦИЯ ЗАГРУЗКИ ПРОФИЛЯ
+// ПЕРИОДИЧЕСКАЯ ПРОВЕРКА ПРЕМИУМА
+// ============================================================
+
+function startPremiumMonitor() {
+    // Проверяем каждые 30 секунд
+    setInterval(async () => {
+        if (currentFighterId) {
+            const wasActive = currentFighterData?.premium || false;
+            const isActive = await forceUpdatePremiumStatus(currentFighterId);
+            
+            // Если статус изменился - уведомляем пользователя
+            if (wasActive && !isActive) {
+                showError('🔓 Премиум истек!', 'info');
+                const premiumBadge = document.getElementById('premiumBadge');
+                if (premiumBadge) premiumBadge.style.display = 'none';
+                // Скрываем бейдж
+                const badgeWrapper = document.getElementById('badgeWrapper');
+                if (badgeWrapper) badgeWrapper.style.display = 'none';
+            } else if (!wasActive && isActive) {
+                showError('👑 Премиум активирован!', 'success');
+                const premiumBadge = document.getElementById('premiumBadge');
+                if (premiumBadge) premiumBadge.style.display = 'inline-flex';
+                // Показываем бейдж
+                await loadUserBadge(currentFighterId);
+            }
+        }
+    }, 30000); // Каждые 30 секунд
+}
+
+// ============================================================
+// ГЛАВНАЯ ФУНКЦИЯ ЗАГРУЗКИ ПРОФИЛЯ (ОПТИМИЗИРОВАННАЯ)
 // ============================================================
 async function loadProfileData(user) {
     const loadingDiv = document.getElementById('profileLoading');
@@ -690,24 +938,35 @@ async function loadProfileData(user) {
     const fighterRef = doc(db, "fighters", profileId);
     
     try {
-        const fighterSnap = await getDoc(fighterRef);
+        // ===== 1. ЗАГРУЖАЕМ ОСНОВНЫЕ ДАННЫЕ =====
+        const [fighterSnap, userDoc] = await Promise.all([
+            getDoc(fighterRef),
+            getDoc(doc(db, "fighters", user.uid))
+        ]);
+        
         if (!fighterSnap.exists()) {
             document.getElementById('fighterName').textContent = 'Боец не найден';
             if (loadingDiv) loadingDiv.style.display = 'none';
             return;
         }
-        currentFighterData = fighterSnap.data();
-        const fighter = currentFighterData;
         
-        // ===== ОПРЕДЕЛЯЕМ, ВЛАДЕЛЕЦ ИЛИ ГОСТЬ =====
+        const fighter = fighterSnap.data();
+        
+        // ===== 2. ПРОВЕРКА ПРЕМИУМА =====
+        const isPremiumActive = await forceUpdatePremiumStatus(profileId);
+        fighter.premium = isPremiumActive;
+        if (!isPremiumActive) {
+            fighter.premiumUntil = null;
+            fighter.selectedBadge = null;
+        }
+        
+        currentFighterData = fighter;
+        
+        // ===== 3. ОПРЕДЕЛЯЕМ РЕЖИМ =====
         const isOwner = user && user.uid === profileId;
         setProfileMode(isOwner);
         
-        await ensureUserFields(profileId);
-        await applyAllPremiumBonuses(profileId);
-        await initBadgeDisplay(profileId);
-        await updateProfileName();
-        
+        // ===== 4. БЫСТРО ПОКАЗЫВАЕМ ПРОФИЛЬ =====
         document.getElementById('profSport').textContent = fighter.sport || '—';
         document.getElementById('profCity').textContent = fighter.city || '—';
         
@@ -726,74 +985,57 @@ async function loadProfileData(user) {
             avatarImg.onerror = () => { avatarImg.src = 'Avatar.png'; };
         }
         
-        const oldFrs = currentFighterData?.frs || 0;
-        const newFrs = fighter.frs || 0;
-        
-        await checkAndAwardLeagueRewards(profileId, oldFrs, newFrs);
-        updateLeagueDisplay(newFrs);
-        
-        // Обновляем статистику на карточке (только FRS)
+        // ===== 5. БЫСТРЫЙ ПОКАЗ СТАТИСТИКИ =====
         document.getElementById('statFRSCard').textContent = fighter.frs || 0;
-        
-        // Обновляем полную статистику во вкладке (без FRS)
         document.getElementById('statWins').textContent = fighter.wins || 0;
         document.getElementById('statLosses').textContent = fighter.losses || 0;
         document.getElementById('statFinishes').textContent = fighter.finishes || 0;
         
-        await updateLikesUI();
-        await updateSubscribeUI();
+        // ===== 6. БЕЙДЖ (ТОЛЬКО ЕСЛИ ЕСТЬ ПРЕМИУМ) =====
+        if (isPremiumActive) {
+            await initBadgeDisplay(profileId);
+        } else {
+            const badgeWrapper = document.getElementById('badgeWrapper');
+            if (badgeWrapper) badgeWrapper.style.display = 'none';
+        }
+        await updateProfileName();
         
-        const ownerDiv = document.getElementById('ownerButtons');
-        const visitorDiv = document.getElementById('visitorButtons');
-        const navBtn = document.getElementById('profileLoginBtn');
-
-        if (authListenerUnsub) authListenerUnsub();
-        authListenerUnsub = onAuthStateChanged(auth, async (user) => {
-            const isOwnerNow = user && user.uid === profileId;
-            const isLogged = !!user;
-            
-            // Обновляем режим при смене пользователя
-            setProfileMode(isOwnerNow);
-            
-            if (navBtn) {
-                if (!isLogged) { 
-                    navBtn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Войти'; 
-                    navBtn.href = 'login.html'; 
-                    navBtn.classList.remove('hidden'); 
-                } else if (isOwnerNow) { 
-                    navBtn.classList.add('hidden'); 
-                } else { 
-                    navBtn.innerHTML = '<i class="fas fa-user"></i> Мой профиль'; 
-                    navBtn.href = `profile.html?id=${user.uid}`; 
-                    navBtn.classList.remove('hidden'); 
-                }
-            }
-            if (ownerDiv && visitorDiv) {
-                if (isOwnerNow) {
-                    ownerDiv.classList.remove('hidden');
-                    visitorDiv.classList.add('hidden');
-                    const shown = localStorage.getItem('frs_onboarding_shown');
-                    if (!shown) {
-                        const onboarding = document.getElementById('frsOnboarding');
-                        if (onboarding) {
-                            onboarding.classList.remove('hidden');
-                            document.getElementById('onboardingFrs').textContent = fighter.frs || 0;
-                        }
-                    }
-                    await setupReferral();
-                    await setupTelegramVerify();
-                } else if (isLogged) {
-                    ownerDiv.classList.add('hidden');
-                    visitorDiv.classList.remove('hidden');
-                } else {
-                    ownerDiv.classList.add('hidden');
-                    visitorDiv.classList.add('hidden');
-                }
-            }
-            if (isLogged) setTimeout(() => updateHeaderBalance(), 500);
-            else { const balanceDiv = document.getElementById('balanceIndicator'); if (balanceDiv) balanceDiv.style.display = 'none'; }
-        });
+        // ===== 7. ЛИГА =====
+        updateLeagueDisplay(fighter.frs || 0);
+        checkPremiumStatus(fighter);
         
+        // ===== 8. ПОКАЗЫВАЕМ ПРОФИЛЬ (ДО ЗАГРУЗКИ ТЯЖЕЛЫХ ДАННЫХ) =====
+        if (loadingDiv) loadingDiv.style.display = 'none';
+        if (profileContent) profileContent.style.display = 'block';
+        
+        // ===== 9. ЗАГРУЖАЕМ ТЯЖЕЛЫЕ ДАННЫЕ АСИНХРОННО (НЕ БЛОКИРУЕМ) =====
+        setTimeout(async () => {
+            try {
+                // Лиги и награды
+                const oldFrs = currentFighterData?.frs || 0;
+                const newFrs = fighter.frs || 0;
+                await checkAndAwardLeagueRewards(profileId, oldFrs, newFrs);
+                
+                // Лайки и подписки
+                await Promise.all([
+                    updateLikesUI(),
+                    updateSubscribeUI()
+                ]);
+                
+                // История боёв
+                await loadFightHistory();
+                
+                // Достижения
+                await loadAchievements();
+                await checkAndAwardAchievements(profileId);
+                
+                console.log('✅ Все данные загружены');
+            } catch (err) {
+                console.error('❌ Ошибка фоновой загрузки:', err);
+            }
+        }, 100);
+        
+        // ===== 10. НАСТРОЙКИ =====
         setupEditProfile(fighterRef, fighter);
         setupEditBio();
         setupVerifyRecord();
@@ -805,15 +1047,27 @@ async function loadProfileData(user) {
         setupOnboardingClose();
         setupLogout();
         setupPrivacySetting();
-        await loadFightHistory();
-        await loadAchievements();
-        await checkAndAwardAchievements(profileId);
         
-        // Инициализация вкладок
+        // ===== 11. НАВИГАЦИЯ =====
+        const ownerDiv = document.getElementById('ownerButtons');
+        const visitorDiv = document.getElementById('visitorButtons');
+        
+        if (isOwner) {
+            ownerDiv.classList.remove('hidden');
+            visitorDiv.classList.add('hidden');
+            await setupReferral();
+            await setupTelegramVerify();
+        } else {
+            ownerDiv.classList.add('hidden');
+            visitorDiv.classList.remove('hidden');
+        }
+        
+        // ===== 12. ВКЛАДКИ =====
         initTabs();
         
-        if (loadingDiv) loadingDiv.style.display = 'none';
-        if (profileContent) profileContent.style.display = 'block';
+        // ===== 13. МОНИТОР ПРЕМИУМА =====
+        startPremiumMonitor();
+        
     } catch (error) {
         console.error('Ошибка загрузки профиля:', error);
         if (loadingDiv) loadingDiv.style.display = 'none';
@@ -1157,6 +1411,26 @@ window.openBadgeSelector = openBadgeSelector;
 window.addEventListener('beforeunload', () => { if (authListenerUnsub) authListenerUnsub(); });
 
 // ===== ЗАПУСК =====
-onAuthStateChanged(auth, (user) => {
+onAuthStateChanged(auth, async (user) => {
+    if (user) {
+        // Принудительно проверяем премиум при загрузке
+        const userSnap = await getDoc(doc(db, "fighters", user.uid));
+        if (userSnap.exists()) {
+            const data = userSnap.data();
+            if (data.premiumUntil) {
+                const until = data.premiumUntil.toDate ? data.premiumUntil.toDate() : new Date(data.premiumUntil);
+                if (until < new Date()) {
+                    // Истек - обновляем БД и очищаем бейдж
+                    await updateDoc(doc(db, "fighters", user.uid), {
+                        premium: false,
+                        premiumUntil: null,
+                        selectedBadge: null
+                    });
+                    console.log('🔓 Премиум истек, БД обновлена при запуске, бейдж очищен');
+                }
+            }
+        }
+        await forceUpdatePremiumStatus(user.uid);
+    }
     loadProfileData(user);
 });
