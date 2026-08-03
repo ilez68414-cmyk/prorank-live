@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Голосовые как в WhatsApp - полная версия</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0a0a0a;
+            color: #fff;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+        h1 {
+            color: #fbbf24;
+            margin-bottom: 8px;
+            font-size: 22px;
+        }
+        .subtitle {
+            color: #666;
+            font-size: 13px;
+            margin-bottom: 30px;
+        }
+        .container {
+            max-width: 500px;
+            width: 100%;
+        }
+
+        .message {
+            padding: 12px 16px;
+            border-radius: 16px;
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            margin-bottom: 12px;
+            background: #1f1f2a;
+            border: 1px solid rgba(251,191,36,0.08);
+            position: relative;
+            max-width: 85%;
+        }
+        .message.other {
+            align-self: flex-start;
+            margin-right: auto;
+        }
+        .message.own {
+            background: linear-gradient(135deg, #fbbf24, #e5a500);
+            color: #000;
+            align-self: flex-end;
+            margin-left: auto;
+        }
+
+        .voice-play-btn {
+            background: rgba(251,191,36,0.15);
+            border: 1px solid rgba(251,191,36,0.3);
+            color: #fbbf24;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            flex-shrink: 0;
+            font-size: 14px;
+            z-index: 2;
+        }
+        .message.own .voice-play-btn {
+            background: rgba(0,0,0,0.12);
+            border-color: rgba(0,0,0,0.15);
+            color: #000;
+        }
+        .voice-play-btn.playing {
+            background: rgba(251,191,36,0.3);
+            border-color: #fbbf24;
+        }
+        .message.own .voice-play-btn.playing {
+            background: rgba(0,0,0,0.2);
+        }
+
+        .voice-main {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+            min-width: 0;
+            cursor: pointer;
+            position: relative;
+            flex: 1;
+        }
+
+        .voice-wave-wrapper {
+            position: relative;
+            height: 32px;
+            overflow: hidden;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .voice-waveform {
+            display: flex;
+            align-items: center;
+            gap: 2px;
+            height: 100%;
+            width: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+        .voice-waveform .bar {
+            flex: 1;
+            max-width: 4px;
+            min-width: 2px;
+            background: #444;
+            border-radius: 2px;
+            height: 4px;
+            transition: height 0.05s linear, background 0.05s linear;
+        }
+        .voice-waveform .bar.active {
+            background: #fbbf24;
+        }
+        .message.own .voice-waveform .bar {
+            background: rgba(0,0,0,0.15);
+        }
+        .message.own .voice-waveform .bar.active {
+            background: #000;
+        }
+
+        .voice-progress-click {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+            z-index: 3;
+            background: transparent;
+        }
+
+        .voice-time {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.5rem;
+            color: #888;
+            padding: 0 2px;
+        }
+        .message.own .voice-time {
+            color: rgba(0,0,0,0.4);
+        }
+        .voice-time-current {
+            font-variant-numeric: tabular-nums;
+        }
+        .voice-time-total {
+            font-variant-numeric: tabular-nums;
+        }
+
+        .badge {
+            display: inline-block;
+            background: rgba(251,191,36,0.15);
+            color: #fbbf24;
+            padding: 2px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            margin-left: 8px;
+        }
+
+        .note {
+            color: #555;
+            font-size: 12px;
+            margin-top: 16px;
+            text-align: center;
+            border-top: 1px solid #1a1a1a;
+            padding-top: 16px;
+        }
+        .note span {
+            color: #fbbf24;
+        }
+
+        .legend {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin: 12px 0 8px;
+            font-size: 12px;
+            color: #666;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .legend-color {
+            width: 16px;
+            height: 4px;
+            border-radius: 2px;
+        }
+        .legend-color.gray {
+            background: #444;
+        }
+        .legend-color.yellow {
+            background: #fbbf24;
+        }
+
+        .messages-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 4px;
+        }
+        .messages-wrapper .own {
+            align-self: flex-end;
+        }
+    </style>
+</head>
+<body>
+    <h1>🎤 WhatsApp стиль <span class="badge">✅ УМНЫЕ ВОЛНЫ</span></h1>
+    <div class="subtitle">Высота палочек = реальная громкость в каждой точке</div>
+    
+    <div class="container">
+        <div class="messages-wrapper">
+            <!-- Короткое (2 сек) с разной громкостью -->
+            <div class="message other">
+                <button class="voice-play-btn" onclick="togglePlay(this, 'wave1', 2)">
+                    <i class="fas fa-play"></i>
+                </button>
+                <div class="voice-main">
+                    <div class="voice-wave-wrapper" id="wrapper1" onclick="seekAudio('wave1', event)" style="width:100px;">
+                        <div class="voice-waveform" id="wave1"></div>
+                        <div class="voice-progress-click"></div>
+                    </div>
+                    <div class="voice-time">
+                        <span class="voice-time-current" id="current1">0:00</span>
+                        <span class="voice-time-total" id="total1">0:02</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Среднее (5 сек) с разной громкостью -->
+            <div class="message other">
+                <button class="voice-play-btn" onclick="togglePlay(this, 'wave2', 5)">
+                    <i class="fas fa-play"></i>
+                </button>
+                <div class="voice-main">
+                    <div class="voice-wave-wrapper" id="wrapper2" onclick="seekAudio('wave2', event)" style="width:200px;">
+                        <div class="voice-waveform" id="wave2"></div>
+                        <div class="voice-progress-click"></div>
+                    </div>
+                    <div class="voice-time">
+                        <span class="voice-time-current" id="current2">0:00</span>
+                        <span class="voice-time-total" id="total2">0:05</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Длинное (10 сек) с разной громкостью -->
+            <div class="message other">
+                <button class="voice-play-btn" onclick="togglePlay(this, 'wave3', 10)">
+                    <i class="fas fa-play"></i>
+                </button>
+                <div class="voice-main">
+                    <div class="voice-wave-wrapper" id="wrapper3" onclick="seekAudio('wave3', event)" style="width:280px;">
+                        <div class="voice-waveform" id="wave3"></div>
+                        <div class="voice-progress-click"></div>
+                    </div>
+                    <div class="voice-time">
+                        <span class="voice-time-current" id="current3">0:00</span>
+                        <span class="voice-time-total" id="total3">0:10</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-color gray"></div>
+                <span>Не прослушано</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color yellow"></div>
+                <span>Прослушано</span>
+            </div>
+        </div>
+
+        <div class="note">
+            📊 Волны отражают <span>реальную громкость</span> в каждой точке<br>
+            🟡 Где громче — <span>выше</span> палочки, где тише — <span>ниже</span>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/js/all.min.js"></script>
+    <script>
+        // ============================================================
+        // ГЕНЕРАЦИЯ УМНЫХ ВОЛН (на основе реальной громкости)
+        // ============================================================
+        function generateSmartWaveform(containerId, duration) {
+            const container = document.getElementById(containerId);
+            if (!container) return;
+            
+            container.innerHTML = '';
+            
+            // Количество палочек зависит от длительности
+            let barCount;
+            if (duration <= 2) barCount = 20;
+            else if (duration <= 4) barCount = 32;
+            else if (duration <= 7) barCount = 48;
+            else barCount = 60;
+            
+            // Генерируем "реальный" аудио-паттерн с разной громкостью
+            // Создаем массив громкости для каждой палочки
+            const volumePattern = [];
+            
+            // Создаем реалистичный паттерн: тихо-громко-тихо-громко-тихо
+            for (let i = 0; i < barCount; i++) {
+                const pos = i / barCount;
+                let volume;
+                
+                if (duration <= 2) {
+                    // Для коротких: просто случайные пики
+                    volume = 0.2 + Math.random() * 0.8;
+                } else {
+                    // Для длинных: паттерн с паузами и пиками
+                    // Начало - тихо
+                    if (pos < 0.1) {
+                        volume = 0.1 + Math.random() * 0.2;
+                    }
+                    // Первая фраза - громко
+                    else if (pos < 0.3) {
+                        volume = 0.6 + Math.random() * 0.4;
+                    }
+                    // Пауза - тихо
+                    else if (pos < 0.4) {
+                        volume = 0.05 + Math.random() * 0.15;
+                    }
+                    // Вторая фраза - средняя громкость
+                    else if (pos < 0.6) {
+                        volume = 0.4 + Math.random() * 0.3;
+                    }
+                    // Пауза - тихо
+                    else if (pos < 0.7) {
+                        volume = 0.05 + Math.random() * 0.15;
+                    }
+                    // Третья фраза - самая громкая
+                    else if (pos < 0.85) {
+                        volume = 0.7 + Math.random() * 0.3;
+                    }
+                    // Конец - затухание
+                    else {
+                        volume = 0.3 + Math.random() * 0.2;
+                    }
+                }
+                
+                volumePattern.push(volume);
+            }
+            
+            // Создаем палочки с высотой = громкость
+            for (let i = 0; i < barCount; i++) {
+                const bar = document.createElement('div');
+                bar.className = 'bar';
+                
+                // Высота = громкость * максимальная высота
+                const volume = volumePattern[i] || 0.3;
+                const height = 2 + volume * 28;
+                
+                bar.style.height = height + 'px';
+                bar.dataset.index = i;
+                bar.dataset.volume = volume;
+                container.appendChild(bar);
+            }
+            
+            // Сохраняем паттерн для воспроизведения
+            container.dataset.volumePattern = JSON.stringify(volumePattern);
+        }
+
+        // ============================================================
+        // АУДИО С РЕАЛЬНЫМ АНАЛИЗОМ
+        // ============================================================
+        let audioContexts = {};
+        let analysers = {};
+        let audioElements = {};
+        let animationFrames = {};
+        let isPlaying = {};
+
+        function togglePlay(btn, waveId, duration) {
+            const isCurrentlyPlaying = btn.classList.contains('playing');
+            
+            if (isCurrentlyPlaying) {
+                pauseAudio(waveId);
+                btn.classList.remove('playing');
+                btn.innerHTML = '<i class="fas fa-play"></i>';
+            } else {
+                playAudio(waveId, btn, duration);
+            }
+        }
+
+        function playAudio(waveId, btn, duration) {
+            const container = document.getElementById(waveId);
+            const bars = container.querySelectorAll('.bar');
+            const currentTimeEl = document.getElementById('current' + waveId.slice(-1));
+            
+            if (!bars.length) {
+                generateSmartWaveform(waveId, duration);
+                // Обновляем ссылку на палочки
+                bars = document.getElementById(waveId).querySelectorAll('.bar');
+            }
+
+            if (!audioContexts[waveId]) {
+                const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                audioContexts[waveId] = audioCtx;
+                
+                // Генерируем аудио с разной громкостью (соответствует паттерну)
+                const bufferSize = audioCtx.sampleRate * duration;
+                const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+                const data = buffer.getChannelData(0);
+                
+                // Получаем паттерн громкости
+                const volumePattern = JSON.parse(container.dataset.volumePattern || '[]');
+                const barCount = bars.length;
+                
+                for (let i = 0; i < bufferSize; i++) {
+                    const time = i / audioCtx.sampleRate;
+                    const pos = time / duration;
+                    
+                    // Определяем индекс палочки для этого момента времени
+                    const barIndex = Math.floor(pos * barCount);
+                    const volume = volumePattern[barIndex] || 0.3;
+                    
+                    // Генерируем звук с учетом громкости
+                    const freq1 = 300 + Math.sin(time * 3) * 100;
+                    const freq2 = 600 + Math.sin(time * 2) * 200;
+                    const freq3 = 1200 + Math.sin(time * 4) * 300;
+                    
+                    let sample = 0;
+                    sample += Math.sin(time * freq1 * 2 * Math.PI) * 0.3;
+                    sample += Math.sin(time * freq2 * 2 * Math.PI) * 0.25;
+                    sample += Math.sin(time * freq3 * 2 * Math.PI) * 0.15;
+                    
+                    // Применяем громкость из паттерна
+                    sample *= volume * 0.7;
+                    
+                    // Огибающая
+                    const envelope = Math.sin(time * 0.5) * 0.2 + 0.8;
+                    data[i] = sample * envelope;
+                }
+                
+                const source = audioCtx.createBufferSource();
+                source.buffer = buffer;
+                
+                const analyser = audioCtx.createAnalyser();
+                analyser.fftSize = 64;
+                analysers[waveId] = analyser;
+                
+                source.connect(analyser);
+                analyser.connect(audioCtx.destination);
+                
+                audioElements[waveId] = {
+                    source: source,
+                    duration: duration,
+                    isPlaying: false,
+                    barCount: bars.length
+                };
+                
+                source.onended = () => {
+                    pauseAudio(waveId);
+                    const playBtn = btn.closest('.message').querySelector('.voice-play-btn');
+                    if (playBtn) {
+                        playBtn.classList.remove('playing');
+                        playBtn.innerHTML = '<i class="fas fa-play"></i>';
+                    }
+                    if (currentTimeEl) currentTimeEl.textContent = '0:00';
+                    isPlaying[waveId] = false;
+                    bars.forEach(bar => bar.classList.remove('active'));
+                };
+            }
+
+            const audio = audioElements[waveId];
+            if (!audio) return;
+
+            const ctx = audioContexts[waveId];
+            const source = ctx.createBufferSource();
+            source.buffer = audio.source.buffer;
+            
+            const analyser = analysers[waveId];
+            source.connect(analyser);
+            analyser.connect(ctx.destination);
+            
+            audio.source = source;
+            audio.startTime = ctx.currentTime;
+            audio.isPlaying = true;
+            
+            source.start(0);
+            source.onended = () => {
+                pauseAudio(waveId);
+                const playBtn = btn.closest('.message').querySelector('.voice-play-btn');
+                if (playBtn) {
+                    playBtn.classList.remove('playing');
+                    playBtn.innerHTML = '<i class="fas fa-play"></i>';
+                }
+                if (currentTimeEl) currentTimeEl.textContent = '0:00';
+                isPlaying[waveId] = false;
+                bars.forEach(bar => bar.classList.remove('active'));
+            };
+            
+            isPlaying[waveId] = true;
+            visualizeBars(waveId, bars, analyser, currentTimeEl);
+            
+            btn.classList.add('playing');
+            btn.innerHTML = '<i class="fas fa-pause"></i>';
+        }
+
+        function pauseAudio(waveId) {
+            if (audioElements[waveId] && audioElements[waveId].source) {
+                try {
+                    audioElements[waveId].source.stop();
+                } catch (e) {}
+                audioElements[waveId].isPlaying = false;
+            }
+            
+            if (animationFrames[waveId]) {
+                cancelAnimationFrame(animationFrames[waveId]);
+                delete animationFrames[waveId];
+            }
+            
+            isPlaying[waveId] = false;
+        }
+
+        function visualizeBars(waveId, bars, analyser, currentTimeEl) {
+            const dataArray = new Uint8Array(analyser.frequencyBinCount);
+            const audio = audioElements[waveId];
+            const totalBars = bars.length;
+            
+            // Получаем сохраненный паттерн громкости
+            const container = document.getElementById(waveId);
+            const volumePattern = JSON.parse(container.dataset.volumePattern || '[]');
+            
+            function update() {
+                if (!isPlaying[waveId] || !audio) return;
+                
+                analyser.getByteFrequencyData(dataArray);
+                
+                const elapsed = audioContexts[waveId].currentTime - audio.startTime;
+                const progress = Math.min(elapsed / audio.duration, 1);
+                const activeCount = Math.floor(progress * totalBars);
+                
+                for (let i = 0; i < totalBars; i++) {
+                    const bar = bars[i];
+                    
+                    // Используем сохраненную громкость из паттерна
+                    const volume = volumePattern[i] || 0.3;
+                    
+                    // Добавляем немного пульсации от реального аудио для живости
+                    const freqIndex = Math.floor((i / totalBars) * dataArray.length);
+                    const liveValue = dataArray[freqIndex] || 0;
+                    const liveNormalized = Math.min(liveValue / 128, 1);
+                    
+                    // Смешиваем: 70% паттерн + 30% реальный анализ
+                    const mixed = volume * 0.7 + liveNormalized * 0.3;
+                    const height = 2 + mixed * 28;
+                    bar.style.height = height + 'px';
+                    
+                    if (i < activeCount) {
+                        bar.classList.add('active');
+                    } else {
+                        bar.classList.remove('active');
+                    }
+                }
+                
+                if (currentTimeEl) {
+                    const current = Math.min(elapsed, audio.duration);
+                    const mins = Math.floor(current / 60);
+                    const secs = Math.floor(current % 60);
+                    currentTimeEl.textContent = `${mins}:${secs.toString().padStart(2, '0')}`;
+                }
+                
+                animationFrames[waveId] = requestAnimationFrame(update);
+            }
+            
+            update();
+        }
+
+        // ============================================================
+        // ПЕРЕМОТКА
+        // ============================================================
+        function seekAudio(waveId, event) {
+            const wrapper = event.currentTarget;
+            const rect = wrapper.getBoundingClientRect();
+            const x = event.clientX - rect.left;
+            const percent = Math.max(0, Math.min(1, x / rect.width));
+            
+            const audio = audioElements[waveId];
+            const bars = document.getElementById(waveId).querySelectorAll('.bar');
+            
+            if (audio && audio.source && audio.isPlaying) {
+                const duration = audio.duration;
+                const newTime = percent * duration;
+                
+                try {
+                    audio.source.stop();
+                    
+                    const ctx = audioContexts[waveId];
+                    const source = ctx.createBufferSource();
+                    source.buffer = audio.source.buffer;
+                    
+                    const analyser = analysers[waveId];
+                    source.connect(analyser);
+                    analyser.connect(ctx.destination);
+                    
+                    audio.source = source;
+                    audio.startTime = ctx.currentTime - newTime;
+                    audio.isPlaying = true;
+                    
+                    source.start(0, newTime);
+                    source.onended = () => {
+                        pauseAudio(waveId);
+                        const playBtn = document.querySelector(`[onclick*="${waveId}"]`);
+                        if (playBtn) {
+                            playBtn.classList.remove('playing');
+                            playBtn.innerHTML = '<i class="fas fa-play"></i>';
+                        }
+                        const currentTimeEl = document.getElementById('current' + waveId.slice(-1));
+                        if (currentTimeEl) currentTimeEl.textContent = '0:00';
+                        isPlaying[waveId] = false;
+                        bars.forEach(bar => bar.classList.remove('active'));
+                    };
+                    
+                    isPlaying[waveId] = true;
+                    
+                } catch (e) {
+                    console.warn('Ошибка перемотки:', e);
+                }
+            }
+        }
+
+        // ============================================================
+        // ШИРИНА БЛОКА
+        // ============================================================
+        function getWidthForDuration(duration) {
+            const minWidth = 80;
+            const maxWidth = 300;
+            const calculated = minWidth + (duration / 15) * (maxWidth - minWidth);
+            return Math.min(Math.max(calculated, minWidth), maxWidth);
+        }
+
+        // ============================================================
+        // ИНИЦИАЛИЗАЦИЯ
+        // ============================================================
+        document.addEventListener('DOMContentLoaded', () => {
+            const durations = [2, 5, 10];
+            const ids = ['wave1', 'wave2', 'wave3'];
+            const wrapperIds = ['wrapper1', 'wrapper2', 'wrapper3'];
+            
+            durations.forEach((dur, index) => {
+                const width = getWidthForDuration(dur);
+                const wrapper = document.getElementById(wrapperIds[index]);
+                if (wrapper) {
+                    wrapper.style.width = width + 'px';
+                }
+                generateSmartWaveform(ids[index], dur);
+            });
+        });
+
+        console.log('✅ Умные волны загружены!');
+        console.log('👉 Высота палочек = реальная громкость в каждой точке');
+    </script>
+</body>
+</html>
