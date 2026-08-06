@@ -280,27 +280,25 @@ body {
     opacity: 0.6;
 }
 
-.message-read-status {
-    font-size: 0.55rem;
-    opacity: 0.5;
-    transition: all 0.3s ease;
-}
-
 .message-read-status.read {
     color: #22c55e;
     opacity: 1;
 }
-.message-read-status.delivered {
-    color: #fbbf24;
-    opacity: 0.7;
-}
-.message-read-status.sent {
-    color: #888;
-    opacity: 0.4;
+
+/* Для своих сообщений на золотом фоне - черный цвет */
+.message.own .message-read-status.read {
+    color: #000;
+    opacity: 0.8;
 }
 
-.message.own .message-read-status {
-    font-size: 0.6rem;
+.message.own .message-read-status.delivered {
+    color: #000;
+    opacity: 0.6;
+}
+
+.message.own .message-read-status.sent {
+    color: #000;
+    opacity: 0.4;
 }
 
 /* ===== РЕПЛАЙ ===== */
@@ -1204,16 +1202,24 @@ async function addReaction(messageId, emoji) {
     }
     
     const userReactions = reactions[currentUser.uid] || [];
+    
+    // Если пользователь уже поставил эту реакцию - убираем её
     if (userReactions.includes(emoji)) {
         reactions[currentUser.uid] = userReactions.filter(e => e !== emoji);
         if (reactions[currentUser.uid].length === 0) {
             delete reactions[currentUser.uid];
         }
+        await setDoc(reactionRef, reactions);
+        showNotification(`❌ Реакция "${emoji}" убрана`, 'info');
     } else {
+        // Иначе добавляем
         reactions[currentUser.uid] = [...userReactions, emoji];
+        await setDoc(reactionRef, reactions);
+        showNotification(`✅ Реакция "${emoji}" добавлена`, 'success');
     }
     
-    await setDoc(reactionRef, reactions);
+    // Обновляем отображение
+    setTimeout(() => loadAllReactions(), 200);
 }
 
 function createReactionPicker(messageId) {
@@ -1315,8 +1321,18 @@ async function loadAllReactions() {
                 
                 container.querySelectorAll('.reaction-badge[data-emoji]').forEach(el => {
                     el.addEventListener('click', async () => {
-                        await addReaction(messageId, el.dataset.emoji);
-                        setTimeout(() => loadAllReactions(), 200);
+                        const emoji = el.dataset.emoji;
+                        const isReacted = el.classList.contains('reacted');
+                        
+                        if (isReacted) {
+                            // Если уже есть реакция - убираем
+                            if (confirm(`Убрать реакцию "${emoji}"?`)) {
+                                await addReaction(messageId, emoji);
+                            }
+                        } else {
+                            // Если нет - добавляем
+                            await addReaction(messageId, emoji);
+                        }
                     });
                 });
             }
@@ -1918,7 +1934,15 @@ async function playVoiceMessage(voiceUrl, duration, voiceEl) {
         audio.onended = () => {
             playBtn.classList.remove('playing');
             playBtn.innerHTML = '<i class="fas fa-play"></i>';
-            stopVoiceAnimation(bars);
+            
+            // Закрашиваем все палочки и они остаются видны
+            bars.forEach(bar => {
+                bar.classList.add('active');
+                const volume = parseFloat(bar.dataset.volume) || 0.3;
+                const height = 2 + volume * 28;
+                bar.style.height = height + 'px';
+            });
+            
             if (durationEl) {
                 durationEl.textContent = formatTime(duration);
             }
@@ -1927,6 +1951,7 @@ async function playVoiceMessage(voiceUrl, duration, voiceEl) {
             }
             currentAudioElement = null;
             voiceEl._audio = null;
+            voiceAnimationInterval = false;
         };
 
         audio.onerror = () => {
@@ -1963,7 +1988,19 @@ function startVoiceAnimation(bars, audio) {
     let startTime = Date.now();
     
     function animateBars() {
-        if (!audio || audio.paused || audio.ended) {
+        if (!audio || audio.ended) {
+            // Если закончилось - закрашиваем все палочки
+            bars.forEach((bar, i) => {
+                const volume = volumePattern[i] || 0.3;
+                const height = 2 + volume * 28;
+                bar.style.height = height + 'px';
+                bar.classList.add('active');
+            });
+            return;
+        }
+        
+        if (audio.paused) {
+            requestAnimationFrame(animateBars);
             return;
         }
         
@@ -1974,15 +2011,11 @@ function startVoiceAnimation(bars, audio) {
         
         // Обновляем палочки
         bars.forEach((bar, i) => {
-            // Используем сохраненную громкость из паттерна
             const volume = volumePattern[i] || 0.3;
-            
-            // Небольшая пульсация для живости
             const pulse = Math.sin(Date.now() / 200 + i * 0.5) * 0.1 + 0.9;
             const height = 2 + volume * 28 * pulse;
             bar.style.height = height + 'px';
             
-            // Закрашиваем если палочка в зоне прогресса
             if (i < activeCount) {
                 bar.classList.add('active');
             } else {
@@ -2002,9 +2035,13 @@ function startVoiceAnimation(bars, audio) {
 function stopVoiceAnimation(bars) {
     if (bars) {
         bars.forEach(bar => {
-            bar.style.height = '';
-            bar.style.background = '';
+            // Убираем только класс active, но сохраняем высоту
             bar.classList.remove('active');
+            // Восстанавливаем базовую высоту из dataset
+            const volume = parseFloat(bar.dataset.volume) || 0.3;
+            const height = 2 + volume * 28;
+            bar.style.height = height + 'px';
+            bar.style.background = '';
         });
     }
     voiceAnimationInterval = false;

@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <!-- PWA Manifest & Icons -->
     <link rel="manifest" href="/prorank-live/manifest.json">
     <link rel="apple-touch-icon" href="/prorank-live/icons/icon-192.png">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -18,6 +17,13 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700;14..32,800;14..32,900&display=swap" rel="stylesheet">
     <style>
+        /* ===== ВСЕ СТИЛИ ОСТАЮТСЯ БЕЗ ИЗМЕНЕНИЙ ===== */
+        /* ... (весь CSS из предыдущей версии) ... */
+        
+        /* Добавляем стиль для статуса pending */
+        .status-pending { background: rgba(245,158,11,0.2); color: #f59e0b; }
+        
+        /* Остальные стили такие же как были */
         * { margin: 0; padding: 0; box-sizing: border-box; }
         
         body {
@@ -84,7 +90,7 @@
         
         .balance-indicator {
             background: #111;
-            border: 1px solid rgba(251, 191, 36, 0.5);
+            border: 1px solid rgba(251,191,36,0.5);
             border-radius: 60px;
             padding: 7px 18px;
             display: flex;
@@ -170,7 +176,7 @@
         
         .page-header { 
             text-align: center; 
-            padding: 40px 20px 20px;
+            padding: 30px 20px 20px;
         }
         
         .page-header h1 { 
@@ -187,184 +193,35 @@
             font-size: clamp(0.85rem, 3vw, 0.95rem);
         }
         
-        /* ===== ФИЛЬТР - ДРОПДАУН ===== */
-        .filter-dropdown {
-            margin-bottom: 16px;
-            position: relative;
-        }
-
-        .filter-toggle {
-            width: 100%;
-            padding: 12px 18px;
-            background: rgba(15,15,15,0.7);
-            border: 1px solid rgba(251,191,36,0.15);
-            border-radius: 16px;
-            color: #fff;
-            cursor: pointer;
+        .tabs {
             display: flex;
-            align-items: center;
-            justify-content: space-between;
-            font-family: 'Inter', sans-serif;
-            transition: all 0.2s ease;
-            min-height: 50px;
-        }
-
-        .filter-toggle:hover {
-            background: rgba(25,25,35,0.8);
-            border-color: rgba(251,191,36,0.3);
-        }
-
-        .filter-toggle-left {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-size: 0.9rem;
-            font-weight: 500;
-        }
-
-        .filter-toggle-left i {
-            color: #fbbf24;
-            font-size: 0.9rem;
-        }
-
-        .filter-toggle-right {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .filter-count {
-            background: rgba(251,191,36,0.15);
-            color: #fbbf24;
-            padding: 2px 10px;
-            border-radius: 20px;
-            font-size: 0.7rem;
-            font-weight: 600;
-        }
-
-        #filterArrow {
-            color: #555;
-            font-size: 0.8rem;
-            transition: transform 0.3s ease;
-        }
-
-        #filterArrow.open {
-            transform: rotate(180deg);
-        }
-
-        /* ===== ВЫПАДАЮЩИЙ СПИСОК ===== */
-        .filter-options {
-            display: none;
-            margin-top: 8px;
-            background: rgba(15,15,15,0.95);
-            border: 1px solid rgba(251,191,36,0.1);
-            border-radius: 16px;
-            padding: 6px;
-            animation: slideDown 0.25s ease;
-            backdrop-filter: blur(12px);
-            overflow: hidden;
-            position: relative;
-            z-index: 100;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
-        }
-
-        .filter-options.open {
-            display: block;
-        }
-
-        @keyframes slideDown {
-            from {
-                opacity: 0;
-                transform: translateY(-8px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .filter-option {
-            width: 100%;
-            padding: 10px 14px;
-            background: none;
-            border: none;
-            border-radius: 12px;
-            color: #aaa;
-            font-size: 0.85rem;
-            font-weight: 500;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 10px;
-            transition: all 0.15s ease;
-            font-family: 'Inter', sans-serif;
-        }
-
-        .filter-option:hover {
-            background: rgba(255,255,255,0.05);
-            color: #fff;
-        }
-
-        .filter-option.active {
-            background: rgba(251,191,36,0.12);
-            color: #fbbf24;
-        }
-
-        .filter-option .count {
-            background: rgba(255,255,255,0.06);
-            padding: 1px 8px;
-            border-radius: 12px;
-            font-size: 0.6rem;
-            color: #666;
-        }
-
-        .filter-option.active .count {
-            background: rgba(251,191,36,0.15);
-            color: #fbbf24;
-        }
-
-        .filter-option i {
-            width: 20px;
-            text-align: center;
-            font-size: 0.85rem;
-        }
-
-        .filter-option .option-label {
-            flex: 1;
-            text-align: left;
-        }
-
-        /* ===== ТАБЫ ===== */
-        .orders-tabs {
-            display: flex;
-            gap: 12px;
-            margin-bottom: 16px;
-            background: rgba(15,15,15,0.5);
-            padding: 6px;
+            gap: 8px;
+            margin: 16px 0 24px;
+            background: rgba(15, 15, 15, 0.5);
+            padding: 4px;
             border-radius: 60px;
-            flex-wrap: wrap;
-            justify-content: center;
         }
         
         .tab-btn {
-            background: none;
+            flex: 1;
+            padding: 10px 20px;
             border: none;
-            color: #aaa;
-            padding: 10px 24px;
-            cursor: pointer;
-            font-size: 0.9rem;
-            font-weight: 600;
             border-radius: 40px;
-            transition: all 0.2s;
-            min-height: 44px;
+            background: none;
+            color: #888;
+            font-weight: 600;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'Inter', sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
         }
         
-        .tab-btn i { margin-right: 6px; }
-        
         .tab-btn:hover {
-            background: rgba(251,191,36,0.1);
-            color: #fbbf24;
+            color: #fff;
         }
         
         .tab-btn.active {
@@ -372,16 +229,37 @@
             color: #000;
         }
         
+        .tab-btn .badge {
+            background: rgba(255, 255, 255, 0.15);
+            padding: 0 8px;
+            border-radius: 20px;
+            font-size: 0.6rem;
+        }
+        
+        .tab-btn.active .badge {
+            background: rgba(0, 0, 0, 0.15);
+        }
+        
         .tab-pane {
             display: none;
-            animation: fadeIn 0.3s ease;
+            animation: fadeIn 0.4s ease;
         }
         
         .tab-pane.active {
             display: block;
         }
         
-        /* ===== СПИСОК ЗАКАЗОВ ===== */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(12px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
         .orders-list {
             display: flex;
             flex-direction: column;
@@ -390,243 +268,468 @@
         }
         
         .order-card {
-            background: rgba(15,15,15,0.6);
+            background: rgba(15,15,15,0.7);
+            backdrop-filter: blur(8px);
             border-radius: 20px;
             padding: 20px;
-            border: 1px solid rgba(251,191,36,0.1);
-            transition: all 0.2s;
+            border: 1px solid rgba(251,191,36,0.08);
+            transition: all 0.2s ease;
+            animation: fadeInUp 0.4s ease both;
+            cursor: pointer;
         }
         
         .order-card:hover {
-            border-color: rgba(251,191,36,0.3);
-            transform: translateX(3px);
+            border-color: rgba(251,191,36,0.2);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(0,0,0,0.3);
         }
         
-        /* ===== ПРОДАВЕЦ ===== */
-        .order-seller {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            cursor: pointer;
-            margin-bottom: 12px;
-            padding-bottom: 12px;
-            border-bottom: 1px solid rgba(255,255,255,0.08);
-        }
-        .order-seller .avatar {
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 2px solid rgba(251,191,36,0.2);
-        }
-        .order-seller .name {
-            font-weight: 600;
-            font-size: 0.85rem;
-        }
-        .order-seller .role {
-            font-size: 0.6rem;
-            color: #666;
-        }
-
         .order-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
             flex-wrap: wrap;
             gap: 12px;
-            margin-bottom: 12px;
+            margin-bottom: 14px;
+            padding-bottom: 14px;
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+        }
+        
+        .order-info-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
         }
         
         .order-number {
-            font-weight: 700;
+            font-size: 0.75rem;
+            color: #888;
+            font-weight: 500;
+        }
+        
+        .order-number span {
             color: #fbbf24;
-            font-size: 0.9rem;
         }
         
         .order-date {
-            font-size: 0.7rem;
-            color: #888;
+            font-size: 0.65rem;
+            color: #666;
         }
         
-        .order-status {
-            padding: 4px 12px;
-            border-radius: 30px;
-            font-size: 0.7rem;
-            font-weight: 600;
-        }
-        
-        .status-paid { background: #f59e0b; color: #000; }
-        .status-shipped { background: #8b5cf6; color: #fff; }
-        .status-completed { background: #10b981; color: #fff; }
-        .status-cancelled { background: #dc2626; color: #fff; }
-        .status-rejected { background: #dc2626; color: #fff; }
-        
-        /* ===== ТОВАРЫ ===== */
-        .order-items-list { margin: 10px 0; }
-        
-        .order-item-row {
-            display: flex;
-            justify-content: space-between;
-            padding: 8px 0;
-            border-bottom: 1px solid rgba(255,255,255,0.05);
-            font-size: 0.85rem;
-        }
-        
-        .order-item-row:last-child { border-bottom: none; }
-        
-        .item-name-small {
+        .order-meta-right {
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 10px;
             flex-wrap: wrap;
         }
         
-        .item-quantity-badge {
-            background: rgba(251,191,36,0.2);
-            padding: 2px 8px;
-            border-radius: 20px;
-            font-size: 0.65rem;
-            color: #fbbf24;
+        .payment-method {
+            font-size: 0.6rem;
+            color: #555;
+            display: flex;
+            align-items: center;
+            gap: 4px;
         }
         
-        .item-price {
+        .payment-method i {
+            color: #8b5cf6;
+        }
+        
+        .order-status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 14px;
+            border-radius: 30px;
+            font-size: 0.7rem;
             font-weight: 600;
+            white-space: nowrap;
+        }
+        
+        .status-pending { background: rgba(245,158,11,0.2); color: #f59e0b; }
+        .status-paid { background: rgba(251,191,36,0.2); color: #fbbf24; }
+        .status-shipped { background: rgba(139,92,246,0.2); color: #8b5cf6; }
+        .status-delivered { background: rgba(59,130,246,0.15); color: #60a5fa; }
+        .status-completed { background: rgba(16,185,129,0.2); color: #10b981; }
+        .status-cancelled { background: rgba(220,38,38,0.2); color: #dc2626; }
+        .status-rejected { background: rgba(220,38,38,0.15); color: #ef4444; }
+        
+        .seller-block {
+            background: rgba(0, 0, 0, 0.25);
+            border-radius: 12px;
+            padding: 12px 14px;
+            margin-bottom: 10px;
+            border-left: 3px solid rgba(251, 191, 36, 0.2);
+            transition: all 0.2s ease;
+        }
+        
+        .seller-block:last-child {
+            margin-bottom: 0;
+        }
+        
+        .seller-block:hover {
+            border-left-color: #fbbf24;
+            background: rgba(0, 0, 0, 0.35);
+        }
+        
+        .seller-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        
+        .seller-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+        }
+        
+        .seller-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid rgba(251,191,36,0.15);
+            background: #1a1a1a;
+        }
+        
+        .seller-name {
+            font-weight: 600;
+            font-size: 0.85rem;
+            color: #fff;
+        }
+        
+        .seller-name i {
             color: #fbbf24;
+            font-size: 0.6rem;
+            margin-left: 4px;
+        }
+        
+        .seller-actions {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        
+        .seller-tracking {
+            font-size: 0.6rem;
+            color: #8b5cf6;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        
+        .seller-tracking i {
+            font-size: 0.5rem;
+        }
+        
+        .btn-chat-seller {
+            padding: 4px 14px;
+            border-radius: 30px;
+            background: rgba(251, 191, 36, 0.12);
+            color: #fbbf24;
+            border: 1px solid rgba(251, 191, 36, 0.15);
+            font-size: 0.6rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: 'Inter', sans-serif;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            min-height: 28px;
+        }
+        
+        .btn-chat-seller:hover {
+            background: rgba(251, 191, 36, 0.2);
+            transform: translateY(-1px);
+        }
+        
+        .btn-chat-seller:active {
+            transform: scale(0.96);
+        }
+        
+        .seller-items {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            margin-top: 6px;
+        }
+        
+        .seller-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 6px 8px;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.02);
+            transition: all 0.2s ease;
+        }
+        
+        .seller-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+        
+        .seller-item-image {
+            width: 44px;
+            height: 44px;
+            min-width: 44px;
+            border-radius: 8px;
+            background: #1a1a1a;
+            overflow: hidden;
+        }
+        
+        .seller-item-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .seller-item-info {
+            flex: 1;
+            min-width: 0;
+        }
+        
+        .seller-item-name {
+            font-size: 0.75rem;
+            font-weight: 500;
+            color: #eee;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .seller-item-meta {
+            display: flex;
+            gap: 10px;
+            font-size: 0.6rem;
+            color: #666;
+            margin-top: 1px;
+        }
+        
+        .seller-item-meta i {
+            margin-right: 2px;
+        }
+        
+        .seller-item-price {
+            font-weight: 700;
+            color: #fbbf24;
+            font-size: 0.75rem;
+            white-space: nowrap;
         }
         
         .order-total {
-            text-align: right;
-            margin-top: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
             padding-top: 12px;
-            border-top: 1px solid rgba(255,255,255,0.08);
+            margin-top: 8px;
+            border-top: 1px solid rgba(255,255,255,0.06);
+            flex-wrap: wrap;
+            gap: 6px;
         }
         
-        .order-total span {
-            font-size: 1rem;
+        .order-total .label {
+            font-size: 0.75rem;
+            color: #888;
+        }
+        
+        .order-total .amount {
+            font-size: 1.1rem;
             font-weight: 700;
             color: #fbbf24;
         }
         
-        /* ===== НИЗ КАРТОЧКИ ===== */
-        .order-footer {
-            margin-top: 12px;
+        .order-total .sellers-count {
+            font-size: 0.6rem;
+            color: #555;
             display: flex;
-            justify-content: space-between;
             align-items: center;
-            flex-wrap: wrap;
-            gap: 12px;
+            gap: 4px;
         }
         
-        .tracking-info {
-            font-size: 0.7rem;
-            color: #aaa;
+        .order-extras {
+            margin-top: 10px;
             padding: 8px 12px;
-            background: rgba(0,0,0,0.3);
-            border-radius: 12px;
-            cursor: pointer;
-            transition: all 0.2s;
+            background: rgba(0,0,0,0.2);
+            border-radius: 10px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            font-size: 0.6rem;
+            color: #777;
         }
-        .tracking-info:hover {
-            background: rgba(0,0,0,0.5);
-            color: #fff;
+        
+        .order-extras .address i {
+            margin-right: 4px;
+            color: #555;
         }
-        .tracking-info i { color: #fbbf24; margin-right: 4px; }
+        
+        .reject-reason {
+            margin-top: 6px;
+            padding: 4px 10px;
+            background: rgba(220,38,38,0.08);
+            border-radius: 8px;
+            font-size: 0.6rem;
+            color: #dc2626;
+        }
         
         .order-actions {
             display: flex;
             gap: 8px;
+            margin-top: 12px;
             flex-wrap: wrap;
+            padding-top: 12px;
+            border-top: 1px solid rgba(255,255,255,0.06);
         }
         
-        .btn-confirm, .btn-cancel, .btn-chat, .btn-review {
-            padding: 8px 16px;
-            border-radius: 30px;
+        .order-actions .btn {
+            padding: 6px 16px;
+            border-radius: 40px;
             font-weight: 600;
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             cursor: pointer;
-            transition: all 0.2s;
-            min-height: 38px;
+            transition: all 0.2s ease;
             border: none;
             display: inline-flex;
             align-items: center;
-            gap: 6px;
+            gap: 5px;
+            min-height: 34px;
+            font-family: 'Inter', sans-serif;
         }
         
-        .btn-confirm {
+        .order-actions .btn:hover {
+            transform: translateY(-2px);
+        }
+        
+        .order-actions .btn:active {
+            transform: scale(0.96);
+        }
+        
+        .btn-success {
             background: #10b981;
             color: #fff;
         }
-        .btn-confirm:hover {
+        
+        .btn-success:hover {
             background: #059669;
-            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(16,185,129,0.3);
         }
         
-        .btn-chat {
-            background: rgba(251,191,36,0.15);
-            color: #fbbf24;
-            border: 1px solid rgba(251,191,36,0.2);
-        }
-        .btn-chat:hover {
-            background: rgba(251,191,36,0.25);
-            transform: translateY(-2px);
-        }
-        
-        .btn-review {
-            background: rgba(34,197,94,0.15);
-            color: #22c55e;
-            border: 1px solid rgba(34,197,94,0.2);
-        }
-        .btn-review:hover {
-            background: rgba(34,197,94,0.25);
-            transform: translateY(-2px);
-        }
-        
-        .btn-cancel {
+        .btn-danger {
             background: #dc2626;
             color: #fff;
         }
-        .btn-cancel:hover {
+        
+        .btn-danger:hover {
             background: #b91c1c;
-            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(220,38,38,0.3);
         }
         
-        .clear-history-btn {
-            background: #dc2626;
-            color: white;
-            border: none;
-            padding: 8px 20px;
-            border-radius: 40px;
-            font-weight: 600;
-            font-size: 0.75rem;
-            cursor: pointer;
-            transition: all 0.2s;
-            min-height: 38px;
-            margin-left: auto;
-        }
-        .clear-history-btn:hover {
-            background: #b91c1c;
-            transform: translateY(-2px);
+        .btn-outline {
+            background: rgba(255,255,255,0.06);
+            color: #aaa;
+            border: 1px solid rgba(255,255,255,0.08);
         }
         
-        .history-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-            gap: 12px;
+        .btn-outline:hover {
+            background: rgba(255,255,255,0.12);
+            color: #fff;
         }
         
-        .reject-reason {
+        .btn-review {
+            background: rgba(34,197,94,0.12);
+            color: #22c55e;
+            border: 1px solid rgba(34,197,94,0.15);
+        }
+        
+        .btn-review:hover {
+            background: rgba(34,197,94,0.2);
+            box-shadow: 0 4px 15px rgba(34,197,94,0.1);
+        }
+        
+        .status-info {
             font-size: 0.65rem;
-            color: #dc2626;
-            margin-top: 8px;
-            padding: 6px 10px;
-            background: rgba(220,38,38,0.1);
-            border-radius: 12px;
+            color: #888;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            padding: 6px 12px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 30px;
         }
-
-        /* ===== МОДАЛ ОТЗЫВА ===== */
+        
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #888;
+        }
+        
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: 16px;
+            color: #444;
+        }
+        
+        .empty-state h3 {
+            color: #ccc;
+            margin-bottom: 8px;
+        }
+        
+        .empty-state a {
+            color: #fbbf24;
+            text-decoration: none;
+            display: inline-block;
+            margin-top: 12px;
+            padding: 10px 24px;
+            border-radius: 40px;
+            background: rgba(251,191,36,0.1);
+            border: 1px solid rgba(251,191,36,0.2);
+            transition: all 0.2s ease;
+        }
+        
+        .empty-state a:hover {
+            background: rgba(251,191,36,0.2);
+            transform: translateY(-2px);
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #888;
+        }
+        
+        .loading-spinner {
+            display: inline-block;
+            width: 24px;
+            height: 24px;
+            border: 2px solid rgba(251,191,36,0.3);
+            border-top-color: #fbbf24;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
         .modal-overlay {
             position: fixed;
             top: 0; left: 0; right: 0; bottom: 0;
@@ -648,7 +751,7 @@
             width: 100%;
             text-align: center;
         }
-        .modal h3 { margin-bottom: 8px; }
+        .modal h3 { margin-bottom: 8px; color: #fff; }
         .modal p { color: #888; font-size: 0.85rem; margin-bottom: 20px; }
         .modal .stars {
             display: flex;
@@ -696,29 +799,6 @@
         .modal .cancel-btn:hover { background: rgba(255,255,255,0.15); }
         .modal .submit-btn { background: #fbbf24; color: #000; }
         .modal .submit-btn:hover { background: #ffdd44; transform: scale(1.02); }
-        
-        .empty-state {
-            text-align: center;
-            padding: 60px;
-            color: #888;
-        }
-        
-        .empty-state i {
-            font-size: 3rem;
-            margin-bottom: 16px;
-            color: #555;
-        }
-        
-        .empty-state a {
-            color: #fbbf24;
-            text-decoration: none;
-        }
-        
-        .loading {
-            text-align: center;
-            padding: 40px;
-            color: #888;
-        }
         
         .main-footer {
             background: #0a0a0a;
@@ -787,11 +867,6 @@
             color: #555;
         }
         
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-        
         @media (max-width: 768px) {
             .navbar {
                 padding: 12px 18px;
@@ -824,105 +899,93 @@
             .container {
                 padding: 0 16px;
             }
+            
+            .tabs {
+                gap: 4px;
+                padding: 3px;
+                border-radius: 30px;
+            }
+            .tab-btn {
+                padding: 8px 12px;
+                font-size: 0.7rem;
+            }
+            
+            .order-card {
+                padding: 16px;
+            }
             .order-header {
                 flex-direction: column;
-                align-items: flex-start;
+                align-items: stretch;
+                gap: 8px;
             }
-            .order-footer {
+            .order-meta-right {
+                justify-content: space-between;
+            }
+            
+            .seller-block {
+                padding: 10px 12px;
+            }
+            .seller-header {
                 flex-direction: column;
                 align-items: stretch;
+                gap: 6px;
             }
+            .seller-actions {
+                justify-content: flex-start;
+            }
+            .seller-item {
+                flex-wrap: wrap;
+                gap: 8px;
+            }
+            .seller-item-image {
+                width: 36px;
+                height: 36px;
+                min-width: 36px;
+            }
+            .seller-item-name {
+                font-size: 0.7rem;
+            }
+            
             .order-actions {
-                justify-content: center;
-            }
-            .btn-confirm, .btn-cancel, .btn-chat, .btn-review {
-                width: 100%;
-                justify-content: center;
-            }
-            .clear-history-btn {
-                width: 100%;
-                justify-content: center;
-            }
-            .history-header {
                 flex-direction: column;
-                align-items: stretch;
+            }
+            .order-actions .btn {
+                width: 100%;
+                justify-content: center;
+            }
+            .order-extras {
+                flex-direction: column;
+                gap: 4px;
             }
             .footer-inner {
                 flex-direction: column;
                 text-align: center;
                 gap: 16px;
             }
-            .filter-toggle {
-                padding: 10px 14px;
-                min-height: 44px;
-                border-radius: 14px;
-            }
-            .filter-toggle-left {
-                font-size: 0.8rem;
-                gap: 8px;
-            }
-            .filter-option {
-                padding: 8px 12px;
-                font-size: 0.75rem;
-            }
-            .filter-option i {
-                font-size: 0.75rem;
-                width: 18px;
-            }
-            .filter-count {
-                font-size: 0.6rem;
-                padding: 1px 8px;
-            }
-            .orders-tabs {
-                gap: 6px;
-                padding: 4px;
-                border-radius: 40px;
-            }
-            .tab-btn {
-                padding: 6px 14px;
-                font-size: 0.75rem;
-                min-height: 34px;
-            }
         }
         
         @media (max-width: 480px) {
-            .order-card {
-                padding: 14px;
-                border-radius: 16px;
-            }
-            .order-seller .avatar {
+            .seller-item-image {
                 width: 30px;
                 height: 30px;
+                min-width: 30px;
             }
-            .order-seller .name {
-                font-size: 0.75rem;
-            }
-            .order-number {
-                font-size: 0.75rem;
-            }
-            .order-status {
-                font-size: 0.6rem;
-                padding: 2px 10px;
-            }
-            .btn-confirm, .btn-chat, .btn-review {
+            .seller-item-name {
                 font-size: 0.65rem;
-                padding: 6px 12px;
-                min-height: 32px;
             }
-            .filter-option {
-                font-size: 0.7rem;
+            .seller-item-price {
+                font-size: 0.65rem;
+            }
+            .order-total-amount {
+                font-size: 0.95rem;
+            }
+            .tab-btn {
+                font-size: 0.6rem;
                 padding: 6px 10px;
             }
-            .filter-option i {
-                font-size: 0.7rem;
-                width: 16px;
-            }
-            .filter-toggle-left {
-                font-size: 0.75rem;
-            }
-            .filter-count {
+            .btn-chat-seller {
                 font-size: 0.55rem;
-                padding: 1px 6px;
+                padding: 3px 10px;
             }
         }
         
@@ -938,19 +1001,14 @@
         }
         .icon-gold { color: #fbbf24; }
         
-        .loading-spinner {
-            display: inline-block;
-            width: 24px;
-            height: 24px;
-            border: 2px solid rgba(251,191,36,0.3);
-            border-top-color: #fbbf24;
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-        }
-        
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
+        .order-card:nth-child(1) { animation-delay: 0.05s; }
+        .order-card:nth-child(2) { animation-delay: 0.1s; }
+        .order-card:nth-child(3) { animation-delay: 0.15s; }
+        .order-card:nth-child(4) { animation-delay: 0.2s; }
+        .order-card:nth-child(5) { animation-delay: 0.25s; }
+        .order-card:nth-child(6) { animation-delay: 0.3s; }
+        .order-card:nth-child(7) { animation-delay: 0.35s; }
+        .order-card:nth-child(8) { animation-delay: 0.4s; }
     </style>
 </head>
 <body>
@@ -970,62 +1028,28 @@
     <main class="container">
         <div class="page-header">
             <h1><i class="fas fa-box"></i> Мои заказы</h1>
-            <p>Отслеживайте статус и историю покупок на маркетплейсе</p>
+            <p>Отслеживайте статус покупок на маркетплейсе</p>
         </div>
 
-        <!-- ФИЛЬТР - ДРОПДАУН -->
-        <div class="filter-dropdown" id="filterContainer">
-            <button class="filter-toggle" id="filterToggle">
-                <span class="filter-toggle-left">
-                    <i class="fas fa-filter"></i>
-                    <span id="currentFilterLabel">Все заказы</span>
-                </span>
-                <span class="filter-toggle-right">
-                    <span class="filter-count" id="filterTotalCount">0</span>
-                    <i class="fas fa-chevron-down" id="filterArrow"></i>
-                </span>
+        <div class="tabs" id="tabsContainer">
+            <button class="tab-btn active" data-tab="active">
+                <i class="fas fa-clock"></i> Активные
+                <span class="badge" id="badgeActive">0</span>
             </button>
-            <div class="filter-options" id="filterOptions">
-                <button class="filter-option active" data-filter="all">
-                    <i class="fas fa-list"></i> Все заказы
-                    <span class="count" id="countAll">0</span>
-                </button>
-                <button class="filter-option" data-filter="paid">
-                    <i class="fas fa-check-circle" style="color:#f59e0b;"></i> Оплачен
-                    <span class="count" id="countPaid">0</span>
-                </button>
-                <button class="filter-option" data-filter="shipped">
-                    <i class="fas fa-truck" style="color:#8b5cf6;"></i> Отправлен
-                    <span class="count" id="countShipped">0</span>
-                </button>
-                <button class="filter-option" data-filter="completed">
-                    <i class="fas fa-check-double" style="color:#10b981;"></i> Завершён
-                    <span class="count" id="countCompleted">0</span>
-                </button>
-                <button class="filter-option" data-filter="cancelled">
-                    <i class="fas fa-times-circle" style="color:#dc2626;"></i> Отменён
-                    <span class="count" id="countCancelled">0</span>
-                </button>
-                <button class="filter-option" data-filter="rejected">
-                    <i class="fas fa-ban" style="color:#dc2626;"></i> Отклонён
-                    <span class="count" id="countRejected">0</span>
-                </button>
-            </div>
+            <button class="tab-btn" data-tab="history">
+                <i class="fas fa-history"></i> История
+                <span class="badge" id="badgeHistory">0</span>
+            </button>
         </div>
 
-        <div class="orders-tabs">
-            <button class="tab-btn active" data-tab="active"><i class="fas fa-clock"></i> Активные</button>
-            <button class="tab-btn" data-tab="history"><i class="fas fa-history"></i> История</button>
-        </div>
-
-        <div id="activeOrders" class="tab-pane active">
-            <div id="activeOrdersList" class="orders-list">
+        <div id="tabActive" class="tab-pane active">
+            <div id="ordersListActive" class="orders-list">
                 <div class="loading"><div class="loading-spinner"></div> Загрузка...</div>
             </div>
         </div>
 
-        <div id="historyOrders" class="tab-pane">
-            <div id="historyOrdersList" class="orders-list">
+        <div id="tabHistory" class="tab-pane">
+            <div id="ordersListHistory" class="orders-list">
                 <div class="loading"><div class="loading-spinner"></div> Загрузка...</div>
             </div>
         </div>
@@ -1079,6 +1103,7 @@
         </div>
     </div>
 
+    <!-- УВЕДОМЛЕНИЕ -->
     <div id="errorContainer" style="position: fixed; top: 15px; left: 50%; transform: translateX(-50%); z-index: 9999; max-width: 90%; width: 480px; padding: 14px 20px; border-radius: 16px; font-weight: 600; font-size: 0.9rem; animation: slideDown 0.3s ease; box-shadow: 0 10px 30px rgba(0,0,0,0.4); backdrop-filter: blur(8px); display: none; text-align: center; border: 1px solid rgba(255,255,255,0.1);"></div>
 
     <script type="importmap">
@@ -1086,17 +1111,15 @@
             "imports": {
                 "firebase/app": "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js",
                 "firebase/firestore": "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js",
-                "firebase/auth": "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js",
-                "firebase/analytics": "https://www.gstatic.com/firebasejs/11.0.2/firebase-analytics.js"
+                "firebase/auth": "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js"
             }
         }
     </script>
     <script type="module" src="header.js?v=3"></script>
     <script type="module">
     import { initializeApp } from "firebase/app";
-    import { getFirestore, collection, getDocs, query, where, orderBy, doc, getDoc, updateDoc, deleteDoc, addDoc, setDoc } from "firebase/firestore";
+    import { getFirestore, collection, getDocs, query, where, orderBy, doc, getDoc, updateDoc, addDoc, setDoc } from "firebase/firestore";
     import { getAuth, onAuthStateChanged } from "firebase/auth";
-    import { releaseFunds } from './wallet.js';
 
     const firebaseConfig = {
         apiKey: "AIzaSyDUGYJY7pX7q02MS5SACMIIQXpjpQ97mPw",
@@ -1113,10 +1136,10 @@
 
     let currentUser = null;
     let allOrders = [];
-    let currentFilter = 'all';
     let selectedOrderId = null;
     let selectedRating = 0;
     let sellerCache = {};
+    let currentTab = 'active';
 
     // ===== УВЕДОМЛЕНИЯ =====
     function showNotification(message, type = 'info') {
@@ -1128,25 +1151,27 @@
         container.style.color = '#000';
         container.textContent = message;
         clearTimeout(container._timeout);
-        container._timeout = setTimeout(() => { container.style.display = 'none'; }, 3000);
+        container._timeout = setTimeout(() => { container.style.display = 'none'; }, 4000);
     }
 
     // ===== ФОРМАТИРОВАНИЕ =====
     function formatDate(date) {
         if (!date) return '';
         const d = date.toDate ? date.toDate() : new Date(date);
-        return d.toLocaleDateString('ru-RU', { day: 'numeric', month: 'short', year: 'numeric' });
+        return d.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' });
     }
 
-    function getStatusText(status) {
-        const statuses = {
-            'paid': '✅ Оплачен',
-            'shipped': '📦 Отправлен',
-            'completed': '✔️ Завершён',
-            'cancelled': '❌ Отменён',
-            'rejected': '❌ Отклонён'
+    function getStatusInfo(status) {
+        const map = {
+            'pending': { label: '⏳ На рассмотрении', class: 'pending', icon: 'fa-hourglass-half' },
+            'paid': { label: '💳 Оплачен', class: 'paid', icon: 'fa-credit-card' },
+            'shipped': { label: '🚚 В пути', class: 'shipped', icon: 'fa-truck' },
+            'delivered': { label: '📦 Доставлен', class: 'delivered', icon: 'fa-box-open' },
+            'completed': { label: '✔️ Завершён', class: 'completed', icon: 'fa-check-double' },
+            'cancelled': { label: '❌ Отменён', class: 'cancelled', icon: 'fa-times-circle' },
+            'rejected': { label: '❌ Отклонён', class: 'rejected', icon: 'fa-ban' }
         };
-        return statuses[status] || status;
+        return map[status] || { label: status, class: 'pending', icon: 'fa-circle' };
     }
 
     function escapeHtml(str) {
@@ -1156,7 +1181,9 @@
 
     // ===== ЗАГРУЗКА ПРОДАВЦА =====
     async function getSellerData(sellerId) {
-        if (!sellerId) return { name: 'Продавец', avatar: 'Avatar.png' };
+        if (!sellerId || sellerId === 'null' || sellerId === 'undefined') {
+            return { name: 'Продавец', avatar: 'https://ui-avatars.com/api/?name=Продавец&background=333&color=fff&size=64' };
+        }
         if (sellerCache[sellerId]) return sellerCache[sellerId];
         
         try {
@@ -1164,13 +1191,40 @@
             const docSnap = await getDoc(docRef);
             if (docSnap.exists()) {
                 const data = docSnap.data();
-                sellerCache[sellerId] = { name: data.name || 'Продавец', avatar: data.avatar || 'Avatar.png' };
+                const name = data.name || data.displayName || 'Продавец';
+                sellerCache[sellerId] = { 
+                    name: name, 
+                    avatar: data.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=fbbf24&color=000&size=64`
+                };
                 return sellerCache[sellerId];
             }
         } catch (err) {}
         
-        sellerCache[sellerId] = { name: 'Продавец', avatar: 'Avatar.png' };
+        sellerCache[sellerId] = { 
+            name: 'Продавец', 
+            avatar: 'https://ui-avatars.com/api/?name=Продавец&background=333&color=fff&size=64'
+        };
         return sellerCache[sellerId];
+    }
+
+    // ===== ГРУППИРОВКА ТОВАРОВ ПО ПРОДАВЦАМ =====
+    function groupItemsBySeller(items) {
+        const groups = {};
+        items.forEach(item => {
+            const sellerId = item.partnerId || item.sellerId || 'unknown';
+            const key = sellerId;
+            if (!groups[key]) {
+                groups[key] = {
+                    sellerId: key,
+                    sellerName: item.partnerName || 'Продавец',
+                    items: [],
+                    total: 0
+                };
+            }
+            groups[key].items.push(item);
+            groups[key].total += (item.price || 0) * (item.quantity || 1);
+        });
+        return Object.values(groups);
     }
 
     // ===== ЗАГРУЗКА ЗАКАЗОВ =====
@@ -1190,201 +1244,262 @@
             for (const docSnap of snapshot.docs) {
                 const order = { id: docSnap.id, ...docSnap.data() };
                 
-                let sellerId = order.partnerId || null;
-                if (!sellerId && order.items && order.items.length > 0) {
-                    sellerId = order.items[0]?.partnerId || null;
-                }
-                if (!sellerId && order.partnerIds && order.partnerIds.length > 0) {
-                    sellerId = order.partnerIds[0];
+                if (order.items && order.items.length > 0) {
+                    const sellerIds = [...new Set(order.items.map(item => item.partnerId || item.sellerId).filter(id => id && id !== 'null'))];
+                    for (const sellerId of sellerIds) {
+                        await getSellerData(sellerId);
+                    }
                 }
                 
-                order.sellerId = sellerId;
-                order.sellerData = await getSellerData(sellerId);
                 allOrders.push(order);
             }
             
-            updateFilterCounts(allOrders);
-            renderOrders('active', currentFilter);
-            renderOrders('history', currentFilter);
+            updateBadges();
+            renderOrders(currentTab);
             
         } catch (err) {
             console.error('Ошибка загрузки заказов:', err);
-            document.getElementById('activeOrdersList').innerHTML = '<div class="empty-state"><i class="fas fa-exclamation-triangle"></i><p>Ошибка загрузки</p></div>';
-            document.getElementById('historyOrdersList').innerHTML = '<div class="empty-state"><i class="fas fa-exclamation-triangle"></i><p>Ошибка загрузки</p></div>';
+            const container = document.getElementById('ordersListActive');
+            if (container) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <h3>Ошибка загрузки</h3>
+                        <p>Не удалось загрузить заказы. Попробуйте позже.</p>
+                    </div>
+                `;
+            }
         }
     }
 
-    // ===== ОБНОВЛЕНИЕ СЧЁТЧИКОВ ДЛЯ ДРОПДАУНА =====
-    function updateFilterCounts(orders) {
-        const counts = {
-            all: orders.length,
-            paid: orders.filter(o => o.status === 'paid').length,
-            shipped: orders.filter(o => o.status === 'shipped').length,
-            completed: orders.filter(o => o.status === 'completed').length,
-            cancelled: orders.filter(o => o.status === 'cancelled').length,
-            rejected: orders.filter(o => o.status === 'rejected').length
-        };
-
-        document.getElementById('countAll').textContent = counts.all;
-        document.getElementById('countPaid').textContent = counts.paid;
-        document.getElementById('countShipped').textContent = counts.shipped;
-        document.getElementById('countCompleted').textContent = counts.completed;
-        document.getElementById('countCancelled').textContent = counts.cancelled;
-        document.getElementById('countRejected').textContent = counts.rejected;
+    // ===== ОБНОВЛЕНИЕ БЕЙДЖЕЙ =====
+    function updateBadges() {
+        // Активные: pending, paid, shipped, delivered
+        const activeOrders = allOrders.filter(o => o.status === 'pending' || o.status === 'paid' || o.status === 'shipped' || o.status === 'delivered');
+        // История: completed, cancelled, rejected
+        const historyOrders = allOrders.filter(o => o.status === 'completed' || o.status === 'cancelled' || o.status === 'rejected');
         
-        document.getElementById('filterTotalCount').textContent = counts.all;
+        document.getElementById('badgeActive').textContent = activeOrders.length;
+        document.getElementById('badgeHistory').textContent = historyOrders.length;
     }
 
     // ===== РЕНДЕР ЗАКАЗОВ =====
-    function renderOrders(tab, filter) {
-        const container = document.getElementById(tab === 'active' ? 'activeOrdersList' : 'historyOrdersList');
+    function renderOrders(tab) {
+        const containerId = tab === 'active' ? 'ordersListActive' : 'ordersListHistory';
+        const container = document.getElementById(containerId);
+        if (!container) return;
         
-        const activeStatuses = ['paid', 'shipped'];
-        let filtered = allOrders;
-        
-        if (filter !== 'all') {
-            filtered = filtered.filter(o => o.status === filter);
-        }
-        
+        let filtered = [];
         if (tab === 'active') {
-            filtered = filtered.filter(o => activeStatuses.includes(o.status));
+            // Активные: pending, paid, shipped, delivered
+            filtered = allOrders.filter(o => o.status === 'pending' || o.status === 'paid' || o.status === 'shipped' || o.status === 'delivered');
         } else {
-            filtered = filtered.filter(o => !activeStatuses.includes(o.status));
+            // История: completed, cancelled, rejected
+            filtered = allOrders.filter(o => o.status === 'completed' || o.status === 'cancelled' || o.status === 'rejected');
         }
 
         if (filtered.length === 0) {
             const messages = {
-                active: 'У вас нет активных заказов',
-                history: 'У вас нет истории заказов'
+                'active': 'У вас нет активных заказов',
+                'history': 'История заказов пуста'
             };
             container.innerHTML = `
                 <div class="empty-state">
-                    <i class="fas ${tab === 'active' ? 'fa-inbox' : 'fa-history'}"></i>
-                    <p>${messages[tab]}</p>
-                    ${tab === 'active' ? '<p><a href="catalog.html" style="color: #fbbf24;">Перейти в каталог →</a></p>' : ''}
+                    <i class="fas fa-box-open"></i>
+                    <h3>${messages[tab] || 'Нет заказов'}</h3>
+                    ${tab === 'active' ? '<a href="catalog.html"><i class="fas fa-shopping-bag"></i> Перейти в каталог</a>' : ''}
                 </div>
             `;
             return;
         }
 
         let html = '';
-        
-        if (tab === 'history') {
-            html += `<div class="history-header"><h3><i class="fas fa-history"></i> История заказов</h3>
-                <button id="clearHistoryBtn" class="clear-history-btn"><i class="fas fa-trash"></i> Очистить историю</button>
-            </div>`;
-        }
-
-        filtered.forEach((order, index) => {
+        filtered.forEach((order) => {
+            const status = getStatusInfo(order.status);
             const date = order.createdAt ? formatDate(order.createdAt) : '—';
-            const statusText = getStatusText(order.status);
-            const statusClass = `status-${order.status}`;
-            const seller = order.sellerData || { name: 'Продавец', avatar: 'Avatar.png' };
             const canReview = order.status === 'completed' && !order.hasReview;
             
-            let itemsHtml = '';
-            if (order.items && order.items.length > 0) {
-                itemsHtml = '<div class="order-items-list">';
-                order.items.forEach(item => {
-                    itemsHtml += `
-                        <div class="order-item-row">
-                            <div class="item-name-small">
-                                <span>${escapeHtml(item.productName)}</span>
-                                ${item.quantity > 1 ? `<span class="item-quantity-badge">×${item.quantity}</span>` : ''}
+            const sellerGroups = order.items && order.items.length > 0 
+                ? groupItemsBySeller(order.items) 
+                : [];
+            
+            let sellerBlocksHtml = '';
+            if (sellerGroups.length > 0) {
+                sellerGroups.forEach(group => {
+                    const sellerData = sellerCache[group.sellerId] || { 
+                        name: group.sellerName || 'Продавец',
+                        avatar: 'https://ui-avatars.com/api/?name=Продавец&background=333&color=fff&size=64'
+                    };
+                    
+                    let tracking = null;
+                    if (order.trackingNumbers && order.trackingNumbers[group.sellerId]) {
+                        tracking = order.trackingNumbers[group.sellerId];
+                    } else if (order.trackingNumber) {
+                        tracking = order.trackingNumber;
+                    }
+                    
+                    let itemsHtml = '';
+                    group.items.forEach(item => {
+                        const imageUrl = item.image || 'https://placehold.co/300x200/1a1a1a/fbbf24?text=Товар';
+                        itemsHtml += `
+                            <div class="seller-item">
+                                <div class="seller-item-image">
+                                    <img src="${imageUrl}" onerror="this.src='https://placehold.co/300x200/1a1a1a/fbbf24?text=Товар'">
+                                </div>
+                                <div class="seller-item-info">
+                                    <div class="seller-item-name">${escapeHtml(item.productName || item.name)}</div>
+                                    <div class="seller-item-meta">
+                                        <span><i class="fas fa-hashtag"></i> ${item.quantity || 1} шт.</span>
+                                    </div>
+                                </div>
+                                <div class="seller-item-price">${((item.price || 0) * (item.quantity || 1)).toLocaleString()} ₽</div>
                             </div>
-                            <span class="item-price">${(item.price * item.quantity).toLocaleString()} ₽</span>
+                        `;
+                    });
+                    
+                    let sellerStatusHtml = '';
+                    if (order.status === 'shipped' || order.status === 'delivered' || order.status === 'completed') {
+                        sellerStatusHtml = `<span class="seller-tracking"><i class="fas fa-check-circle" style="color:#10b981;"></i> Отправлено</span>`;
+                    } else if (order.status === 'paid') {
+                        sellerStatusHtml = `<span class="seller-tracking"><i class="fas fa-clock" style="color:#f59e0b;"></i> Ожидает отправки</span>`;
+                    } else if (order.status === 'pending') {
+                        sellerStatusHtml = `<span class="seller-tracking"><i class="fas fa-hourglass-half" style="color:#f59e0b;"></i> Ожидает подтверждения</span>`;
+                    }
+                    
+                    sellerBlocksHtml += `
+                        <div class="seller-block">
+                            <div class="seller-header">
+                                <div class="seller-info" data-seller-id="${group.sellerId}">
+                                    <img src="${sellerData.avatar}" class="seller-avatar" onerror="this.src='https://ui-avatars.com/api/?name=Продавец&background=333&color=fff&size=64'">
+                                    <span class="seller-name">${escapeHtml(sellerData.name)} <i class="fas fa-store"></i></span>
+                                </div>
+                                <div class="seller-actions">
+                                    ${tracking ? `<span class="seller-tracking"><i class="fas fa-box"></i> ${escapeHtml(tracking)}</span>` : sellerStatusHtml}
+                                    <button class="btn-chat-seller" data-seller-id="${group.sellerId}">
+                                        <i class="fas fa-comment"></i> Чат
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="seller-items">
+                                ${itemsHtml}
+                            </div>
                         </div>
                     `;
                 });
-                itemsHtml += '</div>';
-            } else {
-                itemsHtml = `
-                    <div class="order-item-row">
-                        <span>${escapeHtml(order.productName || 'Товар')} ${order.quantity > 1 ? `× ${order.quantity}` : ''}</span>
-                        <span class="item-price">${(order.totalPrice || order.price || 0).toLocaleString()} ₽</span>
+            }
+
+            // Действия
+            let actionsHtml = '';
+            
+            // Для статуса "На рассмотрении" - только отмена (без возврата денег)
+            if (order.status === 'pending') {
+                actionsHtml += `<button class="btn btn-danger" data-order-id="${order.id}" data-action="cancel"><i class="fas fa-times"></i> Отменить заказ</button>`;
+                actionsHtml += `<span class="status-info"><i class="fas fa-clock" style="color:#f59e0b;"></i> Ожидает подтверждения продавца</span>`;
+            }
+            
+            if (order.status === 'paid') {
+                actionsHtml += `<button class="btn btn-danger" data-order-id="${order.id}" data-action="cancel"><i class="fas fa-times"></i> Отменить заказ</button>`;
+                actionsHtml += `<span class="status-info"><i class="fas fa-lock" style="color:#fbbf24;"></i> Средства заморожены</span>`;
+            }
+            
+            if (order.status === 'shipped' || order.status === 'delivered') {
+                actionsHtml += `<button class="btn btn-success" data-order-id="${order.id}" data-total="${order.totalPrice || 0}" data-action="confirm"><i class="fas fa-check-circle"></i> Подтвердить получение</button>`;
+            }
+            
+            if (canReview) {
+                actionsHtml += `<button class="btn btn-review" data-order-id="${order.id}" data-action="review"><i class="fas fa-star"></i> Оставить отзыв</button>`;
+            }
+            
+            if (order.status === 'completed' || order.status === 'cancelled' || order.status === 'rejected') {
+                actionsHtml += `<button class="btn btn-outline" data-order-id="${order.id}" data-action="repeat"><i class="fas fa-redo"></i> Повторить</button>`;
+            }
+
+            let rejectHtml = '';
+            if (order.rejectReason || order.cancelReason) {
+                const reason = order.rejectReason || order.cancelReason || 'Причина не указана';
+                rejectHtml = `<div class="reject-reason"><i class="fas fa-info-circle"></i> ${escapeHtml(reason)}</div>`;
+            }
+
+            let addressHtml = '';
+            if (order.userAddress) {
+                addressHtml = `
+                    <div class="order-extras">
+                        <span class="address"><i class="fas fa-map-marker-alt"></i> ${escapeHtml(order.userAddress)}</span>
                     </div>
                 `;
             }
 
+            const sellersCount = sellerGroups.length > 0 ? sellerGroups.length : 1;
+
             html += `
-                <div class="order-card" style="animation-delay: ${(index % 10) * 0.03}s;">
-                    <div class="order-seller" data-seller-id="${order.sellerId || ''}">
-                        <img src="${seller.avatar || 'Avatar.png'}" class="avatar" onerror="this.src='Avatar.png'">
-                        <div>
-                            <div class="name">${escapeHtml(seller.name || 'Продавец')}</div>
-                            <div class="role">${date}</div>
-                        </div>
-                    </div>
+                <div class="order-card" data-order-id="${order.id}">
                     <div class="order-header">
-                        <span class="order-number"><i class="fas fa-receipt"></i> Заказ #${order.id.slice(0, 8)}</span>
-                        <span class="order-status ${statusClass}">${statusText}</span>
-                    </div>
-                    ${itemsHtml}
-                    <div class="order-total">
-                        <span>Итого: ${(order.totalPrice || 0).toLocaleString()} ₽</span>
-                    </div>
-                    <div class="order-footer">
-                        ${order.trackingNumber ? `<div class="tracking-info"><i class="fas fa-box"></i> Трек: ${escapeHtml(order.trackingNumber)}</div>` : '<div></div>'}
-                        <div class="order-actions">
-                            ${tab === 'active' ? renderActiveButtons(order) : ''}
-                            ${canReview ? `<button class="btn-review" data-order-id="${order.id}"><i class="fas fa-star"></i> Отзыв</button>` : ''}
-                            ${order.sellerId ? `<button class="btn-chat" data-seller-id="${order.sellerId}"><i class="fas fa-comment"></i> Чат</button>` : ''}
+                        <div class="order-info-left">
+                            <span class="order-number">Заказ #<span>${order.id.slice(0, 8)}</span></span>
+                            <span class="order-date">${date}</span>
+                        </div>
+                        <div class="order-meta-right">
+                            <span class="payment-method"><i class="fas ${order.paymentMethod === 'balance' ? 'fa-wallet' : 'fa-credit-card'}"></i> ${order.paymentMethod === 'balance' ? 'Кошелёк' : 'Карта'}</span>
+                            <span class="order-status-badge status-${status.class}">
+                                <i class="fas ${status.icon}"></i> ${status.label}
+                            </span>
                         </div>
                     </div>
-                    ${order.rejectReason ? `<div class="reject-reason"><i class="fas fa-info-circle"></i> Причина: ${escapeHtml(order.rejectReason)}</div>` : ''}
+                    
+                    ${sellerBlocksHtml}
+                    
+                    <div class="order-total">
+                        <span class="label">Итого:</span>
+                        <span class="amount">${(order.totalPrice || 0).toLocaleString()} ₽</span>
+                        <span class="sellers-count"><i class="fas fa-store"></i> ${sellersCount} ${sellersCount === 1 ? 'продавец' : 'продавца'}</span>
+                    </div>
+                    
+                    ${addressHtml}
+                    ${rejectHtml}
+                    
+                    ${actionsHtml ? `<div class="order-actions">${actionsHtml}</div>` : ''}
                 </div>
             `;
         });
 
         container.innerHTML = html;
-        attachHandlers(tab);
-    }
-
-    // ===== КНОПКИ ДЛЯ АКТИВНЫХ =====
-    function renderActiveButtons(order) {
-        if (order.status === 'paid') {
-            return `<span style="color: #fbbf24;"><i class="fas fa-clock"></i> Ожидает отправки...</span>`;
-        }
-        if (order.status === 'shipped') {
-            return `<button class="btn-confirm" data-order-id="${order.id}" data-total="${order.totalPrice}" data-seller-id="${order.sellerId || ''}">
-                <i class="fas fa-check-circle"></i> Подтвердить получение
-            </button>`;
-        }
-        return '';
+        attachHandlers(container);
     }
 
     // ===== ОБРАБОТЧИКИ =====
-    function attachHandlers(tab) {
-        const container = document.getElementById(tab === 'active' ? 'activeOrdersList' : 'historyOrdersList');
-
-        container.querySelectorAll('.order-seller').forEach(el => {
+    function attachHandlers(container) {
+        container.querySelectorAll('.order-card').forEach(card => {
+            card.removeEventListener('click', handleCardClick);
+            card.addEventListener('click', handleCardClick);
+        });
+        
+        container.querySelectorAll('.seller-info').forEach(el => {
             el.removeEventListener('click', handleSellerClick);
             el.addEventListener('click', handleSellerClick);
         });
-
-        container.querySelectorAll('.btn-confirm').forEach(btn => {
-            btn.removeEventListener('click', handleConfirmClick);
-            btn.addEventListener('click', handleConfirmClick);
-        });
-
-        container.querySelectorAll('.btn-chat').forEach(btn => {
+        
+        container.querySelectorAll('.btn-chat-seller').forEach(btn => {
             btn.removeEventListener('click', handleChatClick);
             btn.addEventListener('click', handleChatClick);
         });
-
-        container.querySelectorAll('.btn-review').forEach(btn => {
-            btn.removeEventListener('click', handleReviewClick);
-            btn.addEventListener('click', handleReviewClick);
+        
+        container.querySelectorAll('[data-action]').forEach(btn => {
+            btn.removeEventListener('click', handleActionClick);
+            btn.addEventListener('click', handleActionClick);
         });
+    }
 
-        const clearBtn = document.getElementById('clearHistoryBtn');
-        if (clearBtn) {
-            clearBtn.removeEventListener('click', handleClearHistory);
-            clearBtn.addEventListener('click', handleClearHistory);
+    function handleCardClick(e) {
+        if (e.target.closest('.btn') || e.target.closest('.btn-chat-seller')) return;
+        const card = e.currentTarget;
+        const orderId = card.dataset.orderId;
+        if (orderId) {
+            showNotification(`📋 Заказ #${orderId.slice(0, 8)}`, 'info');
         }
     }
 
-    async function handleSellerClick(e) {
+    function handleSellerClick(e) {
+        e.stopPropagation();
         const el = e.currentTarget;
         const sellerId = el.dataset.sellerId;
         if (sellerId && sellerId !== 'null' && sellerId !== 'undefined') {
@@ -1392,50 +1507,11 @@
         }
     }
 
-    async function handleConfirmClick(e) {
-        const btn = e.currentTarget;
-        const orderId = btn.dataset.orderId;
-        const totalPrice = parseFloat(btn.dataset.total);
-        const sellerId = btn.dataset.sellerId;
-
-        if (!sellerId || sellerId === 'null' || sellerId === 'undefined' || sellerId === '') {
-            showNotification('❌ Не удалось определить продавца', 'error');
-            return;
-        }
-
-        if (!confirm('Подтвердите получение товара? Средства будут переведены продавцу.')) return;
-
-        const originalText = btn.innerHTML;
-        btn.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> Обработка...';
-        btn.disabled = true;
-
-        try {
-            await updateDoc(doc(db, "orders", orderId), { 
-                status: 'completed',
-                completedAt: new Date()
-            });
-
-            await releaseFunds(currentUser.uid, sellerId, totalPrice, orderId);
-
-            showNotification('✅ Спасибо за покупку! Заказ завершён.', 'success');
-            await loadOrders();
-
-        } catch (err) {
-            console.error('❌ Ошибка:', err);
-            showNotification('❌ Ошибка: ' + err.message, 'error');
-            try {
-                await updateDoc(doc(db, "orders", orderId), { status: 'shipped' });
-            } catch (rollbackErr) {}
-        } finally {
-            btn.innerHTML = originalText;
-            btn.disabled = false;
-        }
-    }
-
     async function handleChatClick(e) {
+        e.stopPropagation();
         const btn = e.currentTarget;
         const sellerId = btn.dataset.sellerId;
-        if (!sellerId) {
+        if (!sellerId || sellerId === 'null') {
             showNotification('Не удалось найти продавца', 'error');
             return;
         }
@@ -1475,35 +1551,137 @@
         }
     }
 
-    function handleReviewClick(e) {
+    async function handleActionClick(e) {
+        e.stopPropagation();
         const btn = e.currentTarget;
-        selectedOrderId = btn.dataset.orderId;
-        openReviewModal();
+        const action = btn.dataset.action;
+        const orderId = btn.dataset.orderId;
+        
+        if (action === 'cancel') {
+            await handleCancelOrder(orderId, btn);
+        } else if (action === 'confirm') {
+            await handleConfirmOrder(orderId, btn);
+        } else if (action === 'review') {
+            selectedOrderId = orderId;
+            openReviewModal();
+        } else if (action === 'repeat') {
+            handleRepeatOrder(orderId);
+        }
     }
 
-    async function handleClearHistory() {
-        if (!confirm('Вы уверены, что хотите очистить всю историю заказов?')) return;
+    async function handleCancelOrder(orderId, btn) {
+        if (!confirm('Вы уверены, что хотите отменить заказ?')) return;
+        
+        const originalText = btn.innerHTML;
+        btn.innerHTML = '<i class="fas fa-spinner fa-pulse"></i>';
+        btn.disabled = true;
         
         try {
-            const ordersQuery = query(
-                collection(db, "orders"),
-                where("userId", "==", currentUser.uid),
-                where("type", "==", "physical"),
-                where("status", "in", ['completed', 'cancelled', 'rejected'])
-            );
-            const snapshot = await getDocs(ordersQuery);
+            const orderRef = doc(db, "orders", orderId);
+            const orderSnap = await getDoc(orderRef);
+            const orderData = orderSnap.data();
             
-            let deleted = 0;
-            for (const docSnap of snapshot.docs) {
-                await deleteDoc(doc(db, "orders", docSnap.id));
-                deleted++;
+            // Если заказ уже оплачен — возвращаем средства
+            if (orderData.paymentMethod === 'balance' && (orderData.status === 'paid' || orderData.status === 'shipped' || orderData.status === 'delivered')) {
+                const { releaseFunds } = await import('./wallet.js');
+                await releaseFunds(
+                    currentUser.uid,
+                    currentUser.uid,
+                    orderData.totalPrice || 0,
+                    orderId + '_refund'
+                );
             }
             
-            showNotification(`✅ Удалено ${deleted} заказов`, 'success');
+            await updateDoc(orderRef, {
+                status: 'cancelled',
+                cancelledAt: new Date(),
+                cancelReason: 'Отменено пользователем'
+            });
+            
+            showNotification('✅ Заказ отменён' + (orderData.status !== 'pending' ? ', средства возвращены' : ''), 'success');
             await loadOrders();
+            
         } catch (err) {
-            console.error('Ошибка очистки:', err);
-            showNotification('❌ Ошибка очистки', 'error');
+            console.error('Ошибка отмены:', err);
+            showNotification('❌ Не удалось отменить заказ', 'error');
+        } finally {
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+        }
+    }
+
+    async function handleConfirmOrder(orderId, btn) {
+        const totalPrice = parseFloat(btn.dataset.total) || 0;
+        
+        if (!confirm('Подтвердите получение товара? Деньги будут переведены продавцу.')) return;
+        
+        const originalText = btn.innerHTML;
+        btn.innerHTML = '<i class="fas fa-spinner fa-pulse"></i>';
+        btn.disabled = true;
+        
+        try {
+            const orderRef = doc(db, "orders", orderId);
+            const orderSnap = await getDoc(orderRef);
+            const orderData = orderSnap.data();
+            
+            let sellerId = null;
+            if (orderData.items && orderData.items.length > 0) {
+                sellerId = orderData.items[0]?.partnerId || orderData.items[0]?.sellerId || null;
+            }
+            if (!sellerId) {
+                sellerId = orderData.partnerId || orderData.sellerId || null;
+            }
+            
+            if (!sellerId || sellerId === 'null') {
+                showNotification('❌ Не удалось определить продавца', 'error');
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+                return;
+            }
+            
+            const { releaseFunds } = await import('./wallet.js');
+            
+            await updateDoc(orderRef, { 
+                status: 'completed',
+                completedAt: new Date()
+            });
+            
+            await releaseFunds(currentUser.uid, sellerId, totalPrice, orderId);
+            
+            showNotification('✅ Спасибо за покупку! Заказ завершён.', 'success');
+            await loadOrders();
+            
+        } catch (err) {
+            console.error('Ошибка:', err);
+            showNotification('❌ Ошибка: ' + err.message, 'error');
+        } finally {
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+        }
+    }
+
+    function handleRepeatOrder(orderId) {
+        const order = allOrders.find(o => o.id === orderId);
+        if (order && order.items) {
+            let cart = JSON.parse(localStorage.getItem('cart') || '[]');
+            order.items.forEach(item => {
+                cart.push({
+                    id: item.productId || item.id,
+                    name: item.productName || item.name,
+                    price: item.price || 0,
+                    image: item.image || null,
+                    desc: item.desc || '',
+                    partnerId: item.partnerId || null,
+                    partnerName: item.partnerName || null
+                });
+            });
+            localStorage.setItem('cart', JSON.stringify(cart));
+            showNotification(`🔄 ${order.items.length} товаров добавлены в корзину`, 'success');
+            setTimeout(() => {
+                window.location.href = 'cart.html';
+            }, 1000);
+        } else {
+            showNotification('❌ Не удалось повторить заказ', 'error');
         }
     }
 
@@ -1553,7 +1731,7 @@
                 reviewedAt: new Date()
             });
 
-            showNotification('✅ Отзыв отправлен! Спасибо!', 'success');
+            showNotification('✅ Отзыв отправлен!', 'success');
             document.getElementById('reviewModal').classList.remove('show');
             await loadOrders();
         } catch (err) {
@@ -1562,54 +1740,19 @@
         }
     });
 
-    // ===== ФИЛЬТР - ДРОПДАУН =====
-    const filterToggle = document.getElementById('filterToggle');
-    const filterOptions = document.getElementById('filterOptions');
-    const filterArrow = document.getElementById('filterArrow');
-    const currentFilterLabel = document.getElementById('currentFilterLabel');
-
-    filterToggle.addEventListener('click', () => {
-        filterOptions.classList.toggle('open');
-        filterArrow.classList.toggle('open');
-    });
-
-    document.addEventListener('click', (e) => {
-        if (!filterToggle.contains(e.target) && !filterOptions.contains(e.target)) {
-            filterOptions.classList.remove('open');
-            filterArrow.classList.remove('open');
-        }
-    });
-
-    document.querySelectorAll('.filter-option').forEach(option => {
-        option.addEventListener('click', () => {
-            const filter = option.dataset.filter;
-            const label = option.querySelector('.option-label')?.textContent || option.textContent.trim();
-            
-            document.querySelectorAll('.filter-option').forEach(o => o.classList.remove('active'));
-            option.classList.add('active');
-            
-            currentFilterLabel.textContent = label;
-            
-            filterOptions.classList.remove('open');
-            filterArrow.classList.remove('open');
-            
-            currentFilter = filter;
-            const activeTab = document.querySelector('.tab-btn.active')?.dataset.tab || 'active';
-            renderOrders(activeTab, currentFilter);
-        });
-    });
-
-    // ===== ТАБЫ =====
+    // ===== ПЕРЕКЛЮЧЕНИЕ ВКЛАДОК =====
     document.querySelectorAll('.tab-btn').forEach(btn => {
         btn.addEventListener('click', () => {
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
             
             const tab = btn.dataset.tab;
-            document.querySelectorAll('.tab-pane').forEach(pane => pane.classList.remove('active'));
-            document.getElementById(tab === 'active' ? 'activeOrders' : 'historyOrders').classList.add('active');
+            currentTab = tab;
             
-            renderOrders(tab, currentFilter);
+            document.querySelectorAll('.tab-pane').forEach(pane => pane.classList.remove('active'));
+            document.getElementById('tab' + tab.charAt(0).toUpperCase() + tab.slice(1)).classList.add('active');
+            
+            renderOrders(tab);
         });
     });
 
@@ -1640,12 +1783,19 @@
         } else {
             const balanceDiv = document.getElementById('balanceIndicator');
             if (balanceDiv) balanceDiv.style.display = 'none';
-            document.getElementById('activeOrdersList').innerHTML = '<div class="empty-state"><i class="fas fa-lock"></i><p>Войдите, чтобы увидеть свои заказы</p></div>';
-            document.getElementById('historyOrdersList').innerHTML = '<div class="empty-state"><i class="fas fa-lock"></i><p>Войдите, чтобы увидеть свои заказы</p></div>';
+            document.getElementById('ordersListActive').innerHTML = `
+                <div class="empty-state">
+                    <i class="fas fa-lock"></i>
+                    <h3>Требуется авторизация</h3>
+                    <p>Войдите, чтобы увидеть свои заказы</p>
+                    <a href="login.html"><i class="fas fa-sign-in-alt"></i> Войти</a>
+                </div>
+            `;
+            document.getElementById('ordersListHistory').innerHTML = '';
         }
     });
 
-    // ===== ОБРАБОТЧИКИ МЕНЮ =====
+    // ===== МЕНЮ =====
     const plusBtn = document.getElementById('balancePlusBtn');
     if (plusBtn) plusBtn.onclick = () => window.location.href = 'shop.html';
 
@@ -1658,8 +1808,9 @@
         });
     }
 
-    console.log('✅ Мои заказы обновлены: дропдаун-фильтр, продавцы, отзывы');
-</script>
-
+    console.log('✅ Мои заказы: вкладки "Активные" и "История"');
+    console.log('📦 Статус "На рассмотрении" добавлен в активные');
+    console.log('💬 Одна кнопка чата на продавца');
+    </script>
 </body>
 </html>
