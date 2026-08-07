@@ -1,5 +1,5 @@
 // sw-v2.js - Service Worker для PRORANK PWA (v2.0.0)
-const CACHE_NAME = 'prorank-v2.0.1';
+const CACHE_NAME = 'prorank-v2.0.2';
 const OFFLINE_URL = '/prorank-live/offline.html';
 
 // ============================================================
