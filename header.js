@@ -353,7 +353,7 @@ async function renderMobileBottomNav() {
                     { text: 'Мой рейтинг', icon: 'fa-chart-line', url: 'rating.html' },
                     { text: 'Лиги', icon: 'fa-trophy', url: 'leagues.html' },
                     { text: 'Кошелёк', icon: 'fa-wallet', url: 'buyer-wallet.html' },
-                    { text: 'Мои заказы', icon: 'fa-box', url: 'my-orders.html' },
+                    { text: 'Залы', icon: 'fa-building', url: 'halls.html' },
                     { text: 'О проекте', icon: 'fa-info-circle', url: 'about.html' }
                 ];
             }
@@ -669,7 +669,7 @@ async function initHeader() {
                     <button class="dropbtn"><i class="fas fa-store"></i> Магазин <i class="fas fa-chevron-down"></i></button>
                     <div class="dropdown-content">
                         <a href="catalog.html"><i class="fas fa-boxes"></i> Каталог товаров</a>
-                        <a href="my-orders.html"><i class="fas fa-box"></i> Мои заказы</a>
+                        <a href="halls.html"><i class="fas fa-building"></i> Залы</a>
                     </div>
                 </div>
                 <div class="dropdown" data-section="finance">
@@ -695,7 +695,7 @@ async function initHeader() {
                     <button class="dropbtn"><i class="fas fa-store"></i> Магазин <i class="fas fa-chevron-down"></i></button>
                     <div class="dropdown-content">
                         <a href="catalog.html"><i class="fas fa-boxes"></i> Каталог</a>
-                        <a href="my-orders.html"><i class="fas fa-box"></i> Мои заказы</a>
+                        <a href="halls.html"><i class="fas fa-building"></i> Залы</a>
                         <a href="shop.html"><i class="fas fa-gem"></i> Премиум</a>
                     </div>
                 </div>
@@ -756,7 +756,7 @@ async function initHeader() {
                     <span class="mobile-submenu-trigger"><i class="fas fa-store"></i> Магазин <i class="fas fa-chevron-right"></i></span>
                     <div class="mobile-submenu-content">
                         <a href="catalog.html"><i class="fas fa-boxes"></i> Каталог</a>
-                        <a href="my-orders.html"><i class="fas fa-box"></i> Мои заказы</a>
+                        <a href="halls.html"><i class="fas fa-building"></i> Залы</a>
                     </div>
                 </div>
                 <div class="mobile-submenu">
@@ -776,7 +776,7 @@ async function initHeader() {
                     <span class="mobile-submenu-trigger"><i class="fas fa-store"></i> Магазин <i class="fas fa-chevron-right"></i></span>
                     <div class="mobile-submenu-content">
                         <a href="catalog.html"><i class="fas fa-boxes"></i> Каталог</a>
-                        <a href="my-orders.html"><i class="fas fa-box"></i> Мои заказы</a>
+                        <a href="halls.html"><i class="fas fa-building"></i> Залы</a>
                         <a href="shop.html"><i class="fas fa-gem"></i> Премиум</a>
                     </div>
                 </div>

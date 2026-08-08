@@ -582,6 +582,13 @@
             box-shadow: 0 0 20px rgba(251,191,36,0.1);
         }
 
+        .category-chip .cat-icon img {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
         .category-chip .cat-icon .placeholder-icon {
             font-size: 1.5rem;
             color: #555;
@@ -599,6 +606,76 @@
             padding: 0 4px;
         }
         .products-counter span { color: #fbbf24; font-weight: 600; }
+
+        /* ===== СКЕЛЕТОНЫ ===== */
+        .skeleton-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            gap: 16px;
+            margin: 16px 0 24px;
+        }
+
+        .skeleton-card {
+            background: rgba(15,15,15,0.5);
+            border-radius: 16px;
+            padding: 12px;
+            animation: pulse 1.5s ease-in-out infinite;
+            border: 1px solid rgba(255,255,255,0.03);
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .skeleton-card .skeleton-image {
+            width: 100%;
+            aspect-ratio: 1 / 1;
+            background: rgba(255,255,255,0.06);
+            border-radius: 12px;
+            margin-bottom: 10px;
+            flex-shrink: 0;
+        }
+
+        .skeleton-card .skeleton-line {
+            height: 12px;
+            background: rgba(255,255,255,0.06);
+            border-radius: 8px;
+            margin-bottom: 8px;
+            width: 100%;
+        }
+
+        .skeleton-card .skeleton-line.short {
+            width: 60%;
+            height: 10px;
+        }
+
+        .skeleton-card .skeleton-line.medium {
+            width: 80%;
+            height: 10px;
+        }
+
+        .skeleton-card .skeleton-line.price {
+            width: 40%;
+            height: 16px;
+            margin-top: 4px;
+        }
+
+        .skeleton-card .skeleton-line.button {
+            width: 100%;
+            height: 36px;
+            border-radius: 40px;
+            margin-top: 6px;
+        }
+
+        .skeleton-card .skeleton-line.stars {
+            width: 50%;
+            height: 10px;
+            margin: 6px 0;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
+        }
 
         /* ===== ТОВАРЫ ===== */
         .products-grid {
@@ -806,18 +883,19 @@
             background: rgba(251,191,36,0.12);
             color: #fbbf24;
             border: 1px solid rgba(251,191,36,0.12);
-            padding: 8px 10px;
+            padding: 8px 12px;
             border-radius: 40px;
             font-weight: 600;
-            font-size: 0.65rem;
+            font-size: 0.7rem;
             cursor: pointer;
             transition: all 0.2s ease;
             font-family: 'Inter', sans-serif;
             display: flex;
             align-items: center;
-            gap: 4px;
+            gap: 5px;
             min-height: 36px;
             white-space: nowrap;
+            flex: 1;
         }
 
         .btn-buy-now:hover {
@@ -831,7 +909,7 @@
         }
 
         .btn-buy-now i {
-            font-size: 0.6rem;
+            font-size: 0.7rem;
         }
         
         /* ===== МОДАЛЬНОЕ ОКНО ===== */
@@ -1340,6 +1418,9 @@
         <div class="page-header">
             <h1><i class="fas fa-store"></i> Каталог товаров</h1>
             <div class="header-icons">
+                <div class="header-icon-btn" id="ordersBtn">
+                    <i class="fas fa-box"></i>
+                </div>
                 <div class="header-icon-btn" id="favoritesBtn">
                     <i class="fas fa-heart"></i>
                     <span class="badge badge-red" id="favoritesCount">0</span>
@@ -1461,7 +1542,7 @@
                     <div class="product-store" id="modalProductStore"></div>
                     <div style="display:flex;gap:10px;margin-top:10px;">
                         <button id="modalAddToCartBtn" class="btn-add-to-cart" style="flex:1;"><i class="fas fa-cart-plus"></i> В корзину</button>
-                        <button id="modalBuyNowBtn" class="btn-buy-now" style="flex:0 0 auto;"><i class="fas fa-bolt"></i> Купить</button>
+                        <button id="modalBuyNowBtn" class="btn-buy-now" style="flex:1;"><i class="fas fa-bolt"></i> Купить</button>
                     </div>
                 </div>
                 
@@ -1709,11 +1790,9 @@
             if (icon) {
                 icon.style.transform = isCollapsed ? 'rotate(180deg)' : 'rotate(0deg)';
             }
-            // Сохраняем состояние в localStorage
             localStorage.setItem('storesCollapsed', isCollapsed ? 'true' : 'false');
         });
         
-        // Восстанавливаем состояние
         const saved = localStorage.getItem('storesCollapsed');
         if (saved === 'true') {
             wrapper.classList.add('collapsed');
@@ -1880,7 +1959,7 @@
                     </div>
                     <div class="product-actions">
                         <button class="btn-add-to-cart" data-product='${JSON.stringify(productForCart)}'><i class="fas fa-cart-plus"></i> В корзину</button>
-                        <button class="btn-buy-now" data-product='${JSON.stringify(productForCart)}'><i class="fas fa-bolt"></i></button>
+                        <button class="btn-buy-now" data-product='${JSON.stringify(productForCart)}'><i class="fas fa-bolt"></i> Купить</button>
                     </div>
                 </div>
             `;
@@ -2087,10 +2166,10 @@
     document.getElementById('sortSelect')?.addEventListener('change', applyFilters);
     document.getElementById('resetFiltersBtn')?.addEventListener('click', resetFilters);
     
+    // Иконки в шапке
     document.getElementById('cartIcon')?.addEventListener('click', () => window.location.href = 'cart.html');
-    document.getElementById('favoritesBtn')?.addEventListener('click', () => {
-        showNotification('❤️ Страница избранного в разработке', 'info');
-    });
+    document.getElementById('favoritesBtn')?.addEventListener('click', () => window.location.href = 'favorites.html');
+    document.getElementById('ordersBtn')?.addEventListener('click', () => window.location.href = 'my-orders.html');
     
     document.getElementById('closeModalBtn')?.addEventListener('click', () => {
         document.getElementById('productModal').style.display = 'none';
@@ -2139,6 +2218,36 @@
         }
     });
     
+    document.getElementById('modalBuyNowBtn')?.addEventListener('click', () => {
+        if (!currentUser) {
+            showNotification('Войдите в аккаунт', 'warning');
+            setTimeout(() => window.location.href = 'login.html', 1000);
+            return;
+        }
+        if (currentProduct) {
+            let storeName = currentProduct.partnerName;
+            if (!storeName && currentProduct.partnerId) {
+                const partner = allPartners.find(p => p.id === currentProduct.partnerId);
+                storeName = partner ? partner.name : 'Магазин';
+            }
+            let cart = JSON.parse(localStorage.getItem('cart') || '[]');
+            cart = [{ 
+                id: currentProduct.id, 
+                name: currentProduct.name, 
+                price: currentProduct.price, 
+                image: currentProduct.image,
+                desc: currentProduct.desc || '',
+                partnerId: currentProduct.partnerId || null,
+                partnerName: storeName || null
+            }];
+            localStorage.setItem('cart', JSON.stringify(cart));
+            showNotification(`⚡ Быстрая покупка: ${currentProduct.name}`, 'success');
+            setTimeout(() => {
+                window.location.href = 'cart.html';
+            }, 800);
+        }
+    });
+
     // ===== АВТОРИЗАЦИЯ =====
     onAuthStateChanged(auth, async (user) => {
         currentUser = user;
@@ -2161,7 +2270,7 @@
     const navLinks = document.getElementById('navLinks');
     if (menuToggle && navLinks) menuToggle.addEventListener('click', () => navLinks.classList.toggle('show'));
     
-    console.log('✅ Каталог обновлён: магазины с аватарками + кнопка сворачивания');
+    console.log('✅ Каталог обновлён: иконки заказов, избранное, корзина, кнопка "Купить"');
     </script>
 </body>
 </html>
