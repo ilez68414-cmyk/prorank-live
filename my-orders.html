@@ -773,6 +773,95 @@
             }
         }
         
+/* ===== ИСТОРИЯ — ХЕДЕР С КНОПКОЙ ОЧИСТКИ ===== */
+.history-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    padding: 8px 4px 16px;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    margin-bottom: 4px;
+}
+
+.history-info {
+    font-size: 0.8rem;
+    color: #888;
+}
+
+.history-info span {
+    color: #fbbf24;
+    font-weight: 600;
+}
+
+.history-count {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.history-count i {
+    color: #666;
+}
+
+.btn-clear-history {
+    background: rgba(220,38,38,0.08);
+    color: #888;
+    border: 1px solid rgba(220,38,38,0.12);
+    padding: 8px 18px;
+    border-radius: 40px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-family: 'Inter', sans-serif;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-height: 36px;
+}
+
+.btn-clear-history:hover {
+    background: rgba(220,38,38,0.15);
+    color: #dc2626;
+    border-color: rgba(220,38,38,0.25);
+    transform: translateY(-1px);
+}
+
+.btn-clear-history:active {
+    transform: scale(0.96);
+}
+
+.btn-clear-history i {
+    font-size: 0.75rem;
+}
+
+.btn-clear-history:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    transform: none !important;
+}
+
+/* Адаптив */
+@media (max-width: 480px) {
+    .history-header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 8px;
+        padding: 8px 0 12px;
+    }
+    
+    .btn-clear-history {
+        justify-content: center;
+        padding: 8px 14px;
+        font-size: 0.7rem;
+        min-height: 32px;
+        width: 100%;
+    }
+}
+
+
         .modal-overlay {
             position: fixed;
             top: 0; left: 0; right: 0; bottom: 0;
@@ -1073,7 +1162,7 @@
     </header>
 
     <main class="container">
-        <!-- ===== ХЛЕБНЫЕ КРОШКИ С КНОПКОЙ НАЗАД (ДОБАВЛЕНО) ===== -->
+        <!-- ===== ХЛЕБНЫЕ КРОШКИ С КНОПКОЙ НАЗАД ===== -->
         <div class="breadcrumb">
             <button class="back-btn" id="backBtn"><i class="fas fa-arrow-left"></i> Назад</button>
             <span class="separator">/</span>
@@ -1105,6 +1194,16 @@
         </div>
 
         <div id="tabHistory" class="tab-pane">
+            <!-- ===== КНОПКА ОЧИСТИТЬ ИСТОРИЮ ===== -->
+            <div class="history-header">
+                <div class="history-info">
+                    <span class="history-count">В истории: <span id="historyOrdersCount">0</span> заказов</span>
+                </div>
+                <button id="clearHistoryBtn" class="btn-clear-history">
+                    <i class="fas fa-trash-alt"></i> Очистить историю
+                </button>
+            </div>
+            
             <div id="ordersListHistory" class="orders-list">
                 <div class="loading"><div class="loading-spinner"></div> Загрузка...</div>
             </div>
@@ -1174,7 +1273,7 @@
     <script type="module" src="header.js?v=3"></script>
     <script type="module">
     import { initializeApp } from "firebase/app";
-    import { getFirestore, collection, getDocs, query, where, orderBy, doc, getDoc, updateDoc, addDoc, setDoc } from "firebase/firestore";
+    import { getFirestore, collection, getDocs, query, where, orderBy, doc, getDoc, updateDoc, addDoc, setDoc, deleteDoc, writeBatch } from "firebase/firestore";
     import { getAuth, onAuthStateChanged } from "firebase/auth";
 
     const firebaseConfig = {
@@ -1215,6 +1314,56 @@
         if (!date) return '';
         const d = date.toDate ? date.toDate() : new Date(date);
         return d.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' });
+    }
+
+    // ===== ОБНОВЛЕНИЕ СЧЁТЧИКА В ИСТОРИИ =====
+    function updateHistoryCount() {
+        const historyOrders = allOrders.filter(o => o.status === 'completed' || o.status === 'cancelled' || o.status === 'rejected');
+        const countEl = document.getElementById('historyOrdersCount');
+        if (countEl) countEl.textContent = historyOrders.length;
+    }
+
+    // ===== ОЧИСТКА ИСТОРИИ =====
+    async function clearHistory() {
+        const historyOrders = allOrders.filter(o => o.status === 'completed' || o.status === 'cancelled' || o.status === 'rejected');
+        
+        if (historyOrders.length === 0) {
+            showNotification('История уже пуста', 'info');
+            return;
+        }
+
+        if (!confirm(`❌ Вы уверены, что хотите удалить ${historyOrders.length} заказов из истории?\n\nЭто действие нельзя отменить.`)) {
+            return;
+        }
+
+        const btn = document.getElementById('clearHistoryBtn');
+        const originalText = btn.innerHTML;
+        btn.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> Удаление...';
+        btn.disabled = true;
+
+        try {
+            const batch = writeBatch(db);
+            historyOrders.forEach(order => {
+                const orderRef = doc(db, "orders", order.id);
+                batch.delete(orderRef);
+            });
+            await batch.commit();
+
+            allOrders = allOrders.filter(o => o.status !== 'completed' && o.status !== 'cancelled' && o.status !== 'rejected');
+            
+            showNotification(`✅ Удалено ${historyOrders.length} заказов из истории`, 'success');
+            
+            updateBadges();
+            updateHistoryCount();
+            renderOrders(currentTab);
+            
+        } catch (err) {
+            console.error('Ошибка очистки истории:', err);
+            showNotification('❌ Не удалось очистить историю', 'error');
+        } finally {
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+        }
     }
 
     function getStatusInfo(status) {
@@ -1311,6 +1460,7 @@
             }
             
             updateBadges();
+            updateHistoryCount();
             renderOrders(currentTab);
             
         } catch (err) {
@@ -1330,9 +1480,7 @@
 
     // ===== ОБНОВЛЕНИЕ БЕЙДЖЕЙ =====
     function updateBadges() {
-        // Активные: pending, paid, shipped, delivered
         const activeOrders = allOrders.filter(o => o.status === 'pending' || o.status === 'paid' || o.status === 'shipped' || o.status === 'delivered');
-        // История: completed, cancelled, rejected
         const historyOrders = allOrders.filter(o => o.status === 'completed' || o.status === 'cancelled' || o.status === 'rejected');
         
         document.getElementById('badgeActive').textContent = activeOrders.length;
@@ -1347,10 +1495,8 @@
         
         let filtered = [];
         if (tab === 'active') {
-            // Активные: pending, paid, shipped, delivered
             filtered = allOrders.filter(o => o.status === 'pending' || o.status === 'paid' || o.status === 'shipped' || o.status === 'delivered');
         } else {
-            // История: completed, cancelled, rejected
             filtered = allOrders.filter(o => o.status === 'completed' || o.status === 'cancelled' || o.status === 'rejected');
         }
 
@@ -1444,10 +1590,8 @@
                 });
             }
 
-            // Действия
             let actionsHtml = '';
             
-            // Для статуса "На рассмотрении" - только отмена (без возврата денег)
             if (order.status === 'pending') {
                 actionsHtml += `<button class="btn btn-danger" data-order-id="${order.id}" data-action="cancel"><i class="fas fa-times"></i> Отменить заказ</button>`;
                 actionsHtml += `<span class="status-info"><i class="fas fa-clock" style="color:#f59e0b;"></i> Ожидает подтверждения продавца</span>`;
@@ -1559,7 +1703,7 @@
         const el = e.currentTarget;
         const sellerId = el.dataset.sellerId;
         if (sellerId && sellerId !== 'null' && sellerId !== 'undefined') {
-            window.location.href = `profile.html?id=${sellerId}`;
+            window.location.href = `store-profile.html?id=${sellerId}`;
         }
     }
 
@@ -1637,7 +1781,6 @@
             const orderSnap = await getDoc(orderRef);
             const orderData = orderSnap.data();
             
-            // Если заказ уже оплачен — возвращаем средства
             if (orderData.paymentMethod === 'balance' && (orderData.status === 'paid' || orderData.status === 'shipped' || orderData.status === 'delivered')) {
                 const { releaseFunds } = await import('./wallet.js');
                 await releaseFunds(
@@ -1812,6 +1955,9 @@
         });
     });
 
+    // ===== КНОПКА ОЧИСТИТЬ ИСТОРИЮ =====
+    document.getElementById('clearHistoryBtn')?.addEventListener('click', clearHistory);
+
     // ===== БАЛАНС =====
     async function updateHeaderBalance() {
         const user = auth.currentUser;
@@ -1830,7 +1976,7 @@
         }
     }
 
-    // ===== КНОПКА НАЗАД (ДОБАВЛЕНО) =====
+    // ===== КНОПКА НАЗАД =====
     document.getElementById('backBtn')?.addEventListener('click', () => {
         window.history.back();
     });
@@ -1873,6 +2019,7 @@
     console.log('📦 Статус "На рассмотрении" добавлен в активные');
     console.log('💬 Одна кнопка чата на продавца');
     console.log('⬅️ Добавлена стрелка назад');
+    console.log('🗑️ Кнопка "Очистить историю" работает');
     </script>
 </body>
 </html>

@@ -20,6 +20,135 @@ let fighterMoneyIndicator = null;
 let partnerWalletIndicator = null;
 let deferredPrompt = null;
 
+// ===== ГЛОБАЛЬНЫЕ СТИЛИ ДЛЯ МОДАЛКИ ДЕЙСТВИЙ =====
+function injectQuickActionsStyles() {
+    // Проверяем, есть ли уже стили
+    if (document.getElementById('quickActionsStyles')) return;
+    
+    const styles = document.createElement('style');
+    styles.id = 'quickActionsStyles';
+    styles.textContent = `
+        /* ===== МОДАЛКА БЫСТРЫХ ДЕЙСТВИЙ ===== */
+        .quick-actions-overlay {
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            width: 100% !important;
+            height: 100% !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            z-index: 9999 !important;
+            background: rgba(0,0,0,0.75) !important;
+            backdrop-filter: blur(6px) !important;
+            animation: quickFadeIn 0.25s ease !important;
+        }
+        
+        .quick-actions-panel {
+            background: radial-gradient(ellipse at 30% 40%, rgba(251,191,36,0.08) 0%, transparent 60%),
+                        linear-gradient(135deg, #1a1a1a 0%, #0a0a0a 100%) !important;
+            border-radius: 24px !important;
+            padding: 24px !important;
+            width: 90% !important;
+            max-width: 380px !important;
+            border: 1px solid rgba(251,191,36,0.12) !important;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.6) !important;
+            animation: quickSlideUp 0.3s ease !important;
+            max-height: 85vh !important;
+            overflow-y: auto !important;
+        }
+        
+        .quick-actions-header {
+            display: flex !important;
+            align-items: center !important;
+            gap: 10px !important;
+            font-size: 1rem !important;
+            font-weight: 700 !important;
+            color: #fbbf24 !important;
+            padding-bottom: 16px !important;
+            border-bottom: 1px solid rgba(251,191,36,0.08) !important;
+            margin-bottom: 12px !important;
+        }
+        
+        .quick-action-item {
+            display: flex !important;
+            align-items: center !important;
+            gap: 12px !important;
+            padding: 12px 16px !important;
+            border-radius: 12px !important;
+            cursor: pointer !important;
+            transition: all 0.2s ease !important;
+            color: #ddd !important;
+            font-size: 0.85rem !important;
+            border-bottom: 1px solid rgba(255,255,255,0.03) !important;
+        }
+        
+        .quick-action-item:hover {
+            background: rgba(251,191,36,0.08) !important;
+            transform: translateX(4px) !important;
+        }
+        
+        .quick-action-item i {
+            color: #fbbf24 !important;
+            width: 20px !important;
+            text-align: center !important;
+        }
+        
+        .quick-actions-close {
+            text-align: center !important;
+            padding: 12px 0 4px !important;
+            color: #555 !important;
+            font-size: 0.7rem !important;
+            cursor: pointer !important;
+            border-top: 1px solid rgba(255,255,255,0.03) !important;
+            margin-top: 8px !important;
+            transition: all 0.2s ease !important;
+        }
+        
+        .quick-actions-close:hover {
+            color: #fbbf24 !important;
+        }
+        
+        @keyframes quickFadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        @keyframes quickSlideUp {
+            from { opacity: 0; transform: translateY(20px) scale(0.95); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        
+        /* ===== АДАПТИВ ДЛЯ МОДАЛКИ ===== */
+        @media (max-width: 480px) {
+            .quick-actions-panel {
+                padding: 18px !important;
+                width: 95% !important;
+                border-radius: 20px !important;
+            }
+            
+            .quick-actions-header {
+                font-size: 0.85rem !important;
+                padding-bottom: 12px !important;
+            }
+            
+            .quick-action-item {
+                padding: 10px 12px !important;
+                font-size: 0.75rem !important;
+            }
+            
+            .quick-action-item i {
+                font-size: 0.85rem !important;
+            }
+        }
+    `;
+    
+    document.head.appendChild(styles);
+}
+
+// Вызываем инъекцию сразу
+injectQuickActionsStyles();
+
 function getCurrentPage() {
     const path = window.location.pathname;
     const page = path.split('/').pop();
@@ -283,18 +412,14 @@ async function renderMobileBottomNav() {
     // ===== ПРОВЕРКА: мы на своей странице профиля? =====
     let isMyProfile = false;
     
-    // Если мы на profile.html
     if (currentPage === 'profile.html') {
         const urlParams = new URLSearchParams(window.location.search);
         const profileId = urlParams.get('id');
-        
-        // Если id не указан ИЛИ id равен текущему пользователю - это наш профиль
         if (!profileId || (userId && profileId === userId)) {
             isMyProfile = true;
         }
     }
     
-    // Если мы на partner-dashboard.html
     if (currentPage === 'partner-dashboard.html' && isPartner) {
         isMyProfile = true;
     }
@@ -333,20 +458,23 @@ async function renderMobileBottomNav() {
         };
     }
     
+    // ===== КНОПКА "ДЕЙСТВИЯ" (МОЛНИЯ) =====
     const centerBtn = document.getElementById('centerActionBtn');
     if (centerBtn) {
         centerBtn.onclick = () => {
             let actions = [];
             
             if (isPartner) {
+                // 🔥 МЕНЮ ДЛЯ ПАРТНЁРА (без "Магазин" — он уже в навигации)
                 actions = [
-                    { text: 'Аналитика', icon: 'fa-chart-line', url: 'partner-dashboard.html' },
+                    { text: 'Аналитика', icon: 'fa-chart-line', url: 'partner-analytics.html' },
                     { text: 'Товары', icon: 'fa-box', url: 'partner-products.html' },
                     { text: 'Заказы', icon: 'fa-shopping-cart', url: 'partner-orders.html' },
                     { text: 'Отзывы', icon: 'fa-star', url: 'partner-reviews.html' },
                     { text: 'Кошелёк', icon: 'fa-wallet', url: 'wallet.html' }
                 ];
             } else {
+                // 🔥 МЕНЮ ДЛЯ ОБЫЧНОГО БОЙЦА
                 actions = [
                     { text: 'Премиум и вызовы', icon: 'fa-gem', url: 'shop.html' },
                     { text: 'Кинуть вызов', icon: 'fa-fist-raised', url: 'challenges.html' },
@@ -369,7 +497,7 @@ async function renderMobileBottomNav() {
                 <div class="quick-actions-overlay">
                     <div class="quick-actions-panel">
                         <div class="quick-actions-header">
-                            <i class="fas fa-bolt"></i> Быстрые действия
+                            <i class="fas fa-bolt"></i> ${isPartner ? 'Управление магазином' : 'Быстрые действия'}
                         </div>
                         ${actions.map(a => `
                             <div class="quick-action-item" data-url="${a.url || ''}" data-logout="${a.isLogout || false}">
