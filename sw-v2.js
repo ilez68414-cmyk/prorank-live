@@ -1,5 +1,5 @@
 // sw-v2.js - Service Worker для PRORANK PWA (v2.0.0)
-const CACHE_NAME = 'prorank-v2.0.4';
+const CACHE_NAME = 'prorank-v2.0.5';
 const OFFLINE_URL = '/prorank-live/offline.html';
 
 // ============================================================
@@ -20,12 +20,14 @@ const STATIC_FILES = [
   '/prorank-live/chat.html',
   '/prorank-live/chats.html',
   '/prorank-live/disclaimer.html',
+  '/prorank-live/favorites.html',        // ← НОВЫЙ
   '/prorank-live/halls.html',
   '/prorank-live/leagues.html',
   '/prorank-live/login.html',
   '/prorank-live/mma.html',
-  '/prorank-live/my-orders.html',
+  '/prorank-live/my-orders.html',        // ← НОВЫЙ
   '/prorank-live/offline.html',
+  '/prorank-live/partner-analytics.html', // ← НОВЫЙ
   '/prorank-live/partner-dashboard.html',
   '/prorank-live/partner-orders.html',
   '/prorank-live/partner-products.html',
@@ -36,19 +38,27 @@ const STATIC_FILES = [
   '/prorank-live/reset-password.html',
   '/prorank-live/rules.html',
   '/prorank-live/shop.html',
+  '/prorank-live/store-profile.html',    // ← НОВЫЙ
+  '/prorank-live/Testovy.html',          // ← НОВЫЙ (если нужен)
   '/prorank-live/wallet.html',
   '/prorank-live/wrestling.html',
 
   // === JAVASCRIPT ===
-  '/prorank-live/header.js',
-  '/prorank-live/script.js',
-  '/prorank-live/profile.js',
-  '/prorank-live/payment.js',
-  '/prorank-live/wallet.js',
-  '/prorank-live/premium.js',
   '/prorank-live/error-handler.js',
+  '/prorank-live/fix-prompt.js',          // ← НОВЫЙ
+  '/prorank-live/header.js',
+  '/prorank-live/OneSignalSDKWorker.js', // ← НОВЫЙ
+  '/prorank-live/payment.js',
+  '/prorank-live/premium.js',
+  '/prorank-live/print-utils.js',         // ← НОВЫЙ
+  '/prorank-live/profile.js',
   '/prorank-live/push-notifications.js',
   '/prorank-live/push-sender.js',
+  '/prorank-live/script.js',
+  '/prorank-live/virtual-list.js',        // ← НОВЫЙ
+  '/prorank-live/voice-recorder.js',      // ← НОВЫЙ
+  '/prorank-live/voice-uploader.js',      // ← НОВЫЙ
+  '/prorank-live/wallet.js',
 
   // === CSS ===
   '/prorank-live/style.css',
@@ -83,7 +93,7 @@ const STATIC_FILES = [
 // УСТАНОВКА
 // ============================================================
 self.addEventListener('install', event => {
-  console.log('[SW] Установка v2.0.0...');
+  console.log('[SW] Установка v2.0.4...');
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then(cache => {
@@ -99,7 +109,7 @@ self.addEventListener('install', event => {
 // АКТИВАЦИЯ - удаляем все старые кэши
 // ============================================================
 self.addEventListener('activate', event => {
-  console.log('[SW] Активация v2.0.0...');
+  console.log('[SW] Активация v2.0.4...');
   event.waitUntil(
     caches.keys().then(cacheNames => {
       return Promise.all(
