@@ -1676,7 +1676,9 @@
     <div class="toast-notification" id="toastNotification"></div>
 
     <div id="errorContainer" style="position:fixed;top:15px;left:50%;transform:translateX(-50%);z-index:9999;max-width:90%;width:480px;padding:14px 20px;border-radius:16px;font-weight:600;font-size:0.9rem;animation:slideDown 0.3s ease;box-shadow:0 10px 30px rgba(0,0,0,0.4);backdrop-filter:blur(8px);display:none;text-align:center;border:1px solid rgba(255,255,255,0.1);"></div>
+
     <script type="module" src="header.js?v=3"></script>
+
     <script type="importmap">
         {
             "imports": {
@@ -2697,5 +2699,28 @@ function renderProductsAnalytics(products, totalRevenue) {
     console.log('📈 Сравнение с прошлым периодом работает');
     console.log('💰 Комиссия 10% от выручки');
     </script>
+
+    <script type="module">
+    // ===== ФИКС МОБИЛЬНОЙ НАВИГАЦИИ =====
+    import { renderMobileBottomNav } from './header.js';
+    
+    // Ждём загрузки страницы и авторизации
+    async function initMobileNav() {
+        try {
+            console.log('🔧 Загрузка мобильной навигации...');
+            await renderMobileBottomNav();
+            console.log('✅ Мобильная навигация загружена');
+        } catch (err) {
+            console.error('❌ Ошибка загрузки навигации:', err);
+        }
+    }
+    
+    // Запускаем после загрузки DOM
+    if (document.readyState === 'complete') {
+        initMobileNav();
+    } else {
+        document.addEventListener('DOMContentLoaded', initMobileNav);
+    }
+</script>
 </body>
 </html>
