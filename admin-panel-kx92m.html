@@ -1,0 +1,2837 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+    <!-- ===== SEO / META ===== -->
+    <title>PRORANK Admin Panel</title>
+    <meta name="description" content="Панель управления платформой PRORANK — управление бойцами, магазинами, финансами и контентом">
+    <meta name="keywords" content="PRORANK, админка, управление, спорт, рейтинг, бойцы, магазины">
+    <meta name="robots" content="noindex, nofollow">
+    <meta name="theme-color" content="#0b0b0b">
+
+    <!-- ===== Open Graph / Facebook ===== -->
+    <meta property="og:title" content="PRORANK Admin Panel">
+    <meta property="og:description" content="Панель управления платформой PRORANK">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://prorank.ru/admin.html">
+    <meta property="og:site_name" content="PRORANK">
+    <meta property="og:locale" content="ru_RU">
+
+    <!-- ===== Twitter ===== -->
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="PRORANK Admin Panel">
+    <meta name="twitter:description" content="Панель управления платформой PRORANK">
+
+    <!-- ===== PWA / APPLE ===== -->
+    <link rel="manifest" href="/manifest.json">
+    <link rel="apple-touch-icon" href="/icons/icon-192.png">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="PRORANK Admin">
+    <meta name="mobile-web-app-capable" content="yes">
+
+    <!-- ===== FONTS & ICONS ===== -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700;14..32,800;14..32,900&display=swap" rel="stylesheet">
+
+    <!-- ===== CHART.JS ===== -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js">
+    </script>
+
+    <style>
+        /* ===== RESET & BASE ===== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0b0b0b;
+            color: #e8e8e8;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #1a1a1a;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #fbbf24;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #f59e0b;
+        }
+
+        /* ===== LOGIN ===== */
+        #loginContainer {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background: radial-gradient(ellipse at 30% 40%, rgba(251, 191, 36, 0.08) 0%, transparent 60%),
+                radial-gradient(ellipse at 70% 80%, rgba(251, 191, 36, 0.05) 0%, transparent 50%),
+                #0b0b0b;
+        }
+
+        .login-box {
+            background: #141414;
+            border: 1px solid #222;
+            border-radius: 20px;
+            padding: 40px 36px;
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
+
+        .login-box .logo {
+            font-size: 32px;
+            font-weight: 800;
+            color: #fff;
+            margin-bottom: 4px;
+        }
+        .login-box .logo span {
+            color: #fbbf24;
+        }
+        .login-box .subtitle {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 28px;
+        }
+
+        .login-box input {
+            width: 100%;
+            padding: 12px 16px;
+            background: #1a1a1a;
+            border: 1px solid #2a2a2a;
+            border-radius: 10px;
+            color: #e8e8e8;
+            font-size: 15px;
+            outline: none;
+            transition: border-color 0.2s;
+            margin-bottom: 12px;
+        }
+
+        .login-box input:focus {
+            border-color: #fbbf24;
+        }
+
+        .login-box .btn-login {
+            width: 100%;
+            padding: 12px;
+            background: #fbbf24;
+            color: #000;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-top: 4px;
+        }
+
+        .login-box .btn-login:hover {
+            background: #f59e0b;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 20px rgba(251, 191, 36, 0.25);
+        }
+        .login-box .btn-login:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .login-box .error {
+            color: #ef4444;
+            font-size: 13px;
+            margin-top: 10px;
+            min-height: 20px;
+        }
+
+        /* ===== ADMIN LAYOUT ===== */
+        #adminContainer {
+            display: none;
+            height: 100vh;
+        }
+        #adminContainer.visible {
+            display: flex;
+        }
+        #loginContainer.hidden {
+            display: none;
+        }
+
+        /* ===== SIDEBAR ===== */
+        .sidebar {
+            width: 260px;
+            min-width: 260px;
+            background: #111111;
+            border-right: 1px solid #222;
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+            overflow-y: auto;
+        }
+
+        .logo-block {
+            padding: 24px 24px 20px;
+            border-bottom: 1px solid #222;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #fbbf24, #f59e0b);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            font-weight: 800;
+            color: #000;
+        }
+
+        .logo-text {
+            font-size: 22px;
+            font-weight: 800;
+            color: #fff;
+            letter-spacing: -0.5px;
+        }
+        .logo-text span {
+            color: #fbbf24;
+        }
+        .logo-sub {
+            font-size: 10px;
+            color: #666;
+            font-weight: 400;
+            margin-top: -2px;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        .sidebar-nav {
+            padding: 16px 12px;
+            flex: 1;
+        }
+        .nav-section {
+            font-size: 10px;
+            text-transform: uppercase;
+            color: #555;
+            padding: 20px 16px 8px;
+            letter-spacing: 1.2px;
+            font-weight: 600;
+        }
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #999;
+            font-size: 14px;
+            margin-bottom: 2px;
+        }
+        .nav-item:hover {
+            background: #1c1c1c;
+            color: #fff;
+        }
+        .nav-item.active {
+            background: #1c1c1c;
+            color: #fbbf24;
+        }
+        .nav-item .icon {
+            font-size: 18px;
+            width: 24px;
+            text-align: center;
+            flex-shrink: 0;
+        }
+        .nav-item .badge {
+            margin-left: auto;
+            background: #fbbf24;
+            color: #000;
+            font-size: 10px;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-weight: 700;
+        }
+        .nav-item .badge.green {
+            background: #22c55e;
+            color: #fff;
+        }
+
+        .sidebar-footer {
+            padding: 16px 24px;
+            border-top: 1px solid #222;
+            font-size: 13px;
+            color: #666;
+        }
+        .sidebar-footer .admin-name {
+            color: #e8e8e8;
+            font-weight: 500;
+        }
+        .sidebar-footer .admin-name i {
+            color: #fbbf24;
+            margin-right: 6px;
+        }
+        .sidebar-footer .admin-email {
+            color: #888;
+            font-size: 12px;
+            margin-top: 2px;
+        }
+        .sidebar-footer .logout-btn {
+            margin-top: 10px;
+            color: #888;
+            font-size: 13px;
+            cursor: pointer;
+            transition: color 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .sidebar-footer .logout-btn:hover {
+            color: #ef4444;
+        }
+
+        /* ===== MAIN CONTENT ===== */
+        .main-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 28px 36px 36px;
+            background: #0e0e0e;
+        }
+
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 28px;
+            padding-bottom: 18px;
+            border-bottom: 1px solid #1c1c1c;
+        }
+        .page-header h1 {
+            font-size: 26px;
+            font-weight: 800;
+            color: #fff;
+            letter-spacing: -0.3px;
+        }
+        .page-header h1 i {
+            color: #fbbf24;
+            margin-right: 12px;
+        }
+        .page-header .subtitle {
+            font-size: 14px;
+            color: #777;
+            font-weight: 400;
+            margin-top: 2px;
+        }
+        .page-header .header-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        /* ===== BUTTONS ===== */
+        .btn {
+            padding: 8px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.25s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn-primary {
+            background: #fbbf24;
+            color: #000;
+        }
+        .btn-primary:hover {
+            background: #f59e0b;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 16px rgba(251, 191, 36, 0.3);
+        }
+        .btn-success {
+            background: #22c55e;
+            color: #fff;
+        }
+        .btn-success:hover {
+            background: #16a34a;
+            transform: translateY(-1px);
+        }
+        .btn-danger {
+            background: #ef4444;
+            color: #fff;
+        }
+        .btn-danger:hover {
+            background: #dc2626;
+            transform: translateY(-1px);
+        }
+        .btn-outline {
+            background: transparent;
+            color: #999;
+            border: 1px solid #333;
+        }
+        .btn-outline:hover {
+            background: #1c1c1c;
+            color: #fff;
+            border-color: #555;
+        }
+        .btn-warning {
+            background: #f59e0b;
+            color: #000;
+        }
+        .btn-warning:hover {
+            background: #d97706;
+            transform: translateY(-1px);
+        }
+        .btn-secondary {
+            background: #3b82f6;
+            color: #fff;
+        }
+        .btn-secondary:hover {
+            background: #2563eb;
+            transform: translateY(-1px);
+        }
+        .btn-sm {
+            padding: 5px 14px;
+            font-size: 12px;
+        }
+        .btn-xs {
+            padding: 3px 10px;
+            font-size: 11px;
+            border-radius: 6px;
+        }
+
+        /* ===== STAT CARDS ===== */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 28px;
+        }
+        .stat-card {
+            background: #141414;
+            border: 1px solid #222;
+            border-radius: 12px;
+            padding: 18px 22px;
+            transition: all 0.2s;
+        }
+        .stat-card:hover {
+            border-color: #fbbf24;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+        }
+        .stat-card .stat-label {
+            font-size: 11px;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+        }
+        .stat-card .stat-label i {
+            margin-right: 6px;
+            color: #fbbf24;
+        }
+        .stat-card .stat-value {
+            font-size: 30px;
+            font-weight: 800;
+            color: #fff;
+            margin-top: 4px;
+        }
+        .stat-card .stat-value .currency {
+            font-size: 18px;
+            color: #888;
+            font-weight: 400;
+            margin-left: 4px;
+        }
+        .stat-card .stat-change {
+            font-size: 12px;
+            margin-top: 6px;
+        }
+        .stat-change.positive {
+            color: #22c55e;
+        }
+        .stat-change.negative {
+            color: #ef4444;
+        }
+
+        /* ===== PANELS ===== */
+        .panel {
+            background: #121212;
+            border: 1px solid #222;
+            border-radius: 12px;
+            padding: 20px 24px;
+            margin-bottom: 24px;
+        }
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+        .panel-header h3 {
+            font-size: 15px;
+            font-weight: 600;
+            color: #e8e8e8;
+        }
+        .panel-header h3 i {
+            margin-right: 8px;
+            color: #fbbf24;
+        }
+        .panel-header .panel-action {
+            color: #fbbf24;
+            font-size: 13px;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+        .panel-header .panel-action:hover {
+            color: #f59e0b;
+        }
+
+        /* ===== TABS ===== */
+        .tabs {
+            display: flex;
+            gap: 2px;
+            margin-bottom: 20px;
+            background: #141414;
+            border-radius: 10px;
+            padding: 4px;
+            border: 1px solid #222;
+        }
+        .tab {
+            padding: 8px 20px;
+            border: none;
+            background: transparent;
+            color: #888;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        .tab:hover {
+            color: #fff;
+            background: #1c1c1c;
+        }
+        .tab.active {
+            background: #fbbf24;
+            color: #000;
+        }
+        .tab i {
+            margin-right: 6px;
+        }
+
+        /* ===== TABLE ===== */
+        .table-wrap {
+            overflow-x: auto;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+        table th {
+            text-align: left;
+            padding: 12px 14px;
+            color: #888;
+            font-weight: 600;
+            border-bottom: 1px solid #222;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        table th i {
+            margin-right: 6px;
+            color: #fbbf24;
+        }
+        table td {
+            padding: 12px 14px;
+            border-bottom: 1px solid #1a1a1a;
+        }
+        table tr:hover td {
+            background: #161616;
+        }
+
+        /* ===== STATUS BADGE ===== */
+        .status-badge {
+            display: inline-block;
+            padding: 3px 14px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .status-badge.active {
+            background: #22c55e22;
+            color: #22c55e;
+        }
+        .status-badge.inactive {
+            background: #44444433;
+            color: #888;
+        }
+        .status-badge.pending {
+            background: #fbbf2422;
+            color: #fbbf24;
+        }
+        .status-badge.approved {
+            background: #22c55e22;
+            color: #22c55e;
+        }
+        .status-badge.completed {
+            background: #3b82f622;
+            color: #3b82f6;
+        }
+        .status-badge.rejected {
+            background: #ef444422;
+            color: #ef4444;
+        }
+        .status-badge.hot {
+            background: #fbbf2422;
+            color: #fbbf24;
+        }
+        .status-badge.premium {
+            background: #fbbf2433;
+            color: #fbbf24;
+        }
+
+        /* ===== ACTIONS ===== */
+        .actions {
+            display: flex;
+            gap: 6px;
+        }
+        .actions .btn {
+            padding: 8px 10px;
+            font-size: 17px;
+            width: 38px;
+            height: 38px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 10px;
+        }
+
+        /* ===== FILTERS ===== */
+        .filters {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 16px;
+        }
+        .filters select,
+        .filters input {
+            padding: 8px 14px;
+            background: #161616;
+            border: 1px solid #2a2a2a;
+            border-radius: 8px;
+            color: #e8e8e8;
+            font-size: 13px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        .filters select:focus,
+        .filters input:focus {
+            border-color: #fbbf24;
+        }
+        .filters select option {
+            background: #161616;
+        }
+        .filters input::placeholder {
+            color: #555;
+        }
+
+        /* ===== PRODUCT CARDS ===== */
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 16px;
+        }
+        .product-card {
+            background: rgba(15, 15, 15, 0.7);
+            backdrop-filter: blur(8px);
+            border-radius: 20px;
+            padding: 16px;
+            text-align: center;
+            border: 1px solid rgba(251, 191, 36, 0.15);
+            transition: all 0.2s;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            min-height: 240px;
+        }
+        .product-card:hover {
+            transform: translateY(-3px);
+            border-color: rgba(251, 191, 36, 0.4);
+            background: rgba(25, 25, 35, 0.9);
+        }
+        .product-card.hot {
+            border: 1px solid #fbbf24;
+            box-shadow: 0 0 16px rgba(251, 191, 36, 0.08);
+        }
+        .product-card.premium-card {
+            border-color: rgba(251, 191, 36, 0.3);
+            background: linear-gradient(135deg, rgba(251, 191, 36, 0.06), rgba(251, 191, 36, 0.01));
+        }
+        .product-card .product-badge {
+            display: inline-block;
+            background: #fbbf24;
+            color: #000;
+            font-size: 10px;
+            font-weight: 700;
+            padding: 2px 12px;
+            border-radius: 20px;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+        .product-card .product-icon {
+            font-size: 32px;
+            margin-bottom: 8px;
+            color: #fbbf24;
+        }
+        .product-card .product-title {
+            font-size: 15px;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 4px;
+        }
+        .product-card .product-desc {
+            font-size: 12px;
+            color: #aaa;
+            margin-bottom: 8px;
+            line-height: 1.3;
+            min-height: 32px;
+        }
+        .product-card .product-price {
+            font-size: 18px;
+            font-weight: 800;
+            color: #fbbf24;
+            margin-bottom: 10px;
+        }
+        .product-card .product-price .saving {
+            font-size: 11px;
+            color: #22c55e;
+            font-weight: 600;
+        }
+        .product-card .product-actions {
+            display: flex;
+            gap: 6px;
+            justify-content: center;
+            margin-top: 6px;
+        }
+        .product-card .product-actions .btn {
+            flex: 1;
+            justify-content: center;
+            padding: 6px 12px;
+            font-size: 11px;
+        }
+        .product-card .product-status {
+            margin-bottom: 8px;
+        }
+
+        /* ===== REQUEST CARDS ===== */
+        .request-card {
+            background: #141414;
+            border: 1px solid #222;
+            border-radius: 12px;
+            padding: 16px 20px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+            transition: all 0.2s;
+        }
+        .request-card:hover {
+            border-color: #333;
+        }
+        .request-card .request-info {
+            flex: 1;
+        }
+        .request-card .request-info .name {
+            font-weight: 600;
+            font-size: 15px;
+            color: #fff;
+        }
+        .request-card .request-info .name i {
+            margin-right: 8px;
+            color: #fbbf24;
+        }
+        .request-card .request-info .desc {
+            color: #888;
+            font-size: 13px;
+            margin-top: 2px;
+        }
+        .request-card .request-info .meta {
+            color: #666;
+            font-size: 12px;
+            margin-top: 4px;
+        }
+        .request-card .request-actions {
+            display: flex;
+            gap: 6px;
+        }
+
+        /* ===== CHART ===== */
+        .chart-container {
+            position: relative;
+            height: 220px;
+        }
+        .chart-container canvas {
+            width: 100% !important;
+            height: 100% !important;
+        }
+
+        /* ===== SECTION CONTENT ===== */
+        .section-content {
+            display: none;
+        }
+        .section-content.active {
+            display: block;
+        }
+
+        /* ===== FIGHTERS POINTS CONTROL ===== */
+        .points-control {
+            display: flex;
+            gap: 4px;
+            flex-wrap: wrap;
+        }
+        .points-control button {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 2px 8px;
+            border-radius: 16px;
+            cursor: pointer;
+            font-size: 0.65rem;
+            min-height: 28px;
+        }
+        .points-control button.danger {
+            background: #dc2626;
+        }
+        .banned-badge {
+            background: #dc2626;
+            padding: 2px 8px;
+            border-radius: 16px;
+            font-size: 0.6rem;
+            margin-left: 4px;
+        }
+
+        /* ===== ADMIN FORM ===== */
+        .admin-form {
+            background: rgba(15, 15, 15, 0.7);
+            backdrop-filter: blur(8px);
+            border-radius: 20px;
+            padding: 16px;
+            margin-bottom: 1.5rem;
+            border: 1px solid rgba(251, 191, 36, 0.2);
+        }
+        .admin-form h3 {
+            margin-bottom: 14px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #fbbf24;
+            font-size: 1rem;
+        }
+        .form-row {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-bottom: 12px;
+        }
+        .form-group {
+            flex: 1;
+            min-width: 150px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 4px;
+            color: #aaa;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 8px 12px;
+            background: #1a1a1a;
+            border: 1px solid rgba(251, 191, 36, 0.25);
+            color: #fff;
+            border-radius: 40px;
+            font-size: 0.8rem;
+            min-height: 40px;
+        }
+        .form-group textarea {
+            border-radius: 16px;
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 992px) {
+            .sidebar {
+                width: 70px;
+                min-width: 70px;
+            }
+            .sidebar .logo-text,
+            .sidebar .logo-sub,
+            .sidebar .nav-item span:not(.icon),
+            .sidebar .nav-section,
+            .sidebar .sidebar-footer .admin-name,
+            .sidebar .sidebar-footer .admin-email {
+                display: none;
+            }
+            .sidebar .logo-block {
+                padding: 16px 10px;
+                justify-content: center;
+            }
+            .sidebar .logo-icon {
+                width: 36px;
+                height: 36px;
+                font-size: 16px;
+            }
+            .sidebar .nav-item {
+                padding: 12px;
+                justify-content: center;
+            }
+            .sidebar .nav-item .icon {
+                font-size: 20px;
+                width: auto;
+            }
+            .sidebar .nav-item .badge {
+                display: none;
+            }
+            .sidebar .sidebar-footer {
+                padding: 12px 10px;
+                text-align: center;
+            }
+            .sidebar-footer .logout-btn {
+                justify-content: center;
+                font-size: 16px !important;
+                padding: 6px 0;
+            }
+            .sidebar-footer .logout-btn span {
+                display: none;
+            }
+            .main-content {
+                padding: 16px 20px;
+            }
+            .stats-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+            .chart-container {
+                height: 160px;
+            }
+            .products-grid {
+                grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+                gap: 12px;
+            }
+            .product-card {
+                min-height: 200px;
+                padding: 14px;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .stats-grid {
+                grid-template-columns: 1fr 1fr;
+                gap: 10px;
+            }
+            .stat-card {
+                padding: 12px 14px;
+            }
+            .stat-card .stat-value {
+                font-size: 20px;
+            }
+            .stat-card .stat-label {
+                font-size: 9px;
+            }
+            .stat-card .stat-change {
+                font-size: 9px;
+            }
+            .page-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 12px;
+            }
+            .page-header .header-actions {
+                width: 100%;
+            }
+            .page-header .header-actions .btn {
+                flex: 1;
+                justify-content: center;
+                font-size: 11px;
+                padding: 6px 12px;
+            }
+            .page-header h1 {
+                font-size: 20px;
+            }
+            .tabs {
+                flex-wrap: wrap;
+            }
+            .tab {
+                font-size: 12px;
+                padding: 6px 14px;
+            }
+            .request-card {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .request-card .request-actions {
+                justify-content: flex-end;
+            }
+            .filters {
+                flex-direction: column;
+            }
+            .filters select,
+            .filters input {
+                width: 100%;
+            }
+            .chart-container {
+                height: 140px;
+            }
+            .table-wrap table {
+                font-size: 11px;
+            }
+            .table-wrap table th,
+            .table-wrap table td {
+                padding: 6px 8px;
+            }
+            .actions .btn {
+                padding: 6px 8px !important;
+                font-size: 15px !important;
+                width: 32px !important;
+                height: 32px !important;
+                border-radius: 8px !important;
+            }
+            .products-grid {
+                grid-template-columns: 1fr 1fr;
+                gap: 8px;
+            }
+            .product-card {
+                min-height: 160px;
+                padding: 10px;
+                border-radius: 16px;
+            }
+            .product-card .product-icon {
+                font-size: 20px;
+                margin-bottom: 4px;
+            }
+            .product-card .product-title {
+                font-size: 11px;
+            }
+            .product-card .product-desc {
+                font-size: 9px;
+                min-height: 20px;
+                margin-bottom: 4px;
+            }
+            .product-card .product-price {
+                font-size: 13px;
+                margin-bottom: 6px;
+            }
+            .product-card .product-badge {
+                font-size: 8px;
+                padding: 1px 8px;
+                margin-bottom: 4px;
+            }
+            .product-card .product-actions .btn {
+                font-size: 9px;
+                padding: 3px 6px;
+            }
+            .product-card .product-status .status-badge {
+                font-size: 9px;
+                padding: 2px 8px;
+            }
+            .sidebar-footer .logout-btn {
+                font-size: 18px !important;
+            }
+            .points-control button {
+                font-size: 0.55rem;
+                min-height: 24px;
+                padding: 2px 6px;
+            }
+        }
+
+        @media (max-width: 400px) {
+            .products-grid {
+                grid-template-columns: 1fr 1fr;
+                gap: 6px;
+            }
+            .product-card {
+                min-height: 140px;
+                padding: 8px;
+            }
+            .product-card .product-icon {
+                font-size: 16px;
+            }
+            .product-card .product-title {
+                font-size: 10px;
+            }
+            .product-card .product-price {
+                font-size: 11px;
+            }
+        }
+
+        /* ===== MISC ===== */
+        .gold-top {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(90deg, #fbbf24, #ffdd88, #fbbf24, #b8860b);
+            z-index: 1001;
+        }
+        .loading-spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(251, 191, 36, 0.3);
+            border-top-color: #fbbf24;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+        .text-muted {
+            color: #666;
+        }
+        .text-gold {
+            color: #fbbf24;
+        }
+        .mt-8 {
+            margin-top: 8px;
+        }
+        .flex-center {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .gap-4 {
+            gap: 4px;
+        }
+        .copy-btn {
+            background: rgba(255, 255, 255, 0.06);
+            border: none;
+            color: #fbbf24;
+            padding: 2px 10px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 0.6rem;
+        }
+        .copy-btn:hover {
+            background: rgba(251, 191, 36, 0.15);
+        }
+        .commission-total {
+            font-size: 1rem;
+            font-weight: 800;
+            color: #fbbf24;
+        }
+        .request-item,
+        .withdrawal-item,
+        .commission-item {
+            padding: 10px 12px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+            font-size: 0.8rem;
+        }
+        .price-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 12px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .price-item .product-name {
+            font-weight: 600;
+            min-width: 120px;
+        }
+        .price-item input {
+            width: 100px;
+            padding: 6px 10px;
+            background: #1a1a1a;
+            border: 1px solid rgba(251, 191, 36, 0.25);
+            color: #fff;
+            border-radius: 40px;
+            font-size: 0.8rem;
+            text-align: center;
+        }
+        .price-item .price-current {
+            color: #fbbf24;
+            font-weight: 700;
+            min-width: 60px;
+        }
+        .history-item {
+            padding: 10px 12px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+            font-size: 0.8rem;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="gold-top"></div>
+
+    <!-- ===== LOGIN ===== -->
+    <div id="loginContainer">
+        <div class="login-box">
+            <div class="logo">PRO<span>RANK</span></div>
+            <div class="subtitle">Вход в панель управления</div>
+            <input type="email" id="loginEmail" placeholder="Email" value="admin@prorank.ru">
+            <input type="password" id="loginPassword" placeholder="Пароль" value="admin123">
+            <button class="btn-login" id="loginBtn"><i class="fas fa-sign-in-alt"></i> Войти</button>
+            <div class="error" id="loginError"></div>
+        </div>
+    </div>
+
+    <!-- ===== ADMIN PANEL ===== -->
+    <div id="adminContainer">
+
+        <!-- ===== SIDEBAR ===== -->
+        <aside class="sidebar">
+            <div class="logo-block">
+                <div class="logo-icon">PR</div>
+                <div>
+                    <div class="logo-text">PRO<span>RANK</span></div>
+                    <div class="logo-sub">Admin Panel</div>
+                </div>
+            </div>
+
+            <nav class="sidebar-nav">
+                <div class="nav-section">Обзор</div>
+                <div class="nav-item active" data-section="dashboard">
+                    <span class="icon"><i class="fas fa-chart-pie"></i></span>
+                    <span>Дашборд</span>
+                </div>
+
+                <div class="nav-section">Пользователи</div>
+                <div class="nav-item" data-section="fighters">
+                    <span class="icon"><i class="fas fa-users"></i></span>
+                    <span>Бойцы</span>
+                </div>
+
+                <div class="nav-section">Управление</div>
+                <div class="nav-item" data-section="partners">
+                    <span class="icon"><i class="fas fa-store"></i></span>
+                    <span>Магазины</span>
+                    <span class="badge green" id="partnersBadge">0</span>
+                </div>
+
+                <div class="nav-section">Финансы</div>
+                <div class="nav-item" data-section="withdrawals">
+                    <span class="icon"><i class="fas fa-money-bill-wave"></i></span>
+                    <span>Выводы</span>
+                    <span class="badge" id="withdrawalsBadge">0</span>
+                </div>
+                <div class="nav-item" data-section="commissions">
+                    <span class="icon"><i class="fas fa-percent"></i></span>
+                    <span>Комиссии</span>
+                </div>
+
+                <div class="nav-section">Товары</div>
+                <div class="nav-item" data-section="digital_products">
+                    <span class="icon"><i class="fas fa-cube"></i></span>
+                    <span>Цифровые товары</span>
+                </div>
+                <div class="nav-item" data-section="prices">
+                    <span class="icon"><i class="fas fa-tags"></i></span>
+                    <span>Цены</span>
+                </div>
+
+                <div class="nav-section">Управление</div>
+                <div class="nav-item" data-section="history">
+                    <span class="icon"><i class="fas fa-history"></i></span>
+                    <span>История</span>
+                </div>
+                <div class="nav-item" data-section="broadcast">
+                    <span class="icon"><i class="fas fa-bullhorn"></i></span>
+                    <span>Рассылка</span>
+                </div>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="admin-name"><i class="fas fa-user-cog"></i><span id="adminName">Администратор</span></div>
+                <div class="admin-email" id="adminEmail">admin@prorank.ru</div>
+                <div class="logout-btn" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> <span>Выход</span></div>
+            </div>
+        </aside>
+
+        <!-- ===== MAIN CONTENT ===== -->
+        <main class="main-content">
+
+            <!-- ===== DASHBOARD ===== -->
+            <div class="section-content active" id="section-dashboard">
+                <div class="page-header">
+                    <div>
+                        <h1><i class="fas fa-chart-pie"></i>Дашборд</h1>
+                        <div class="subtitle">Общая аналитика платформы</div>
+                    </div>
+                    <div class="header-actions">
+                        <button class="btn btn-primary btn-sm" id="refreshBtn"><i class="fas fa-sync"></i> Обновить</button>
+                    </div>
+                </div>
+
+                <div class="stats-grid" id="statsGrid">
+                    <div class="stat-card">
+                        <div class="stat-label"><i class="fas fa-hand-holding-usd"></i>Комиссия платформы</div>
+                        <div class="stat-value" id="statCommission">—</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label"><i class="fas fa-user-friends"></i>Бойцы</div>
+                        <div class="stat-value" id="statFighters">—</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label"><i class="fas fa-store-alt"></i>Магазины</div>
+                        <div class="stat-value" id="statPartners">—</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label"><i class="fas fa-money-bill-wave"></i>Выводов (ожидают)</div>
+                        <div class="stat-value" id="statPendingWithdrawals">—</div>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <div class="panel-header">
+                        <h3><i class="fas fa-chart-line"></i>Доход платформы за 30 дней</h3>
+                        <span style="color:#666; font-size:13px;">Комиссия 10% от всех продаж</span>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="dashboardChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <div class="panel-header">
+                        <h3><i class="fas fa-clock"></i>Новые заявки на партнёрство</h3>
+                        <span class="panel-action" onclick="switchSection('partners')">Перейти в магазины <i class="fas fa-arrow-right"></i></span>
+                    </div>
+                    <div id="pendingRequestsList">
+                        <div style="text-align:center; padding:20px; color:#666;"><div class="loading-spinner"></div> Загрузка...</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ===== FIGHTERS ===== -->
+            <div class="section-content" id="section-fighters">
+                <div class="page-header">
+                    <div>
+                        <h1><i class="fas fa-users"></i>Бойцы</h1>
+                        <div class="subtitle">Управление пользователями платформы</div>
+                    </div>
+                    <div class="header-actions">
+                        <button class="btn btn-outline btn-sm"><i class="fas fa-file-export"></i> Экспорт CSV</button>
+                        <button class="btn btn-warning btn-sm" id="recalculateFRSBtn"><i class="fas fa-calculator"></i> Пересчитать FRS</button>
+                    </div>
+                </div>
+
+                <div class="filters">
+                    <select id="filterCity"><option value="">Все города</option></select>
+                    <select id="filterLeague"><option value="">Все лиги</option></select>
+                    <select id="filterPremium"><option value="">Все статусы премиума</option><option value="true">Премиум</option><option value="false">Обычный</option></select>
+                    <input type="text" id="fighterSearch" placeholder="🔍 Поиск по имени или email...">
+                </div>
+
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th><i class="fas fa-user"></i> Имя</th>
+                                <th><i class="fas fa-envelope"></i> Email</th>
+                                <th><i class="fas fa-star"></i> FRS</th>
+                                <th><i class="fas fa-trophy"></i> Победы</th>
+                                <th><i class="fas fa-times"></i> Поражения</th>
+                                <th><i class="fas fa-circle"></i> Статус</th>
+                                <th style="text-align:center;"><i class="fas fa-tools"></i></th>
+                            </tr>
+                        </thead>
+                        <tbody id="fightersTableBody">
+                            <tr><td colspan="7" style="text-align:center; color:#666; padding:30px;"><div class="loading-spinner"></div> Загрузка...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- ===== PARTNERS (с заявками внутри) ===== -->
+            <div class="section-content" id="section-partners">
+                <div class="page-header">
+                    <div>
+                        <h1><i class="fas fa-store"></i>Магазины</h1>
+                        <div class="subtitle">Управление магазинами и заявками на партнёрство</div>
+                    </div>
+                    <div class="header-actions">
+                        <button class="btn btn-outline btn-sm"><i class="fas fa-file-export"></i> Экспорт</button>
+                    </div>
+                </div>
+
+                <!-- Вкладки: Активные / Заявки -->
+                <div class="tabs">
+                    <button class="tab active" data-partner-tab="approved"><i class="fas fa-check-circle"></i> Активные (<span id="approvedCount">0</span>)</button>
+                    <button class="tab" data-partner-tab="pending"><i class="fas fa-clock"></i> Заявки (<span id="pendingCount">0</span>)</button>
+                </div>
+
+                <!-- Активные магазины -->
+                <div id="partner-approved">
+                    <div class="admin-form">
+                        <h3><i class="fas fa-store"></i> Активные магазины</h3>
+                        <div id="partnersList">
+                            <div style="text-align:center; padding:20px; color:#666;"><div class="loading-spinner"></div> Загрузка...</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Заявки на партнёрство -->
+                <div id="partner-pending" style="display:none;">
+                    <div class="admin-form">
+                        <h3><i class="fas fa-envelope"></i> Заявки на партнёрство</h3>
+                        <div id="requestsList">
+                            <div style="text-align:center; padding:20px; color:#666;"><div class="loading-spinner"></div> Загрузка...</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ===== WITHDRAWALS ===== -->
+            <div class="section-content" id="section-withdrawals">
+                <div class="page-header">
+                    <div>
+                        <h1><i class="fas fa-money-bill-wave"></i>Выводы средств</h1>
+                        <div class="subtitle">Заявки на вывод от продавцов</div>
+                    </div>
+                </div>
+
+                <div class="admin-form">
+                    <h3><i class="fas fa-money-bill-wave"></i> Заявки на вывод</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Фильтр по статусу</label>
+                            <select id="withdrawalStatusFilter">
+                                <option value="all">Все</option>
+                                <option value="pending">⏳ Ожидают</option>
+                                <option value="processing">🔄 В обработке</option>
+                                <option value="completed">✅ Выполнены</option>
+                                <option value="rejected">❌ Отклонены</option>
+                            </select>
+                        </div>
+                        <div class="form-group"><button id="refreshWithdrawalsBtn" class="btn btn-secondary"><i class="fas fa-sync-alt"></i> Обновить</button></div>
+                    </div>
+                    <div id="withdrawalsList">
+                        <div style="text-align:center; padding:20px; color:#666;"><div class="loading-spinner"></div> Загрузка...</div>
+                    </div>
+                </div>
+
+                <div class="admin-form">
+                    <h3><i class="fas fa-chart-line"></i> Статистика выводов</h3>
+                    <div class="stats-grid" style="grid-template-columns: repeat(3, 1fr); margin-bottom: 0;">
+                        <div class="stat-card"><div class="stat-value" id="totalPendingAmount" style="font-size:20px;">0 ₽</div><div class="stat-label">Ожидают вывода</div></div>
+                        <div class="stat-card"><div class="stat-value" id="totalCompletedAmount" style="font-size:20px;">0 ₽</div><div class="stat-label">Выведено всего</div></div>
+                        <div class="stat-card"><div class="stat-value" id="totalRejectedAmount" style="font-size:20px;">0 ₽</div><div class="stat-label">Отклонено</div></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ===== COMMISSIONS ===== -->
+            <div class="section-content" id="section-commissions">
+                <div class="page-header">
+                    <div>
+                        <h1><i class="fas fa-percent"></i>Комиссии</h1>
+                        <div class="subtitle">Управление комиссией платформы</div>
+                    </div>
+                </div>
+
+                <div class="admin-form">
+                    <h3><i class="fas fa-percent"></i> Настройка комиссии</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Процент комиссии</label>
+                            <input type="number" id="commissionPercent" value="10" min="0" max="100" step="0.5">
+                        </div>
+                        <div class="form-group" style="display:flex; align-items:flex-end;">
+                            <button id="saveCommissionBtn" class="btn btn-success"><i class="fas fa-save"></i> Сохранить</button>
+                        </div>
+                    </div>
+                    <div id="commissionMessage" style="margin-top:12px;"></div>
+                </div>
+
+                <div class="admin-form">
+                    <h3><i class="fas fa-chart-bar"></i> Статистика комиссий</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Период</label>
+                            <select id="commissionPeriod">
+                                <option value="month">Этот месяц</option>
+                                <option value="prev_month">Прошлый месяц</option>
+                                <option value="all">Всё время</option>
+                            </select>
+                        </div>
+                        <div class="form-group"><button id="refreshCommissionsBtn" class="btn btn-secondary"><i class="fas fa-sync-alt"></i> Обновить</button></div>
+                    </div>
+                    <div id="commissionsList">
+                        <div style="text-align:center; padding:20px; color:#666;"><div class="loading-spinner"></div> Загрузка...</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ===== DIGITAL PRODUCTS ===== -->
+            <div class="section-content" id="section-digital_products">
+                <div class="page-header">
+                    <div>
+                        <h1><i class="fas fa-cube"></i>Цифровые товары</h1>
+                        <div class="subtitle">Ваши внутренние продукты (вызовы, премиум, бейджи)</div>
+                    </div>
+                    <div class="header-actions">
+                        <button class="btn btn-primary btn-sm" id="addDigitalProductBtn"><i class="fas fa-plus"></i> Добавить товар</button>
+                    </div>
+                </div>
+
+                <div class="filters">
+                    <select id="productCategoryFilter"><option value="">Все категории</option><option>Вызовы</option><option>Премиум</option><option>Наборы</option><option>Бейджи</option></select>
+                    <select id="productStatusFilter"><option value="">Все статусы</option><option value="active">Активен</option><option value="inactive">Скрыт</option></select>
+                    <input type="text" id="productSearch" placeholder="🔍 Поиск по названию...">
+                </div>
+
+                <div class="products-grid" id="productsGrid">
+                    <div style="grid-column:1/-1; text-align:center; padding:30px; color:#666;"><div class="loading-spinner"></div> Загрузка...</div>
+                </div>
+            </div>
+
+            <!-- ===== PRICES ===== -->
+            <div class="section-content" id="section-prices">
+                <div class="page-header">
+                    <div>
+                        <h1><i class="fas fa-tags"></i>Цены</h1>
+                        <div class="subtitle">Управление ценами на цифровые товары</div>
+                    </div>
+                </div>
+
+                <div class="admin-form">
+                    <h3><i class="fas fa-tags"></i> Цены на товары</h3>
+                    <div id="priceList">
+                        <div style="text-align:center; padding:20px; color:#666;"><div class="loading-spinner"></div> Загрузка...</div>
+                    </div>
+                    <div style="margin-top:16px; display:flex; gap:10px; flex-wrap:wrap;">
+                        <button id="savePricesBtn" class="btn btn-success"><i class="fas fa-save"></i> Сохранить цены</button>
+                        <button id="resetPricesBtn" class="btn btn-danger"><i class="fas fa-undo"></i> Сбросить к стандартным</button>
+                    </div>
+                    <div id="priceMessage" style="margin-top:12px;"></div>
+                </div>
+            </div>
+
+            <!-- ===== HISTORY ===== -->
+            <div class="section-content" id="section-history">
+                <div class="page-header">
+                    <div>
+                        <h1><i class="fas fa-history"></i>История действий</h1>
+                        <div class="subtitle">Лог действий администраторов</div>
+                    </div>
+                    <div class="header-actions">
+                        <button class="btn btn-danger btn-sm" id="clearHistoryBtn"><i class="fas fa-trash"></i> Очистить историю</button>
+                    </div>
+                </div>
+
+                <div class="admin-form">
+                    <div class="form-row">
+                        <div class="form-group"><label>Фильтр по админу</label><input type="text" id="historyAdminFilter" placeholder="Email"></div>
+                        <div class="form-group"><button id="refreshHistoryBtn" class="btn btn-secondary"><i class="fas fa-sync-alt"></i> Обновить</button></div>
+                    </div>
+                    <div id="historyList">
+                        <div style="text-align:center; padding:20px; color:#666;"><div class="loading-spinner"></div> Загрузка...</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ===== BROADCAST ===== -->
+            <div class="section-content" id="section-broadcast">
+                <div class="page-header">
+                    <div>
+                        <h1><i class="fas fa-bullhorn"></i>Рассылка</h1>
+                        <div class="subtitle">Массовая рассылка бойцам</div>
+                    </div>
+                </div>
+
+                <div class="admin-form">
+                    <h3><i class="fas fa-bullhorn"></i> Массовая рассылка</h3>
+                    <div class="form-row">
+                        <div class="form-group"><label>Кому</label><select id="broadcastTarget"><option value="all">Всем бойцам</option><option value="premium">Только премиум</option><option value="telegram">Только с Telegram ID</option></select></div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group"><label>Тема</label><input type="text" id="broadcastSubject" placeholder="Тема сообщения"></div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group"><label>Сообщение</label><textarea id="broadcastMessage" rows="4" placeholder="Текст сообщения..."></textarea></div>
+                    </div>
+                    <button id="sendBroadcastBtn" class="btn btn-primary"><i class="fas fa-paper-plane"></i> Отправить</button>
+                    <div id="broadcastResult" style="margin-top:12px;"></div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- ===== FIREBASE ===== -->
+    <script type="importmap">
+        {
+            "imports": {
+                "firebase/app": "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js",
+                "firebase/firestore": "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js",
+                "firebase/auth": "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js",
+                "firebase/storage": "https://www.gstatic.com/firebasejs/11.0.2/firebase-storage.js"
+            }
+        }
+    </script>
+
+    <script type="module">
+        // ============================================================
+        // ИМПОРТЫ
+        // ============================================================
+        import { initializeApp } from "firebase/app";
+        import {
+            getFirestore,
+            collection,
+            getDocs,
+            doc,
+            updateDoc,
+            query,
+            orderBy,
+            deleteDoc,
+            addDoc,
+            getDoc,
+            where,
+            setDoc,
+            serverTimestamp,
+            limit
+        } from "firebase/firestore";
+        import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "firebase/auth";
+        import { getStorage, ref, deleteObject } from "firebase/storage";
+
+        // ============================================================
+        // FIREBASE CONFIG
+        // ============================================================
+        const firebaseConfig = {
+            apiKey: "AIzaSyDUGYJY7pX7q02MS5SACMIIQXpjpQ97mPw",
+            authDomain: "proranklive.firebaseapp.com",
+            projectId: "proranklive",
+            storageBucket: "proranklive.firebasestorage.app",
+            messagingSenderId: "716836144015",
+            appId: "1:716836144015:web:f1575147750608d0f881fa"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+        const storage = getStorage(app);
+        const BOT_TOKEN = '8527160088:AAGc2311QFkp6F7-Jx5k8MJfqlpvbueSl5E';
+
+        // ============================================================
+        // СОСТОЯНИЕ
+        // ============================================================
+        let allFighters = [];
+        let allPartners = [];
+        let allWithdrawals = [];
+        let allRequests = [];
+        let allDigitalProducts = [];
+        let allOrders = [];
+        let currentAdminEmail = null;
+        let priceData = {};
+        let commissionPercent = 10;
+
+        const DEFAULT_PRICES = {
+            challenge_5: 500,
+            challenge_10: 900,
+            challenge_25: 2000,
+            premium_month: 200,
+            premium_3months: 500,
+            premium_6months: 850,
+            premium_year: 1500,
+            fighter_pack: 1400,
+            champion_pack: 3500
+        };
+
+        const DEFAULT_DIGITAL_PRODUCTS = [
+            { id: 'challenge_5', name: '5 вызовов', icon: 'fa-crosshairs', iconText: 'x5', price: 500, category: 'Вызовы',
+                description: '+5 к purchasedChallenges', active: true, sales: 0, revenue: 0 },
+            { id: 'challenge_10', name: '10 вызовов', icon: 'fa-crosshairs', iconText: 'x10', price: 900,
+                category: 'Вызовы', description: '+10 к purchasedChallenges', active: true, hot: true,
+                badge: '🔥 ВЫГОДА', sales: 0, revenue: 0 },
+            { id: 'challenge_25', name: '25 вызовов', icon: 'fa-crosshairs', iconText: 'x25', price: 2000,
+                category: 'Вызовы', description: '+25 к purchasedChallenges', active: true, hot: true,
+                badge: '🔥 СУПЕР', sales: 0, revenue: 0 },
+            { id: 'premium_month', name: 'Премиум 1 месяц', icon: 'fa-crown', iconText: '', price: 200,
+                category: 'Премиум', description: '5 выз./мес + все бейджи + скидка 15%', active: true, hot: true,
+                badge: '⭐ ТОП', saving: '🔥 -60%', sales: 0, revenue: 0 },
+            { id: 'premium_3months', name: 'Премиум 3 месяца', icon: 'fa-crown', iconText: 'x3', price: 500,
+                category: 'Премиум', description: '15 выз./мес + все бейджи + скидка 15%', active: true, hot: true,
+                badge: '⭐ МЕГА ВЫГОДА', saving: '🔥 -65%', sales: 0, revenue: 0 },
+            { id: 'premium_6months', name: 'Премиум 6 месяцев', icon: 'fa-crown', iconText: 'x6', price: 850,
+                category: 'Премиум', description: '30 выз./мес + все бейджи + скидка 15%', active: true,
+                badge: '⭐ МАКСИМУМ', saving: '🔥 -70%', sales: 0, revenue: 0 },
+            { id: 'premium_year', name: 'Премиум 12 месяцев', icon: 'fa-crown', iconText: 'x12', price: 1500,
+                category: 'Премиум', description: '60 выз./год + все бейджи + скидка 15%', active: true, hot: true,
+                badge: '👑 ЛЕГЕНДА', saving: '🔥🔥 -75%', sales: 0, revenue: 0 },
+            { id: 'fighter_pack', name: 'Набор «Боец»', icon: 'fa-box', iconText: '', price: 1400, category: 'Наборы',
+                description: '15 выз. + Премиум 1 мес', active: true, hot: true, badge: '🎁 СТАРТ',
+                saving: '🔥 -40%', sales: 0, revenue: 0 },
+            { id: 'champion_pack', name: 'Набор «Чемпион»', icon: 'fa-box', iconText: '', price: 3500,
+                category: 'Наборы', description: '40 выз. + Премиум 3 мес', active: true, hot: true,
+                badge: '🏆 ПРО', saving: '🔥 -65%', sales: 0, revenue: 0 },
+            { id: 'badge_legend', name: 'Бейдж "Легенда"', icon: 'fa-certificate', iconText: '', price: 150,
+                category: 'Бейджи', description: 'Эксклюзивный бейдж для профиля', active: false,
+                badge: '🎨 ЭКСКЛЮЗИВ', sales: 0, revenue: 0 },
+            { id: 'badge_master', name: 'Бейдж "Мастер"', icon: 'fa-medal', iconText: '', price: 100,
+                category: 'Бейджи', description: 'Эксклюзивный бейдж для профиля', active: true,
+                badge: '🎨 ЭКСКЛЮЗИВ', sales: 0, revenue: 0 }
+        ];
+
+        // ============================================================
+        // DOM
+        // ============================================================
+        const loginContainer = document.getElementById('loginContainer');
+        const adminContainer = document.getElementById('adminContainer');
+        const loginEmail = document.getElementById('loginEmail');
+        const loginPassword = document.getElementById('loginPassword');
+        const loginBtn = document.getElementById('loginBtn');
+        const loginError = document.getElementById('loginError');
+        const logoutBtn = document.getElementById('logoutBtn');
+        const adminEmail = document.getElementById('adminEmail');
+        const adminName = document.getElementById('adminName');
+
+        // ============================================================
+        // ЛОГИН / ЛОГАУТ
+        // ============================================================
+        async function handleLogin() {
+            const email = loginEmail.value.trim();
+            const password = loginPassword.value.trim();
+
+            if (!email || !password) {
+                loginError.textContent = 'Введите email и пароль';
+                return;
+            }
+
+            loginBtn.disabled = true;
+            loginBtn.innerHTML = '<div class="loading-spinner"></div> Вход...';
+            loginError.textContent = '';
+
+            try {
+                const userCredential = await signInWithEmailAndPassword(auth, email, password);
+                currentAdminEmail = userCredential.user.email;
+                loginContainer.classList.add('hidden');
+                adminContainer.classList.add('visible');
+                adminEmail.textContent = currentAdminEmail;
+                adminName.textContent = 'Администратор';
+                loadAllData();
+            } catch (error) {
+                loginError.textContent = '❌ ' + error.message;
+            } finally {
+                loginBtn.disabled = false;
+                loginBtn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Войти';
+            }
+        }
+
+        async function handleLogout() {
+            await signOut(auth);
+            currentAdminEmail = null;
+            loginContainer.classList.remove('hidden');
+            adminContainer.classList.remove('visible');
+            loginEmail.value = '';
+            loginPassword.value = '';
+            loginError.textContent = '';
+        }
+
+        loginBtn.addEventListener('click', handleLogin);
+        loginPassword.addEventListener('keydown', e => { if (e.key === 'Enter') handleLogin(); });
+        loginEmail.addEventListener('keydown', e => { if (e.key === 'Enter') handleLogin(); });
+        logoutBtn.addEventListener('click', handleLogout);
+
+        // ============================================================
+        // НАВИГАЦИЯ
+        // ============================================================
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.addEventListener('click', function() {
+                document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+                this.classList.add('active');
+                const sectionId = this.dataset.section;
+                document.querySelectorAll('.section-content').forEach(s => s.classList.remove('active'));
+                const target = document.getElementById('section-' + sectionId);
+                if (target) target.classList.add('active');
+                setTimeout(() => {
+                    if (sectionId === 'dashboard') initDashboardChart();
+                }, 200);
+            });
+        });
+
+        window.switchSection = function(section) {
+            document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+            document.querySelector(`.nav-item[data-section="${section}"]`)?.classList.add('active');
+            document.querySelectorAll('.section-content').forEach(s => s.classList.remove('active'));
+            const target = document.getElementById('section-' + section);
+            if (target) target.classList.add('active');
+            // Если переключаемся на магазины — показываем вкладку "Активные"
+            if (section === 'partners') {
+                document.querySelectorAll('[data-partner-tab]').forEach(t => t.classList.remove('active'));
+                document.querySelector('[data-partner-tab="approved"]')?.classList.add('active');
+                document.getElementById('partner-approved').style.display = 'block';
+                document.getElementById('partner-pending').style.display = 'none';
+            }
+        };
+
+        // ============================================================
+        // ЛОГИРОВАНИЕ
+        // ============================================================
+        async function logAction(action, targetId, details) {
+            if (!currentAdminEmail) return;
+            try {
+                await addDoc(collection(db, "adminLogs"), {
+                    admin: currentAdminEmail,
+                    action: action,
+                    targetId: targetId || null,
+                    details: details || '',
+                    timestamp: serverTimestamp()
+                });
+            } catch (e) { console.error(e); }
+        }
+
+        // ============================================================
+        // ЗАГРУЗКА ДАННЫХ
+        // ============================================================
+        async function loadAllData() {
+            await Promise.all([
+                loadStats(),
+                loadFighters(),
+                loadPartners(),
+                loadRequests(),
+                loadOrdersForCommission(),
+                loadWithdrawals(),
+                loadCommissions(),
+                loadDigitalProducts(),
+                loadPrices(),
+                loadHistory()
+            ]);
+            updateDashboardChartData();
+        }
+
+        // ============================================================
+        // СТАТИСТИКА
+        // ============================================================
+        async function loadStats() {
+            try {
+                const fightersSnap = await getDocs(collection(db, "fighters"));
+                const partnersSnap = await getDocs(collection(db, "partners"));
+                const withdrawalsSnap = await getDocs(query(collection(db, "withdrawals"), where("status", "==",
+                    "pending")));
+
+                let totalCommission = 0;
+                // Считаем комиссию из заказов
+                const ordersSnap = await getDocs(collection(db, "orders"));
+                ordersSnap.forEach(doc => {
+                    const order = doc.data();
+                    if (order.status === 'completed') {
+                        totalCommission += (order.totalPrice || 0) * (commissionPercent / 100);
+                    }
+                });
+
+                document.getElementById('statFighters').textContent = fightersSnap.size;
+                document.getElementById('statPartners').textContent = partnersSnap.size;
+                document.getElementById('statCommission').textContent = totalCommission.toLocaleString() + ' ₽';
+                document.getElementById('statPendingWithdrawals').textContent = withdrawalsSnap.size;
+                document.getElementById('partnersBadge').textContent = partnersSnap.size;
+                document.getElementById('withdrawalsBadge').textContent = withdrawalsSnap.size;
+            } catch (e) { console.error('Статистика:', e); }
+        }
+
+        // ============================================================
+        // БОЙЦЫ
+        // ============================================================
+        async function loadFighters() {
+            try {
+                const q = query(collection(db, "fighters"), orderBy("frs", "desc"));
+                const snapshot = await getDocs(q);
+                allFighters = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                renderFighters(allFighters);
+            } catch (e) {
+                console.error('Бойцы:', e);
+                document.getElementById('fightersTableBody').innerHTML =
+                    '<tr><td colspan="7" style="text-align:center; color:#666; padding:20px;">Ошибка загрузки</td></tr>';
+            }
+        }
+
+        function renderFighters(fighters) {
+            const tbody = document.getElementById('fightersTableBody');
+            if (!fighters.length) {
+                tbody.innerHTML =
+                '<tr><td colspan="7" style="text-align:center; color:#666; padding:20px;">Нет бойцов</td></tr>';
+                return;
+            }
+            tbody.innerHTML = fighters.map(f => `
+                        <tr>
+                            <td><strong>${escapeHtml(f.name || 'Боец')}</strong></td>
+                            <td>${escapeHtml(f.email || '—')}</td>
+                            <td>${f.frs || 0}</td>
+                            <td>${f.wins || 0}</td>
+                            <td>${f.losses || 0}</td>
+                            <td>${f.banned ? '<span class="banned-badge">🔒 Забанен</span>' : '✅ Активен'}</td>
+                            <td style="text-align:center;">
+                                <div class="points-control" style="justify-content:center;">
+                                    <button onclick="window.changePoints('${f.id}', 100)">+100</button>
+                                    <button onclick="window.changePoints('${f.id}', 10)">+10</button>
+                                    <button onclick="window.changePoints('${f.id}', -10)" class="danger">-10</button>
+                                    ${!f.banned ? `<button onclick="window.banFighter('${f.id}')" class="danger">🔨 Бан</button>` : `<button onclick="window.unbanFighter('${f.id}')">🔓 Разбан</button>`}
+                                </div>
+                            </td>
+                        </tr>
+                    `).join('');
+        }
+
+        window.changePoints = async (uid, delta) => {
+            const fighter = allFighters.find(f => f.id === uid);
+            if (!fighter) return;
+            const newFRS = (fighter.frs || 0) + delta;
+            await updateDoc(doc(db, "fighters", uid), { frs: Math.max(0, newFRS) });
+            await logAction('change_points', uid, `Изменил FRS на ${delta}`);
+            loadFighters();
+            loadStats();
+        };
+
+        window.banFighter = async (uid) => {
+            if (!confirm('Заблокировать бойца?')) return;
+            await updateDoc(doc(db, "fighters", uid), { banned: true, banReason: 'Нарушение правил', bannedAt: new Date() });
+            await logAction('ban_fighter', uid, 'Заблокировал бойца');
+            loadFighters();
+            loadStats();
+        };
+
+        window.unbanFighter = async (uid) => {
+            await updateDoc(doc(db, "fighters", uid), { banned: false, banReason: null, bannedAt: null });
+            await logAction('unban_fighter', uid, 'Разблокировал бойца');
+            loadFighters();
+            loadStats();
+        };
+
+        document.getElementById('recalculateFRSBtn')?.addEventListener('click', async () => {
+            if (!confirm("Пересчитать FRS для всех бойцов?")) return;
+            const btn = document.getElementById('recalculateFRSBtn');
+            btn.innerHTML = '<div class="loading-spinner" style="margin-right:8px;"></div> Пересчёт...';
+            btn.disabled = true;
+            try {
+                const fightersSnapshot = await getDocs(collection(db, "fighters"));
+                const now = Date.now();
+                const monthMs = 30 * 24 * 60 * 60 * 1000;
+                for (const docSnap of fightersSnapshot.docs) {
+                    const f = docSnap.data();
+                    const monthsInactive = f.lastFightDate ? Math.floor((now - f.lastFightDate.toDate()) / monthMs) : 0;
+                    const frs = (f.wins || 0) * 100 + (f.finishes || 0) * 50 - (monthsInactive * 25) + (f.premium ? 5 :
+                    0);
+                    await updateDoc(doc(db, "fighters", docSnap.id), { frs: Math.max(0, frs) });
+                }
+                alert("✅ FRS пересчитан!");
+                loadFighters();
+                await logAction('recalculate_frs', null, 'Пересчитал FRS');
+            } catch (error) { alert("Ошибка: " + error.message); } finally {
+                btn.innerHTML = '<i class="fas fa-calculator"></i> Пересчитать FRS';
+                btn.disabled = false;
+            }
+        });
+
+        // ============================================================
+        // МАГАЗИНЫ (PARTNERS)
+        // ============================================================
+        async function loadPartners() {
+            try {
+                const snapshot = await getDocs(collection(db, "partners"));
+                allPartners = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                renderPartners();
+                document.getElementById('approvedCount').textContent = allPartners.length;
+            } catch (e) {
+                console.error('Магазины:', e);
+                document.getElementById('partnersList').innerHTML =
+                    '<div style="text-align:center; padding:20px; color:#666;">Ошибка загрузки</div>';
+            }
+        }
+
+        function renderPartners() {
+            const container = document.getElementById('partnersList');
+            if (!allPartners.length) {
+                container.innerHTML = '<div style="text-align:center; padding:20px; color:#666;">Нет магазинов</div>';
+                return;
+            }
+            let html = '<div class="table-wrap"><table><thead><tr><th>Название</th><th>Email</th><th>ЮKassa ID</th><th>Действия</th></tr></thead><tbody>';
+            allPartners.forEach(p => {
+                html += `
+                            <tr>
+                                <td><strong>${escapeHtml(p.name || 'Магазин')}</strong></td>
+                                <td>${escapeHtml(p.email || '—')}</td>
+                                <td>${escapeHtml(p.yookassaShopId || '—')}</td>
+                                <td>
+                                    <button class="btn btn-danger btn-sm" onclick="window.deletePartner('${p.id}')"><i class="fas fa-trash"></i> Удалить</button>
+                                </td>
+                            </tr>
+                        `;
+            });
+            html += '</tbody></table></div>';
+            container.innerHTML = html;
+        }
+
+        window.deletePartner = async (partnerId) => {
+            if (!confirm('Удалить магазин?')) return;
+            try {
+                const productsSnap = await getDocs(query(collection(db, "products"), where("partnerId", "==",
+                partnerId)));
+                for (const productDoc of productsSnap.docs) {
+                    const product = productDoc.data();
+                    if (product.image && product.image.includes('firebasestorage')) {
+                        try { await deleteObject(ref(storage, product.image)); } catch (e) {}
+                    }
+                    await deleteDoc(doc(db, "products", productDoc.id));
+                }
+                await deleteDoc(doc(db, "partners", partnerId));
+                await logAction('delete_partner', partnerId, `Удалил магазин и ${productsSnap.size} товаров`);
+                loadPartners();
+                loadStats();
+                alert(`✅ Магазин удалён вместе с ${productsSnap.size} товарами`);
+            } catch (err) { alert('Ошибка: ' + err.message); }
+        };
+
+        // ============================================================
+        // ЗАЯВКИ (REQUESTS) - внутри магазинов
+        // ============================================================
+        async function loadRequests() {
+            try {
+                const snapshot = await getDocs(query(collection(db, "partner_requests"), orderBy("createdAt", "desc")));
+                allRequests = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                renderRequests();
+                const pending = allRequests.filter(r => r.status === 'pending');
+                document.getElementById('pendingCount').textContent = pending.length;
+                // Также показываем в дашборде
+                const pendingList = document.getElementById('pendingRequestsList');
+                if (pendingList) {
+                    if (!pending.length) {
+                        pendingList.innerHTML =
+                        '<div style="text-align:center; padding:20px; color:#666;">Нет новых заявок</div>';
+                    } else {
+                        pendingList.innerHTML = pending.slice(0, 5).map(r => `
+                                    <div class="request-card">
+                                        <div class="request-info">
+                                            <div class="name"><i class="fas fa-store"></i>${escapeHtml(r.storeName || 'Новый магазин')}</div>
+                                            <div class="desc">${escapeHtml(r.contactName || '')} • ${escapeHtml(r.contactEmail || '')}</div>
+                                            <div class="meta"><i class="far fa-calendar-alt"></i> ${r.createdAt?.toDate?.()?.toLocaleString() || 'недавно'}</div>
+                                        </div>
+                                        <div class="request-actions">
+                                            <button class="btn btn-success btn-sm" onclick="window.approveRequest('${r.id}')"><i class="fas fa-check"></i> Одобрить</button>
+                                            <button class="btn btn-danger btn-sm" onclick="window.rejectRequest('${r.id}')"><i class="fas fa-times"></i> Отклонить</button>
+                                        </div>
+                                    </div>
+                                `).join('');
+                    }
+                }
+            } catch (e) {
+                console.error('Заявки:', e);
+                document.getElementById('requestsList').innerHTML =
+                    '<div style="text-align:center; padding:20px; color:#666;">Ошибка загрузки</div>';
+            }
+        }
+
+        function renderRequests() {
+            const container = document.getElementById('requestsList');
+            if (!allRequests.length) {
+                container.innerHTML = '<div style="text-align:center; padding:20px; color:#666;">Нет заявок</div>';
+                return;
+            }
+            const recent = allRequests.slice(0, 20);
+            let html = '';
+            recent.forEach(r => {
+                const date = r.createdAt?.toDate?.()?.toLocaleString() || '—';
+                html += `
+                            <div class="request-card">
+                                <div class="request-info">
+                                    <div class="name"><i class="fas fa-store"></i>${escapeHtml(r.storeName || 'Новый магазин')}</div>
+                                    <div class="desc">${escapeHtml(r.contactName || '')} • ${escapeHtml(r.contactEmail || '')}</div>
+                                    <div class="meta"><i class="far fa-calendar-alt"></i> ${date}</div>
+                                    <div class="meta">📦 Товаров: ${r.products?.length || 0}</div>
+                                </div>
+                                <div class="request-actions">
+                                    ${r.status === 'pending' ? `
+                                        <button class="btn btn-success btn-sm" onclick="window.approveRequest('${r.id}')"><i class="fas fa-check"></i> Одобрить</button>
+                                        <button class="btn btn-danger btn-sm" onclick="window.rejectRequest('${r.id}')"><i class="fas fa-times"></i> Отклонить</button>
+                                    ` : `
+                                        <span class="status-badge ${r.status === 'approved' ? 'approved' : 'rejected'}">
+                                            ${r.status === 'approved' ? '✅ Одобрено' : '❌ Отклонено'}
+                                        </span>
+                                    `}
+                                </div>
+                            </div>
+                        `;
+            });
+            container.innerHTML = html;
+        }
+
+        window.approveRequest = async (requestId) => {
+            if (!confirm('Одобрить заявку?')) return;
+            try {
+                await updateDoc(doc(db, "partner_requests", requestId), { status: 'approved', approvedAt: serverTimestamp() });
+                await logAction('approve_request', requestId, 'Одобрил заявку');
+                loadRequests();
+                loadPartners();
+                loadStats();
+                alert('✅ Заявка одобрена!');
+            } catch (e) { alert('Ошибка: ' + e.message); }
+        };
+
+        window.rejectRequest = async (requestId) => {
+            if (!confirm('Отклонить заявку?')) return;
+            try {
+                await updateDoc(doc(db, "partner_requests", requestId), { status: 'rejected' });
+                await logAction('reject_request', requestId, 'Отклонил заявку');
+                loadRequests();
+                alert('❌ Заявка отклонена');
+            } catch (e) { alert('Ошибка: ' + e.message); }
+        };
+
+        // ============================================================
+        // ВКЛАДКИ В МАГАЗИНАХ
+        // ============================================================
+        document.querySelectorAll('[data-partner-tab]').forEach(tab => {
+            tab.addEventListener('click', function() {
+                document.querySelectorAll('[data-partner-tab]').forEach(t => t.classList.remove('active'));
+                this.classList.add('active');
+                const tabName = this.dataset.partnerTab;
+                document.getElementById('partner-approved').style.display = tabName === 'approved' ? 'block' :
+                    'none';
+                document.getElementById('partner-pending').style.display = tabName === 'pending' ? 'block' :
+                    'none';
+            });
+        });
+
+        // ============================================================
+        // ЗАКАЗЫ (для комиссий)
+        // ============================================================
+        async function loadOrdersForCommission() {
+            try {
+                const snapshot = await getDocs(collection(db, "orders"));
+                allOrders = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            } catch (e) { console.error('Заказы:', e); }
+        }
+
+        // ============================================================
+        // ВЫВОДЫ (WITHDRAWALS)
+        // ============================================================
+        async function loadWithdrawals() {
+            try {
+                const statusFilter = document.getElementById('withdrawalStatusFilter')?.value || 'all';
+                let q = statusFilter === 'all' ?
+                    query(collection(db, "withdrawals"), orderBy("createdAt", "desc")) :
+                    query(collection(db, "withdrawals"), where("status", "==", statusFilter), orderBy("createdAt",
+                    "desc"));
+                const snapshot = await getDocs(q);
+                allWithdrawals = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                renderWithdrawals();
+                updateWithdrawalStats();
+            } catch (e) {
+                console.error('Выводы:', e);
+                document.getElementById('withdrawalsList').innerHTML =
+                    '<div style="text-align:center; padding:20px; color:#666;">Ошибка загрузки</div>';
+            }
+        }
+
+        function renderWithdrawals() {
+            const container = document.getElementById('withdrawalsList');
+            if (!allWithdrawals.length) {
+                container.innerHTML = '<div style="text-align:center; padding:20px; color:#666;">Нет заявок на вывод</div>';
+                return;
+            }
+            let html = '<div class="table-wrap"><table><thead><tr><th>Дата</th><th>Продавец</th><th>Сумма</th><th>Метод</th><th>Статус</th><th>Действия</th></tr></thead><tbody>';
+            allWithdrawals.forEach(w => {
+                const date = w.createdAt?.toDate?.()?.toLocaleString() || '—';
+                const statusMap = {
+                    'pending': '⏳ Ожидает',
+                    'processing': '🔄 В обработке',
+                    'completed': '✅ Выполнен',
+                    'rejected': '❌ Отклонён'
+                };
+                const statusText = statusMap[w.status] || w.status;
+                const partnerName = allPartners.find(p => p.id === w.partnerId)?.name || 'Продавец';
+                html += `
+                            <tr>
+                                <td>${date}</td>
+                                <td>${escapeHtml(partnerName)}</td>
+                                <td style="color:#fbbf24; font-weight:700;">${(w.amount || 0).toLocaleString()} ₽</td>
+                                <td>${w.method === 'card' ? 'Карта' : 'СБП'}</td>
+                                <td><span class="status-badge ${w.status || 'pending'}">${statusText}</span></td>
+                                <td>
+                                    ${w.status === 'pending' ? `
+                                        <button class="btn btn-success btn-sm" onclick="window.approveWithdrawal('${w.id}', ${w.amount}, '${w.partnerId}')"><i class="fas fa-check"></i></button>
+                                        <button class="btn btn-danger btn-sm" onclick="window.rejectWithdrawal('${w.id}')"><i class="fas fa-times"></i></button>
+                                    ` : ''}
+                                    ${w.status === 'processing' ? `
+                                        <button class="btn btn-success btn-sm" onclick="window.completeWithdrawal('${w.id}', ${w.amount}, '${w.partnerId}')"><i class="fas fa-check"></i> Завершить</button>
+                                    ` : ''}
+                                </td>
+                            </tr>
+                        `;
+            });
+            html += '</tbody></table></div>';
+            container.innerHTML = html;
+        }
+
+        async function updateWithdrawalStats() {
+            let pendingTotal = 0,
+                completedTotal = 0,
+                rejectedTotal = 0;
+            allWithdrawals.forEach(w => {
+                if (w.status === 'pending') pendingTotal += w.amount || 0;
+                if (w.status === 'completed') completedTotal += w.amount || 0;
+                if (w.status === 'rejected') rejectedTotal += w.amount || 0;
+            });
+            document.getElementById('totalPendingAmount').textContent = pendingTotal.toLocaleString() + ' ₽';
+            document.getElementById('totalCompletedAmount').textContent = completedTotal.toLocaleString() + ' ₽';
+            document.getElementById('totalRejectedAmount').textContent = rejectedTotal.toLocaleString() + ' ₽';
+        }
+
+        window.approveWithdrawal = async (withdrawalId, amount, partnerId) => {
+            if (!confirm(`Подтвердить вывод ${amount.toLocaleString()} ₽?`)) return;
+            try {
+                await updateDoc(doc(db, "withdrawals", withdrawalId), { status: 'processing', processedAt: new Date() });
+                await logAction('approve_withdrawal', withdrawalId, `Подтвердил вывод ${amount} ₽`);
+                alert('✅ Заявка переведена в статус "В обработке"');
+                loadWithdrawals();
+                loadStats();
+            } catch (err) { alert('Ошибка: ' + err.message); }
+        };
+
+        window.completeWithdrawal = async (withdrawalId, amount, partnerId) => {
+            if (!confirm(`Завершить выплату ${amount.toLocaleString()} ₽?`)) return;
+            try {
+                await updateDoc(doc(db, "withdrawals", withdrawalId), { status: 'completed', completedAt: new Date() });
+                await logAction('complete_withdrawal', withdrawalId, `Завершил выплату ${amount} ₽`);
+                alert('✅ Вывод средств завершён');
+                loadWithdrawals();
+                loadStats();
+            } catch (err) { alert('Ошибка: ' + err.message); }
+        };
+
+        window.rejectWithdrawal = async (withdrawalId) => {
+            const reason = prompt('Укажите причину отклонения:');
+            if (!reason) return;
+            if (!confirm('Отклонить заявку на вывод?')) return;
+            try {
+                await updateDoc(doc(db, "withdrawals", withdrawalId), { status: 'rejected', rejectReason: reason,
+                    processedAt: new Date() });
+                await logAction('reject_withdrawal', withdrawalId, `Отклонил вывод`);
+                alert('❌ Заявка отклонена');
+                loadWithdrawals();
+                loadStats();
+            } catch (err) { alert('Ошибка: ' + err.message); }
+        };
+
+        document.getElementById('refreshWithdrawalsBtn')?.addEventListener('click', loadWithdrawals);
+        document.getElementById('withdrawalStatusFilter')?.addEventListener('change', loadWithdrawals);
+
+        // ============================================================
+        // КОМИССИИ
+        // ============================================================
+        async function loadCommissions() {
+            try {
+                const period = document.getElementById('commissionPeriod')?.value || 'month';
+                const container = document.getElementById('commissionsList');
+                container.innerHTML = '<div style="text-align:center; padding:20px; color:#666;"><div class="loading-spinner"></div> Загрузка...</div>';
+
+                // Загружаем процент
+                const settingsDoc = await getDoc(doc(db, "settings", "general"));
+                if (settingsDoc.exists()) {
+                    commissionPercent = settingsDoc.data().commissionPercent || 10;
+                    document.getElementById('commissionPercent').value = commissionPercent;
+                }
+
+                const ordersSnap = await getDocs(collection(db, "orders"));
+                const partnersSnap = await getDocs(collection(db, "partners"));
+                const now = new Date();
+
+                let startDate = null,
+                    endDate = null;
+                if (period === 'month') {
+                    startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+                } else if (period === 'prev_month') {
+                    startDate = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+                    endDate = new Date(now.getFullYear(), now.getMonth(), 0);
+                }
+
+                const partnerCommission = {};
+                for (const orderDoc of ordersSnap.docs) {
+                    const order = orderDoc.data();
+                    if (order.status !== 'completed') continue;
+                    const orderDate = order.createdAt?.toDate?.();
+                    if (startDate && orderDate < startDate) continue;
+                    if (endDate && orderDate > endDate) continue;
+
+                    for (const partnerDoc of partnersSnap.docs) {
+                        const partner = partnerDoc.data();
+                        if (order.partnerId === partnerDoc.id || order.sellerId === partnerDoc.id) {
+                            const commission = (order.totalPrice || 0) * (commissionPercent / 100);
+                            if (!partnerCommission[partnerDoc.id]) {
+                                partnerCommission[partnerDoc.id] = { name: partner.name || 'Магазин', total: 0,
+                                    orders: [] };
+                            }
+                            partnerCommission[partnerDoc.id].total += commission;
+                            partnerCommission[partnerDoc.id].orders.push({ price: order.totalPrice, commission,
+                                date: orderDate });
+                        }
+                    }
+                }
+
+                if (Object.keys(partnerCommission).length === 0) {
+                    container.innerHTML =
+                        '<div style="text-align:center; padding:20px; color:#666;">Нет комиссий за выбранный период</div>';
+                    return;
+                }
+
+                let html = '';
+                let grandTotal = 0;
+                for (const [id, data] of Object.entries(partnerCommission)) {
+                    grandTotal += data.total;
+                    html += `
+                                <div class="commission-item">
+                                    <div><strong>${escapeHtml(data.name)}</strong><br><small>${data.orders.length} продаж</small></div>
+                                    <div class="commission-total">${data.total.toFixed(2)} ₽</div>
+                                </div>
+                            `;
+                }
+                html += `
+                            <div class="commission-item" style="background:#fbbf24; color:#000; margin-top:8px; border-radius:12px;">
+                                <strong>ИТОГО К ВЫПЛАТЕ:</strong>
+                                <span style="font-weight:800;">${grandTotal.toFixed(2)} ₽</span>
+                            </div>
+                        `;
+                container.innerHTML = html;
+            } catch (e) {
+                console.error('Комиссии:', e);
+                document.getElementById('commissionsList').innerHTML =
+                    '<div style="text-align:center; padding:20px; color:#666;">Ошибка загрузки</div>';
+            }
+        }
+
+        document.getElementById('refreshCommissionsBtn')?.addEventListener('click', loadCommissions);
+        document.getElementById('commissionPeriod')?.addEventListener('change', loadCommissions);
+
+        // ============================================================
+        // СОХРАНЕНИЕ ПРОЦЕНТА КОМИССИИ
+        // ============================================================
+        document.getElementById('saveCommissionBtn')?.addEventListener('click', async () => {
+            const percent = parseFloat(document.getElementById('commissionPercent').value);
+            if (isNaN(percent) || percent < 0 || percent > 100) {
+                document.getElementById('commissionMessage').innerHTML =
+                    '<span style="color:red;">❌ Введите корректное значение (0-100)</span>';
+                return;
+            }
+            try {
+                await setDoc(doc(db, "settings", "general"), { commissionPercent: percent }, { merge: true });
+                commissionPercent = percent;
+                document.getElementById('commissionMessage').innerHTML =
+                    '<span style="color:green;">✅ Процент комиссии сохранён!</span>';
+                await logAction('save_commission', null, `Установил комиссию ${percent}%`);
+                setTimeout(() => { document.getElementById('commissionMessage').innerHTML = ''; }, 3000);
+                loadCommissions();
+                loadStats();
+            } catch (err) {
+                document.getElementById('commissionMessage').innerHTML = `<span style="color:red;">❌ Ошибка: ${err.message}</span>`;
+            }
+        });
+
+        // ============================================================
+        // ЦИФРОВЫЕ ТОВАРЫ
+        // ============================================================
+        async function loadDigitalProducts() {
+            try {
+                const snapshot = await getDocs(collection(db, "digital_products"));
+                if (snapshot.empty) {
+                    for (const product of DEFAULT_DIGITAL_PRODUCTS) {
+                        await setDoc(doc(db, "digital_products", product.id), {
+                            ...product,
+                            createdAt: serverTimestamp()
+                        });
+                    }
+                    allDigitalProducts = DEFAULT_DIGITAL_PRODUCTS;
+                } else {
+                    allDigitalProducts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                }
+                renderDigitalProducts();
+            } catch (e) {
+                console.error('Цифровые товары:', e);
+                document.getElementById('productsGrid').innerHTML =
+                    '<div style="grid-column:1/-1; text-align:center; padding:30px; color:#666;">Ошибка загрузки</div>';
+            }
+        }
+
+        function renderDigitalProducts() {
+            const grid = document.getElementById('productsGrid');
+            if (!allDigitalProducts.length) {
+                grid.innerHTML =
+                    '<div style="grid-column:1/-1; text-align:center; padding:30px; color:#666;">Нет цифровых товаров</div>';
+                return;
+            }
+
+            // Фильтры
+            const categoryFilter = document.getElementById('productCategoryFilter')?.value || '';
+            const statusFilter = document.getElementById('productStatusFilter')?.value || '';
+            const search = document.getElementById('productSearch')?.value?.toLowerCase() || '';
+
+            let filtered = allDigitalProducts;
+            if (categoryFilter) filtered = filtered.filter(p => p.category === categoryFilter);
+            if (statusFilter) filtered = filtered.filter(p => p.active === (statusFilter === 'active'));
+            if (search) filtered = filtered.filter(p => p.name.toLowerCase().includes(search));
+
+            if (!filtered.length) {
+                grid.innerHTML =
+                    '<div style="grid-column:1/-1; text-align:center; padding:30px; color:#666;">Нет товаров по выбранным фильтрам</div>';
+                return;
+            }
+
+            grid.innerHTML = filtered.map(p => `
+                        <div class="product-card ${p.hot ? 'hot' : ''} ${p.category === 'Премиум' ? 'premium-card' : ''}">
+                            ${p.badge ? `<div class="product-badge">${p.badge}</div>` : ''}
+                            <div>
+                                <div class="product-icon"><i class="fas ${p.icon || 'fa-cube'}"></i> ${p.iconText || ''}</div>
+                                <div class="product-title">${escapeHtml(p.name)}</div>
+                                <div class="product-desc">${escapeHtml(p.description || '')}</div>
+                            </div>
+                            <div>
+                                <div class="product-price">
+                                    ${p.price} ₽
+                                    ${p.saving ? `<span class="saving">${p.saving}</span>` : ''}
+                                </div>
+                                <div class="product-status">
+                                    <span class="status-badge ${p.active ? 'active' : 'inactive'}">
+                                        <i class="fas ${p.active ? 'fa-check-circle' : 'fa-minus-circle'}"></i>
+                                        ${p.active ? 'Активен' : 'Скрыт'}
+                                    </span>
+                                </div>
+                                <div style="font-size:11px; color:#666; margin-bottom:6px;">
+                                    <i class="fas fa-shopping-cart" style="color:#fbbf24;"></i> ${p.sales || 0} продаж • ${(p.revenue || 0).toLocaleString()} ₽
+                                </div>
+                                <div class="product-actions">
+                                    <button class="btn btn-outline btn-sm" onclick="window.editDigitalProduct('${p.id}')"><i class="fas fa-edit"></i></button>
+                                    <button class="btn btn-outline btn-sm" onclick="window.toggleDigitalProduct('${p.id}', ${p.active})"><i class="fas fa-eye"></i></button>
+                                    <button class="btn btn-danger btn-sm" onclick="window.deleteDigitalProduct('${p.id}')"><i class="fas fa-trash"></i></button>
+                                </div>
+                            </div>
+                        </div>
+                    `).join('');
+        }
+
+        window.toggleDigitalProduct = async (productId, active) => {
+            if (!confirm(`${active ? 'Скрыть' : 'Показать'} товар?`)) return;
+            try {
+                await updateDoc(doc(db, "digital_products", productId), { active: !active });
+                await loadDigitalProducts();
+                await logAction('toggle_digital_product', productId, `${active ? 'Скрыл' : 'Показал'} цифровой товар`);
+            } catch (e) { alert('Ошибка: ' + e.message); }
+        };
+
+        window.deleteDigitalProduct = async (productId) => {
+            if (!confirm('Удалить товар?')) return;
+            try {
+                await deleteDoc(doc(db, "digital_products", productId));
+                await loadDigitalProducts();
+                await logAction('delete_digital_product', productId, 'Удалил цифровой товар');
+            } catch (e) { alert('Ошибка: ' + e.message); }
+        };
+
+        window.editDigitalProduct = async (productId) => {
+            const p = allDigitalProducts.find(p => p.id === productId);
+            if (!p) return;
+            const newPrice = prompt('Новая цена:', p.price);
+            if (newPrice === null) return;
+            const newName = prompt('Новое название:', p.name);
+            if (newName === null) return;
+            try {
+                await updateDoc(doc(db, "digital_products", productId), {
+                    price: parseFloat(newPrice) || p.price,
+                    name: newName || p.name
+                });
+                await loadDigitalProducts();
+                await logAction('edit_digital_product', productId, `Изменил цену на ${newPrice}, название на ${newName}`);
+            } catch (e) { alert('Ошибка: ' + e.message); }
+        };
+
+        document.getElementById('addDigitalProductBtn')?.addEventListener('click', () => {
+            const name = prompt('Название товара:');
+            if (!name) return;
+            const price = prompt('Цена:');
+            if (!price) return;
+            const category = prompt('Категория (Вызовы/Премиум/Наборы/Бейджи):') || 'Вызовы';
+            const description = prompt('Описание:') || '';
+            const id = 'product_' + Date.now();
+            setDoc(doc(db, "digital_products", id), {
+                id: id,
+                name: name,
+                price: parseFloat(price) || 0,
+                category: category,
+                description: description,
+                icon: 'fa-cube',
+                iconText: '',
+                active: true,
+                sales: 0,
+                revenue: 0,
+                createdAt: serverTimestamp()
+            }).then(() => {
+                loadDigitalProducts();
+                logAction('add_digital_product', id, `Добавил цифровой товар ${name}`);
+                alert('✅ Товар добавлен!');
+            }).catch(e => alert('Ошибка: ' + e.message));
+        });
+
+        // Фильтры для товаров
+        document.getElementById('productCategoryFilter')?.addEventListener('change', renderDigitalProducts);
+        document.getElementById('productStatusFilter')?.addEventListener('change', renderDigitalProducts);
+        document.getElementById('productSearch')?.addEventListener('input', renderDigitalProducts);
+
+        // ============================================================
+        // ЦЕНЫ
+        // ============================================================
+        async function loadPrices() {
+            try {
+                const priceDoc = await getDoc(doc(db, "settings", "prices"));
+                if (priceDoc.exists()) {
+                    priceData = priceDoc.data();
+                } else {
+                    priceData = { ...DEFAULT_PRICES };
+                    await setDoc(doc(db, "settings", "prices"), priceData);
+                }
+                renderPrices();
+            } catch (e) {
+                console.error('Цены:', e);
+                document.getElementById('priceList').innerHTML =
+                    '<div style="text-align:center; padding:20px; color:#666;">Ошибка загрузки</div>';
+            }
+        }
+
+        function renderPrices() {
+            const container = document.getElementById('priceList');
+            const productNames = {
+                challenge_5: '5 вызовов',
+                challenge_10: '10 вызовов',
+                challenge_25: '25 вызовов',
+                premium_month: 'Премиум 1 месяц',
+                premium_3months: 'Премиум 3 месяца',
+                premium_6months: 'Премиум 6 месяцев',
+                premium_year: 'Премиум 12 месяцев',
+                fighter_pack: 'Набор «Боец»',
+                champion_pack: 'Набор «Чемпион»'
+            };
+            let html = '';
+            for (const [key, name] of Object.entries(productNames)) {
+                const currentPrice = priceData[key] || DEFAULT_PRICES[key] || 0;
+                html += `
+                            <div class="price-item">
+                                <span class="product-name">${name}</span>
+                                <span class="price-current">${currentPrice} ₽</span>
+                                <input type="number" id="price_${key}" value="${currentPrice}" min="0" step="10">
+                                <button class="btn btn-secondary btn-sm" onclick="window.resetPrice('${key}')"><i class="fas fa-undo"></i> Сброс</button>
+                            </div>
+                        `;
+            }
+            container.innerHTML = html;
+        }
+
+        window.resetPrice = (key) => {
+            const input = document.getElementById(`price_${key}`);
+            if (input) input.value = DEFAULT_PRICES[key] || 0;
+        };
+
+        document.getElementById('savePricesBtn')?.addEventListener('click', async () => {
+            const container = document.getElementById('priceList');
+            const inputs = container.querySelectorAll('input[type="number"]');
+            const newPrices = {};
+            inputs.forEach(input => {
+                const key = input.id.replace('price_', '');
+                newPrices[key] = parseInt(input.value) || 0;
+            });
+            try {
+                await setDoc(doc(db, "settings", "prices"), newPrices);
+                priceData = newPrices;
+                document.getElementById('priceMessage').innerHTML = '<span style="color:green;">✅ Цены сохранены!</span>';
+                await logAction('save_prices', null, 'Обновил цены');
+                setTimeout(() => { document.getElementById('priceMessage').innerHTML = ''; }, 3000);
+                loadPrices();
+            } catch (err) {
+                document.getElementById('priceMessage').innerHTML = `<span style="color:red;">❌ Ошибка: ${err.message}</span>`;
+            }
+        });
+
+        document.getElementById('resetPricesBtn')?.addEventListener('click', async () => {
+            if (!confirm('Сбросить все цены к стандартным?')) return;
+            try {
+                await setDoc(doc(db, "settings", "prices"), DEFAULT_PRICES);
+                priceData = { ...DEFAULT_PRICES };
+                document.getElementById('priceMessage').innerHTML = '<span style="color:green;">✅ Цены сброшены!</span>';
+                await logAction('reset_prices', null, 'Сбросил цены к стандартным');
+                setTimeout(() => { document.getElementById('priceMessage').innerHTML = ''; }, 3000);
+                loadPrices();
+            } catch (err) {
+                document.getElementById('priceMessage').innerHTML = `<span style="color:red;">❌ Ошибка: ${err.message}</span>`;
+            }
+        });
+
+        // ============================================================
+        // ИСТОРИЯ
+        // ============================================================
+        async function loadHistory() {
+            try {
+                const adminFilter = document.getElementById('historyAdminFilter')?.value || '';
+                let q = adminFilter ?
+                    query(collection(db, "adminLogs"), where("admin", "==", adminFilter), orderBy("timestamp", "desc"),
+                        limit(100)) :
+                    query(collection(db, "adminLogs"), orderBy("timestamp", "desc"), limit(100));
+                const snapshot = await getDocs(q);
+                const logs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                renderHistory(logs);
+            } catch (e) {
+                console.error('История:', e);
+                document.getElementById('historyList').innerHTML =
+                    '<div style="text-align:center; padding:20px; color:#666;">Ошибка загрузки</div>';
+            }
+        }
+
+        function renderHistory(logs) {
+            const container = document.getElementById('historyList');
+            if (!logs.length) {
+                container.innerHTML = '<div style="text-align:center; padding:20px; color:#666;">Нет записей</div>';
+                return;
+            }
+            let html = '';
+            logs.forEach(log => {
+                const date = log.timestamp?.toDate?.()?.toLocaleString() || '—';
+                html += `
+                            <div class="history-item">
+                                <span><strong>${escapeHtml(log.admin)}</strong></span>
+                                <span>${escapeHtml(log.action)}</span>
+                                <span>${escapeHtml(log.details || '')}</span>
+                                <span>${date}</span>
+                            </div>
+                        `;
+            });
+            container.innerHTML = html;
+        }
+
+        document.getElementById('refreshHistoryBtn')?.addEventListener('click', loadHistory);
+        document.getElementById('historyAdminFilter')?.addEventListener('input', loadHistory);
+
+        document.getElementById('clearHistoryBtn')?.addEventListener('click', async () => {
+            if (!confirm('Удалить ВСЮ историю?')) return;
+            const snapshot = await getDocs(collection(db, "adminLogs"));
+            for (const docSnap of snapshot.docs) await deleteDoc(doc(db, "adminLogs", docSnap.id));
+            await logAction('clear_history', null, 'Очистил историю');
+            loadHistory();
+            alert('✅ История очищена');
+        });
+
+        // ============================================================
+        // РАССЫЛКА
+        // ============================================================
+        document.getElementById('sendBroadcastBtn')?.addEventListener('click', async () => {
+            const target = document.getElementById('broadcastTarget').value;
+            const subject = document.getElementById('broadcastSubject').value;
+            const message = document.getElementById('broadcastMessage').value;
+            if (!subject || !message) { alert('Заполните тему и сообщение'); return; }
+
+            let fightersSnapshot;
+            if (target === 'all') {
+                fightersSnapshot = await getDocs(collection(db, "fighters"));
+            } else if (target === 'premium') {
+                fightersSnapshot = await getDocs(query(collection(db, "fighters"), where("premium", "==", true)));
+            } else {
+                fightersSnapshot = await getDocs(query(collection(db, "fighters"), where("telegramId", "!=", null)));
+            }
+
+            let sent = 0;
+            for (const docSnap of fightersSnapshot.docs) {
+                const telegramId = docSnap.data().telegramId;
+                if (telegramId) {
+                    try {
+                        await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                chat_id: telegramId,
+                                text: `📢 *${subject}*\n\n${message}`,
+                                parse_mode: 'Markdown'
+                            })
+                        });
+                        sent++;
+                    } catch (e) { console.error(e); }
+                }
+            }
+            await logAction('broadcast', null, `Рассылка "${subject}" отправлена ${sent} пользователям`);
+            document.getElementById('broadcastResult').innerHTML =
+                `<span style="color:green;">✅ Отправлено ${sent} сообщений</span>`;
+        });
+
+        // ============================================================
+        // ГРАФИК (DASHBOARD)
+        // ============================================================
+        let dashboardChart = null;
+
+        function initDashboardChart() {
+            const canvas = document.getElementById('dashboardChart');
+            if (!canvas) return;
+            if (dashboardChart) { dashboardChart.destroy();
+                dashboardChart = null; }
+
+            const ctx = canvas.getContext('2d');
+            const days = Array.from({ length: 30 }, (_, i) => i + 1);
+            const data = allOrders.length ? allOrders.reduce((acc, o) => {
+                const d = o.createdAt?.toDate?.();
+                if (d) {
+                    const day = d.getDate();
+                    acc[day - 1] = (acc[day - 1] || 0) + (o.totalPrice || 0) * (commissionPercent / 100);
+                }
+                return acc;
+            }, Array(30).fill(0)) : days.map(() => Math.floor(Math.random() * 15000) + 5000);
+
+            dashboardChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: days.map(d => d + ''),
+                    datasets: [{
+                        label: 'Комиссия, ₽',
+                        data: data,
+                        borderColor: '#fbbf24',
+                        backgroundColor: 'rgba(251, 191, 36, 0.08)',
+                        borderWidth: 2,
+                        pointRadius: 1.5,
+                        pointBackgroundColor: '#fbbf24',
+                        tension: 0.3,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            labels: { color: '#888', font: { size: 11 } }
+                        },
+                        tooltip: {
+                            backgroundColor: '#1a1a1a',
+                            titleColor: '#e8e8e8',
+                            bodyColor: '#e8e8e8',
+                            borderColor: '#333',
+                            borderWidth: 1,
+                            callbacks: {
+                                label: function(context) {
+                                    return context.parsed.y.toLocaleString() + ' ₽';
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: { color: '#1a1a1a' },
+                            ticks: { color: '#555', font: { size: 9 }, maxTicksLimit: 15 }
+                        },
+                        y: {
+                            grid: { color: '#1a1a1a' },
+                            ticks: {
+                                color: '#555',
+                                font: { size: 9 },
+                                callback: function(value) {
+                                    if (value >= 1000) return (value / 1000) + 'k';
+                                    return value;
+                                }
+                            }
+                        }
+                    },
+                    interaction: {
+                        intersect: false,
+                        mode: 'index'
+                    }
+                }
+            });
+        }
+
+        function updateDashboardChartData() {
+            if (dashboardChart) {
+                const data = allOrders.length ? allOrders.reduce((acc, o) => {
+                    const d = o.createdAt?.toDate?.();
+                    if (d) {
+                        const day = d.getDate();
+                        acc[day - 1] = (acc[day - 1] || 0) + (o.totalPrice || 0) * (commissionPercent / 100);
+                    }
+                    return acc;
+                }, Array(30).fill(0)) : Array.from({ length: 30 }, () => Math.floor(Math.random() * 15000) + 5000);
+                dashboardChart.data.datasets[0].data = data;
+                dashboardChart.update();
+            }
+        }
+
+        // ============================================================
+        // ВСПОМОГАТЕЛЬНЫЕ
+        // ============================================================
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/[&<>]/g, function(m) {
+                if (m === '&') return '&amp;';
+                if (m === '<') return '&lt;';
+                if (m === '>') return '&gt;';
+                return m;
+            });
+        }
+
+        // ============================================================
+        // AUTH STATE
+        // ============================================================
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                currentAdminEmail = user.email;
+                loginContainer.classList.add('hidden');
+                adminContainer.classList.add('visible');
+                adminEmail.textContent = user.email;
+                adminName.textContent = 'Администратор';
+                await loadAllData();
+                setTimeout(() => {
+                    initDashboardChart();
+                }, 300);
+            } else {
+                loginContainer.classList.remove('hidden');
+                adminContainer.classList.remove('visible');
+            }
+        });
+
+        // ============================================================
+        // ОБНОВЛЕНИЕ
+        // ============================================================
+        document.getElementById('refreshBtn')?.addEventListener('click', () => {
+            loadAllData();
+            setTimeout(() => initDashboardChart(), 300);
+        });
+
+        console.log('✅ PRORANK Admin Panel загружен!');
+        console.log('📦 Разделы: Бойцы, Магазины (с заявками), Выводы, Комиссии, Цифровые товары, Цены, История, Рассылка');
+        console.log('📧 admin@prorank.ru / admin123');
+    </script>
+</body>
+</html>

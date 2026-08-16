@@ -1945,6 +1945,7 @@ main {
         import { initializeApp } from "firebase/app";
         import { getFirestore, collection, getDocs, query, where, orderBy, updateDoc, doc, getDoc, addDoc, setDoc, deleteDoc, limit, startAfter } from "firebase/firestore";
         import { getAuth, onAuthStateChanged } from "firebase/auth";
+        import { refundFunds } from './wallet.js';
 
         // ===== FIREBASE CONFIG =====
         const firebaseConfig = {
@@ -2868,11 +2869,21 @@ main {
         // ===== SHIP ORDER =====
         async function shipOrder(orderId, trackingNumber) {
             try {
-                await updateDoc(doc(db, "orders", orderId), {
+                const orderRef = doc(db, "orders", orderId);
+                const orderSnap = await getDoc(orderRef);
+                const order = orderSnap.data();
+                
+                if (!order || order.status !== 'paid') {
+                    showNotification('❌ Заказ нельзя отправить (статус: ' + (order?.status || 'неизвестен') + ')', 'warning');
+                    return;
+                }
+                
+                await updateDoc(orderRef, {
                     status: 'shipped',
                     trackingNumber: trackingNumber,
                     shippedAt: new Date()
                 });
+                
                 showToast('✅ Заказ отправлен! Трек: ' + trackingNumber);
                 state.selectedOrders.delete(orderId);
                 ordersCache.invalidate(state.partnerId, 'active');
@@ -2895,6 +2906,18 @@ main {
                     return;
                 }
                 
+                // 1. Возвращаем деньги покупателю (если оплачено с баланса)
+                if (order.paymentMethod === 'balance' && order.userId) {
+                    try {
+                        const { refundFunds } = await import('./wallet.js');
+                        await refundFunds(order.userId, order.totalPrice || 0, orderId);
+                        console.log(`💰 Средства возвращены покупателю ${order.userId}`);
+                    } catch (err) {
+                        console.warn('Не удалось вернуть средства:', err);
+                    }
+                }
+                
+                // 2. Отменяем заказ
                 await updateDoc(orderRef, {
                     status: 'cancelled',
                     cancelledBy: 'partner',
@@ -2902,23 +2925,7 @@ main {
                     cancelReason: reason || 'Отменён продавцом'
                 });
                 
-                // Return funds if balance payment
-                if (order.paymentMethod === 'balance' && order.userId && order.partnerOrderTotal > 0) {
-                    try {
-                        const balanceRef = doc(db, "wallet_balances", order.userId);
-                        const balanceDoc = await getDoc(balanceRef);
-                        const currentBalance = balanceDoc.exists() ? balanceDoc.data().available || 0 : 0;
-                        
-                        await updateDoc(balanceRef, {
-                            available: currentBalance + order.partnerOrderTotal,
-                            updatedAt: new Date()
-                        });
-                    } catch (err) {
-                        console.warn('Не удалось вернуть средства:', err);
-                    }
-                }
-                
-                showToast('✅ Заказ отменён');
+                showToast('✅ Заказ отменён, средства возвращены покупателю');
                 state.selectedOrders.delete(orderId);
                 ordersCache.invalidate(state.partnerId, 'active');
                 ordersCache.invalidate(state.partnerId, 'history');

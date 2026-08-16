@@ -1781,28 +1781,49 @@
             const orderSnap = await getDoc(orderRef);
             const orderData = orderSnap.data();
             
-            if (orderData.paymentMethod === 'balance' && (orderData.status === 'paid' || orderData.status === 'shipped' || orderData.status === 'delivered')) {
-                const { releaseFunds } = await import('./wallet.js');
-                await releaseFunds(
-                    currentUser.uid,
-                    currentUser.uid,
-                    orderData.totalPrice || 0,
-                    orderId + '_refund'
-                );
+            // 1. Если заказ уже отправлен — нельзя отменить
+            if (orderData.status === 'shipped' || orderData.status === 'delivered') {
+                showNotification('❌ Заказ уже отправлен. Обратитесь в поддержку.', 'error');
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+                return;
             }
             
-            await updateDoc(orderRef, {
-                status: 'cancelled',
-                cancelledAt: new Date(),
-                cancelReason: 'Отменено пользователем'
-            });
+            // 2. Если заказ ещё не оплачен (pending) — просто отменяем
+            if (orderData.status === 'pending') {
+                await updateDoc(orderRef, {
+                    status: 'cancelled',
+                    cancelledAt: new Date(),
+                    cancelReason: 'Отменено пользователем (не подтверждено продавцом)'
+                });
+                showNotification('✅ Заказ отменён', 'success');
+                await loadOrders();
+                return;
+            }
             
-            showNotification('✅ Заказ отменён' + (orderData.status !== 'pending' ? ', средства возвращены' : ''), 'success');
-            await loadOrders();
+            // 3. Если заказ оплачен (paid) — возвращаем деньги
+            if (orderData.status === 'paid' || orderData.status === 'held') {
+                const { refundFunds } = await import('./wallet.js');
+                
+                // Возвращаем деньги покупателю
+                await refundFunds(currentUser.uid, orderData.totalPrice || 0, orderId);
+                
+                await updateDoc(orderRef, {
+                    status: 'cancelled',
+                    cancelledAt: new Date(),
+                    cancelReason: 'Отменено пользователем (возврат средств)'
+                });
+                
+                showNotification('✅ Заказ отменён, средства возвращены на баланс', 'success');
+                await loadOrders();
+                return;
+            }
+            
+            showNotification('❌ Нельзя отменить заказ в текущем статусе', 'error');
             
         } catch (err) {
             console.error('Ошибка отмены:', err);
-            showNotification('❌ Не удалось отменить заказ', 'error');
+            showNotification('❌ Не удалось отменить заказ: ' + err.message, 'error');
         } finally {
             btn.innerHTML = originalText;
             btn.disabled = false;

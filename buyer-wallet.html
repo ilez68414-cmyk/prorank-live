@@ -1651,12 +1651,28 @@ async function processPayment() {
     confirmBtn.disabled = true;
     
     try {
-        await depositBuyerFunds(currentUser.uid, amount, selectedMethod === 'card' ? 'card' : 'sbp');
-        alert(`✅ Баланс пополнен на ${amount.toLocaleString()} ₽!`);
+        // ===== РЕАЛЬНЫЙ ПЛАТЕЖ ЧЕРЕЗ ЮKASSA =====
+        const { createPayment } = await import('./payment.js');
         
-        document.getElementById('depositModal').classList.remove('active');
-        document.getElementById('modalAmount').value = '';
-        await loadWallet();
+        // Создаём виртуальный товар "Пополнение баланса"
+        const result = await createPayment(
+            'deposit_' + Date.now(), // productId
+            currentUser.uid,
+            amount,
+            'Пополнение баланса'
+        );
+        
+        if (result.paymentUrl) {
+            // Перенаправляем на оплату
+            window.location.href = result.paymentUrl;
+        } else {
+            // Тестовый режим
+            await depositBuyerFunds(currentUser.uid, amount, selectedMethod === 'card' ? 'card' : 'sbp');
+            alert(`✅ Баланс пополнен на ${amount.toLocaleString()} ₽!`);
+            document.getElementById('depositModal').classList.remove('active');
+            document.getElementById('modalAmount').value = '';
+            await loadWallet();
+        }
     } catch (err) {
         console.error('Ошибка:', err);
         alert(`❌ ${err.message || 'Ошибка при пополнении баланса'}`);

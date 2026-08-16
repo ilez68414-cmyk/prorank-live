@@ -1,11 +1,10 @@
 // ============================================================
-// МОДУЛЬ ПЛАТЕЖЕЙ И БЕЙДЖЕЙ
+// МОДУЛЬ ПЛАТЕЖЕЙ И БЕЙДЖЕЙ — ПОЛНАЯ ВЕРСИЯ
 // ============================================================
 
 import { initializeApp } from "firebase/app";
 import { getFirestore, doc, setDoc, getDoc, updateDoc, collection, addDoc, query, where, getDocs, serverTimestamp, runTransaction } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
-// ===== ДОБАВЛЕНО: ИМПОРТ ДЛЯ PUSH-УВЕДОМЛЕНИЙ =====
 import { notifyAboutPremium } from './push-sender.js';
 
 const firebaseConfig = {
@@ -22,16 +21,17 @@ const db = getFirestore(app);
 const auth = getAuth();
 
 // ============================================================
-// КОНФИГУРАЦИЯ ЮKASSA — ВСТАВЬ СВОИ КЛЮЧИ!
+// КОНФИГУРАЦИЯ ЮKASSA
 // ============================================================
-const YOOKASSA_SHOP_ID = 'ВАШ_SHOP_ID';        // ← ВСТАВИТЬ
-const YOOKASSA_SECRET_KEY = 'ВАШ_SECRET_KEY';   // ← ВСТАВИТЬ
+const YOOKASSA_SHOP_ID = 'ВАШ_SHOP_ID';           // ← ВСТАВИТЬ
+const YOOKASSA_SECRET_KEY = 'ВАШ_SECRET_KEY';     // ← ВСТАВИТЬ
+const YOOKASSA_AGENT_ID = 'ВАШ_AGENT_ID';         // ← Твой shopId в ЮKassa (получишь после подключения)
 
-// 🔧 РЕЖИМ: 'test' — заглушка (без реальных денег), 'production' — реальные платежи
+const PLATFORM_COMMISSION = 0.10; // 10% комиссия платформы
 const PAYMENT_MODE = 'test'; // 'test' или 'production'
 
 // ============================================================
-// ВСЕ БЕЙДЖИ (>20 ШТУК)
+// ВСЕ БЕЙДЖИ
 // ============================================================
 export const ALL_BADGES = [
     { id: 'badge_crown', name: 'Корона', emoji: '👑', isPremium: true },
@@ -59,7 +59,7 @@ export const ALL_BADGES = [
 ];
 
 // ============================================================
-// ТОВАРЫ
+// ТОВАРЫ (цифровые)
 // ============================================================
 export const PRODUCTS = {
     CHALLENGE_5: { id: 'challenge_5', name: '5 вызовов', price: 500, type: 'challenge', amount: 5 },
@@ -164,7 +164,7 @@ export async function selectBadge(userId, badgeId) {
 }
 
 // ============================================================
-// НАЧИСЛЕНИЕ ТОВАРА
+// НАЧИСЛЕНИЕ ЦИФРОВОГО ТОВАРА
 // ============================================================
 export async function applyProduct(userId, product, orderId) {
     await ensureUserFields(userId);
@@ -200,7 +200,6 @@ export async function applyProduct(userId, product, orderId) {
             updates.freeChallenges = currentFree + 5;
             updates.lastPremiumRefresh = new Date();
             
-            // ===== ДОБАВЛЕНО: УВЕДОМЛЕНИЕ О ПРЕМИУМЕ =====
             await notifyAboutPremium(userId, 'activated');
             break;
         }
@@ -222,7 +221,6 @@ export async function applyProduct(userId, product, orderId) {
             updates.totalPaid = (userData.totalPaid || 0) + product.price;
             updates.lastPremiumRefresh = new Date();
             
-            // ===== ДОБАВЛЕНО: УВЕДОМЛЕНИЕ О ПРЕМИУМЕ =====
             await notifyAboutPremium(userId, 'activated');
             break;
         }
@@ -245,7 +243,7 @@ export async function applyProduct(userId, product, orderId) {
 }
 
 // ============================================================
-// СОЗДАНИЕ ПЛАТЕЖА (ЮKassa + ЗАГЛУШКА)
+// 1. ЦИФРОВЫЕ ТОВАРЫ (shop.html)
 // ============================================================
 export async function createPayment(productId, userId) {
     await ensureUserFields(userId);
@@ -256,7 +254,6 @@ export async function createPayment(productId, userId) {
     const user = auth.currentUser;
     if (!user || user.uid !== userId) throw new Error('❌ Не авторизован');
 
-    // Создаём заказ в Firestore
     const orderData = {
         userId: userId,
         productId: product.id,
@@ -276,15 +273,8 @@ export async function createPayment(productId, userId) {
     const orderRef = await addDoc(collection(db, "orders"), orderData);
     const orderId = orderRef.id;
 
-    // ============================================================
-    // 🔥 РЕЖИМ: 'test' — ЗАГЛУШКА (без денег)
-    // ============================================================
     if (PAYMENT_MODE === 'test') {
         console.log('🧪 ТЕСТОВЫЙ РЕЖИМ: оплата без реальных денег');
-        console.log(`💳 Заказ создан: ${orderId}`);
-        console.log(`💰 Сумма: ${product.price} ₽`);
-        console.log(`📦 Товар: ${product.name}`);
-
         setTimeout(async () => {
             try {
                 await updateDoc(orderRef, {
@@ -310,11 +300,7 @@ export async function createPayment(productId, userId) {
         };
     }
 
-    // ============================================================
-    // 🔥 РЕЖИМ: 'production' — РЕАЛЬНЫЕ ПЛАТЕЖИ (ЮKassa)
-    // ============================================================
     try {
-        // Получаем ссылку на страницу с реквизитами
         const siteUrl = 'https://ilez68414-cmyk.github.io/prorank-live';
         
         const response = await fetch('https://api.yookassa.ru/v3/payments', {
@@ -357,19 +343,12 @@ export async function createPayment(productId, userId) {
         });
 
         const data = await response.json();
-
-        if (!response.ok) {
-            console.error('❌ Ошибка ЮKassa:', data);
-            throw new Error(`❌ Ошибка оплаты: ${data.description || 'Неизвестная ошибка'}`);
-        }
+        if (!response.ok) throw new Error(`❌ Ошибка оплаты: ${data.description || 'Неизвестная ошибка'}`);
 
         await updateDoc(orderRef, {
             paymentId: data.id,
             paymentStatus: data.status
         });
-
-        console.log(`✅ Платёж создан: ${data.id}`);
-        console.log(`🔗 Ссылка на оплату: ${data.confirmation.confirmation_url}`);
 
         return {
             orderId: orderId,
@@ -388,79 +367,26 @@ export async function createPayment(productId, userId) {
 }
 
 // ============================================================
-// WEBHOOK ДЛЯ ОБРАБОТКИ УВЕДОМЛЕНИЙ ОТ ЮKASSA
+// 2. МАРКЕТПЛЕЙС — ХОЛД + СПЛИТ (catalog.html, cart.html)
 // ============================================================
-export async function handleYookassaWebhook(req, res) {
-    try {
-        const event = req.body;
-        
-        // Проверяем, что это уведомление об успешной оплате
-        if (event.object && event.object.status === 'succeeded') {
-            const orderId = event.object.metadata?.orderId;
-            const userId = event.object.metadata?.userId;
-            const productId = event.object.metadata?.productId;
-            
-            if (!orderId || !userId || !productId) {
-                console.error('❌ Недостаточно данных в webhook:', event.object.metadata);
-                return res.status(400).send('Missing metadata');
-            }
-            
-            // Находим заказ
-            const orderRef = doc(db, "orders", orderId);
-            const orderSnap = await getDoc(orderRef);
-            
-            if (!orderSnap.exists()) {
-                console.error(`❌ Заказ ${orderId} не найден`);
-                return res.status(404).send('Order not found');
-            }
-            
-            const orderData = orderSnap.data();
-            
-            // Проверяем, не оплачен ли уже заказ
-            if (orderData.status === 'paid') {
-                console.log(`ℹ️ Заказ ${orderId} уже оплачен`);
-                return res.status(200).send('Already paid');
-            }
-            
-            // Находим товар
-            const product = Object.values(PRODUCTS).find(p => p.id === productId);
-            if (!product) {
-                console.error(`❌ Товар ${productId} не найден`);
-                return res.status(400).send('Product not found');
-            }
-            
-            // Начисляем товар пользователю
-            await applyProduct(userId, product, orderId);
-            
-            console.log(`✅ Заказ ${orderId} успешно оплачен и начислен`);
-            return res.status(200).send('OK');
-        }
-        
-        // Если это другое событие — просто подтверждаем получение
-        return res.status(200).send('OK');
-    } catch (err) {
-        console.error('❌ Ошибка обработки webhook:', err);
-        return res.status(500).send('Internal Server Error');
-    }
-}
-
-// ============================================================
-// МАРКЕТПЛЕЙС — ОПЛАТА ТОВАРА С КОМИССИЕЙ
-// ============================================================
-export async function createMarketplacePayment(productId, buyerId, sellerId, price) {
+export async function createMarketplacePayment(productId, buyerId, sellerId, price, sellerShopId) {
     if (!productId || !buyerId || !sellerId || !price) {
         throw new Error('❌ Недостаточно данных для оплаты');
     }
     
+    if (!sellerShopId || sellerShopId === 'null' || sellerShopId === 'undefined') {
+        throw new Error('❌ Продавец не подключён к ЮKassa (нет shopId)');
+    }
+    
     await ensureUserFields(buyerId);
     
-    const commission = Math.round(price * 0.1); // 10% комиссия
+    const commission = Math.round(price * PLATFORM_COMMISSION * 100) / 100;
     const sellerAmount = price - commission;
     
-    // Создаём заказ в маркетплейсе
     const orderData = {
         buyerId: buyerId,
         sellerId: sellerId,
+        sellerShopId: sellerShopId,
         productId: productId,
         totalAmount: price,
         commission: commission,
@@ -468,6 +394,8 @@ export async function createMarketplacePayment(productId, buyerId, sellerId, pri
         status: 'pending',
         createdAt: new Date(),
         paidAt: null,
+        paymentId: null,
+        holdUntil: null,
         metadata: {
             type: 'marketplace',
             productId: productId
@@ -477,26 +405,18 @@ export async function createMarketplacePayment(productId, buyerId, sellerId, pri
     const orderRef = await addDoc(collection(db, "marketplace_orders"), orderData);
     const orderId = orderRef.id;
     
-    // ============================================================
-    // 🔥 РЕЖИМ: 'test' — ЗАГЛУШКА
-    // ============================================================
     if (PAYMENT_MODE === 'test') {
-        console.log('🧪 ТЕСТОВЫЙ РЕЖИМ: оплата товара в маркетплейсе');
-        console.log(`💳 Заказ создан: ${orderId}`);
-        console.log(`💰 Сумма: ${price} ₽ (комиссия: ${commission} ₽, продавцу: ${sellerAmount} ₽)`);
-        
+        console.log('🧪 ТЕСТОВЫЙ РЕЖИМ: оплата товара в маркетплейсе с холдом');
         setTimeout(async () => {
             try {
                 await updateDoc(orderRef, {
-                    status: 'paid',
-                    paidAt: new Date()
+                    status: 'held',
+                    paidAt: new Date(),
+                    paymentId: 'test_payment_' + Date.now()
                 });
-                
-                // Зачисляем деньги продавцу
-                await addToPartnerWallet(sellerId, sellerAmount, orderId, `Продажа товара (комиссия ${commission} ₽)`);
-                console.log(`✅ Тестовый платёж в маркетплейсе проведён`);
+                console.log(`✅ Тестовый платёж в маркетплейсе создан (холд)`);
             } catch (err) {
-                console.error('❌ Ошибка начисления:', err);
+                console.error('❌ Ошибка:', err);
                 await updateDoc(orderRef, { status: 'failed' });
             }
         }, 2000);
@@ -512,9 +432,6 @@ export async function createMarketplacePayment(productId, buyerId, sellerId, pri
         };
     }
     
-    // ============================================================
-    // 🔥 РЕЖИМ: 'production' — РЕАЛЬНЫЕ ПЛАТЕЖИ
-    // ============================================================
     try {
         const siteUrl = 'https://ilez68414-cmyk.github.io/prorank-live';
         const productName = `Товар в маркетплейсе #${productId}`;
@@ -531,10 +448,10 @@ export async function createMarketplacePayment(productId, buyerId, sellerId, pri
                     value: price.toFixed(2),
                     currency: 'RUB'
                 },
-                capture: true,
+                capture: false,
                 confirmation: {
                     type: 'redirect',
-                    return_url: `${siteUrl}/marketplace.html?payment=success&order=${orderId}`
+                    return_url: `${siteUrl}/my-orders.html?payment=success&order=${orderId}`
                 },
                 description: productName,
                 receipt: {
@@ -550,6 +467,22 @@ export async function createMarketplacePayment(productId, buyerId, sellerId, pri
                         payment_subject: 'service'
                     }]
                 },
+                transfers: [
+                    {
+                        account_id: sellerShopId,
+                        amount: {
+                            value: sellerAmount.toFixed(2),
+                            currency: 'RUB'
+                        }
+                    },
+                    {
+                        account_id: YOOKASSA_AGENT_ID,
+                        amount: {
+                            value: commission.toFixed(2),
+                            currency: 'RUB'
+                        }
+                    }
+                ],
                 metadata: {
                     orderId: orderId,
                     buyerId: buyerId,
@@ -561,18 +494,13 @@ export async function createMarketplacePayment(productId, buyerId, sellerId, pri
         });
         
         const data = await response.json();
-        
-        if (!response.ok) {
-            console.error('❌ Ошибка ЮKassa:', data);
-            throw new Error(`❌ Ошибка оплаты: ${data.description || 'Неизвестная ошибка'}`);
-        }
+        if (!response.ok) throw new Error(`❌ Ошибка оплаты: ${data.description || 'Неизвестная ошибка'}`);
         
         await updateDoc(orderRef, {
             paymentId: data.id,
-            paymentStatus: data.status
+            paymentStatus: data.status,
+            holdUntil: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
         });
-        
-        console.log(`✅ Платёж в маркетплейсе создан: ${data.id}`);
         
         return {
             orderId: orderId,
@@ -592,7 +520,215 @@ export async function createMarketplacePayment(productId, buyerId, sellerId, pri
 }
 
 // ============================================================
-// ЗАЧИСЛЕНИЕ ДЕНЕГ ПАРТНЁРУ (ДЛЯ МАРКЕТПЛЕЙСА)
+// 3. ПОДТВЕРЖДЕНИЕ ПОЛУЧЕНИЯ (my-orders.html)
+// ============================================================
+export async function confirmMarketplaceOrder(orderId) {
+    const orderRef = doc(db, "marketplace_orders", orderId);
+    const orderSnap = await getDoc(orderRef);
+    if (!orderSnap.exists()) throw new Error('❌ Заказ не найден');
+    
+    const order = orderSnap.data();
+    if (order.status !== 'held') throw new Error('❌ Заказ не в статусе холда');
+    if (!order.paymentId) throw new Error('❌ Нет paymentId');
+    
+    if (PAYMENT_MODE === 'test') {
+        await updateDoc(orderRef, {
+            status: 'completed',
+            completedAt: new Date()
+        });
+        return { success: true };
+    }
+    
+    try {
+        const response = await fetch(`https://api.yookassa.ru/v3/payments/${order.paymentId}/capture`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Basic ${btoa(YOOKASSA_SHOP_ID + ':' + YOOKASSA_SECRET_KEY)}`
+            },
+            body: JSON.stringify({
+                amount: {
+                    value: order.totalAmount.toFixed(2),
+                    currency: 'RUB'
+                },
+                transfers: [
+                    {
+                        account_id: order.sellerShopId,
+                        amount: {
+                            value: order.sellerAmount.toFixed(2),
+                            currency: 'RUB'
+                        }
+                    },
+                    {
+                        account_id: YOOKASSA_AGENT_ID,
+                        amount: {
+                            value: order.commission.toFixed(2),
+                            currency: 'RUB'
+                        }
+                    }
+                ]
+            })
+        });
+        
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.description);
+        
+        await updateDoc(orderRef, {
+            status: 'completing',
+            confirmedAt: new Date()
+        });
+        
+        return { success: true, status: data.status };
+        
+    } catch (err) {
+        console.error('❌ Ошибка подтверждения:', err);
+        throw err;
+    }
+}
+
+// ============================================================
+// 4. ОТМЕНА ЗАКАЗА (my-orders.html, partner-orders.html)
+// ============================================================
+export async function cancelMarketplaceOrder(orderId, reason = 'Отменено пользователем') {
+    const orderRef = doc(db, "marketplace_orders", orderId);
+    const orderSnap = await getDoc(orderRef);
+    if (!orderSnap.exists()) throw new Error('❌ Заказ не найден');
+    
+    const order = orderSnap.data();
+    if (order.status === 'completed') throw new Error('❌ Нельзя отменить завершённый заказ');
+    if (!order.paymentId) throw new Error('❌ Нет paymentId');
+    
+    if (PAYMENT_MODE === 'test') {
+        await updateDoc(orderRef, {
+            status: 'cancelled',
+            cancelledAt: new Date(),
+            cancelReason: reason
+        });
+        return { success: true };
+    }
+    
+    try {
+        const response = await fetch(`https://api.yookassa.ru/v3/payments/${order.paymentId}/cancel`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Basic ${btoa(YOOKASSA_SHOP_ID + ':' + YOOKASSA_SECRET_KEY)}`
+            }
+        });
+        
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.description);
+        
+        await updateDoc(orderRef, {
+            status: 'cancelled',
+            cancelledAt: new Date(),
+            cancelReason: reason
+        });
+        
+        return { success: true };
+        
+    } catch (err) {
+        console.error('❌ Ошибка отмены:', err);
+        throw err;
+    }
+}
+
+// ============================================================
+// 5. ПОПОЛНЕНИЕ БАЛАНСА (buyer-wallet.html)
+// ============================================================
+export async function createDepositPayment(userId, amount, description = 'Пополнение баланса') {
+    if (!userId || !amount || amount < 100) {
+        throw new Error('❌ Минимальная сумма пополнения — 100 ₽');
+    }
+
+    if (PAYMENT_MODE === 'test') {
+        return {
+            status: 'pending',
+            paymentUrl: null,
+            isTest: true
+        };
+    }
+
+    try {
+        const siteUrl = 'https://ilez68414-cmyk.github.io/prorank-live';
+        const orderId = 'deposit_' + Date.now() + '_' + userId.slice(0, 6);
+
+        const response = await fetch('https://api.yookassa.ru/v3/payments', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Idempotence-Key': orderId,
+                'Authorization': `Basic ${btoa(YOOKASSA_SHOP_ID + ':' + YOOKASSA_SECRET_KEY)}`
+            },
+            body: JSON.stringify({
+                amount: {
+                    value: amount.toFixed(2),
+                    currency: 'RUB'
+                },
+                capture: true,
+                confirmation: {
+                    type: 'redirect',
+                    return_url: `${siteUrl}/buyer-wallet.html?payment=success`
+                },
+                description: description,
+                receipt: {
+                    items: [{
+                        description: description,
+                        quantity: 1,
+                        amount: {
+                            value: amount.toFixed(2),
+                            currency: 'RUB'
+                        },
+                        vat_code: 1,
+                        payment_mode: 'full_payment',
+                        payment_subject: 'service'
+                    }]
+                },
+                metadata: {
+                    type: 'deposit',
+                    userId: userId,
+                    amount: amount
+                }
+            })
+        });
+
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.description);
+
+        return {
+            status: data.status,
+            paymentUrl: data.confirmation.confirmation_url,
+            paymentId: data.id
+        };
+    } catch (err) {
+        console.error('❌ Ошибка создания платежа:', err);
+        throw err;
+    }
+}
+
+// ============================================================
+// 6. ПОЛУЧИТЬ SHOP_ID ПРОДАВЦА
+// ============================================================
+export async function getSellerShopId(sellerId) {
+    if (!sellerId) throw new Error('❌ Не указан ID продавца');
+    
+    const sellerRef = doc(db, "partners", sellerId);
+    const sellerSnap = await getDoc(sellerRef);
+    
+    if (!sellerSnap.exists()) {
+        throw new Error('❌ Продавец не найден');
+    }
+    
+    const shopId = sellerSnap.data().yookassaShopId;
+    if (!shopId || shopId === 'null' || shopId === 'undefined') {
+        throw new Error('❌ Продавец не подключён к ЮKassa (нет shopId)');
+    }
+    
+    return shopId;
+}
+
+// ============================================================
+// 7. ЗАЧИСЛЕНИЕ ДЕНЕГ ПАРТНЁРУ
 // ============================================================
 export async function addToPartnerWallet(partnerId, amount, orderId, description = '') {
     if (!partnerId || !amount || amount <= 0) return false;
@@ -631,7 +767,7 @@ export async function addToPartnerWallet(partnerId, amount, orderId, description
 }
 
 // ============================================================
-// ПРОВЕРКА СТАТУСА ЗАКАЗА ПО PAYMENT_ID (ЮKassa)
+// 8. ПРОВЕРКА СТАТУСА ПЛАТЕЖА
 // ============================================================
 export async function checkPaymentStatus(paymentId) {
     if (PAYMENT_MODE === 'test') {
@@ -655,7 +791,7 @@ export async function checkPaymentStatus(paymentId) {
 }
 
 // ============================================================
-// ПРОВЕРКА СТАТУСА ЗАКАЗА ПО ID
+// 9. ПРОВЕРКА СТАТУСА ЗАКАЗА ПО ID
 // ============================================================
 export async function checkOrderStatus(orderId) {
     const orderRef = doc(db, "orders", orderId);
@@ -671,7 +807,7 @@ export async function checkOrderStatus(orderId) {
 }
 
 // ============================================================
-// ПОЛУЧИТЬ ВСЕ ЗАКАЗЫ ПОЛЬЗОВАТЕЛЯ
+// 10. ПОЛУЧИТЬ ВСЕ ЗАКАЗЫ ПОЛЬЗОВАТЕЛЯ
 // ============================================================
 export async function getUserOrders(userId) {
     const q = query(
@@ -691,6 +827,162 @@ export async function getUserOrders(userId) {
         });
     });
     return orders;
+}
+
+// ============================================================
+// 11. ВЕБХУК ДЛЯ ЮKASSA
+// ============================================================
+export async function handleYookassaWebhook(req, res) {
+    try {
+        const event = req.body;
+        const metadata = event.object?.metadata || {};
+        const orderId = metadata.orderId;
+        
+        console.log('📩 Получен вебхук:', event.object?.status, 'orderId:', orderId);
+        
+        // ===== ПОПОЛНЕНИЕ БАЛАНСА =====
+        if (metadata.type === 'deposit' && event.object?.status === 'succeeded') {
+            const userId = metadata.userId;
+            const amount = parseFloat(metadata.amount);
+            
+            if (!userId || !amount) {
+                console.error('❌ Недостаточно данных для пополнения');
+                return res.status(400).send('Missing metadata');
+            }
+            
+            const { depositFunds } = await import('./wallet.js');
+            await depositFunds(userId, amount, 'ЮKassa');
+            
+            console.log(`✅ Баланс пользователя ${userId} пополнен на ${amount} ₽`);
+            return res.status(200).send('OK');
+        }
+        
+        // ===== МАРКЕТПЛЕЙС — ХОЛД =====
+        if (metadata.type === 'marketplace' && event.object?.status === 'waiting_for_capture') {
+            if (!orderId) return res.status(400).send('Missing orderId');
+            
+            const orderRef = doc(db, "marketplace_orders", orderId);
+            const orderSnap = await getDoc(orderRef);
+            
+            if (!orderSnap.exists()) {
+                console.error(`❌ Заказ ${orderId} не найден`);
+                return res.status(404).send('Order not found');
+            }
+            
+            const order = orderSnap.data();
+            if (order.status !== 'pending') {
+                console.log(`ℹ️ Заказ ${orderId} уже обработан (статус: ${order.status})`);
+                return res.status(200).send('Already processed');
+            }
+            
+            await updateDoc(orderRef, {
+                status: 'held',
+                paymentStatus: 'waiting_for_capture',
+                heldAt: new Date()
+            });
+            
+            console.log(`✅ Заказ ${orderId} заморожен (холд)`);
+            return res.status(200).send('OK');
+        }
+        
+        // ===== МАРКЕТПЛЕЙС — ПОДТВЕРЖДЁН =====
+        if (metadata.type === 'marketplace' && event.object?.status === 'succeeded') {
+            if (!orderId) return res.status(400).send('Missing orderId');
+            
+            const orderRef = doc(db, "marketplace_orders", orderId);
+            const orderSnap = await getDoc(orderRef);
+            
+            if (!orderSnap.exists()) {
+                console.error(`❌ Заказ ${orderId} не найден`);
+                return res.status(404).send('Order not found');
+            }
+            
+            const order = orderSnap.data();
+            if (order.status === 'completed') {
+                console.log(`ℹ️ Заказ ${orderId} уже завершён`);
+                return res.status(200).send('Already completed');
+            }
+            
+            await updateDoc(orderRef, {
+                status: 'completed',
+                completedAt: new Date(),
+                paymentStatus: 'succeeded'
+            });
+            
+            await addDoc(collection(db, "wallet_transactions"), {
+                orderId: orderId,
+                buyerId: metadata.buyerId,
+                sellerId: metadata.sellerId,
+                amount: order.totalAmount,
+                commission: order.commission,
+                type: 'marketplace_sale',
+                status: 'completed',
+                createdAt: new Date()
+            });
+            
+            console.log(`✅ Заказ ${orderId} завершён, средства распределены`);
+            return res.status(200).send('OK');
+        }
+        
+        // ===== МАРКЕТПЛЕЙС — ОТМЕНЁН =====
+        if (metadata.type === 'marketplace' && event.object?.status === 'canceled') {
+            if (!orderId) return res.status(400).send('Missing orderId');
+            
+            const orderRef = doc(db, "marketplace_orders", orderId);
+            const orderSnap = await getDoc(orderRef);
+            
+            if (orderSnap.exists()) {
+                await updateDoc(orderRef, {
+                    status: 'cancelled',
+                    cancelledAt: new Date(),
+                    cancelReason: 'Отменено ЮKassa (истекло время или отклонено)'
+                });
+                console.log(`❌ Заказ ${orderId} отменён ЮKassa`);
+            }
+            return res.status(200).send('OK');
+        }
+        
+        // ===== ЦИФРОВЫЕ ТОВАРЫ (shop.html) =====
+        if (metadata.productId && event.object?.status === 'succeeded') {
+            const userId = metadata.userId;
+            const productId = metadata.productId;
+            
+            if (!orderId || !userId || !productId) {
+                console.error('❌ Недостаточно данных в webhook');
+                return res.status(400).send('Missing metadata');
+            }
+            
+            const orderRef = doc(db, "orders", orderId);
+            const orderSnap = await getDoc(orderRef);
+            
+            if (!orderSnap.exists()) {
+                console.error(`❌ Заказ ${orderId} не найден`);
+                return res.status(404).send('Order not found');
+            }
+            
+            const orderData = orderSnap.data();
+            if (orderData.status === 'paid') {
+                console.log(`ℹ️ Заказ ${orderId} уже оплачен`);
+                return res.status(200).send('Already paid');
+            }
+            
+            const product = Object.values(PRODUCTS).find(p => p.id === productId);
+            if (!product) {
+                console.error(`❌ Товар ${productId} не найден`);
+                return res.status(400).send('Product not found');
+            }
+            
+            await applyProduct(userId, product, orderId);
+            console.log(`✅ Заказ ${orderId} успешно оплачен и начислен`);
+            return res.status(200).send('OK');
+        }
+        
+        return res.status(200).send('OK');
+        
+    } catch (err) {
+        console.error('❌ Ошибка обработки webhook:', err);
+        return res.status(500).send('Internal Server Error');
+    }
 }
 
 // ============================================================
