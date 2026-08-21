@@ -953,6 +953,15 @@ async function initHeader() {
     setupGlobalNavigation();
 }
 
+// ===== ЭКСПОРТЫ ДЛЯ ДРУГИХ МОДУЛЕЙ =====
+export { 
+    renderMobileBottomNav, 
+    initHeader, 
+    navigateWithAnimation,
+    updateFighterMoneyBalance,
+    updatePartnerWalletBalance
+};
+
 // ===== АНИМАЦИЯ ВХОДА НА СТРАНИЦУ =====
 if (document.readyState === 'complete') {
     setTimeout(animatePageIn, 100);

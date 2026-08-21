@@ -1677,19 +1677,22 @@
 
     <div id="errorContainer" style="position:fixed;top:15px;left:50%;transform:translateX(-50%);z-index:9999;max-width:90%;width:480px;padding:14px 20px;border-radius:16px;font-weight:600;font-size:0.9rem;animation:slideDown 0.3s ease;box-shadow:0 10px 30px rgba(0,0,0,0.4);backdrop-filter:blur(8px);display:none;text-align:center;border:1px solid rgba(255,255,255,0.1);"></div>
 
-    <script type="module" src="header.js?v=3"></script>
 
     <script type="importmap">
-        {
-            "imports": {
-                "firebase/app": "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js",
-                "firebase/firestore": "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js",
-                "firebase/auth": "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js"
-            }
-        }
-    </script>
-    <script type="module">
-    // ===== ИМПОРТЫ =====
+{
+    "imports": {
+        "firebase/app": "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js",
+        "firebase/firestore": "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js",
+        "firebase/auth": "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js"
+    }
+}
+</script>
+
+<!-- ===== ПЕРВЫЙ СКРИПТ: header.js (как было) ===== -->
+<script type="module" src="header.js?v=3"></script>
+
+<!-- ===== ВТОРОЙ СКРИПТ: ОСНОВНАЯ ЛОГИКА ===== -->
+<script type="module">
     import { initializeApp } from "firebase/app";
     import { getFirestore, collection, getDocs, query, where, doc, getDoc } from "firebase/firestore";
     import { getAuth, onAuthStateChanged } from "firebase/auth";
@@ -2297,236 +2300,214 @@
         `;
     }
 
-    // ===== АНАЛИТИКА ТОВАРОВ (БЕЗОПАСНАЯ ВЕРСИЯ ЧЕРЕЗ DOM) =====
-function renderProductsAnalytics(products, totalRevenue) {
-    const container = document.getElementById('productsList');
-    const totalEl = document.getElementById('productsTotal');
-    
-    totalEl.textContent = `Всего: ${products.length} товаров`;
+    // ===== АНАЛИТИКА ТОВАРОВ (ОРИГИНАЛЬНАЯ ВЕРСИЯ) =====
+    function renderProductsAnalytics(products, totalRevenue) {
+        const container = document.getElementById('productsList');
+        const totalEl = document.getElementById('productsTotal');
+        
+        totalEl.textContent = `Всего: ${products.length} товаров`;
 
-    // Очищаем контейнер
-    container.innerHTML = '';
+        // ОЧИЩАЕМ КОНТЕЙНЕР
+        container.innerHTML = '';
 
-    if (products.length === 0) {
-        const noData = document.createElement('div');
-        noData.className = 'no-data-products';
-        noData.textContent = 'Нет данных о товарах';
-        container.appendChild(noData);
-        return;
-    }
+        if (products.length === 0) {
+            const noData = document.createElement('div');
+            noData.className = 'no-data-products';
+            noData.textContent = 'Нет данных о товарах';
+            container.appendChild(noData);
+            return;
+        }
 
-    // Сортировка
-    let sorted = [...products];
-    if (currentSort === 'revenue') {
-        sorted.sort((a, b) => b.revenue - a.revenue);
-    } else if (currentSort === 'quantity') {
-        sorted.sort((a, b) => b.count - a.count);
-    } else if (currentSort === 'rating') {
-        sorted.sort((a, b) => (b.rating || 0) - (a.rating || 0));
-    }
+        // СОРТИРОВКА
+        let sorted = [...products];
+        if (currentSort === 'revenue') {
+            sorted.sort((a, b) => b.revenue - a.revenue);
+        } else if (currentSort === 'quantity') {
+            sorted.sort((a, b) => b.count - a.count);
+        } else if (currentSort === 'rating') {
+            sorted.sort((a, b) => (b.rating || 0) - (a.rating || 0));
+        }
 
-    const rankIcons = ['🏆', '🥈', '🥉'];
-    const rankClasses = ['gold', 'silver', 'bronze'];
-    const displayProducts = sorted.slice(0, 50);
+        const rankIcons = ['🏆', '🥈', '🥉'];
+        const rankClasses = ['gold', 'silver', 'bronze'];
+        
+        // ОГРАНИЧИВАЕМ ДО 50 ДЛЯ ПРОИЗВОДИТЕЛЬНОСТИ
+        const displayProducts = sorted.slice(0, 50);
 
-    // === ФУНКЦИЯ СОЗДАНИЯ КАРТОЧКИ ===
-    function createProductCard(product, index) {
-        const percent = totalRevenue > 0 ? (product.revenue / totalRevenue * 100) : 0;
-        const rankIcon = rankIcons[index] || `${index + 1}`;
-        const rankClass = rankClasses[index] || '';
-        const isExpanded = expandedProduct === product.id;
-        const avgPrice = product.count > 0 ? Math.round(product.revenue / product.count) : product.price || 0;
-        const rating = product.rating || 0;
-        const hasImage = product.image && product.image.length > 0;
-        const percentClass = percent > 30 ? 'high' : '';
-        
-        const countText = product.count || 0;
-        const revenueText = product.revenue > 0 ? product.revenue.toLocaleString() : '0';
-        const ratingText = product.rating ? product.rating.toFixed(1) : '0.0';
-        
-        // === ОСНОВНАЯ КАРТОЧКА ===
-        const card = document.createElement('div');
-        card.className = 'product-card';
-        
-        // === СТРОКА ТОВАРА ===
-        const row = document.createElement('div');
-        row.className = 'product-row';
-        row.setAttribute('data-product-id', product.id);
-        
-        // Клик по строке
-        row.addEventListener('click', function(e) {
-            // Игнорируем клики по кнопкам внутри
-            if (e.target.closest('.btn-sm')) return;
-            const id = this.getAttribute('data-product-id');
-            window.toggleProduct(id);
-        });
-        
-        // === РЕЙТИНГ/МЕСТО ===
-        const rank = document.createElement('span');
-        rank.className = 'rank ' + rankClass;
-        rank.textContent = rankIcon;
-        row.appendChild(rank);
-        
-        // === ФОТО ===
-        const thumb = document.createElement('div');
-        thumb.className = 'product-thumb';
-        
-        if (hasImage) {
-            const img = document.createElement('img');
-            img.src = product.image;
-            img.alt = product.name;
-            img.onerror = function() {
-                this.style.display = 'none';
+        // ИСПОЛЬЗУЕМ ОБЫЧНЫЙ ЦИКЛ
+        displayProducts.forEach((product, index) => {
+            const percent = totalRevenue > 0 ? (product.revenue / totalRevenue * 100) : 0;
+            const rankIcon = rankIcons[index] || `${index + 1}`;
+            const rankClass = rankClasses[index] || '';
+            const isExpanded = expandedProduct === product.id;
+            const avgPrice = product.count > 0 ? Math.round(product.revenue / product.count) : product.price || 0;
+            const rating = product.rating || 0;
+            const hasImage = product.image && product.image.length > 0;
+            const percentClass = percent > 30 ? 'high' : '';
+            
+            // ===== СОЗДАЁМ КАРТОЧКУ =====
+            const card = document.createElement('div');
+            card.className = 'product-card';
+            
+            // Строка товара
+            const row = document.createElement('div');
+            row.className = 'product-row';
+            row.setAttribute('data-product-id', product.id);
+            
+            row.addEventListener('click', function(e) {
+                if (e.target.closest('.btn-sm')) return;
+                const id = this.getAttribute('data-product-id');
+                toggleProduct(id);
+            });
+            
+            // Рейтинг/место
+            const rank = document.createElement('span');
+            rank.className = 'rank ' + rankClass;
+            rank.textContent = rankIcon;
+            row.appendChild(rank);
+            
+            // Фото
+            const thumb = document.createElement('div');
+            thumb.className = 'product-thumb';
+            
+            if (hasImage) {
+                const img = document.createElement('img');
+                img.src = product.image;
+                img.alt = product.name;
+                img.onerror = function() {
+                    this.style.display = 'none';
+                    const placeholder = document.createElement('div');
+                    placeholder.className = 'product-thumb-placeholder';
+                    placeholder.textContent = product.name.charAt(0).toUpperCase();
+                    thumb.appendChild(placeholder);
+                };
+                thumb.appendChild(img);
+            } else {
                 const placeholder = document.createElement('div');
                 placeholder.className = 'product-thumb-placeholder';
                 placeholder.textContent = product.name.charAt(0).toUpperCase();
                 thumb.appendChild(placeholder);
-            };
-            thumb.appendChild(img);
-        } else {
-            const placeholder = document.createElement('div');
-            placeholder.className = 'product-thumb-placeholder';
-            placeholder.textContent = product.name.charAt(0).toUpperCase();
-            thumb.appendChild(placeholder);
-        }
-        row.appendChild(thumb);
-        
-        // === ИНФОРМАЦИЯ ===
-        const info = document.createElement('div');
-        info.className = 'info';
-        
-        const name = document.createElement('div');
-        name.className = 'name';
-        name.textContent = product.name;
-        name.title = product.name;
-        info.appendChild(name);
-        
-        const meta = document.createElement('div');
-        meta.className = 'meta';
-        
-        // Метка "шт"
-        const countItem = document.createElement('span');
-        countItem.className = 'meta-item count';
-        countItem.innerHTML = '<span class="meta-icon">📦</span><span class="meta-value">' + countText + '</span> шт';
-        meta.appendChild(countItem);
-        
-        // Метка "₽"
-        const revenueItem = document.createElement('span');
-        revenueItem.className = 'meta-item revenue';
-        revenueItem.innerHTML = '<span class="meta-icon">💰</span><span class="meta-value">' + revenueText + '</span> ₽';
-        meta.appendChild(revenueItem);
-        
-        // Метка "⭐"
-        const ratingItem = document.createElement('span');
-        ratingItem.className = 'meta-item rating';
-        ratingItem.innerHTML = '<span class="meta-icon">⭐</span><span class="meta-value">' + ratingText + '</span>';
-        meta.appendChild(ratingItem);
-        
-        info.appendChild(meta);
-        row.appendChild(info);
-        
-        // === ПРОГРЕСС-БАР ===
-        const barLine = document.createElement('div');
-        barLine.className = 'bar-line';
-        const fill = document.createElement('div');
-        fill.className = 'fill';
-        fill.style.width = Math.min(percent, 100) + '%';
-        barLine.appendChild(fill);
-        row.appendChild(barLine);
-        
-        // === ПРОЦЕНТ ===
-        const percentEl = document.createElement('span');
-        percentEl.className = 'percent ' + percentClass;
-        percentEl.textContent = percent.toFixed(1) + '%';
-        row.appendChild(percentEl);
-        
-        // === СТРЕЛОЧКА ===
-        const expandIcon = document.createElement('span');
-        expandIcon.className = 'expand-icon' + (isExpanded ? ' open' : '');
-        expandIcon.innerHTML = '<i class="fas fa-chevron-down"></i>';
-        row.appendChild(expandIcon);
-        
-        card.appendChild(row);
-        
-        // === ДЕТАЛИ (если раскрыто) ===
-        if (isExpanded) {
-            const detail = document.createElement('div');
-            detail.className = 'product-detail';
+            }
+            row.appendChild(thumb);
             
-            const grid = document.createElement('div');
-            grid.className = 'detail-grid';
+            // Информация
+            const info = document.createElement('div');
+            info.className = 'info';
             
-            const detailItems = [
-                { label: 'Общая выручка', value: product.revenue.toLocaleString() + ' ₽', cls: 'gold' },
-                { label: 'Продано штук', value: (product.count || 0) + ' шт', cls: '' },
-                { label: 'Средняя цена', value: avgPrice.toLocaleString() + ' ₽', cls: 'green' },
-                { label: 'Заказов с товаром', value: product.orders || 0, cls: 'blue' },
-                { label: 'Рейтинг', value: rating.toFixed(1) + ' ★', cls: 'gold' },
-                { label: 'Комиссия (10%)', value: (product.revenue * 0.1).toLocaleString() + ' ₽', cls: 'green' }
-            ];
+            const name = document.createElement('div');
+            name.className = 'name';
+            name.textContent = product.name;
+            name.title = product.name;
+            info.appendChild(name);
             
-            detailItems.forEach(function(item) {
-                const div = document.createElement('div');
-                div.className = 'detail-item';
+            const meta = document.createElement('div');
+            meta.className = 'meta';
+            
+            const countItem = document.createElement('span');
+            countItem.className = 'meta-item count';
+            countItem.innerHTML = `<span class="meta-icon">📦</span><span class="meta-value">${product.count || 0}</span> шт`;
+            meta.appendChild(countItem);
+            
+            const revenueItem = document.createElement('span');
+            revenueItem.className = 'meta-item revenue';
+            revenueItem.innerHTML = `<span class="meta-icon">💰</span><span class="meta-value">${product.revenue.toLocaleString()}</span> ₽`;
+            meta.appendChild(revenueItem);
+            
+            const ratingItem = document.createElement('span');
+            ratingItem.className = 'meta-item rating';
+            ratingItem.innerHTML = `<span class="meta-icon">⭐</span><span class="meta-value">${rating.toFixed(1)}</span>`;
+            meta.appendChild(ratingItem);
+            
+            info.appendChild(meta);
+            row.appendChild(info);
+            
+            // Прогресс-бар
+            const barLine = document.createElement('div');
+            barLine.className = 'bar-line';
+            const fill = document.createElement('div');
+            fill.className = 'fill';
+            fill.style.width = Math.min(percent, 100) + '%';
+            barLine.appendChild(fill);
+            row.appendChild(barLine);
+            
+            // Процент
+            const percentEl = document.createElement('span');
+            percentEl.className = 'percent ' + percentClass;
+            percentEl.textContent = percent.toFixed(1) + '%';
+            row.appendChild(percentEl);
+            
+            // Стрелочка
+            const expandIcon = document.createElement('span');
+            expandIcon.className = 'expand-icon' + (isExpanded ? ' open' : '');
+            expandIcon.innerHTML = '<i class="fas fa-chevron-down"></i>';
+            row.appendChild(expandIcon);
+            
+            card.appendChild(row);
+            
+            // Детали (если раскрыто)
+            if (isExpanded) {
+                const detail = document.createElement('div');
+                detail.className = 'product-detail';
                 
-                const label = document.createElement('div');
-                label.className = 'label';
-                label.textContent = item.label;
+                const grid = document.createElement('div');
+                grid.className = 'detail-grid';
                 
-                const value = document.createElement('div');
-                value.className = 'value' + (item.cls ? ' ' + item.cls : '');
-                value.textContent = item.value;
+                const detailItems = [
+                    { label: 'Общая выручка', value: product.revenue.toLocaleString() + ' ₽', cls: 'gold' },
+                    { label: 'Продано штук', value: (product.count || 0) + ' шт', cls: '' },
+                    { label: 'Средняя цена', value: avgPrice.toLocaleString() + ' ₽', cls: 'green' },
+                    { label: 'Заказов с товаром', value: product.orders || 0, cls: 'blue' },
+                    { label: 'Рейтинг', value: rating.toFixed(1) + ' ★', cls: 'gold' },
+                    { label: 'Комиссия (10%)', value: (product.revenue * 0.1).toLocaleString() + ' ₽', cls: 'green' }
+                ];
                 
-                div.appendChild(label);
-                div.appendChild(value);
-                grid.appendChild(div);
-            });
-            
-            detail.appendChild(grid);
-            
-            // Описание
-            if (product.description) {
-                const desc = document.createElement('div');
-                desc.className = 'detail-description';
-                desc.innerHTML = '<i class="fas fa-align-left" style="color:#555;margin-right:8px;"></i>' + product.description;
-                detail.appendChild(desc);
+                detailItems.forEach(function(item) {
+                    const div = document.createElement('div');
+                    div.className = 'detail-item';
+                    
+                    const label = document.createElement('div');
+                    label.className = 'label';
+                    label.textContent = item.label;
+                    
+                    const value = document.createElement('div');
+                    value.className = 'value' + (item.cls ? ' ' + item.cls : '');
+                    value.textContent = item.value;
+                    
+                    div.appendChild(label);
+                    div.appendChild(value);
+                    grid.appendChild(div);
+                });
+                
+                detail.appendChild(grid);
+                
+                // Мини-график
+                const chart = document.createElement('div');
+                chart.className = 'detail-chart';
+                chart.innerHTML = `<svg viewBox="0 0 400 60" preserveAspectRatio="none">${generateMiniChart(product)}</svg>`;
+                detail.appendChild(chart);
+                
+                // Кнопка
+                const action = document.createElement('div');
+                action.className = 'detail-action';
+                const btn = document.createElement('button');
+                btn.className = 'btn-sm';
+                btn.innerHTML = '<i class="fas fa-external-link-alt"></i> Перейти в товары';
+                btn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    window.location.href = 'partner-products.html';
+                });
+                action.appendChild(btn);
+                detail.appendChild(action);
+                
+                card.appendChild(detail);
             }
             
-            // Мини-график
-            const chart = document.createElement('div');
-            chart.className = 'detail-chart';
-            chart.innerHTML = '<svg viewBox="0 0 400 60" preserveAspectRatio="none">' + generateMiniChart(product) + '</svg>';
-            detail.appendChild(chart);
-            
-            // Кнопка действия
-            const action = document.createElement('div');
-            action.className = 'detail-action';
-            
-            const btn = document.createElement('button');
-            btn.className = 'btn-sm';
-            btn.innerHTML = '<i class="fas fa-external-link-alt"></i> Перейти в товары';
-            btn.addEventListener('click', function(e) {
-                e.stopPropagation();
-                window.location.href = 'partner-products.html';
-            });
-            action.appendChild(btn);
-            
-            detail.appendChild(action);
-            card.appendChild(detail);
-        }
-        
-        return card;
+            container.appendChild(card);
+        });
     }
 
-    // === РЕНДЕРИНГ ВСЕХ КАРТОЧЕК ===
-    displayProducts.forEach(function(product, index) {
-        const card = createProductCard(product, index);
-        container.appendChild(card);
-    });
-}
-
     // ===== TOGGLE ТОВАРА =====
-    window.toggleProduct = function(productId) {
+    function toggleProduct(productId) {
         if (expandedProduct === productId) {
             expandedProduct = null;
         } else {
@@ -2535,7 +2516,10 @@ function renderProductsAnalytics(products, totalRevenue) {
         const filtered = filterOrdersByPeriod(allOrders, currentPeriod);
         const stats = calculateStats(filtered, currentPeriod);
         renderProductsAnalytics(stats.allProducts, stats.totalRevenueForPercent);
-    };
+    }
+
+    // ДЕЛАЕМ ГЛОБАЛЬНЫМ
+    window.toggleProduct = toggleProduct;
 
     // ===== ЗАГРУЗКА ДАННЫХ =====
     async function loadData() {
@@ -2651,14 +2635,6 @@ function renderProductsAnalytics(products, totalRevenue) {
     document.getElementById('refreshBtn').addEventListener('click', loadData);
     document.getElementById('exportBtn').addEventListener('click', exportCSV);
 
-    const menuToggle = document.getElementById('menuToggle');
-    const navLinks = document.getElementById('navLinks');
-    if (menuToggle && navLinks) {
-        menuToggle.addEventListener('click', () => {
-            navLinks.classList.toggle('show');
-        });
-    }
-
     // ===== ИНИЦИАЛИЗАЦИЯ =====
     onAuthStateChanged(auth, async (user) => {
         if (!user) {
@@ -2692,34 +2668,97 @@ function renderProductsAnalytics(products, totalRevenue) {
         }
     });
 
-    console.log('✅ Аналитика с табами загружена');
-    console.log('📊 2 раздела: Общая статистика + Аналитика товаров');
-    console.log('📦 Товары загружены из Firebase');
-    console.log('⭐ Рейтинг считается из отзывов');
-    console.log('📈 Сравнение с прошлым периодом работает');
-    console.log('💰 Комиссия 10% от выручки');
-    </script>
+    console.log('✅ Аналитика загружена');
+</script>
 
-    <script type="module">
-    // ===== ФИКС МОБИЛЬНОЙ НАВИГАЦИИ =====
-    import { renderMobileBottomNav } from './header.js';
+<!-- ===== ТРЕТИЙ СКРИПТ: МОБИЛЬНАЯ НАВИГАЦИЯ ===== -->
+<script>
+    // Фолбэк навигация если renderMobileBottomNav не работает
+    function createFallbackMobileNav() {
+        const container = document.getElementById('mobileBottomNavContainer');
+        if (!container) return;
+        
+        // Проверяем, может уже есть навигация
+        if (container.innerHTML && container.innerHTML.includes('mobile-bottom-nav')) {
+            return;
+        }
+        
+        container.innerHTML = `
+            <nav class="mobile-bottom-nav" style="position:fixed;bottom:0;left:0;right:0;background:rgba(15,15,15,0.95);backdrop-filter:blur(12px);border-top:1px solid rgba(251,191,36,0.1);display:flex;justify-content:space-around;padding:8px 0 10px;z-index:999;box-shadow:0 -4px 30px rgba(0,0,0,0.5);">
+                <a href="index.html" class="mobile-nav-item" style="color:#888;text-align:center;font-size:10px;text-decoration:none;display:flex;flex-direction:column;align-items:center;gap:3px;flex:1;padding:4px 0;transition:all 0.2s;">
+                    <i class="fas fa-home" style="font-size:22px;color:#666;"></i>
+                    <span style="font-size:9px;">Главная</span>
+                </a>
+                <a href="catalog.html" class="mobile-nav-item" style="color:#888;text-align:center;font-size:10px;text-decoration:none;display:flex;flex-direction:column;align-items:center;gap:3px;flex:1;padding:4px 0;transition:all 0.2s;">
+                    <i class="fas fa-store" style="font-size:22px;color:#666;"></i>
+                    <span style="font-size:9px;">Каталог</span>
+                </a>
+                <div id="centerActionBtnFallback" style="flex:1;display:flex;justify-content:center;align-items:center;cursor:pointer;">
+                    <div style="width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,#fbbf24,#b8860b);display:flex;align-items:center;justify-content:center;box-shadow:0 4px 20px rgba(251,191,36,0.2);margin-top:-20px;transition:all 0.2s;">
+                        <i class="fas fa-bolt" style="color:#0a0a0a;font-size:24px;"></i>
+                    </div>
+                </div>
+                <a href="chats.html" class="mobile-nav-item" style="color:#888;text-align:center;font-size:10px;text-decoration:none;display:flex;flex-direction:column;align-items:center;gap:3px;flex:1;padding:4px 0;transition:all 0.2s;">
+                    <i class="fas fa-comments" style="font-size:22px;color:#666;"></i>
+                    <span style="font-size:9px;">Чаты</span>
+                </a>
+                <a href="partner-dashboard.html" class="mobile-nav-item active" style="color:#fbbf24;text-align:center;font-size:10px;text-decoration:none;display:flex;flex-direction:column;align-items:center;gap:3px;flex:1;padding:4px 0;transition:all 0.2s;">
+                    <i class="fas fa-chart-line" style="font-size:22px;color:#fbbf24;"></i>
+                    <span style="font-size:9px;">Аналитика</span>
+                </a>
+            </nav>
+        `;
+        
+        // Добавляем стили для активной ссылки
+        const style = document.createElement('style');
+        style.textContent = `
+            .mobile-nav-item.active i { color: #fbbf24 !important; }
+            .mobile-nav-item.active span { color: #fbbf24 !important; }
+            #centerActionBtnFallback:hover > div { transform: scale(1.05); }
+        `;
+        document.head.appendChild(style);
+        
+        console.log('✅ Фолбэк навигация создана');
+        
+        // Клик по центральной кнопке
+        document.getElementById('centerActionBtnFallback')?.addEventListener('click', function() {
+            alert('Быстрые действия:\n- Аналитика\n- Товары\n- Заказы\n- Отзывы');
+        });
+    }
     
-    // Ждём загрузки страницы и авторизации
+    // Основная функция инициализации
     async function initMobileNav() {
         try {
-            console.log('🔧 Загрузка мобильной навигации...');
-            await renderMobileBottomNav();
-            console.log('✅ Мобильная навигация загружена');
+            // Ждём загрузку header.js
+            await new Promise(resolve => setTimeout(resolve, 800));
+            
+            // Пробуем использовать экспортированную функцию
+            if (typeof renderMobileBottomNav === 'function') {
+                await renderMobileBottomNav();
+                console.log('✅ Мобильная навигация загружена (из header.js)');
+                
+                // Проверяем, что навигация действительно появилась
+                const container = document.getElementById('mobileBottomNavContainer');
+                if (container && !container.innerHTML) {
+                    createFallbackMobileNav();
+                }
+            } else {
+                console.warn('⚠️ renderMobileBottomNav не найдена, создаём фолбэк');
+                createFallbackMobileNav();
+            }
         } catch (err) {
             console.error('❌ Ошибка загрузки навигации:', err);
+            createFallbackMobileNav();
         }
     }
     
-    // Запускаем после загрузки DOM
+    // Запускаем
     if (document.readyState === 'complete') {
-        initMobileNav();
+        setTimeout(initMobileNav, 300);
     } else {
-        document.addEventListener('DOMContentLoaded', initMobileNav);
+        document.addEventListener('DOMContentLoaded', () => {
+            setTimeout(initMobileNav, 300);
+        });
     }
 </script>
 </body>

@@ -1,9 +1,9 @@
 // sw-v2.js - Service Worker для PRORANK PWA (v2.0.0)
-const CACHE_NAME = 'prorank-v2.0.5';
+const CACHE_NAME = 'prorank-v2.1.0';
 const OFFLINE_URL = '/prorank-live/offline.html';
 
 // ============================================================
-// ФАЙЛЫ ДЛЯ КЭШИРОВАНИЯ (только фронтенд)
+// ФАЙЛЫ ДЛЯ КЭШИРОВАНИЯ (полный список)
 // ============================================================
 const STATIC_FILES = [
   // === HTML СТРАНИЦЫ ===
@@ -11,7 +11,7 @@ const STATIC_FILES = [
   '/prorank-live/index.html',
   '/prorank-live/about.html',
   '/prorank-live/achievements.html',
-  '/prorank-live/admin.html',
+  '/prorank-live/admin-panel-kx92mh.html',
   '/prorank-live/boxing.html',
   '/prorank-live/buyer-wallet.html',
   '/prorank-live/cart.html',
@@ -20,44 +20,45 @@ const STATIC_FILES = [
   '/prorank-live/chat.html',
   '/prorank-live/chats.html',
   '/prorank-live/disclaimer.html',
-  '/prorank-live/favorites.html',        // ← НОВЫЙ
+  '/prorank-live/favorites.html',
   '/prorank-live/halls.html',
   '/prorank-live/leagues.html',
   '/prorank-live/login.html',
   '/prorank-live/mma.html',
-  '/prorank-live/my-orders.html',        // ← НОВЫЙ
+  '/prorank-live/my-orders.html',
   '/prorank-live/offline.html',
-  '/prorank-live/partner-analytics.html', // ← НОВЫЙ
+  
+  '/prorank-live/partner-analytics.html',
   '/prorank-live/partner-dashboard.html',
   '/prorank-live/partner-orders.html',
   '/prorank-live/partner-products.html',
   '/prorank-live/partner-reviews.html',
+  
   '/prorank-live/privacy.html',
   '/prorank-live/profile.html',
   '/prorank-live/rating.html',
   '/prorank-live/reset-password.html',
   '/prorank-live/rules.html',
   '/prorank-live/shop.html',
-  '/prorank-live/store-profile.html',    // ← НОВЫЙ
-  '/prorank-live/Testovy.html',          // ← НОВЫЙ (если нужен)
+  '/prorank-live/store-profile.html',
   '/prorank-live/wallet.html',
   '/prorank-live/wrestling.html',
 
-  // === JAVASCRIPT ===
+  // === JAVASCRIPT (корневые) ===
   '/prorank-live/error-handler.js',
-  '/prorank-live/fix-prompt.js',          // ← НОВЫЙ
+  '/prorank-live/fix-prompt.js',
   '/prorank-live/header.js',
-  '/prorank-live/OneSignalSDKWorker.js', // ← НОВЫЙ
+  '/prorank-live/OneSignalSDKWorker.js',
   '/prorank-live/payment.js',
   '/prorank-live/premium.js',
-  '/prorank-live/print-utils.js',         // ← НОВЫЙ
+  '/prorank-live/print-utils.js',
   '/prorank-live/profile.js',
   '/prorank-live/push-notifications.js',
   '/prorank-live/push-sender.js',
   '/prorank-live/script.js',
-  '/prorank-live/virtual-list.js',        // ← НОВЫЙ
-  '/prorank-live/voice-recorder.js',      // ← НОВЫЙ
-  '/prorank-live/voice-uploader.js',      // ← НОВЫЙ
+  '/prorank-live/virtual-list.js',
+  '/prorank-live/voice-recorder.js',
+  '/prorank-live/voice-uploader.js',
   '/prorank-live/wallet.js',
 
   // === CSS ===
@@ -67,7 +68,7 @@ const STATIC_FILES = [
   '/prorank-live/Avatar.png',
   '/prorank-live/favicon.ico',
 
-  // === ОСНОВНЫЕ ИКОНКИ PWA ===
+  // === ИКОНКИ PWA (папка /icons/) ===
   '/prorank-live/icons/icon-72.png',
   '/prorank-live/icons/icon-96.png',
   '/prorank-live/icons/icon-128.png',
@@ -76,6 +77,48 @@ const STATIC_FILES = [
   '/prorank-live/icons/icon-192.png',
   '/prorank-live/icons/icon-384.png',
   '/prorank-live/icons/icon-512.png',
+
+  // === ИКОНКИ ДОСТИЖЕНИЙ (папка /achiev-icons/) ===
+  '/prorank-live/achiev-icons/absolute_champion.png',
+  '/prorank-live/achiev-icons/bag.png',
+  '/prorank-live/achiev-icons/beginner.png',
+  '/prorank-live/achiev-icons/bounty_hunter.png',
+  '/prorank-live/achiev-icons/coward.png',
+  '/prorank-live/achiev-icons/daring.png',
+  '/prorank-live/achiev-icons/elite.png',
+  '/prorank-live/achiev-icons/experienced.png',
+  '/prorank-live/achiev-icons/first_fight.png',
+  '/prorank-live/achiev-icons/first_win.png',
+  '/prorank-live/achiev-icons/idol.png',
+  '/prorank-live/achiev-icons/impudent.png',
+  '/prorank-live/achiev-icons/iron_will.png',
+  '/prorank-live/achiev-icons/legend.png',
+  '/prorank-live/achiev-icons/liquid.png',
+  '/prorank-live/achiev-icons/lucky.png',
+  '/prorank-live/achiev-icons/popular.png',
+  '/prorank-live/achiev-icons/predator.png',
+  '/prorank-live/achiev-icons/smasher.png',
+  '/prorank-live/achiev-icons/spotlight.png',
+  '/prorank-live/achiev-icons/star.png',
+  '/prorank-live/achiev-icons/traveler.png',
+  '/prorank-live/achiev-icons/unstoppable.png',
+  '/prorank-live/achiev-icons/versatile.png',
+  '/prorank-live/achiev-icons/veteran.png',
+
+  // === ИКОНКИ КАТЕГОРИЙ (папка /category-icons/) ===
+  '/prorank-live/category-icons/accessories.png',
+  '/prorank-live/category-icons/all.png',
+  '/prorank-live/category-icons/clothing.png',
+  '/prorank-live/category-icons/equipment.png',
+  '/prorank-live/category-icons/sportpit.png',
+
+  // === ИКОНКИ ЛИГ (папка /league-icons/) ===
+  '/prorank-live/league-icons/bronze.png',
+  '/prorank-live/league-icons/diamond.png',
+  '/prorank-live/league-icons/elite.png',
+  '/prorank-live/league-icons/gold.png',
+  '/prorank-live/league-icons/legendary.png',
+  '/prorank-live/league-icons/silver.png',
 
   // === MANIFEST ===
   '/prorank-live/manifest.json',
@@ -93,7 +136,7 @@ const STATIC_FILES = [
 // УСТАНОВКА
 // ============================================================
 self.addEventListener('install', event => {
-  console.log('[SW] Установка v2.0.4...');
+  console.log('[SW] Установка v2.1.0...');
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then(cache => {
@@ -109,7 +152,7 @@ self.addEventListener('install', event => {
 // АКТИВАЦИЯ - удаляем все старые кэши
 // ============================================================
 self.addEventListener('activate', event => {
-  console.log('[SW] Активация v2.0.4...');
+  console.log('[SW] Активация v2.1.0...');
   event.waitUntil(
     caches.keys().then(cacheNames => {
       return Promise.all(
@@ -138,6 +181,10 @@ self.addEventListener('fetch', event => {
       url.pathname.includes('/server.js') ||
       url.pathname.includes('/package.json') ||
       url.pathname.includes('/package-lock.json') ||
+      url.pathname.includes('/.env') ||
+      url.pathname.includes('/.gitignore') ||
+      url.pathname.includes('/.nojekyll') ||
+      url.pathname.includes('/roadmap.txt') ||
       url.hostname.includes('firebase') || 
       url.hostname.includes('googleapis') ||
       url.hostname.includes('cloudinary') ||
@@ -146,10 +193,34 @@ self.addEventListener('fetch', event => {
     return;
   }
   
-  // === ИКОНКИ ИЗ ПАПОК - динамическое кэширование ===
+  // === ИКОНКИ ИЗ ВСЕХ ПАПОК - динамическое кэширование ===
   if (url.pathname.includes('/icons/') || 
       url.pathname.includes('/league-icons/') ||
-      url.pathname.includes('/achiev-icons/')) {
+      url.pathname.includes('/achiev-icons/') ||
+      url.pathname.includes('/category-icons/')) {
+    event.respondWith(
+      caches.match(event.request)
+        .then(response => {
+          if (response) return response;
+          return fetch(event.request).then(networkResponse => {
+            if (networkResponse && networkResponse.status === 200) {
+              const clone = networkResponse.clone();
+              caches.open(CACHE_NAME).then(cache => {
+                cache.put(event.request, clone);
+              });
+            }
+            return networkResponse;
+          });
+        })
+        .catch(() => {
+          return new Response('', { status: 404 });
+        })
+    );
+    return;
+  }
+  
+  // === ИЗОБРАЖЕНИЯ ИЗ /images/ - динамическое кэширование ===
+  if (url.pathname.includes('/images/')) {
     event.respondWith(
       caches.match(event.request)
         .then(response => {
