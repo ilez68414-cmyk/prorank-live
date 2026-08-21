@@ -1411,6 +1411,48 @@ main { flex: 1; }
     padding: 40px;
     color: #888;
 }
+.product-stock-status {
+    font-size: 0.65rem;
+    padding: 2px 0 4px;
+    font-weight: 600;
+}
+.product-stock-status.in-stock { color: #22c55e; }
+.product-stock-status.low-stock { color: #f59e0b; }
+.product-stock-status.out-of-stock { color: #ef4444; }
+/* ===== ПОЛОСКА ОСТАТКА ===== */
+.stock-bar-wrap {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 4px 0 6px;
+}
+
+.stock-bar-track {
+    flex: 1;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.06);
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.stock-bar-fill {
+    height: 100%;
+    border-radius: 10px;
+    transition: width 0.4s ease;
+}
+
+.stock-bar-text {
+    font-size: 0.6rem;
+    font-weight: 500;
+    white-space: nowrap;
+    min-width: 70px;
+    text-align: right;
+}
+
+.stock-bar-text.in-stock { color: #22c55e; }
+.stock-bar-text.medium-stock { color: #fbbf24; }
+.stock-bar-text.low-stock { color: #f59e0b; }
+.stock-bar-text.out-of-stock { color: #ef4444; }
     </style>
 </head>
 <body>
@@ -1459,6 +1501,14 @@ main { flex: 1; }
                     <option value="rating">⭐ По рейтингу</option>
                 </select>
             </div>
+            <div class="filter-group">
+                <select id="stockFilter">
+                    <option value="all">📦 Все товары</option>
+                    <option value="in_stock">✅ В наличии</option>
+                    <option value="low_stock">⚠️ Осталось мало</option>
+                    <option value="out_of_stock">❌ Нет в наличии</option>
+                </select>
+            </div>
             <button id="resetFiltersBtn" class="reset-filters"><i class="fas fa-undo-alt"></i></button>
         </div>
 
@@ -1485,31 +1535,36 @@ main { flex: 1; }
         <div class="categories-scroll" id="categoriesScroll">
             <button class="category-chip active" data-category="all">
                 <div class="cat-icon">
-                    <img src="/category-icons/all.png" alt="Все" class="category-icon">
+                    <img src="category-icons/all.png" alt="Все" class="category-icon" 
+                        onerror="this.style.display='none';this.parentElement.innerHTML='🏪'">
                 </div>
                 <span>Все</span>
             </button>
             <button class="category-chip" data-category="equipment">
                 <div class="cat-icon">
-                    <img src="/category-icons/equipment.png" alt="Экипировка" class="category-icon">
+                    <img src="category-icons/equipment.png" alt="Экипировка" class="category-icon" 
+                        onerror="this.style.display='none';this.parentElement.innerHTML='🥊'">
                 </div>
                 <span>Экипировка</span>
             </button>
             <button class="category-chip" data-category="sportpit">
                 <div class="cat-icon">
-                    <img src="/category-icons/sportpit.png" alt="Спорт-пит" class="category-icon">
+                    <img src="category-icons/sportpit.png" alt="Спорт-пит" class="category-icon" 
+                        onerror="this.style.display='none';this.parentElement.innerHTML='💪'">
                 </div>
                 <span>Спорт-пит</span>
             </button>
             <button class="category-chip" data-category="clothing">
                 <div class="cat-icon">
-                    <img src="/category-icons/clothing.png" alt="Одежда" class="category-icon">
+                    <img src="category-icons/clothing.png" alt="Одежда" class="category-icon" 
+                        onerror="this.style.display='none';this.parentElement.innerHTML='👕'">
                 </div>
                 <span>Одежда</span>
             </button>
             <button class="category-chip" data-category="accessories">
                 <div class="cat-icon">
-                    <img src="/category-icons/accessories.png" alt="Аксессуары" class="category-icon">
+                    <img src="category-icons/accessories.png" alt="Аксессуары" class="category-icon" 
+                        onerror="this.style.display='none';this.parentElement.innerHTML='⌚'">
                 </div>
                 <span>Аксессуары</span>
             </button>
@@ -1915,20 +1970,33 @@ function renderSkeletons() {
     function applyFilters() {
         let filtered = [...allProducts];
         
-        const category = currentCategory;
-        if (category !== 'all') {
-            filtered = filtered.filter(p => p.category === category);
+        // Категория
+        if (currentCategory !== 'all') {
+            filtered = filtered.filter(p => p.category === currentCategory);
         }
         
+        // Магазин
         if (selectedStore !== 'all') {
             filtered = filtered.filter(p => p.partnerId === selectedStore);
         }
         
+        // Наличие (НОВОЕ!)
+        const stockFilter = document.getElementById('stockFilter')?.value || 'all';
+        if (stockFilter === 'in_stock') {
+            filtered = filtered.filter(p => (p.stock || 0) > 0);
+        } else if (stockFilter === 'low_stock') {
+            filtered = filtered.filter(p => (p.stock || 0) > 0 && (p.stock || 0) < 5);
+        } else if (stockFilter === 'out_of_stock') {
+            filtered = filtered.filter(p => (p.stock || 0) === 0);
+        }
+        
+        // Поиск
         const searchTerm = document.getElementById('searchInput')?.value.toLowerCase() || '';
         if (searchTerm) {
             filtered = filtered.filter(p => p.name?.toLowerCase().includes(searchTerm) || p.desc?.toLowerCase().includes(searchTerm));
         }
         
+        // Сортировка
         const sort = document.getElementById('sortSelect')?.value || 'name';
         if (sort === 'price_asc') filtered.sort((a, b) => (a.price || 0) - (b.price || 0));
         else if (sort === 'price_desc') filtered.sort((a, b) => (b.price || 0) - (a.price || 0));
@@ -1952,6 +2020,36 @@ function renderSkeletons() {
             const stars = '★'.repeat(Math.round(product.rating || 0)) + '☆'.repeat(5 - Math.round(product.rating || 0));
             const isFavorite = favorites.includes(product.id);
             
+            // ===== СТАТУС НАЛИЧИЯ =====
+            const stock = product.stock !== undefined ? product.stock : 999;
+            const maxStock = 100; // Максимум для отображения полоски
+            
+            // Цвет полоски в зависимости от остатка
+            let barColor = '#22c55e'; // зелёный
+            let statusText = 'В наличии';
+            let statusClass = 'in-stock';
+            
+            if (stock === 0) {
+                barColor = '#ef4444'; // красный
+                statusText = 'Нет в наличии';
+                statusClass = 'out-of-stock';
+            } else if (stock < 5) {
+                barColor = '#ef4444'; // красный
+                statusText = `Осталось ${stock} шт`;
+                statusClass = 'low-stock';
+            } else if (stock < 20) {
+                barColor = '#f59e0b'; // жёлтый
+                statusText = `Осталось ${stock} шт`;
+                statusClass = 'low-stock';
+            } else if (stock < 50) {
+                barColor = '#fbbf24'; // золотой
+                statusText = `Осталось ${stock} шт`;
+                statusClass = 'medium-stock';
+            }
+            
+            // Процент для полоски (чем меньше остаток, тем меньше полоска)
+            const barPercent = stock === 0 ? 0 : Math.min((stock / maxStock) * 100, 100);
+            
             let storeName = product.partnerName;
             if (!storeName && product.partnerId) {
                 const partner = allPartners.find(p => p.id === product.partnerId);
@@ -1965,23 +2063,32 @@ function renderSkeletons() {
                 image: product.image,
                 desc: product.desc || '',
                 partnerId: product.partnerId || null,
-                partnerName: storeName || null
+                partnerName: storeName || null,
+                stock: stock
             };
             
             let badgeHtml = '';
             if (product.badge === 'hit') {
-                badgeHtml = `<span class="product-badge badge-hit">🔥 Хит</span>`;
+                badgeHtml = `<span class="product-badge badge-hit">Хит</span>`;
             } else if (product.badge === 'sale') {
                 const discount = product.oldPrice ? Math.round((1 - product.price / product.oldPrice) * 100) : '';
-                badgeHtml = `<span class="product-badge badge-sale">🔥 -${discount}%</span>`;
+                badgeHtml = `<span class="product-badge badge-sale">-${discount}%</span>`;
             } else if (product.badge === 'new') {
-                badgeHtml = `<span class="product-badge badge-new">🆕 Новинка</span>`;
+                badgeHtml = `<span class="product-badge badge-new">Новинка</span>`;
             }
+            
+            // Кнопки в зависимости от наличия
+            const buyButtons = stock > 0 ? `
+                <button class="btn-add-to-cart" data-product='${JSON.stringify(productForCart)}'><i class="fas fa-cart-plus"></i> В корзину</button>
+                <button class="btn-buy-now" data-product='${JSON.stringify(productForCart)}'><i class="fas fa-bolt"></i> Купить</button>
+            ` : `
+                <button class="btn-add-to-cart" style="background:#2a2a2a;color:#555;cursor:not-allowed;opacity:0.6;" disabled><i class="fas fa-times"></i> Нет в наличии</button>
+            `;
             
             html += `
                 <div class="product-card" data-product-id="${product.id}">
                     <div class="product-image-wrap">
-                        ${product.image ? `<img src="${product.image}" class="product-image" onerror="this.src='https://placehold.co/300x200/1a1a1a/fbbf24?text=No+Image'">` : '<div class="product-image" style="display:flex;align-items:center;justify-content:center;"><i class="fas fa-image" style="font-size: 2rem; color: #555;"></i></div>'}
+                        ${product.image ? `<img src="${product.image}" class="product-image" loading="lazy" onerror="this.src='https://placehold.co/300x200/1a1a1a/fbbf24?text=No+Image'">` : '<div class="product-image" style="display:flex;align-items:center;justify-content:center;background:#1a1a1a;height:100%;"><i class="fas fa-image" style="font-size: 2rem; color: #555;"></i></div>'}
                         ${badgeHtml}
                         <button class="product-favorite ${isFavorite ? 'active' : ''}" data-product-id="${product.id}">
                             <i class="${isFavorite ? 'fas' : 'far'} fa-heart"></i>
@@ -1992,21 +2099,36 @@ function renderSkeletons() {
                         <span class="stars">${stars}</span>
                         <span class="rating-count">(${product.ratingCount || 0})</span>
                     </div>
-                    <div class="product-store"><i class="fas fa-store"></i> ${escapeHtml(storeName)}</div>
+                    <div class="product-store"><i class="fas fa-store"></i> ${escapeHtml(storeName || 'Магазин')}</div>
                     <div class="product-price-block">
                         <span class="product-price">${(product.price || 0).toLocaleString()} ₽</span>
                         ${product.oldPrice ? `<span class="product-old-price">${product.oldPrice.toLocaleString()} ₽</span>` : ''}
                     </div>
+                    <!-- ===== ПОЛОСКА ОСТАТКА ===== -->
+                    ${stock > 0 ? `
+                    <div class="stock-bar-wrap">
+                        <div class="stock-bar-track">
+                            <div class="stock-bar-fill" style="width:${barPercent}%;background:${barColor};"></div>
+                        </div>
+                        <div class="stock-bar-text ${statusClass}">${statusText}</div>
+                    </div>
+                    ` : `
+                    <div class="stock-bar-wrap">
+                        <div class="stock-bar-track" style="background:rgba(239,68,68,0.1);">
+                            <div class="stock-bar-fill" style="width:0%;background:#ef4444;"></div>
+                        </div>
+                        <div class="stock-bar-text out-of-stock">${statusText}</div>
+                    </div>
+                    `}
                     <div class="product-actions">
-                        <button class="btn-add-to-cart" data-product='${JSON.stringify(productForCart)}'><i class="fas fa-cart-plus"></i> В корзину</button>
-                        <button class="btn-buy-now" data-product='${JSON.stringify(productForCart)}'><i class="fas fa-bolt"></i> Купить</button>
+                        ${buyButtons}
                     </div>
                 </div>
             `;
         });
         container.innerHTML = html;
         
-        // Клик по карточке
+        // ===== КЛИК ПО КАРТОЧКЕ =====
         document.querySelectorAll('.product-card').forEach(card => {
             card.addEventListener('click', async (e) => {
                 if (e.target.closest('.product-favorite') || e.target.closest('.btn-add-to-cart') || e.target.closest('.btn-buy-now')) return;
@@ -2016,7 +2138,7 @@ function renderSkeletons() {
             });
         });
         
-        // Избранное
+        // ===== ИЗБРАННОЕ =====
         document.querySelectorAll('.product-favorite').forEach(btn => {
             btn.addEventListener('click', async (e) => {
                 e.stopPropagation();
@@ -2025,8 +2147,8 @@ function renderSkeletons() {
             });
         });
         
-        // В корзину
-        document.querySelectorAll('.btn-add-to-cart').forEach(btn => {
+        // ===== В КОРЗИНУ =====
+        document.querySelectorAll('.btn-add-to-cart:not([disabled])').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 e.stopPropagation();
                 if (!currentUser) {
@@ -2051,14 +2173,16 @@ function renderSkeletons() {
                 const originalText = btn.innerHTML;
                 btn.innerHTML = '<i class="fas fa-check"></i> Добавлено!';
                 btn.style.background = '#10b981';
+                btn.style.color = '#fff';
                 setTimeout(() => {
                     btn.innerHTML = originalText;
-                    btn.style.background = '#fbbf24';
+                    btn.style.background = '';
+                    btn.style.color = '';
                 }, 1200);
             });
         });
         
-        // Быстрая покупка
+        // ===== БЫСТРАЯ ПОКУПКА =====
         document.querySelectorAll('.btn-buy-now').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 e.stopPropagation();
@@ -2079,7 +2203,7 @@ function renderSkeletons() {
                     partnerName: product.partnerName
                 }];
                 localStorage.setItem('cart', JSON.stringify(cart));
-                showNotification(`⚡ Быстрая покупка: ${product.name}`, 'success');
+                showNotification(`Быстрая покупка: ${product.name}`, 'success');
                 setTimeout(() => {
                     window.location.href = 'cart.html';
                 }, 800);

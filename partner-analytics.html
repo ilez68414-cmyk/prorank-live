@@ -1911,48 +1911,90 @@
 
     // ===== ОБНОВЛЕНИЕ СТАТИСТИКИ =====
     function updateAnalytics() {
-        const filtered = filterOrdersByPeriod(allOrders, currentPeriod);
-        const stats = calculateStats(filtered, currentPeriod);
+    const filtered = filterOrdersByPeriod(allOrders, currentPeriod);
+    const stats = calculateStats(filtered, currentPeriod);
+    
+    const periodKey = currentPeriod === 'all' ? 30 : currentPeriod;
+    const periodInfo = periodLabels[periodKey] || periodLabels[30];
+    const periodLabel = currentPeriod === 'all' ? 'всё время' : periodInfo.label;
+    
+    // ============================================================
+    // ⚠️ ВСЕ ОБНОВЛЕНИЯ С ПРОВЕРКАМИ НА СУЩЕСТВОВАНИЕ
+    // ============================================================
+    
+    // Статистика
+    const elOrders = document.getElementById('totalOrders');
+    if (elOrders) elOrders.textContent = stats.totalOrders;
+    
+    const elRevenue = document.getElementById('totalRevenue');
+    if (elRevenue) elRevenue.textContent = stats.totalRevenue.toLocaleString() + ' ₽';
+    
+    const elCustomers = document.getElementById('totalCustomers');
+    if (elCustomers) elCustomers.textContent = stats.uniqueCustomers;
+    
+    const elAvgCheck = document.getElementById('avgCheck');
+    if (elAvgCheck) elAvgCheck.textContent = stats.avgCheck.toLocaleString() + ' ₽';
+    
+    const commission = stats.totalRevenue * 0.1;
+    const elCommission = document.getElementById('commissionAmount');
+    if (elCommission) elCommission.textContent = commission.toLocaleString() + ' ₽';
+    
+    // ============================================================
+    // СРАВНЕНИЯ С ПРОШЛЫМ ПЕРИОДОМ
+    // ============================================================
+    if (stats.prevStats) {
+        const ordersChange = calculateChange(stats.totalOrders, stats.prevStats.orders);
+        const revenueChange = calculateChange(stats.totalRevenue, stats.prevStats.revenue);
+        const customersChange = calculateChange(stats.uniqueCustomers, stats.prevStats.customers);
+        const checkChange = calculateChange(stats.avgCheck, stats.prevStats.avgCheck);
         
-        const periodKey = currentPeriod === 'all' ? 30 : currentPeriod;
-        const periodInfo = periodLabels[periodKey] || periodLabels[30];
-        const periodLabel = currentPeriod === 'all' ? 'всё время' : periodInfo.label;
+        updateStatCard('ordersChange', ordersChange);
+        updateStatCard('revenueChange', revenueChange);
+        updateStatCard('customersChange', customersChange);
+        updateStatCard('checkChange', checkChange);
         
-        document.getElementById('totalOrders').textContent = stats.totalOrders;
-        document.getElementById('totalRevenue').textContent = stats.totalRevenue.toLocaleString() + ' ₽';
-        document.getElementById('totalCustomers').textContent = stats.uniqueCustomers;
-        document.getElementById('avgCheck').textContent = stats.avgCheck.toLocaleString() + ' ₽';
-        
-        const commission = stats.totalRevenue * 0.1;
-        document.getElementById('commissionAmount').textContent = commission.toLocaleString() + ' ₽';
-        
-        if (stats.prevStats) {
-            const ordersChange = calculateChange(stats.totalOrders, stats.prevStats.orders);
-            const revenueChange = calculateChange(stats.totalRevenue, stats.prevStats.revenue);
-            const customersChange = calculateChange(stats.uniqueCustomers, stats.prevStats.customers);
-            const checkChange = calculateChange(stats.avgCheck, stats.prevStats.avgCheck);
-            
-            updateStatCard('ordersChange', ordersChange);
-            updateStatCard('revenueChange', revenueChange);
-            updateStatCard('customersChange', customersChange);
-            updateStatCard('checkChange', checkChange);
-            
-            document.getElementById('ordersCompare').innerHTML = `vs ${periodInfo.prevLabel}: <span class="abs-${ordersChange.direction}">${ordersChange.abs > 0 ? '+' : ''}${ordersChange.abs.toLocaleString()}</span>`;
-            document.getElementById('revenueCompare').innerHTML = `vs ${periodInfo.prevLabel}: <span class="abs-${revenueChange.direction}">${revenueChange.abs > 0 ? '+' : ''}${revenueChange.abs.toLocaleString()} ₽</span> <span style="color:#555;font-size:10px;">| 10%: <span class="commission">${commission.toLocaleString()} ₽</span></span>`;
-            document.getElementById('customersCompare').innerHTML = `vs ${periodInfo.prevLabel}: <span class="abs-${customersChange.direction}">${customersChange.abs > 0 ? '+' : ''}${customersChange.abs.toLocaleString()}</span>`;
-            document.getElementById('checkCompare').innerHTML = `vs ${periodInfo.prevLabel}: <span class="abs-${checkChange.direction}">${checkChange.abs > 0 ? '+' : ''}${checkChange.abs.toLocaleString()} ₽</span>`;
-            
-            document.getElementById('chartTotal').innerHTML = `${stats.totalRevenue.toLocaleString()} ₽ <small>за ${periodLabel}</small>`;
-            updateTrend('chartTrend', revenueChange);
-            
-            const absRevenue = revenueChange.abs;
-            document.getElementById('chartCompareValue').textContent = `${absRevenue > 0 ? '+' : ''}${absRevenue.toLocaleString()} ₽`;
-            document.getElementById('chartCompareValue').className = `val-${revenueChange.direction}`;
+        const elOrdersCompare = document.getElementById('ordersCompare');
+        if (elOrdersCompare) {
+            elOrdersCompare.innerHTML = `vs ${periodInfo.prevLabel}: <span class="abs-${ordersChange.direction}">${ordersChange.abs > 0 ? '+' : ''}${ordersChange.abs.toLocaleString()}</span>`;
         }
         
-        renderChart(filtered);
-        renderProductsAnalytics(stats.allProducts, stats.totalRevenueForPercent);
+        const elRevenueCompare = document.getElementById('revenueCompare');
+        if (elRevenueCompare) {
+            elRevenueCompare.innerHTML = `vs ${periodInfo.prevLabel}: <span class="abs-${revenueChange.direction}">${revenueChange.abs > 0 ? '+' : ''}${revenueChange.abs.toLocaleString()} ₽</span> <span style="color:#555;font-size:10px;">| 10%: <span class="commission">${commission.toLocaleString()} ₽</span></span>`;
+        }
+        
+        const elCustomersCompare = document.getElementById('customersCompare');
+        if (elCustomersCompare) {
+            elCustomersCompare.innerHTML = `vs ${periodInfo.prevLabel}: <span class="abs-${customersChange.direction}">${customersChange.abs > 0 ? '+' : ''}${customersChange.abs.toLocaleString()}</span>`;
+        }
+        
+        const elCheckCompare = document.getElementById('checkCompare');
+        if (elCheckCompare) {
+            elCheckCompare.innerHTML = `vs ${periodInfo.prevLabel}: <span class="abs-${checkChange.direction}">${checkChange.abs > 0 ? '+' : ''}${checkChange.abs.toLocaleString()} ₽</span>`;
+        }
+        
+        // График
+        const elChartTotal = document.getElementById('chartTotal');
+        if (elChartTotal) {
+            elChartTotal.innerHTML = `${stats.totalRevenue.toLocaleString()} ₽ <small>за ${periodLabel}</small>`;
+        }
+        
+        updateTrend('chartTrend', revenueChange);
+        
+        const elChartCompareValue = document.getElementById('chartCompareValue');
+        if (elChartCompareValue) {
+            const absRevenue = revenueChange.abs;
+            elChartCompareValue.textContent = `${absRevenue > 0 ? '+' : ''}${absRevenue.toLocaleString()} ₽`;
+            elChartCompareValue.className = `val-${revenueChange.direction}`;
+        }
     }
+    
+    // ============================================================
+    // РЕНДЕРИНГ
+    // ============================================================
+    renderChart(filtered);
+    renderProductsAnalytics(stats.allProducts, stats.totalRevenueForPercent);
+}
 
     function updateStatCard(elementId, change) {
         const el = document.getElementById(elementId);
@@ -2301,210 +2343,244 @@
     }
 
     // ===== АНАЛИТИКА ТОВАРОВ (ОРИГИНАЛЬНАЯ ВЕРСИЯ) =====
-    function renderProductsAnalytics(products, totalRevenue) {
-        const container = document.getElementById('productsList');
-        const totalEl = document.getElementById('productsTotal');
-        
-        totalEl.textContent = `Всего: ${products.length} товаров`;
-
-        // ОЧИЩАЕМ КОНТЕЙНЕР
-        container.innerHTML = '';
-
-        if (products.length === 0) {
-            const noData = document.createElement('div');
-            noData.className = 'no-data-products';
-            noData.textContent = 'Нет данных о товарах';
-            container.appendChild(noData);
-            return;
-        }
-
-        // СОРТИРОВКА
-        let sorted = [...products];
-        if (currentSort === 'revenue') {
-            sorted.sort((a, b) => b.revenue - a.revenue);
-        } else if (currentSort === 'quantity') {
-            sorted.sort((a, b) => b.count - a.count);
-        } else if (currentSort === 'rating') {
-            sorted.sort((a, b) => (b.rating || 0) - (a.rating || 0));
-        }
-
-        const rankIcons = ['🏆', '🥈', '🥉'];
-        const rankClasses = ['gold', 'silver', 'bronze'];
-        
-        // ОГРАНИЧИВАЕМ ДО 50 ДЛЯ ПРОИЗВОДИТЕЛЬНОСТИ
-        const displayProducts = sorted.slice(0, 50);
-
-        // ИСПОЛЬЗУЕМ ОБЫЧНЫЙ ЦИКЛ
-        displayProducts.forEach((product, index) => {
-            const percent = totalRevenue > 0 ? (product.revenue / totalRevenue * 100) : 0;
-            const rankIcon = rankIcons[index] || `${index + 1}`;
-            const rankClass = rankClasses[index] || '';
-            const isExpanded = expandedProduct === product.id;
-            const avgPrice = product.count > 0 ? Math.round(product.revenue / product.count) : product.price || 0;
-            const rating = product.rating || 0;
-            const hasImage = product.image && product.image.length > 0;
-            const percentClass = percent > 30 ? 'high' : '';
+        function renderProductsAnalytics(products, totalRevenue) {
+            const container = document.getElementById('productsList');
+            const totalEl = document.getElementById('productsTotal');
             
-            // ===== СОЗДАЁМ КАРТОЧКУ =====
-            const card = document.createElement('div');
-            card.className = 'product-card';
+            if (!container) return;
             
-            // Строка товара
-            const row = document.createElement('div');
-            row.className = 'product-row';
-            row.setAttribute('data-product-id', product.id);
-            
-            row.addEventListener('click', function(e) {
-                if (e.target.closest('.btn-sm')) return;
-                const id = this.getAttribute('data-product-id');
-                toggleProduct(id);
+            totalEl.textContent = `Всего: ${products.length} товаров`;
+            container.innerHTML = '';
+
+            if (products.length === 0) {
+                const noData = document.createElement('div');
+                noData.className = 'no-data-products';
+                noData.textContent = 'Нет данных о товарах';
+                container.appendChild(noData);
+                return;
+            }
+
+            // ============================================================
+            // ⭐ ГЛАВНОЕ: ПЕРЕСЧИТЫВАЕМ РЕЙТИНГ ПРЯМО СЕЙЧАС
+            // ============================================================
+            const productsWithFreshRating = products.map(product => {
+                // Ищем отзывы для этого товара
+                const productReviews = allReviews.filter(r => {
+                    return r.productId === product.id || 
+                        r.productId === String(product.id) ||
+                        r.product_id === product.id ||
+                        r.product_id === String(product.id);
+                });
+                
+                let rating = 0;
+                if (productReviews.length > 0) {
+                    const sum = productReviews.reduce((acc, r) => {
+                        const val = r.rating || r.Rating || 0;
+                        return acc + Number(val);
+                    }, 0);
+                    rating = sum / productReviews.length;
+                }
+                
+                return {
+                    ...product,
+                    rating: Math.round(rating * 10) / 10,
+                    _reviewCount: productReviews.length
+                };
             });
+
+            // ============================================================
+            // 📊 СОРТИРОВКА (используем обновлённый рейтинг)
+            // ============================================================
+            let sorted = [...productsWithFreshRating];
+
+            console.log(`🔄 Сортировка: ${currentSort}`);
             
-            // Рейтинг/место
-            const rank = document.createElement('span');
-            rank.className = 'rank ' + rankClass;
-            rank.textContent = rankIcon;
-            row.appendChild(rank);
-            
-            // Фото
-            const thumb = document.createElement('div');
-            thumb.className = 'product-thumb';
-            
-            if (hasImage) {
-                const img = document.createElement('img');
-                img.src = product.image;
-                img.alt = product.name;
-                img.onerror = function() {
-                    this.style.display = 'none';
+            if (currentSort === 'revenue') {
+                sorted.sort((a, b) => (b.revenue || 0) - (a.revenue || 0));
+                console.log('📈 По выручке');
+            } else if (currentSort === 'quantity') {
+                sorted.sort((a, b) => (b.count || 0) - (a.count || 0));
+                console.log('📦 По количеству');
+            } else if (currentSort === 'rating') {
+                sorted.sort((a, b) => (b.rating || 0) - (a.rating || 0));
+                console.log('⭐ По рейтингу');
+                console.log('🏆 Топ-3:', sorted.slice(0, 3).map(p => ({
+                    name: p.name,
+                    rating: p.rating,
+                    reviews: p._reviewCount
+                })));
+            }
+
+            const rankIcons = ['🏆', '🥈', '🥉'];
+            const rankClasses = ['gold', 'silver', 'bronze'];
+            const displayProducts = sorted.slice(0, 50);
+
+            // ============================================================
+            // 🖼️ РЕНДЕРИНГ
+            // ============================================================
+            displayProducts.forEach((product, index) => {
+                const percent = totalRevenue > 0 ? (product.revenue / totalRevenue * 100) : 0;
+                const rankIcon = rankIcons[index] || `${index + 1}`;
+                const rankClass = rankClasses[index] || '';
+                const isExpanded = expandedProduct === product.id;
+                const avgPrice = product.count > 0 ? Math.round(product.revenue / product.count) : product.price || 0;
+                const rating = product.rating || 0;
+                const hasImage = product.image && product.image.length > 0;
+                const percentClass = percent > 30 ? 'high' : '';
+                
+                const card = document.createElement('div');
+                card.className = 'product-card';
+                
+                const row = document.createElement('div');
+                row.className = 'product-row';
+                row.setAttribute('data-product-id', product.id);
+                
+                row.addEventListener('click', function(e) {
+                    if (e.target.closest('.btn-sm')) return;
+                    const id = this.getAttribute('data-product-id');
+                    toggleProduct(id);
+                });
+                
+                const rank = document.createElement('span');
+                rank.className = 'rank ' + rankClass;
+                rank.textContent = rankIcon;
+                row.appendChild(rank);
+                
+                const thumb = document.createElement('div');
+                thumb.className = 'product-thumb';
+                
+                if (hasImage) {
+                    const img = document.createElement('img');
+                    img.src = product.image;
+                    img.alt = product.name;
+                    img.loading = 'lazy';
+                    img.onerror = function() {
+                        this.style.display = 'none';
+                        const placeholder = document.createElement('div');
+                        placeholder.className = 'product-thumb-placeholder';
+                        placeholder.textContent = product.name.charAt(0).toUpperCase();
+                        thumb.appendChild(placeholder);
+                    };
+                    thumb.appendChild(img);
+                } else {
                     const placeholder = document.createElement('div');
                     placeholder.className = 'product-thumb-placeholder';
                     placeholder.textContent = product.name.charAt(0).toUpperCase();
                     thumb.appendChild(placeholder);
-                };
-                thumb.appendChild(img);
-            } else {
-                const placeholder = document.createElement('div');
-                placeholder.className = 'product-thumb-placeholder';
-                placeholder.textContent = product.name.charAt(0).toUpperCase();
-                thumb.appendChild(placeholder);
-            }
-            row.appendChild(thumb);
-            
-            // Информация
-            const info = document.createElement('div');
-            info.className = 'info';
-            
-            const name = document.createElement('div');
-            name.className = 'name';
-            name.textContent = product.name;
-            name.title = product.name;
-            info.appendChild(name);
-            
-            const meta = document.createElement('div');
-            meta.className = 'meta';
-            
-            const countItem = document.createElement('span');
-            countItem.className = 'meta-item count';
-            countItem.innerHTML = `<span class="meta-icon">📦</span><span class="meta-value">${product.count || 0}</span> шт`;
-            meta.appendChild(countItem);
-            
-            const revenueItem = document.createElement('span');
-            revenueItem.className = 'meta-item revenue';
-            revenueItem.innerHTML = `<span class="meta-icon">💰</span><span class="meta-value">${product.revenue.toLocaleString()}</span> ₽`;
-            meta.appendChild(revenueItem);
-            
-            const ratingItem = document.createElement('span');
-            ratingItem.className = 'meta-item rating';
-            ratingItem.innerHTML = `<span class="meta-icon">⭐</span><span class="meta-value">${rating.toFixed(1)}</span>`;
-            meta.appendChild(ratingItem);
-            
-            info.appendChild(meta);
-            row.appendChild(info);
-            
-            // Прогресс-бар
-            const barLine = document.createElement('div');
-            barLine.className = 'bar-line';
-            const fill = document.createElement('div');
-            fill.className = 'fill';
-            fill.style.width = Math.min(percent, 100) + '%';
-            barLine.appendChild(fill);
-            row.appendChild(barLine);
-            
-            // Процент
-            const percentEl = document.createElement('span');
-            percentEl.className = 'percent ' + percentClass;
-            percentEl.textContent = percent.toFixed(1) + '%';
-            row.appendChild(percentEl);
-            
-            // Стрелочка
-            const expandIcon = document.createElement('span');
-            expandIcon.className = 'expand-icon' + (isExpanded ? ' open' : '');
-            expandIcon.innerHTML = '<i class="fas fa-chevron-down"></i>';
-            row.appendChild(expandIcon);
-            
-            card.appendChild(row);
-            
-            // Детали (если раскрыто)
-            if (isExpanded) {
-                const detail = document.createElement('div');
-                detail.className = 'product-detail';
+                }
+                row.appendChild(thumb);
                 
-                const grid = document.createElement('div');
-                grid.className = 'detail-grid';
+                const info = document.createElement('div');
+                info.className = 'info';
                 
-                const detailItems = [
-                    { label: 'Общая выручка', value: product.revenue.toLocaleString() + ' ₽', cls: 'gold' },
-                    { label: 'Продано штук', value: (product.count || 0) + ' шт', cls: '' },
-                    { label: 'Средняя цена', value: avgPrice.toLocaleString() + ' ₽', cls: 'green' },
-                    { label: 'Заказов с товаром', value: product.orders || 0, cls: 'blue' },
-                    { label: 'Рейтинг', value: rating.toFixed(1) + ' ★', cls: 'gold' },
-                    { label: 'Комиссия (10%)', value: (product.revenue * 0.1).toLocaleString() + ' ₽', cls: 'green' }
-                ];
+                const name = document.createElement('div');
+                name.className = 'name';
+                name.textContent = product.name;
+                name.title = product.name;
+                info.appendChild(name);
                 
-                detailItems.forEach(function(item) {
-                    const div = document.createElement('div');
-                    div.className = 'detail-item';
+                const meta = document.createElement('div');
+                meta.className = 'meta';
+                
+                const countItem = document.createElement('span');
+                countItem.className = 'meta-item count';
+                countItem.innerHTML = `<span class="meta-icon">📦</span><span class="meta-value">${product.count || 0}</span> шт`;
+                meta.appendChild(countItem);
+                
+                const revenueItem = document.createElement('span');
+                revenueItem.className = 'meta-item revenue';
+                revenueItem.innerHTML = `<span class="meta-icon">💰</span><span class="meta-value">${product.revenue.toLocaleString()}</span> ₽`;
+                meta.appendChild(revenueItem);
+                
+                // ===== ПОКАЗЫВАЕМ РЕЙТИНГ + КОЛИЧЕСТВО ОТЗЫВОВ =====
+                const reviewCount = product._reviewCount || 0;
+                const ratingItem = document.createElement('span');
+                ratingItem.className = 'meta-item rating';
+                ratingItem.innerHTML = `<span class="meta-icon">⭐</span><span class="meta-value">${rating.toFixed(1)}</span> (${reviewCount})`;
+                meta.appendChild(ratingItem);
+                
+                info.appendChild(meta);
+                row.appendChild(info);
+                
+                const barLine = document.createElement('div');
+                barLine.className = 'bar-line';
+                const fill = document.createElement('div');
+                fill.className = 'fill';
+                fill.style.width = Math.min(percent, 100) + '%';
+                barLine.appendChild(fill);
+                row.appendChild(barLine);
+                
+                const percentEl = document.createElement('span');
+                percentEl.className = 'percent ' + percentClass;
+                percentEl.textContent = percent.toFixed(1) + '%';
+                row.appendChild(percentEl);
+                
+                const expandIcon = document.createElement('span');
+                expandIcon.className = 'expand-icon' + (isExpanded ? ' open' : '');
+                expandIcon.innerHTML = '<i class="fas fa-chevron-down"></i>';
+                row.appendChild(expandIcon);
+                
+                card.appendChild(row);
+                
+                if (isExpanded) {
+                    const detail = document.createElement('div');
+                    detail.className = 'product-detail';
                     
-                    const label = document.createElement('div');
-                    label.className = 'label';
-                    label.textContent = item.label;
+                    const grid = document.createElement('div');
+                    grid.className = 'detail-grid';
                     
-                    const value = document.createElement('div');
-                    value.className = 'value' + (item.cls ? ' ' + item.cls : '');
-                    value.textContent = item.value;
+                    const detailItems = [
+                        { label: 'Общая выручка', value: product.revenue.toLocaleString() + ' ₽', cls: 'gold' },
+                        { label: 'Продано штук', value: (product.count || 0) + ' шт', cls: '' },
+                        { label: 'Средняя цена', value: avgPrice.toLocaleString() + ' ₽', cls: 'green' },
+                        { label: 'Заказов с товаром', value: product.orders || 0, cls: 'blue' },
+                        { label: 'Рейтинг', value: rating.toFixed(1) + ' ★', cls: 'gold' },
+                        { label: 'Отзывов', value: (product._reviewCount || 0) + ' шт', cls: 'pink' },
+                        { label: 'Комиссия (10%)', value: (product.revenue * 0.1).toLocaleString() + ' ₽', cls: 'green' }
+                    ];
                     
-                    div.appendChild(label);
-                    div.appendChild(value);
-                    grid.appendChild(div);
-                });
+                    detailItems.forEach(function(item) {
+                        const div = document.createElement('div');
+                        div.className = 'detail-item';
+                        
+                        const label = document.createElement('div');
+                        label.className = 'label';
+                        label.textContent = item.label;
+                        
+                        const value = document.createElement('div');
+                        value.className = 'value' + (item.cls ? ' ' + item.cls : '');
+                        value.textContent = item.value;
+                        
+                        div.appendChild(label);
+                        div.appendChild(value);
+                        grid.appendChild(div);
+                    });
+                    
+                    detail.appendChild(grid);
+                    
+                    const chart = document.createElement('div');
+                    chart.className = 'detail-chart';
+                    chart.innerHTML = `<svg viewBox="0 0 400 60" preserveAspectRatio="none">${generateMiniChart(product)}</svg>`;
+                    detail.appendChild(chart);
+                    
+                    const action = document.createElement('div');
+                    action.className = 'detail-action';
+                    const btn = document.createElement('button');
+                    btn.className = 'btn-sm';
+                    btn.innerHTML = '<i class="fas fa-external-link-alt"></i> Перейти в товары';
+                    btn.addEventListener('click', function(e) {
+                        e.stopPropagation();
+                        window.location.href = 'partner-products.html';
+                    });
+                    action.appendChild(btn);
+                    detail.appendChild(action);
+                    
+                    card.appendChild(detail);
+                }
                 
-                detail.appendChild(grid);
-                
-                // Мини-график
-                const chart = document.createElement('div');
-                chart.className = 'detail-chart';
-                chart.innerHTML = `<svg viewBox="0 0 400 60" preserveAspectRatio="none">${generateMiniChart(product)}</svg>`;
-                detail.appendChild(chart);
-                
-                // Кнопка
-                const action = document.createElement('div');
-                action.className = 'detail-action';
-                const btn = document.createElement('button');
-                btn.className = 'btn-sm';
-                btn.innerHTML = '<i class="fas fa-external-link-alt"></i> Перейти в товары';
-                btn.addEventListener('click', function(e) {
-                    e.stopPropagation();
-                    window.location.href = 'partner-products.html';
-                });
-                action.appendChild(btn);
-                detail.appendChild(action);
-                
-                card.appendChild(detail);
-            }
-            
-            container.appendChild(card);
-        });
-    }
+                container.appendChild(card);
+            });
+        }
 
     // ===== TOGGLE ТОВАРА =====
     function toggleProduct(productId) {
