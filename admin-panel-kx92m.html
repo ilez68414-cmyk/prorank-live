@@ -1246,11 +1246,7 @@
                 </div>
 
                 <div class="nav-section">Финансы</div>
-                <div class="nav-item" data-section="withdrawals">
-                    <span class="icon"><i class="fas fa-money-bill-wave"></i></span>
-                    <span>Выводы</span>
-                    <span class="badge" id="withdrawalsBadge">0</span>
-                </div>
+                
                 <div class="nav-item" data-section="commissions">
                     <span class="icon"><i class="fas fa-percent"></i></span>
                     <span>Комиссии</span>
@@ -1261,10 +1257,7 @@
                     <span class="icon"><i class="fas fa-cube"></i></span>
                     <span>Цифровые товары</span>
                 </div>
-                <div class="nav-item" data-section="prices">
-                    <span class="icon"><i class="fas fa-tags"></i></span>
-                    <span>Цены</span>
-                </div>
+
 
                 <div class="nav-section">Управление</div>
                 <div class="nav-item" data-section="history">
@@ -1418,44 +1411,7 @@
                 </div>
             </div>
 
-            <!-- ===== WITHDRAWALS ===== -->
-            <div class="section-content" id="section-withdrawals">
-                <div class="page-header">
-                    <div>
-                        <h1><i class="fas fa-money-bill-wave"></i>Выводы средств</h1>
-                        <div class="subtitle">Заявки на вывод от продавцов</div>
-                    </div>
-                </div>
-
-                <div class="admin-form">
-                    <h3><i class="fas fa-money-bill-wave"></i> Заявки на вывод</h3>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label>Фильтр по статусу</label>
-                            <select id="withdrawalStatusFilter">
-                                <option value="all">Все</option>
-                                <option value="pending">⏳ Ожидают</option>
-                                <option value="processing">🔄 В обработке</option>
-                                <option value="completed">✅ Выполнены</option>
-                                <option value="rejected">❌ Отклонены</option>
-                            </select>
-                        </div>
-                        <div class="form-group"><button id="refreshWithdrawalsBtn" class="btn btn-secondary"><i class="fas fa-sync-alt"></i> Обновить</button></div>
-                    </div>
-                    <div id="withdrawalsList">
-                        <div style="text-align:center; padding:20px; color:#666;"><div class="loading-spinner"></div> Загрузка...</div>
-                    </div>
-                </div>
-
-                <div class="admin-form">
-                    <h3><i class="fas fa-chart-line"></i> Статистика выводов</h3>
-                    <div class="stats-grid" style="grid-template-columns: repeat(3, 1fr); margin-bottom: 0;">
-                        <div class="stat-card"><div class="stat-value" id="totalPendingAmount" style="font-size:20px;">0 ₽</div><div class="stat-label">Ожидают вывода</div></div>
-                        <div class="stat-card"><div class="stat-value" id="totalCompletedAmount" style="font-size:20px;">0 ₽</div><div class="stat-label">Выведено всего</div></div>
-                        <div class="stat-card"><div class="stat-value" id="totalRejectedAmount" style="font-size:20px;">0 ₽</div><div class="stat-label">Отклонено</div></div>
-                    </div>
-                </div>
-            </div>
+            
 
             <!-- ===== COMMISSIONS ===== -->
             <div class="section-content" id="section-commissions">
@@ -1504,45 +1460,101 @@
                 <div class="page-header">
                     <div>
                         <h1><i class="fas fa-cube"></i>Цифровые товары</h1>
-                        <div class="subtitle">Ваши внутренние продукты (вызовы, премиум, бейджи)</div>
+                        <div class="subtitle">Управление товарами в магазине (вызовы, премиум, бейджи)</div>
                     </div>
                     <div class="header-actions">
-                        <button class="btn btn-primary btn-sm" id="addDigitalProductBtn"><i class="fas fa-plus"></i> Добавить товар</button>
+                        <button class="btn btn-primary btn-sm" id="showAddProductFormBtn"><i class="fas fa-plus"></i> Добавить товар</button>
+                        <button class="btn btn-outline btn-sm" id="refreshProductsBtn"><i class="fas fa-sync"></i> Обновить</button>
                     </div>
                 </div>
 
+                <!-- ===== ФОРМА ДОБАВЛЕНИЯ ТОВАРА ===== -->
+                <div class="admin-form" id="addProductForm" style="display:none;">
+                    <h3><i class="fas fa-plus-circle"></i> Новый цифровой товар</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Название *</label>
+                            <input type="text" id="productName" placeholder="Например: 10 вызовов">
+                        </div>
+                        <div class="form-group">
+                            <label>Цена (₽) *</label>
+                            <input type="number" id="productPrice" placeholder="0" min="0">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Категория</label>
+                            <select id="productCategory">
+                                <option value="Вызовы">🎯 Вызовы</option>
+                                <option value="Премиум">👑 Премиум</option>
+                                <option value="Наборы">📦 Наборы</option>
+                                <option value="Бейджи">🏅 Бейджи</option>
+                                <option value="Другое">📌 Другое</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Количество</label>
+                            <input type="number" id="productAmount" placeholder="5 (вызовов) или 1 (месяц)" min="1">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Иконка (FontAwesome)</label>
+                            <select id="productIcon">
+                                <option value="fa-crosshairs">🎯 fa-crosshairs</option>
+                                <option value="fa-crown">👑 fa-crown</option>
+                                <option value="fa-box">📦 fa-box</option>
+                                <option value="fa-certificate">🏅 fa-certificate</option>
+                                <option value="fa-medal">🥇 fa-medal</option>
+                                <option value="fa-star">⭐ fa-star</option>
+                                <option value="fa-gem">💎 fa-gem</option>
+                                <option value="fa-fire">🔥 fa-fire</option>
+                                <option value="fa-bolt">⚡ fa-bolt</option>
+                                <option value="fa-trophy">🏆 fa-trophy</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Бейдж (опционально)</label>
+                            <input type="text" id="productBadge" placeholder="🔥 ВЫГОДА">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Описание</label>
+                        <textarea id="productDesc" rows="2" placeholder="Краткое описание товара..."></textarea>
+                    </div>
+                    <div class="form-row" style="align-items:center;">
+                        <div class="form-group" style="flex:0 1 auto;">
+                            <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+                                <input type="checkbox" id="productHot" checked> Горячий товар
+                            </label>
+                        </div>
+                        <div class="form-group" style="flex:0 1 auto;">
+                            <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+                                <input type="checkbox" id="productActive" checked> Активен
+                            </label>
+                        </div>
+                        <div class="form-group" style="flex:0 1 auto;">
+                            <button id="saveProductBtn" class="btn btn-success"><i class="fas fa-save"></i> Сохранить</button>
+                            <button id="cancelProductBtn" class="btn btn-outline" style="margin-left:8px;">Отмена</button>
+                        </div>
+                    </div>
+                    <div id="productFormMessage" style="margin-top:8px;"></div>
+                </div>
+
+                <!-- ===== ФИЛЬТРЫ ===== -->
                 <div class="filters">
-                    <select id="productCategoryFilter"><option value="">Все категории</option><option>Вызовы</option><option>Премиум</option><option>Наборы</option><option>Бейджи</option></select>
+                    <select id="productCategoryFilter"><option value="">Все категории</option><option>Вызовы</option><option>Премиум</option><option>Наборы</option><option>Бейджи</option><option>Другое</option></select>
                     <select id="productStatusFilter"><option value="">Все статусы</option><option value="active">Активен</option><option value="inactive">Скрыт</option></select>
                     <input type="text" id="productSearch" placeholder="🔍 Поиск по названию...">
                 </div>
 
+                <!-- ===== СПИСОК ТОВАРОВ ===== -->
                 <div class="products-grid" id="productsGrid">
                     <div style="grid-column:1/-1; text-align:center; padding:30px; color:#666;"><div class="loading-spinner"></div> Загрузка...</div>
                 </div>
             </div>
 
-            <!-- ===== PRICES ===== -->
-            <div class="section-content" id="section-prices">
-                <div class="page-header">
-                    <div>
-                        <h1><i class="fas fa-tags"></i>Цены</h1>
-                        <div class="subtitle">Управление ценами на цифровые товары</div>
-                    </div>
-                </div>
-
-                <div class="admin-form">
-                    <h3><i class="fas fa-tags"></i> Цены на товары</h3>
-                    <div id="priceList">
-                        <div style="text-align:center; padding:20px; color:#666;"><div class="loading-spinner"></div> Загрузка...</div>
-                    </div>
-                    <div style="margin-top:16px; display:flex; gap:10px; flex-wrap:wrap;">
-                        <button id="savePricesBtn" class="btn btn-success"><i class="fas fa-save"></i> Сохранить цены</button>
-                        <button id="resetPricesBtn" class="btn btn-danger"><i class="fas fa-undo"></i> Сбросить к стандартным</button>
-                    </div>
-                    <div id="priceMessage" style="margin-top:12px;"></div>
-                </div>
-            </div>
+            
 
             <!-- ===== HISTORY ===== -->
             <div class="section-content" id="section-history">
@@ -1654,25 +1666,14 @@
         // ============================================================
         let allFighters = [];
         let allPartners = [];
-        let allWithdrawals = [];
         let allRequests = [];
         let allDigitalProducts = [];
         let allOrders = [];
         let currentAdminEmail = null;
-        let priceData = {};
         let commissionPercent = 10;
+        let editingProductId = null;
 
-        const DEFAULT_PRICES = {
-            challenge_5: 500,
-            challenge_10: 900,
-            challenge_25: 2000,
-            premium_month: 200,
-            premium_3months: 500,
-            premium_6months: 850,
-            premium_year: 1500,
-            fighter_pack: 1400,
-            champion_pack: 3500
-        };
+        
 
         const DEFAULT_DIGITAL_PRODUCTS = [
             { id: 'challenge_5', name: '5 вызовов', icon: 'fa-crosshairs', iconText: 'x5', price: 500, category: 'Вызовы',
@@ -1827,10 +1828,8 @@
                 loadPartners(),
                 loadRequests(),
                 loadOrdersForCommission(),
-                loadWithdrawals(),
                 loadCommissions(),
                 loadDigitalProducts(),
-                loadPrices(),
                 loadHistory()
             ]);
             updateDashboardChartData();
@@ -1843,15 +1842,13 @@
             try {
                 const fightersSnap = await getDocs(collection(db, "fighters"));
                 const partnersSnap = await getDocs(collection(db, "partners"));
-                const withdrawalsSnap = await getDocs(query(collection(db, "withdrawals"), where("status", "==",
-                    "pending")));
-
+                
+                // Считаем общую комиссию из завершённых заказов
                 let totalCommission = 0;
-                // Считаем комиссию из заказов
                 const ordersSnap = await getDocs(collection(db, "orders"));
                 ordersSnap.forEach(doc => {
                     const order = doc.data();
-                    if (order.status === 'completed') {
+                    if (order.status === 'completed' || order.status === 'paid') {
                         totalCommission += (order.totalPrice || 0) * (commissionPercent / 100);
                     }
                 });
@@ -1859,10 +1856,13 @@
                 document.getElementById('statFighters').textContent = fightersSnap.size;
                 document.getElementById('statPartners').textContent = partnersSnap.size;
                 document.getElementById('statCommission').textContent = totalCommission.toLocaleString() + ' ₽';
-                document.getElementById('statPendingWithdrawals').textContent = withdrawalsSnap.size;
+                
+                // Обновляем бейджи в сайдбаре
                 document.getElementById('partnersBadge').textContent = partnersSnap.size;
-                document.getElementById('withdrawalsBadge').textContent = withdrawalsSnap.size;
-            } catch (e) { console.error('Статистика:', e); }
+                
+            } catch (e) {
+                console.error('Статистика:', e);
+            }
         }
 
         // ============================================================
@@ -2137,120 +2137,7 @@
             } catch (e) { console.error('Заказы:', e); }
         }
 
-        // ============================================================
-        // ВЫВОДЫ (WITHDRAWALS)
-        // ============================================================
-        async function loadWithdrawals() {
-            try {
-                const statusFilter = document.getElementById('withdrawalStatusFilter')?.value || 'all';
-                let q = statusFilter === 'all' ?
-                    query(collection(db, "withdrawals"), orderBy("createdAt", "desc")) :
-                    query(collection(db, "withdrawals"), where("status", "==", statusFilter), orderBy("createdAt",
-                    "desc"));
-                const snapshot = await getDocs(q);
-                allWithdrawals = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                renderWithdrawals();
-                updateWithdrawalStats();
-            } catch (e) {
-                console.error('Выводы:', e);
-                document.getElementById('withdrawalsList').innerHTML =
-                    '<div style="text-align:center; padding:20px; color:#666;">Ошибка загрузки</div>';
-            }
-        }
-
-        function renderWithdrawals() {
-            const container = document.getElementById('withdrawalsList');
-            if (!allWithdrawals.length) {
-                container.innerHTML = '<div style="text-align:center; padding:20px; color:#666;">Нет заявок на вывод</div>';
-                return;
-            }
-            let html = '<div class="table-wrap"><table><thead><tr><th>Дата</th><th>Продавец</th><th>Сумма</th><th>Метод</th><th>Статус</th><th>Действия</th></tr></thead><tbody>';
-            allWithdrawals.forEach(w => {
-                const date = w.createdAt?.toDate?.()?.toLocaleString() || '—';
-                const statusMap = {
-                    'pending': '⏳ Ожидает',
-                    'processing': '🔄 В обработке',
-                    'completed': '✅ Выполнен',
-                    'rejected': '❌ Отклонён'
-                };
-                const statusText = statusMap[w.status] || w.status;
-                const partnerName = allPartners.find(p => p.id === w.partnerId)?.name || 'Продавец';
-                html += `
-                            <tr>
-                                <td>${date}</td>
-                                <td>${escapeHtml(partnerName)}</td>
-                                <td style="color:#fbbf24; font-weight:700;">${(w.amount || 0).toLocaleString()} ₽</td>
-                                <td>${w.method === 'card' ? 'Карта' : 'СБП'}</td>
-                                <td><span class="status-badge ${w.status || 'pending'}">${statusText}</span></td>
-                                <td>
-                                    ${w.status === 'pending' ? `
-                                        <button class="btn btn-success btn-sm" onclick="window.approveWithdrawal('${w.id}', ${w.amount}, '${w.partnerId}')"><i class="fas fa-check"></i></button>
-                                        <button class="btn btn-danger btn-sm" onclick="window.rejectWithdrawal('${w.id}')"><i class="fas fa-times"></i></button>
-                                    ` : ''}
-                                    ${w.status === 'processing' ? `
-                                        <button class="btn btn-success btn-sm" onclick="window.completeWithdrawal('${w.id}', ${w.amount}, '${w.partnerId}')"><i class="fas fa-check"></i> Завершить</button>
-                                    ` : ''}
-                                </td>
-                            </tr>
-                        `;
-            });
-            html += '</tbody></table></div>';
-            container.innerHTML = html;
-        }
-
-        async function updateWithdrawalStats() {
-            let pendingTotal = 0,
-                completedTotal = 0,
-                rejectedTotal = 0;
-            allWithdrawals.forEach(w => {
-                if (w.status === 'pending') pendingTotal += w.amount || 0;
-                if (w.status === 'completed') completedTotal += w.amount || 0;
-                if (w.status === 'rejected') rejectedTotal += w.amount || 0;
-            });
-            document.getElementById('totalPendingAmount').textContent = pendingTotal.toLocaleString() + ' ₽';
-            document.getElementById('totalCompletedAmount').textContent = completedTotal.toLocaleString() + ' ₽';
-            document.getElementById('totalRejectedAmount').textContent = rejectedTotal.toLocaleString() + ' ₽';
-        }
-
-        window.approveWithdrawal = async (withdrawalId, amount, partnerId) => {
-            if (!confirm(`Подтвердить вывод ${amount.toLocaleString()} ₽?`)) return;
-            try {
-                await updateDoc(doc(db, "withdrawals", withdrawalId), { status: 'processing', processedAt: new Date() });
-                await logAction('approve_withdrawal', withdrawalId, `Подтвердил вывод ${amount} ₽`);
-                alert('✅ Заявка переведена в статус "В обработке"');
-                loadWithdrawals();
-                loadStats();
-            } catch (err) { alert('Ошибка: ' + err.message); }
-        };
-
-        window.completeWithdrawal = async (withdrawalId, amount, partnerId) => {
-            if (!confirm(`Завершить выплату ${amount.toLocaleString()} ₽?`)) return;
-            try {
-                await updateDoc(doc(db, "withdrawals", withdrawalId), { status: 'completed', completedAt: new Date() });
-                await logAction('complete_withdrawal', withdrawalId, `Завершил выплату ${amount} ₽`);
-                alert('✅ Вывод средств завершён');
-                loadWithdrawals();
-                loadStats();
-            } catch (err) { alert('Ошибка: ' + err.message); }
-        };
-
-        window.rejectWithdrawal = async (withdrawalId) => {
-            const reason = prompt('Укажите причину отклонения:');
-            if (!reason) return;
-            if (!confirm('Отклонить заявку на вывод?')) return;
-            try {
-                await updateDoc(doc(db, "withdrawals", withdrawalId), { status: 'rejected', rejectReason: reason,
-                    processedAt: new Date() });
-                await logAction('reject_withdrawal', withdrawalId, `Отклонил вывод`);
-                alert('❌ Заявка отклонена');
-                loadWithdrawals();
-                loadStats();
-            } catch (err) { alert('Ошибка: ' + err.message); }
-        };
-
-        document.getElementById('refreshWithdrawalsBtn')?.addEventListener('click', loadWithdrawals);
-        document.getElementById('withdrawalStatusFilter')?.addEventListener('change', loadWithdrawals);
-
+        
         // ============================================================
         // КОМИССИИ
         // ============================================================
@@ -2364,6 +2251,7 @@
         // ============================================================
         // ЦИФРОВЫЕ ТОВАРЫ
         // ============================================================
+
         async function loadDigitalProducts() {
             try {
                 const snapshot = await getDocs(collection(db, "digital_products"));
@@ -2410,38 +2298,179 @@
                 return;
             }
 
+            // Сортировка: сначала категории
+            const categoryOrder = { 'Вызовы': 1, 'Премиум': 2, 'Наборы': 3, 'Бейджи': 4, 'Другое': 5 };
+            filtered.sort((a, b) => {
+                const orderA = categoryOrder[a.category] || 99;
+                const orderB = categoryOrder[b.category] || 99;
+                if (orderA !== orderB) return orderA - orderB;
+                if (a.hot && !b.hot) return -1;
+                if (!a.hot && b.hot) return 1;
+                return 0;
+            });
+
+            const categoryIcons = {
+                'Вызовы': '🎯',
+                'Премиум': '👑',
+                'Наборы': '📦',
+                'Бейджи': '🏅',
+                'Другое': '📌'
+            };
+
             grid.innerHTML = filtered.map(p => `
-                        <div class="product-card ${p.hot ? 'hot' : ''} ${p.category === 'Премиум' ? 'premium-card' : ''}">
-                            ${p.badge ? `<div class="product-badge">${p.badge}</div>` : ''}
-                            <div>
-                                <div class="product-icon"><i class="fas ${p.icon || 'fa-cube'}"></i> ${p.iconText || ''}</div>
-                                <div class="product-title">${escapeHtml(p.name)}</div>
-                                <div class="product-desc">${escapeHtml(p.description || '')}</div>
-                            </div>
-                            <div>
-                                <div class="product-price">
-                                    ${p.price} ₽
-                                    ${p.saving ? `<span class="saving">${p.saving}</span>` : ''}
-                                </div>
-                                <div class="product-status">
-                                    <span class="status-badge ${p.active ? 'active' : 'inactive'}">
-                                        <i class="fas ${p.active ? 'fa-check-circle' : 'fa-minus-circle'}"></i>
-                                        ${p.active ? 'Активен' : 'Скрыт'}
-                                    </span>
-                                </div>
-                                <div style="font-size:11px; color:#666; margin-bottom:6px;">
-                                    <i class="fas fa-shopping-cart" style="color:#fbbf24;"></i> ${p.sales || 0} продаж • ${(p.revenue || 0).toLocaleString()} ₽
-                                </div>
-                                <div class="product-actions">
-                                    <button class="btn btn-outline btn-sm" onclick="window.editDigitalProduct('${p.id}')"><i class="fas fa-edit"></i></button>
-                                    <button class="btn btn-outline btn-sm" onclick="window.toggleDigitalProduct('${p.id}', ${p.active})"><i class="fas fa-eye"></i></button>
-                                    <button class="btn btn-danger btn-sm" onclick="window.deleteDigitalProduct('${p.id}')"><i class="fas fa-trash"></i></button>
-                                </div>
-                            </div>
+                <div class="product-card ${p.hot ? 'hot' : ''} ${p.category === 'Премиум' ? 'premium-card' : ''}">
+                    ${p.badge ? `<div class="product-badge">${p.badge}</div>` : ''}
+                    <div>
+                        <div class="product-icon"><i class="fas ${p.icon || 'fa-cube'}"></i> ${p.amount ? `×${p.amount}` : ''}</div>
+                        <div class="product-title">${escapeHtml(p.name)}</div>
+                        <div style="font-size:0.6rem; color:#666; margin-bottom:4px;">${categoryIcons[p.category] || '📌'} ${p.category || 'Другое'}</div>
+                        <div class="product-desc">${escapeHtml(p.description || '')}</div>
+                    </div>
+                    <div>
+                        <div class="product-price">${p.price} ₽</div>
+                        <div class="product-status">
+                            <span class="status-badge ${p.active ? 'active' : 'inactive'}">
+                                <i class="fas ${p.active ? 'fa-check-circle' : 'fa-minus-circle'}"></i>
+                                ${p.active ? 'Активен' : 'Скрыт'}
+                            </span>
                         </div>
-                    `).join('');
+                        <div style="font-size:11px; color:#666; margin-bottom:6px;">
+                            <i class="fas fa-shopping-cart" style="color:#fbbf24;"></i> ${p.sales || 0} продаж
+                        </div>
+                        <div class="product-actions">
+                            <button class="btn btn-outline btn-sm" onclick="window.openEditProductModal('${p.id}')"><i class="fas fa-edit"></i></button>
+                            <button class="btn btn-outline btn-sm" onclick="window.toggleDigitalProduct('${p.id}', ${p.active})"><i class="fas fa-eye"></i></button>
+                            <button class="btn btn-danger btn-sm" onclick="window.deleteDigitalProduct('${p.id}')"><i class="fas fa-trash"></i></button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
         }
 
+        // ===== ОТКРЫТИЕ МОДАЛКИ РЕДАКТИРОВАНИЯ =====
+        window.openEditProductModal = function(productId) {
+            const p = allDigitalProducts.find(p => p.id === productId);
+            if (!p) return;
+            
+            editingProductId = productId;
+            
+            // Показываем форму и заполняем данными
+            const form = document.getElementById('addProductForm');
+            form.style.display = 'block';
+            document.getElementById('addProductForm').querySelector('h3').innerHTML = '<i class="fas fa-edit"></i> Редактировать товар';
+            document.getElementById('saveProductBtn').innerHTML = '<i class="fas fa-save"></i> Обновить';
+            
+            document.getElementById('productName').value = p.name || '';
+            document.getElementById('productPrice').value = p.price || 0;
+            document.getElementById('productCategory').value = p.category || 'Другое';
+            document.getElementById('productAmount').value = p.amount || '';
+            document.getElementById('productIcon').value = p.icon || 'fa-crosshairs';
+            document.getElementById('productBadge').value = p.badge || '';
+            document.getElementById('productDesc').value = p.description || '';
+            document.getElementById('productHot').checked = p.hot || false;
+            document.getElementById('productActive').checked = p.active !== false;
+            
+            document.getElementById('productFormMessage').innerHTML = '';
+            document.getElementById('addProductForm').scrollIntoView({ behavior: 'smooth' });
+            
+            document.getElementById('cancelProductBtn').textContent = 'Закрыть';
+        };
+
+        // ===== СОХРАНЕНИЕ ТОВАРА (НОВЫЙ/РЕДАКТИРОВАНИЕ) =====
+        document.getElementById('saveProductBtn')?.addEventListener('click', async () => {
+            const name = document.getElementById('productName').value.trim();
+            const price = parseFloat(document.getElementById('productPrice').value);
+            const category = document.getElementById('productCategory').value;
+            const amount = parseInt(document.getElementById('productAmount').value) || null;
+            const icon = document.getElementById('productIcon').value;
+            const badge = document.getElementById('productBadge').value.trim();
+            const description = document.getElementById('productDesc').value.trim();
+            const hot = document.getElementById('productHot').checked;
+            const active = document.getElementById('productActive').checked;
+            
+            if (!name) {
+                document.getElementById('productFormMessage').innerHTML = '<span style="color:red;">❌ Введите название товара</span>';
+                return;
+            }
+            if (!price || price < 0) {
+                document.getElementById('productFormMessage').innerHTML = '<span style="color:red;">❌ Введите корректную цену</span>';
+                return;
+            }
+            
+            try {
+                const productData = {
+                    name: name,
+                    price: price,
+                    category: category,
+                    amount: amount,
+                    icon: icon,
+                    badge: badge,
+                    description: description,
+                    hot: hot,
+                    active: active,
+                    updatedAt: serverTimestamp()
+                };
+                
+                if (editingProductId) {
+                    // Обновление
+                    await updateDoc(doc(db, "digital_products", editingProductId), productData);
+                    await logAction('edit_digital_product', editingProductId, `Обновил товар "${name}"`);
+                    document.getElementById('productFormMessage').innerHTML = '<span style="color:green;">✅ Товар обновлён!</span>';
+                } else {
+                    // Создание нового
+                    productData.createdAt = serverTimestamp();
+                    productData.sales = 0;
+                    productData.revenue = 0;
+                    const docRef = await addDoc(collection(db, "digital_products"), productData);
+                    await logAction('add_digital_product', docRef.id, `Добавил товар "${name}"`);
+                    document.getElementById('productFormMessage').innerHTML = '<span style="color:green;">✅ Товар добавлен!</span>';
+                }
+                
+                setTimeout(() => {
+                    document.getElementById('productFormMessage').innerHTML = '';
+                    resetProductForm();
+                    loadDigitalProducts();
+                }, 1500);
+                
+            } catch (err) {
+                console.error('Ошибка:', err);
+                document.getElementById('productFormMessage').innerHTML = `<span style="color:red;">❌ Ошибка: ${err.message}</span>`;
+            }
+        });
+
+        // ===== СБРОС ФОРМЫ =====
+        function resetProductForm() {
+            document.getElementById('productName').value = '';
+            document.getElementById('productPrice').value = '';
+            document.getElementById('productCategory').value = 'Вызовы';
+            document.getElementById('productAmount').value = '';
+            document.getElementById('productIcon').value = 'fa-crosshairs';
+            document.getElementById('productBadge').value = '';
+            document.getElementById('productDesc').value = '';
+            document.getElementById('productHot').checked = true;
+            document.getElementById('productActive').checked = true;
+            document.getElementById('productFormMessage').innerHTML = '';
+            document.getElementById('addProductForm').style.display = 'none';
+            document.getElementById('addProductForm').querySelector('h3').innerHTML = '<i class="fas fa-plus-circle"></i> Новый цифровой товар';
+            document.getElementById('saveProductBtn').innerHTML = '<i class="fas fa-save"></i> Сохранить';
+            document.getElementById('cancelProductBtn').textContent = 'Отмена';
+            editingProductId = null;
+        }
+
+        // ===== ПОКАЗАТЬ ФОРМУ =====
+        document.getElementById('showAddProductFormBtn')?.addEventListener('click', () => {
+            resetProductForm();
+            document.getElementById('addProductForm').style.display = 'block';
+            document.getElementById('addProductForm').scrollIntoView({ behavior: 'smooth' });
+        });
+
+        // ===== ОТМЕНА / ЗАКРЫТИЕ =====
+        document.getElementById('cancelProductBtn')?.addEventListener('click', resetProductForm);
+
+        // ===== ОБНОВЛЕНИЕ =====
+        document.getElementById('refreshProductsBtn')?.addEventListener('click', loadDigitalProducts);
+
+        // ===== TOGGLE =====
         window.toggleDigitalProduct = async (productId, active) => {
             if (!confirm(`${active ? 'Скрыть' : 'Показать'} товар?`)) return;
             try {
@@ -2451,8 +2480,10 @@
             } catch (e) { alert('Ошибка: ' + e.message); }
         };
 
+        // ===== УДАЛЕНИЕ =====
         window.deleteDigitalProduct = async (productId) => {
-            if (!confirm('Удалить товар?')) return;
+            const product = allDigitalProducts.find(p => p.id === productId);
+            if (!confirm(`Удалить товар "${product?.name || 'без названия'}"?`)) return;
             try {
                 await deleteDoc(doc(db, "digital_products", productId));
                 await loadDigitalProducts();
@@ -2460,141 +2491,11 @@
             } catch (e) { alert('Ошибка: ' + e.message); }
         };
 
-        window.editDigitalProduct = async (productId) => {
-            const p = allDigitalProducts.find(p => p.id === productId);
-            if (!p) return;
-            const newPrice = prompt('Новая цена:', p.price);
-            if (newPrice === null) return;
-            const newName = prompt('Новое название:', p.name);
-            if (newName === null) return;
-            try {
-                await updateDoc(doc(db, "digital_products", productId), {
-                    price: parseFloat(newPrice) || p.price,
-                    name: newName || p.name
-                });
-                await loadDigitalProducts();
-                await logAction('edit_digital_product', productId, `Изменил цену на ${newPrice}, название на ${newName}`);
-            } catch (e) { alert('Ошибка: ' + e.message); }
-        };
-
-        document.getElementById('addDigitalProductBtn')?.addEventListener('click', () => {
-            const name = prompt('Название товара:');
-            if (!name) return;
-            const price = prompt('Цена:');
-            if (!price) return;
-            const category = prompt('Категория (Вызовы/Премиум/Наборы/Бейджи):') || 'Вызовы';
-            const description = prompt('Описание:') || '';
-            const id = 'product_' + Date.now();
-            setDoc(doc(db, "digital_products", id), {
-                id: id,
-                name: name,
-                price: parseFloat(price) || 0,
-                category: category,
-                description: description,
-                icon: 'fa-cube',
-                iconText: '',
-                active: true,
-                sales: 0,
-                revenue: 0,
-                createdAt: serverTimestamp()
-            }).then(() => {
-                loadDigitalProducts();
-                logAction('add_digital_product', id, `Добавил цифровой товар ${name}`);
-                alert('✅ Товар добавлен!');
-            }).catch(e => alert('Ошибка: ' + e.message));
-        });
-
         // Фильтры для товаров
         document.getElementById('productCategoryFilter')?.addEventListener('change', renderDigitalProducts);
         document.getElementById('productStatusFilter')?.addEventListener('change', renderDigitalProducts);
         document.getElementById('productSearch')?.addEventListener('input', renderDigitalProducts);
 
-        // ============================================================
-        // ЦЕНЫ
-        // ============================================================
-        async function loadPrices() {
-            try {
-                const priceDoc = await getDoc(doc(db, "settings", "prices"));
-                if (priceDoc.exists()) {
-                    priceData = priceDoc.data();
-                } else {
-                    priceData = { ...DEFAULT_PRICES };
-                    await setDoc(doc(db, "settings", "prices"), priceData);
-                }
-                renderPrices();
-            } catch (e) {
-                console.error('Цены:', e);
-                document.getElementById('priceList').innerHTML =
-                    '<div style="text-align:center; padding:20px; color:#666;">Ошибка загрузки</div>';
-            }
-        }
-
-        function renderPrices() {
-            const container = document.getElementById('priceList');
-            const productNames = {
-                challenge_5: '5 вызовов',
-                challenge_10: '10 вызовов',
-                challenge_25: '25 вызовов',
-                premium_month: 'Премиум 1 месяц',
-                premium_3months: 'Премиум 3 месяца',
-                premium_6months: 'Премиум 6 месяцев',
-                premium_year: 'Премиум 12 месяцев',
-                fighter_pack: 'Набор «Боец»',
-                champion_pack: 'Набор «Чемпион»'
-            };
-            let html = '';
-            for (const [key, name] of Object.entries(productNames)) {
-                const currentPrice = priceData[key] || DEFAULT_PRICES[key] || 0;
-                html += `
-                            <div class="price-item">
-                                <span class="product-name">${name}</span>
-                                <span class="price-current">${currentPrice} ₽</span>
-                                <input type="number" id="price_${key}" value="${currentPrice}" min="0" step="10">
-                                <button class="btn btn-secondary btn-sm" onclick="window.resetPrice('${key}')"><i class="fas fa-undo"></i> Сброс</button>
-                            </div>
-                        `;
-            }
-            container.innerHTML = html;
-        }
-
-        window.resetPrice = (key) => {
-            const input = document.getElementById(`price_${key}`);
-            if (input) input.value = DEFAULT_PRICES[key] || 0;
-        };
-
-        document.getElementById('savePricesBtn')?.addEventListener('click', async () => {
-            const container = document.getElementById('priceList');
-            const inputs = container.querySelectorAll('input[type="number"]');
-            const newPrices = {};
-            inputs.forEach(input => {
-                const key = input.id.replace('price_', '');
-                newPrices[key] = parseInt(input.value) || 0;
-            });
-            try {
-                await setDoc(doc(db, "settings", "prices"), newPrices);
-                priceData = newPrices;
-                document.getElementById('priceMessage').innerHTML = '<span style="color:green;">✅ Цены сохранены!</span>';
-                await logAction('save_prices', null, 'Обновил цены');
-                setTimeout(() => { document.getElementById('priceMessage').innerHTML = ''; }, 3000);
-                loadPrices();
-            } catch (err) {
-                document.getElementById('priceMessage').innerHTML = `<span style="color:red;">❌ Ошибка: ${err.message}</span>`;
-            }
-        });
-
-        document.getElementById('resetPricesBtn')?.addEventListener('click', async () => {
-            if (!confirm('Сбросить все цены к стандартным?')) return;
-            try {
-                await setDoc(doc(db, "settings", "prices"), DEFAULT_PRICES);
-                priceData = { ...DEFAULT_PRICES };
-                document.getElementById('priceMessage').innerHTML = '<span style="color:green;">✅ Цены сброшены!</span>';
-                await logAction('reset_prices', null, 'Сбросил цены к стандартным');
-                setTimeout(() => { document.getElementById('priceMessage').innerHTML = ''; }, 3000);
-                loadPrices();
-            } catch (err) {
-                document.getElementById('priceMessage').innerHTML = `<span style="color:red;">❌ Ошибка: ${err.message}</span>`;
-            }
-        });
 
         // ============================================================
         // ИСТОРИЯ

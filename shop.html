@@ -10,7 +10,6 @@
     <meta name="mobile-web-app-capable" content="yes">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <meta name="theme-color" content="#fbbf24">
     <meta name="description" content="Магазин PRORANK — покупай вызовы, премиум и бонусы для роста рейтинга">
     <title>Магазин | PRORANK</title>
     <link rel="stylesheet" href="style.css">
@@ -204,7 +203,7 @@
             color: #fbbf24;
         }
 
-        /* ===== ГОРИЗОНТАЛЬНЫЙ СКРОЛЛ КАРТОЧЕК ===== */
+        /* ===== ТОВАРЫ ===== */
         .products-grid {
             display: flex;
             gap: 14px;
@@ -284,7 +283,7 @@
             background: #8b5cf6;
             color: #fff;
         }
-        .product-icon { font-size: 1.8rem; margin-bottom: 8px; }
+        .product-icon { font-size: 1.8rem; margin-bottom: 8px; color: #fbbf24; }
         .product-title { font-size: 0.9rem; font-weight: 700; margin-bottom: 4px; }
         .product-desc {
             font-size: 0.6rem;
@@ -304,11 +303,6 @@
             color: #888;
             text-decoration: line-through;
             margin-right: 8px;
-        }
-        .product-price .saving {
-            font-size: 0.6rem;
-            color: #16a34a;
-            font-weight: 600;
         }
         .btn-buy {
             background: #fbbf24;
@@ -331,13 +325,6 @@
         .btn-buy:disabled {
             opacity: 0.5;
             cursor: not-allowed;
-        }
-        .btn-buy.purple {
-            background: #8b5cf6;
-            color: #fff;
-        }
-        .btn-buy.purple:hover {
-            background: #7c3aed;
         }
 
         .purchases-section {
@@ -414,45 +401,6 @@
         }
         .btn-confirm { background: #fbbf24; color: #000; }
         .btn-cancel { background: #333; color: #fff; }
-
-        /* Бейджи в модалке */
-        .badge-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 10px;
-            margin: 12px 0;
-        }
-        .badge-option {
-            background: rgba(255,255,255,0.05);
-            border-radius: 16px;
-            padding: 12px 8px;
-            cursor: pointer;
-            transition: all 0.2s;
-            border: 2px solid transparent;
-            text-align: center;
-        }
-        .badge-option:hover {
-            background: rgba(255,255,255,0.1);
-        }
-        .badge-option.selected {
-            border-color: #fbbf24;
-            background: rgba(251,191,36,0.15);
-        }
-        .badge-option img {
-            width: 48px;
-            height: 48px;
-            object-fit: contain;
-            margin-bottom: 4px;
-        }
-        .badge-option .badge-name {
-            font-size: 0.6rem;
-            font-weight: 600;
-            color: #fff;
-        }
-        .badge-option .badge-price {
-            font-size: 0.55rem;
-            color: #888;
-        }
 
         .main-footer {
             background: #0a0a0a;
@@ -531,7 +479,6 @@
             .premium-banner .info h3 { font-size: 0.85rem; }
             .footer-inner { flex-direction: column; text-align: center; gap: 16px; }
             .footer-links { justify-content: center; }
-            .badge-grid { grid-template-columns: repeat(2, 1fr); }
         }
 
         @media (max-width: 480px) {
@@ -553,11 +500,6 @@
             }
         }
 
-        @keyframes pulse-arrow {
-            0%, 100% { transform: translateX(0); opacity: 0.6; }
-            50% { transform: translateX(6px); opacity: 1; }
-        }
-
         ::-webkit-scrollbar { width: 4px; }
         ::-webkit-scrollbar-track { background: #1a1a1a; }
         ::-webkit-scrollbar-thumb { background: #fbbf24; border-radius: 10px; }
@@ -574,7 +516,6 @@
         @keyframes spin { to { transform: rotate(360deg); } }
         .catalog-link { color: #fbbf24; text-decoration: none; }
         .catalog-link:hover { text-decoration: underline; }
-
 
         .scroll-indicator {
             display: flex;
@@ -594,6 +535,26 @@
             width: 20px;
             border-radius: 3px;
             background: #fbbf24;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #666;
+            width: 100%;
+        }
+        .empty-state i {
+            font-size: 2.5rem;
+            color: #2a2a2a;
+            margin-bottom: 12px;
+        }
+        .empty-state h3 {
+            color: #ccc;
+            font-size: 1rem;
+            margin-bottom: 4px;
+        }
+        .empty-state p {
+            font-size: 0.8rem;
         }
     </style>
 </head>
@@ -616,7 +577,7 @@
             <h1><i class="fas fa-store"></i> Магазин</h1>
         </div>
         <div class="shop-subheader">
-            🎁 Покупай вызовы, премиум и бейджи для профиля
+            Покупай вызовы, премиум и бонусы для роста рейтинга
         </div>
 
         <!-- Премиум-статус -->
@@ -632,159 +593,19 @@
         </div>
 
         <div class="info-tip">
-            <i class="fas fa-info-circle"></i> С Премиумом вы получаете <strong>бесплатные вызовы каждый месяц</strong> + <strong>скидку 15%</strong> на все покупки!
+            <i class="fas fa-info-circle"></i> С Премиумом вы получаете <strong>бесплатные вызовы каждый месяц</strong> + доступ к эксклюзивным возможностям!
         </div>
 
-        
-
-        <!-- ТОВАРЫ - ГОРИЗОНТАЛЬНЫЙ СКРОЛЛ -->
-        <div class="products-grid">
-            <!-- ВЫЗОВЫ -->
-            <div class="product-card">
-                <div>
-                    <div class="product-icon"><i class="fas fa-crosshairs icon-gold"></i> x5</div>
-                    <div class="product-title">5 вызовов</div>
-                    <div class="product-desc">+5 к purchasedChallenges</div>
-                </div>
-                <div>
-                    <div class="product-price">500 ₽</div>
-                    <button class="btn-buy" data-product-id="challenge_5">Купить</button>
-                </div>
-            </div>
-
-            <div class="product-card hot">
-                <div>
-                    <div class="product-badge">🔥 ВЫГОДА</div>
-                    <div class="product-icon"><i class="fas fa-crosshairs icon-gold"></i> x10</div>
-                    <div class="product-title">10 вызовов</div>
-                    <div class="product-desc">+10 к purchasedChallenges</div>
-                </div>
-                <div>
-                    <div class="product-price">900 ₽</div>
-                    <button class="btn-buy" data-product-id="challenge_10">Купить</button>
-                </div>
-            </div>
-
-            <div class="product-card hot">
-                <div>
-                    <div class="product-badge">🔥 СУПЕР</div>
-                    <div class="product-icon"><i class="fas fa-crosshairs icon-gold"></i> x25</div>
-                    <div class="product-title">25 вызовов</div>
-                    <div class="product-desc">+25 к purchasedChallenges</div>
-                </div>
-                <div>
-                    <div class="product-price">1500 ₽</div>
-                    <button class="btn-buy" data-product-id="challenge_25">Купить</button>
-                </div>
-            </div>
-
-            <!-- ПРЕМИУМ -->
-            <div class="product-card premium-card hot">
-                <div>
-                    <div class="product-badge">⭐ ТОП</div>
-                    <div class="product-icon"><i class="fas fa-crown icon-gold"></i></div>
-                    <div class="product-title">Премиум 1 месяц</div>
-                    <div class="product-desc">5 выз./мес + все бейджи + скидка 15%</div>
-                </div>
-                <div>
-                    <div class="product-price">600 ₽ <span class="saving">🔥 -60%</span></div>
-                    <button class="btn-buy" data-product-id="premium_month">Купить</button>
-                </div>
-            </div>
-
-            <div class="product-card premium-card hot">
-                <div>
-                    <div class="product-badge">⭐ МЕГА ВЫГОДА</div>
-                    <div class="product-icon"><i class="fas fa-crown icon-gold"></i> x3</div>
-                    <div class="product-title">Премиум 3 месяца</div>
-                    <div class="product-desc">15 выз./мес + все бейджи + скидка 15%</div>
-                </div>
-                <div>
-                    <div class="product-price">1200 ₽ <span class="saving">🔥 -65%</span></div>
-                    <button class="btn-buy" data-product-id="premium_3months">Купить</button>
-                </div>
-            </div>
-
-            <div class="product-card premium-card hot">
-                <div>
-                    <div class="product-badge">⭐ МАКСИМУМ</div>
-                    <div class="product-icon"><i class="fas fa-crown icon-gold"></i> x6</div>
-                    <div class="product-title">Премиум 6 месяцев</div>
-                    <div class="product-desc">30 выз./мес + все бейджи + скидка 15%</div>
-                </div>
-                <div>
-                    <div class="product-price">1900 ₽ <span class="saving">🔥 -70%</span></div>
-                    <button class="btn-buy" data-product-id="premium_6months">Купить</button>
-                </div>
-            </div>
-
-            <div class="product-card premium-card hot">
-                <div>
-                    <div class="product-badge">👑 ЛЕГЕНДА</div>
-                    <div class="product-icon"><i class="fas fa-crown icon-gold"></i> x12</div>
-                    <div class="product-title">Премиум 12 месяцев</div>
-                    <div class="product-desc">60 выз./год + все бейджи + скидка 15%</div>
-                </div>
-                <div>
-                    <div class="product-price">2500 ₽ <span class="saving">🔥🔥 -75%</span></div>
-                    <button class="btn-buy" data-product-id="premium_year">Купить</button>
-                </div>
-            </div>
-
-            <!-- НАБОРЫ -->
-            <div class="product-card hot">
-                <div>
-                    <div class="product-badge">🎁 СТАРТ</div>
-                    <div class="product-icon"><i class="fas fa-box icon-gold"></i></div>
-                    <div class="product-title">Набор «Боец»</div>
-                    <div class="product-desc">15 выз. + Премиум 1 мес</div>
-                </div>
-                <div>
-                    <div class="product-price">400 ₽ <span class="saving">🔥 -40%</span></div>
-                    <button class="btn-buy" data-product-id="fighter_pack">Купить</button>
-                </div>
-            </div>
-
-            <div class="product-card hot">
-                <div>
-                    <div class="product-badge">🏆 ПРО</div>
-                    <div class="product-icon"><i class="fas fa-box icon-gold"></i></div>
-                    <div class="product-title">Набор «Чемпион»</div>
-                    <div class="product-desc">40 выз. + Премиум 3 мес</div>
-                </div>
-                <div>
-                    <div class="product-price">1000 ₽ <span class="saving">🔥 -65%</span></div>
-                    <button class="btn-buy" data-product-id="champion_pack">Купить</button>
-                </div>
-            </div>
-
-            <!-- БЕЙДЖИ -->
-            <div class="product-card badge-card">
-                <div>
-                    <div class="product-badge purple">🎨 ЭКСКЛЮЗИВ</div>
-                    <div class="product-icon"><i class="fas fa-certificate" style="color: #8b5cf6;"></i></div>
-                    <div class="product-title">Купить бейдж</div>
-                    <div class="product-desc">Выбери стиль для своего профиля</div>
-                </div>
-                <div>
-                    <div class="product-price">100-200 ₽</div>
-                    <button class="btn-buy purple" id="openBadgeModalBtn">Выбрать</button>
-                </div>
+        <!-- ТОВАРЫ - ДИНАМИЧЕСКАЯ ЗАГРУЗКА ИЗ FIREBASE -->
+        <div class="products-grid" id="productsGrid">
+            <div class="empty-state" style="grid-column:1/-1;">
+                <div class="loading-spinner"></div>
+                <p style="margin-top:12px;">Загрузка товаров...</p>
             </div>
         </div>
 
         <!-- Индикатор прокрутки -->
-        <div class="scroll-indicator" id="scrollIndicator">
-            <span class="dot active"></span>
-            <span class="dot"></span>
-            <span class="dot"></span>
-            <span class="dot"></span>
-            <span class="dot"></span>
-            <span class="dot"></span>
-            <span class="dot"></span>
-            <span class="dot"></span>
-            <span class="dot"></span>
-        </div>
+        <div class="scroll-indicator" id="scrollIndicator"></div>
 
         <!-- История покупок -->
         <div class="purchases-section">
@@ -836,27 +657,9 @@
         </div>
     </div>
 
-    <!-- МОДАЛКА ВЫБОРА БЕЙДЖА -->
-    <div id="badgeModal" class="modal">
-        <div class="modal-content">
-            <h3><i class="fas fa-certificate" style="color: #8b5cf6;"></i> Выберите бейдж</h3>
-            <p style="font-size: 0.8rem; color: #aaa; margin-bottom: 12px;">Эксклюзивные бейджи для вашего профиля</p>
-            <div class="badge-grid" id="badgeGrid">
-                <!-- Заполняется через JS -->
-            </div>
-            <div style="margin-top: 8px; font-size: 0.75rem; color: #888;">
-                Выбран: <span id="selectedBadgeName">—</span> (<span id="selectedBadgePrice">0</span> ₽)
-            </div>
-            <div class="modal-buttons">
-                <button id="confirmBadgeBtn" class="btn-confirm" disabled>Купить</button>
-                <button id="cancelBadgeBtn" class="btn-cancel">Отмена</button>
-            </div>
-        </div>
-    </div>
-
     <div id="mobileBottomNavContainer"></div>
+    <div class="toast-notification" id="toastNotification"></div>
 
-    <!-- Контейнер для ошибок -->
     <div id="errorContainer" style="position: fixed; top: 15px; left: 50%; transform: translateX(-50%); z-index: 9999; max-width: 90%; width: 480px; padding: 14px 20px; border-radius: 16px; font-weight: 600; font-size: 0.9rem; animation: slideDown 0.3s ease; box-shadow: 0 10px 30px rgba(0,0,0,0.4); backdrop-filter: blur(8px); display: none; text-align: center; border: 1px solid rgba(255,255,255,0.1);"></div>
 
     <script type="importmap">
@@ -870,12 +673,17 @@
     </script>
     <script type="module" src="header.js?v=3"></script>
     <script type="module">
+        // ============================================================
+        // ИМПОРТЫ
+        // ============================================================
         import { initializeApp } from "firebase/app";
-        import { getFirestore, doc, getDoc, collection, query, where, getDocs, orderBy, limit } from "firebase/firestore";
+        import { getFirestore, collection, getDocs, doc, getDoc, query, where, orderBy, limit, addDoc } from "firebase/firestore";
         import { getAuth, onAuthStateChanged } from "firebase/auth";
-        import { PRODUCTS, createPayment, checkPremium, ensureUserFields, ALL_BADGES, getBadgeImage } from './payment.js';
-        import { showError, handleFirebaseError, withErrorHandling } from './error-handler.js';
+        import { createPayment, checkPremium, ensureUserFields, getBadgeImage } from './payment.js';
 
+        // ============================================================
+        // FIREBASE
+        // ============================================================
         const firebaseConfig = {
             apiKey: "AIzaSyDUGYJY7pX7q02MS5SACMIIQXpjpQ97mPw",
             authDomain: "proranklive.firebaseapp.com",
@@ -889,11 +697,45 @@
         const db = getFirestore(app);
         const auth = getAuth(app);
 
+        // ============================================================
+        // СОСТОЯНИЕ
+        // ============================================================
         let currentUser = null;
+        let shopProducts = [];
         let selectedProductId = null;
-        let selectedBadgeId = null;
 
-        // ===== ОБНОВЛЕНИЕ БАЛАНСА =====
+        // ============================================================
+        // ВСПОМОГАТЕЛЬНЫЕ
+        // ============================================================
+        function escapeHtml(str) {
+            if (!str) return '';
+            return String(str).replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[m] || m));
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toastNotification');
+            if (!toast) return;
+            toast.textContent = message;
+            toast.style.display = 'block';
+            clearTimeout(toast._timeout);
+            toast._timeout = setTimeout(() => { toast.style.display = 'none'; }, 3000);
+        }
+
+        function showNotification(message, type = 'info') {
+            const container = document.getElementById('errorContainer');
+            if (!container) return;
+            const colors = { success: '#22c55e', error: '#ef4444', warning: '#f59e0b', info: '#fbbf24' };
+            container.style.display = 'block';
+            container.style.background = colors[type] || colors.info;
+            container.style.color = '#000';
+            container.textContent = message;
+            clearTimeout(container._timeout);
+            container._timeout = setTimeout(() => { container.style.display = 'none'; }, 4000);
+        }
+
+        // ============================================================
+        // ОБНОВЛЕНИЕ БАЛАНСА
+        // ============================================================
         async function updateHeaderBalance() {
             const user = auth.currentUser;
             const balanceDiv = document.getElementById('balanceIndicator');
@@ -908,7 +750,9 @@
             } catch (err) { console.error(err); }
         }
 
-        // ===== ПРОВЕРКА ПРЕМИУМ-СТАТУСА =====
+        // ============================================================
+        // ПРОВЕРКА ПРЕМИУМ-СТАТУСА
+        // ============================================================
         async function updatePremiumStatus() {
             if (!currentUser) {
                 document.getElementById('premiumStatusText').textContent = 'Войдите в аккаунт';
@@ -925,7 +769,7 @@
 
                 if (isPremium && premiumUntil) {
                     const daysLeft = Math.ceil((premiumUntil - new Date()) / (1000 * 60 * 60 * 24));
-                    document.getElementById('premiumStatusText').textContent = `✅ Активен до ${premiumUntil.toLocaleDateString()} (осталось ${daysLeft} дн.)`;
+                    document.getElementById('premiumStatusText').textContent = `Активен до ${premiumUntil.toLocaleDateString()} (осталось ${daysLeft} дн.)`;
                     document.getElementById('premiumStatusBadge').textContent = 'АКТИВЕН';
                     document.getElementById('premiumStatusBadge').className = 'status active';
                 } else {
@@ -938,7 +782,9 @@
             }
         }
 
-        // ===== ЗАГРУЗКА ИСТОРИИ ПОКУПОК =====
+        // ============================================================
+        // ЗАГРУЗКА ИСТОРИИ ПОКУПОК
+        // ============================================================
         async function loadPurchases() {
             if (!currentUser) {
                 document.getElementById('purchasesList').innerHTML = '<div class="empty-purchases">Войдите для просмотра истории</div>';
@@ -973,94 +819,185 @@
             }
         }
 
+        // ============================================================
+        // ЗАГРУЗКА ТОВАРОВ ИЗ FIREBASE (digital_products)
+        // ============================================================
+        async function loadShopProducts() {
+            const grid = document.getElementById('productsGrid');
+            grid.innerHTML = `
+                <div class="empty-state" style="grid-column:1/-1;">
+                    <div class="loading-spinner"></div>
+                    <p style="margin-top:12px;">Загрузка товаров...</p>
+                </div>
+            `;
 
-        // ===== УПРАВЛЕНИЕ ИНДИКАТОРОМ ПРОКРУТКИ =====
+            try {
+                const snapshot = await getDocs(collection(db, "digital_products"));
+                shopProducts = snapshot.docs
+                    .map(doc => ({ id: doc.id, ...doc.data() }))
+                    .filter(p => p.active !== false);
+
+                renderShopProducts();
+                updateScrollIndicator();
+            } catch (err) {
+                console.error('Ошибка загрузки товаров:', err);
+                grid.innerHTML = `
+                    <div class="empty-state" style="grid-column:1/-1;">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <h3>Ошибка загрузки</h3>
+                        <p>Попробуйте обновить страницу</p>
+                    </div>
+                `;
+            }
+        }
+
+        // ============================================================
+        // РЕНДЕРИНГ ТОВАРОВ
+        // ============================================================
+        function renderShopProducts() {
+            const grid = document.getElementById('productsGrid');
+
+            if (shopProducts.length === 0) {
+                grid.innerHTML = `
+                    <div class="empty-state" style="grid-column:1/-1;">
+                        <i class="fas fa-store"></i>
+                        <h3>Товаров пока нет</h3>
+                        <p>Загляните позже, мы пополняем ассортимент</p>
+                    </div>
+                `;
+                return;
+            }
+
+            // ===== НОВАЯ СОРТИРОВКА: сначала Вызовы → Премиум → остальные =====
+            const sorted = [...shopProducts].sort((a, b) => {
+                // Приоритет по категориям
+                const categoryOrder = {
+                    'Вызовы': 1,
+                    'Премиум': 2,
+                    'Наборы': 3,
+                    'Бейджи': 4,
+                    'Другое': 5
+                };
+                
+                const orderA = categoryOrder[a.category] || 99;
+                const orderB = categoryOrder[b.category] || 99;
+                
+                if (orderA !== orderB) return orderA - orderB;
+                
+                // Внутри категории: сначала горячие, потом остальные
+                if (a.hot && !b.hot) return -1;
+                if (!a.hot && b.hot) return 1;
+                
+                return 0;
+            });
+
+            let html = '';
+            sorted.forEach(product => {
+                const isHot = product.hot;
+                const isPremium = product.category === 'Премиум';
+
+                let cardClass = 'product-card';
+                if (isHot) cardClass += ' hot';
+                if (isPremium) cardClass += ' premium-card';
+
+                let badgeHtml = '';
+                if (product.badge) {
+                    badgeHtml = `<div class="product-badge ${isPremium ? '' : ''}">${escapeHtml(product.badge)}</div>`;
+                }
+
+                let iconHtml = '';
+                const icon = product.icon || 'fa-box';
+                const amountText = product.amount ? ` ×${product.amount}` : '';
+                iconHtml = `<div class="product-icon"><i class="fas ${icon} icon-gold"></i>${amountText}</div>`;
+
+                let priceHtml = `<span class="product-price">${(product.price || 0).toLocaleString()} ₽</span>`;
+
+                html += `
+                    <div class="${cardClass}" data-product-id="${product.id}">
+                        <div>
+                            ${badgeHtml}
+                            ${iconHtml}
+                            <div class="product-title">${escapeHtml(product.name)}</div>
+                            <div class="product-desc">${escapeHtml(product.description || '')}</div>
+                        </div>
+                        <div>
+                            ${priceHtml}
+                            <button class="btn-buy" data-product-id="${product.id}">Купить</button>
+                        </div>
+                    </div>
+                `;
+            });
+
+            grid.innerHTML = html;
+
+            // ===== ОБРАБОТЧИКИ КНОПОК =====
+            document.querySelectorAll('.btn-buy').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const productId = btn.dataset.productId;
+                    const product = shopProducts.find(p => p.id === productId);
+                    if (product) {
+                        initPayment(productId);
+                    }
+                });
+            });
+
+            // ===== КЛИК ПО КАРТОЧКЕ =====
+            document.querySelectorAll('.product-card').forEach(card => {
+                card.addEventListener('click', () => {
+                    const productId = card.dataset.productId;
+                    const product = shopProducts.find(p => p.id === productId);
+                    if (product) {
+                        initPayment(productId);
+                    }
+                });
+            });
+        }
+
+        // ============================================================
+        // ИНДИКАТОР ПРОКРУТКИ
+        // ============================================================
         function updateScrollIndicator() {
             const grid = document.querySelector('.products-grid');
-            const dots = document.querySelectorAll('.scroll-indicator .dot');
-            if (!grid || dots.length === 0) return;
+            const container = document.getElementById('scrollIndicator');
+            if (!grid || !container) return;
 
-            const scrollWidth = grid.scrollWidth - grid.clientWidth;
-            const scrollLeft = grid.scrollLeft;
-            
-            // Если скролла нет или товаров мало
-            if (scrollWidth <= 0) {
-                dots.forEach((dot, i) => {
-                    dot.classList.toggle('active', i === 0);
-                });
-                return;
+            const cards = grid.querySelectorAll('.product-card');
+            const count = Math.max(cards.length, 1);
+            const visible = Math.ceil(grid.clientWidth / (cards[0]?.offsetWidth || 200));
+
+            let dots = '';
+            const totalDots = Math.min(count, 10);
+            for (let i = 0; i < totalDots; i++) {
+                dots += `<span class="dot ${i === 0 ? 'active' : ''}"></span>`;
             }
+            container.innerHTML = dots;
 
-            // Определяем текущую позицию (0 - 1)
-            const position = scrollLeft / scrollWidth;
-            
-            // Определяем индекс активной точки
-            const totalDots = dots.length;
-            const activeIndex = Math.min(
-                Math.floor(position * totalDots),
-                totalDots - 1
-            );
-
-            dots.forEach((dot, i) => {
-                dot.classList.toggle('active', i === activeIndex);
+            grid.addEventListener('scroll', () => {
+                const scrollWidth = grid.scrollWidth - grid.clientWidth;
+                const scrollLeft = grid.scrollLeft;
+                if (scrollWidth <= 0) return;
+                const position = scrollLeft / scrollWidth;
+                const activeIndex = Math.min(Math.floor(position * totalDots), totalDots - 1);
+                container.querySelectorAll('.dot').forEach((dot, i) => {
+                    dot.classList.toggle('active', i === activeIndex);
+                });
             });
         }
 
-        // Слушаем событие скролла
-        document.addEventListener('DOMContentLoaded', () => {
-            const grid = document.querySelector('.products-grid');
-            if (grid) {
-                grid.addEventListener('scroll', updateScrollIndicator);
-                // Обновляем при загрузке и изменении размера
-                window.addEventListener('resize', updateScrollIndicator);
-                setTimeout(updateScrollIndicator, 100);
-            }
-        });
-
-
-        // ===== МОДАЛКА БЕЙДЖЕЙ =====
-        function openBadgeModal() {
-            const grid = document.getElementById('badgeGrid');
-            grid.innerHTML = '';
-            selectedBadgeId = null;
-            document.getElementById('selectedBadgeName').textContent = '—';
-            document.getElementById('selectedBadgePrice').textContent = '0';
-            document.getElementById('confirmBadgeBtn').disabled = true;
-
-            ALL_BADGES.forEach(badge => {
-                const div = document.createElement('div');
-                div.className = 'badge-option';
-                div.dataset.badgeId = badge.id;
-                div.innerHTML = `
-                    <img src="${getBadgeImage(badge.id)}" alt="${badge.name}" onerror="this.style.display='none'; this.parentElement.innerHTML='<div style=\\'font-size: 2.5rem;\\'>${badge.emoji}</div>'">
-                    <div class="badge-name">${badge.name}</div>
-                    <div class="badge-price">${badge.isPremium ? '🔓 Премиум' : '150 ₽'}</div>
-                `;
-                div.addEventListener('click', () => {
-                    document.querySelectorAll('.badge-option').forEach(el => el.classList.remove('selected'));
-                    div.classList.add('selected');
-                    selectedBadgeId = badge.id;
-                    document.getElementById('selectedBadgeName').textContent = badge.name;
-                    document.getElementById('selectedBadgePrice').textContent = badge.isPremium ? 'Только с Премиум' : '150';
-                    document.getElementById('confirmBadgeBtn').disabled = badge.isPremium;
-                });
-                grid.appendChild(div);
-            });
-
-            document.getElementById('badgeModal').style.display = 'flex';
-        }
-
-        // ===== ОТКРЫТИЕ МОДАЛКИ ОПЛАТЫ =====
-        async function initPayment(productId) {
+        // ============================================================
+        // МОДАЛКА ОПЛАТЫ
+        // ============================================================
+        function initPayment(productId) {
             if (!currentUser) {
-                alert('Войдите в аккаунт для покупки');
-                window.location.href = 'login.html';
+                showNotification('Войдите в аккаунт для покупки', 'warning');
+                setTimeout(() => window.location.href = 'login.html', 1000);
                 return;
             }
 
-            const product = Object.values(PRODUCTS).find(p => p.id === productId);
+            const product = shopProducts.find(p => p.id === productId);
             if (!product) {
-                alert('❌ Товар не найден');
+                showNotification('Товар не найден', 'error');
                 return;
             }
 
@@ -1070,7 +1007,6 @@
             document.getElementById('paymentModal').style.display = 'flex';
         }
 
-        // ===== ОБРАБОТКА ОПЛАТЫ =====
         async function processPayment() {
             if (!selectedProductId || !currentUser) return;
 
@@ -1079,10 +1015,13 @@
             confirmBtn.innerHTML = '<span class="loading-spinner"></span> Обработка...';
 
             try {
+                const product = shopProducts.find(p => p.id === selectedProductId);
+                if (!product) throw new Error('Товар не найден');
+
                 const result = await createPayment(selectedProductId, currentUser.uid);
-                
+
                 if (result.status === 'pending') {
-                    alert(`✅ Заказ создан! Сумма: ${result.amount} ₽. Товар будет начислен автоматически.`);
+                    showNotification(`Заказ создан! Сумма: ${result.amount} ₽. Товар будет начислен автоматически.`, 'success');
                     await loadPurchases();
                     await updateHeaderBalance();
                     await updatePremiumStatus();
@@ -1091,96 +1030,27 @@
                 }
             } catch (err) {
                 console.error('Ошибка оплаты:', err);
-                alert('❌ Ошибка при оформлении покупки: ' + err.message);
+                showNotification('Ошибка при оформлении покупки: ' + err.message, 'error');
             }
 
             confirmBtn.disabled = false;
             confirmBtn.innerHTML = 'Оплатить';
         }
 
-        // ===== ПОКУПКА БЕЙДЖА =====
-        async function processBadgePurchase() {
-            if (!selectedBadgeId || !currentUser) return;
-
-            const badge = ALL_BADGES.find(b => b.id === selectedBadgeId);
-            if (!badge) return;
-
-            if (badge.isPremium) {
-                alert('❌ Этот бейдж доступен только с Премиумом!');
-                return;
-            }
-
-            const product = Object.values(PRODUCTS).find(p => p.id === selectedBadgeId);
-            if (!product) {
-                alert('❌ Товар не найден');
-                return;
-            }
-
-            const confirmBtn = document.getElementById('confirmBadgeBtn');
-            confirmBtn.disabled = true;
-            confirmBtn.innerHTML = '<span class="loading-spinner"></span> Обработка...';
-
-            try {
-                const result = await createPayment(selectedBadgeId, currentUser.uid);
-                
-                if (result.status === 'pending') {
-                    alert(`✅ Бейдж "${badge.name}" приобретён!`);
-                    await loadPurchases();
-                    await updateHeaderBalance();
-                    document.getElementById('badgeModal').style.display = 'none';
-                    selectedBadgeId = null;
-                }
-            } catch (err) {
-                console.error('Ошибка покупки бейджа:', err);
-                alert('❌ Ошибка при покупке бейджа: ' + err.message);
-            }
-
-            confirmBtn.disabled = false;
-            confirmBtn.innerHTML = 'Купить';
-        }
-
-        // ===== АВТОРИЗАЦИЯ =====
-        onAuthStateChanged(auth, async (user) => {
-            currentUser = user;
-            if (user) {
-                await ensureUserFields(user.uid);
-                await loadPurchases();
-                await updatePremiumStatus();
-                setTimeout(updateHeaderBalance, 1000);
-            } else {
-                document.getElementById('purchasesList').innerHTML = '<div class="empty-purchases">Войдите для просмотра истории</div>';
-                document.getElementById('balanceIndicator').style.display = 'none';
-                document.getElementById('premiumStatusText').textContent = 'Войдите в аккаунт';
-                document.getElementById('premiumStatusBadge').textContent = '—';
-            }
-        });
-
-        // ===== СОБЫТИЯ =====
-        document.querySelectorAll('.btn-buy').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                const productId = btn.dataset.productId;
-                if (productId) {
-                    initPayment(productId);
-                }
-            });
-        });
-
-        document.getElementById('openBadgeModalBtn').addEventListener('click', (e) => {
-            e.stopPropagation();
-            openBadgeModal();
-        });
-
+        // ============================================================
+        // ИНИЦИАЛИЗАЦИЯ
+        // ============================================================
         document.getElementById('confirmPaymentBtn').addEventListener('click', processPayment);
         document.getElementById('cancelPaymentBtn').addEventListener('click', () => {
             document.getElementById('paymentModal').style.display = 'none';
             selectedProductId = null;
         });
 
-        document.getElementById('confirmBadgeBtn').addEventListener('click', processBadgePurchase);
-        document.getElementById('cancelBadgeBtn').addEventListener('click', () => {
-            document.getElementById('badgeModal').style.display = 'none';
-            selectedBadgeId = null;
+        document.getElementById('paymentModal').addEventListener('click', (e) => {
+            if (e.target === document.getElementById('paymentModal')) {
+                document.getElementById('paymentModal').style.display = 'none';
+                selectedProductId = null;
+            }
         });
 
         const plusBtn = document.getElementById('balancePlusBtn');
@@ -1191,6 +1061,36 @@
         if (menuToggle && navLinks) {
             menuToggle.addEventListener('click', () => navLinks.classList.toggle('show'));
         }
+
+        // ============================================================
+        // АВТОРИЗАЦИЯ
+        // ============================================================
+        onAuthStateChanged(auth, async (user) => {
+            currentUser = user;
+            if (user) {
+                await ensureUserFields(user.uid);
+                await loadPurchases();
+                await updatePremiumStatus();
+                await loadShopProducts();
+                setTimeout(updateHeaderBalance, 1000);
+            } else {
+                document.getElementById('purchasesList').innerHTML = '<div class="empty-purchases">Войдите для просмотра истории</div>';
+                document.getElementById('balanceIndicator').style.display = 'none';
+                document.getElementById('premiumStatusText').textContent = 'Войдите в аккаунт';
+                document.getElementById('premiumStatusBadge').textContent = '—';
+                document.getElementById('productsGrid').innerHTML = `
+                    <div class="empty-state" style="grid-column:1/-1;">
+                        <i class="fas fa-lock"></i>
+                        <h3>Войдите в аккаунт</h3>
+                        <p>Чтобы просмотреть товары и совершать покупки</p>
+                    </div>
+                `;
+            }
+        });
+
+        console.log('✅ shop.html загружен (динамический)');
+        console.log('📦 Товары загружаются из Firebase коллекции digital_products');
+        console.log('🔄 Синхронизация с админкой работает!');
     </script>
 </body>
 </html>
