@@ -513,26 +513,58 @@
             border-left: 3px solid #CD7F32;
         }
 
+        /* ===== ИЗМЕНЕНАЯ ЧАСТЬ: МЕДАЛИ (без смайлов и пульсации) ===== */
         .rank-number {
             font-size: 1rem;
             font-weight: 800;
             color: #fbbf24;
             min-width: 30px;
             display: inline-block;
+            text-align: center;
         }
 
         .gold .rank-number { 
             color: #fbbf24; 
-            text-shadow: 0 0 8px rgba(251,191,36,0.5);
-            animation: pulse 2s infinite;
+            text-shadow: 0 0 20px rgba(251,191,36,0.6);
+            font-size: 1.2rem;
         }
         
-        .silver .rank-number { color: #C0C0C0; }
-        .bronze .rank-number { color: #CD7F32; }
+        .silver .rank-number { 
+            color: #C0C0C0; 
+        }
+        
+        .bronze .rank-number { 
+            color: #CD7F32; 
+        }
 
-        @keyframes pulse {
-            0%, 100% { text-shadow: 0 0 5px rgba(251,191,36,0.3); }
-            50% { text-shadow: 0 0 15px rgba(251,191,36,0.8); }
+        .rank-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            min-width: 30px;
+        }
+
+        .rank-icon.gold {
+            color: #fbbf24;
+            text-shadow: 0 0 20px rgba(251,191,36,0.6);
+            font-size: 1.3rem;
+        }
+
+        .rank-icon.silver {
+            color: #C0C0C0;
+            font-size: 1.1rem;
+        }
+
+        .rank-icon.bronze {
+            color: #CD7F32;
+            font-size: 1.1rem;
+        }
+
+        .rank-icon.number {
+            font-weight: 700;
+            color: #666;
+            font-size: 0.85rem;
         }
 
         .avatar-thumb {
@@ -661,6 +693,7 @@
             background: linear-gradient(145deg, rgba(205,127,50,0.08), rgba(20,20,20,0.95));
         }
 
+        /* ===== ИЗМЕНЕННАЯ ЧАСТЬ: КАРДЫ (без смайлов и пульсации) ===== */
         .fighter-card-horizontal .card-rank {
             font-size: 1rem;
             font-weight: 800;
@@ -678,37 +711,21 @@
         .fighter-card-horizontal.gold .card-rank {
             color: #fbbf24;
             border-color: #fbbf24;
-            box-shadow: 0 0 15px rgba(251,191,36,0.3);
-            font-size: 1.2rem;
+            box-shadow: 0 0 25px rgba(251,191,36,0.3);
+            font-size: 1.3rem;
+            background: rgba(251,191,36,0.08);
         }
 
         .fighter-card-horizontal.silver .card-rank {
             color: #C0C0C0;
             border-color: #C0C0C0;
-            font-size: 1.2rem;
+            font-size: 1.1rem;
         }
 
         .fighter-card-horizontal.bronze .card-rank {
             color: #CD7F32;
             border-color: #CD7F32;
-            font-size: 1.2rem;
-        }
-
-        /* Пульсация для первого места */
-        .fighter-card-horizontal.gold .card-rank.gold-pulse {
-            animation: goldPulse 1.5s ease-in-out infinite;
-            text-shadow: 0 0 20px rgba(251,191,36,0.8);
-        }
-
-        @keyframes goldPulse {
-            0%, 100% {
-                transform: scale(1);
-                text-shadow: 0 0 20px rgba(251,191,36,0.4);
-            }
-            50% {
-                transform: scale(1.2);
-                text-shadow: 0 0 40px rgba(251,191,36,0.9), 0 0 60px rgba(251,191,36,0.5);
-            }
+            font-size: 1.1rem;
         }
 
         .fighter-card-horizontal .card-avatar {
@@ -1396,6 +1413,19 @@
             </div>
         </div>
 
+        <!-- ===== МОЁ МЕСТО В РЕЙТИНГЕ ===== -->
+<div id="myRankBanner" style="background: rgba(251,191,36,0.08); border: 1px solid rgba(251,191,36,0.3); border-radius: 16px; padding: 12px 20px; margin-bottom: 16px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; cursor: pointer;">
+    <div style="display: flex; align-items: center; gap: 12px;">
+        <i class="fas fa-user" style="color: #fbbf24; font-size: 1.2rem;"></i>
+        <span style="font-weight: 600; color: #aaa;">Моё место в рейтинге:</span>
+        <span id="myRankNumber" style="font-weight: 800; font-size: 1.4rem; color: #fbbf24; text-shadow: 0 0 20px rgba(251,191,36,0.3);">—</span>
+        <span id="myRankLabel" style="font-size: 0.75rem; color: #888;"></span>
+    </div>
+    <div id="myRankFrs" style="font-size: 0.8rem; color: #666;">
+        <i class="fas fa-star" style="color: #fbbf24;"></i> <span id="myRankFrsValue">0</span> FRS
+    </div>
+</div>
+
         <!-- ДЕСКТОП ТАБЛИЦА -->
         <div class="rating-table-wrapper">
             <table class="rating-table">
@@ -1567,6 +1597,54 @@
             }
         }
 
+        // ===== КЛИК ПО ПЛАШКЕ (ПРОСТОЕ РЕШЕНИЕ) =====
+        document.addEventListener('DOMContentLoaded', function() {
+            const banner = document.getElementById('myRankBanner');
+            if (banner) {
+                banner.addEventListener('click', function() {
+                    console.log('🔄 Клик по плашке!');
+                    
+                    const user = auth.currentUser;
+                    if (!user) {
+                        alert('Войдите в аккаунт');
+                        return;
+                    }
+                    
+                    // Ищем строку в таблице
+                    let targetRow = document.querySelector('#ratingTableBody tr[data-user-id="' + user.uid + '"]');
+                    console.log('🔍 Строка найдена:', targetRow ? 'да' : 'нет');
+                    
+                    if (targetRow) {
+                        targetRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        targetRow.style.transition = 'background 0.5s ease';
+                        targetRow.style.background = 'rgba(59,130,246,0.3)';
+                        setTimeout(function() {
+                            targetRow.style.background = '';
+                        }, 2000);
+                        return;
+                    }
+                    
+                    // Ищем карточку
+                    let targetCard = document.querySelector('.fighter-card-horizontal[data-user-id="' + user.uid + '"]');
+                    console.log('🔍 Карточка найдена:', targetCard ? 'да' : 'нет');
+                    
+                    if (targetCard) {
+                        targetCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        targetCard.style.transition = 'border-color 0.5s ease, box-shadow 0.5s ease';
+                        targetCard.style.borderColor = '#3b82f6';
+                        targetCard.style.boxShadow = '0 0 40px rgba(59,130,246,0.3)';
+                        setTimeout(function() {
+                            targetCard.style.borderColor = '';
+                            targetCard.style.boxShadow = '';
+                        }, 2000);
+                        return;
+                    }
+                    
+                    alert('⚠️ Вы не найдены в текущем рейтинге');
+                });
+            }
+        });
+
         function applyFilters() {
             let filtered = [...allFighters];
             
@@ -1592,6 +1670,70 @@
             updateStats(filtered);
             renderTable(filtered);
             renderCards(filtered);
+            
+            // ===== НАЙТИ СВОЁ МЕСТО В РЕЙТИНГЕ =====
+            findMyRank();
+        }
+
+        // ===== ПОИСК СВОЕГО МЕСТА В РЕЙТИНГЕ =====
+        function findMyRank() {
+            const user = auth.currentUser;
+            const banner = document.getElementById('myRankBanner');
+            
+            if (!user) {
+                banner.style.display = 'none';
+                return;
+            }
+            
+            let filtered = [...allFighters];
+            
+            if (currentCity !== 'all') {
+                filtered = filtered.filter(f => f.city === currentCity);
+            }
+            if (currentWeightClass !== 'all') {
+                filtered = filtered.filter(f => f.weightClass === currentWeightClass);
+            }
+            if (currentSport !== 'all') {
+                filtered = filtered.filter(f => f.sport === currentSport);
+            }
+            if (currentLeague !== 'all') {
+                filtered = filtered.filter(f => {
+                    const league = getLeague(f.frs || 0);
+                    return league.name === currentLeague;
+                });
+            }
+            
+            filtered.sort((a, b) => (b.frs || 0) - (a.frs || 0));
+            
+            const userIndex = filtered.findIndex(f => f.id === user.uid);
+            
+            if (userIndex === -1) {
+                banner.style.display = 'none';
+                return;
+            }
+            
+            const rank = userIndex + 1;
+            const userData = filtered[userIndex];
+            
+            let rankSuffix = '';
+            if (rank === 1) rankSuffix = '🥇';
+            else if (rank === 2) rankSuffix = '🥈';
+            else if (rank === 3) rankSuffix = '🥉';
+            
+            const rankText = rankSuffix || `${rank}-е`;
+            
+            document.getElementById('myRankNumber').textContent = rank;
+            document.getElementById('myRankLabel').textContent = `${rankText} место`;
+            document.getElementById('myRankFrsValue').textContent = (userData.frs || 0).toLocaleString();
+            
+            banner.style.display = 'flex';
+            banner.style.cursor = 'pointer';
+            banner.onclick = scrollToMyRank;
+        }
+
+        // Обновляем при изменении фильтров
+        function updateMyRank() {
+            findMyRank();
         }
 
         function renderTable(fighters) {
@@ -1607,19 +1749,36 @@
             fighters.forEach(f => {
                 const row = tbody.insertRow();
                 let medalClass = '';
-                if (rank === 1) medalClass = 'gold';
-                else if (rank === 2) medalClass = 'silver';
-                else if (rank === 3) medalClass = 'bronze';
+                let rankIcon = '';
+                
+                if (rank === 1) {
+                    medalClass = 'gold';
+                    rankIcon = `<span style="font-weight:800;color:#fbbf24;font-size:1.2rem;text-shadow:0 0 20px rgba(251,191,36,0.6);">${rank}</span>`;
+                } else if (rank === 2) {
+                    medalClass = 'silver';
+                    rankIcon = `<span style="font-weight:800;color:#C0C0C0;font-size:1.1rem;">${rank}</span>`;
+                } else if (rank === 3) {
+                    medalClass = 'bronze';
+                    rankIcon = `<span style="font-weight:800;color:#CD7F32;font-size:1.1rem;">${rank}</span>`;
+                } else {
+                    rankIcon = `<span style="font-weight:700;color:#666;font-size:0.85rem;">${rank}</span>`;
+                }
+                
                 row.className = medalClass;
                 row.style.cursor = 'pointer';
-                
+                row.setAttribute('data-user-id', f.id);
+
+                const currentUser = auth.currentUser;
+                if (currentUser && f.id === currentUser.uid && rank > 3) {
+                    row.style.border = '2px solid #3b82f6';
+                    row.style.boxShadow = '0 0 30px rgba(59,130,246,0.2)';
+                    row.style.background = 'rgba(59,130,246,0.05)';
+                }
+
                 const rankCell = row.insertCell(0);
-                let medalIcon = '';
-                if (rank === 1) medalIcon = '🥇';
-                else if (rank === 2) medalIcon = '🥈';
-                else if (rank === 3) medalIcon = '🥉';
-                rankCell.innerHTML = `<span class="rank-number">${medalIcon || rank}</span>`;
+                rankCell.innerHTML = rankIcon;
                 rankCell.style.textAlign = 'center';
+                rankCell.style.fontSize = '1.1rem';
                 
                 const avatarUrl = f.avatar && f.avatar !== 'Avatar.png' ? f.avatar : 'https://placehold.co/100x100/1a1a1a/fbbf24?text=' + (f.name?.charAt(0) || '?');
                 const avatarCell = row.insertCell(1);
@@ -1630,7 +1789,7 @@
                 const leagueIcon = `<img src="${iconPath}" alt="${league.name}" style="width:16px; height:16px; object-fit:contain; display:inline-block; vertical-align:middle;">`;
                 const sportIcon = f.sport === 'Бокс' ? 'fa-fist-raised' : (f.sport === 'Борьба' ? 'fa-handshake' : 'fa-shield-alt');
                 const isPremium = f.premium === true;
-                const premiumBadge = isPremium ? `<span class="premium-badge">👑</span>` : '';
+                const premiumBadge = isPremium ? `<span class="premium-badge"><i class="fas fa-crown" style="font-size:0.5rem;"></i></span>` : '';
                 
                 const nameCell = row.insertCell(2);
                 nameCell.innerHTML = `
@@ -1671,11 +1830,30 @@
             fighters.forEach(f => {
                 const card = document.createElement('div');
                 let medalClass = '';
-                if (rank === 1) medalClass = 'gold';
-                else if (rank === 2) medalClass = 'silver';
-                else if (rank === 3) medalClass = 'bronze';
-                card.className = `fighter-card-horizontal ${medalClass}`;
+                let rankDisplay = rank;
                 
+                if (rank === 1) {
+                    medalClass = 'gold';
+                    rankDisplay = `<span style="font-weight:800;color:#fbbf24;font-size:1.3rem;text-shadow:0 0 25px rgba(251,191,36,0.7);">${rank}</span>`;
+                } else if (rank === 2) {
+                    medalClass = 'silver';
+                    rankDisplay = `<span style="font-weight:800;color:#C0C0C0;font-size:1.1rem;">${rank}</span>`;
+                } else if (rank === 3) {
+                    medalClass = 'bronze';
+                    rankDisplay = `<span style="font-weight:800;color:#CD7F32;font-size:1.1rem;">${rank}</span>`;
+                } else {
+                    rankDisplay = `<span style="font-weight:700;color:#666;font-size:0.85rem;">${rank}</span>`;
+                }
+                
+                card.className = `fighter-card-horizontal ${medalClass}`;
+                card.setAttribute('data-user-id', f.id);
+
+                const currentUser = auth.currentUser;
+                if (currentUser && f.id === currentUser.uid && rank > 3) {
+                    card.style.border = '2px solid #3b82f6';
+                    card.style.boxShadow = '0 0 30px rgba(59,130,246,0.25)';
+                    card.style.background = 'linear-gradient(145deg, rgba(59,130,246,0.08), rgba(20,20,20,0.9))';
+                }
                 const isPremium = f.premium === true;
                 const league = getLeague(f.frs || 0);
                 const iconPath = getLeagueIconPath(league.name);
@@ -1683,16 +1861,9 @@
                 
                 const leagueName = league.name;
                 
-                let rankDisplay = rank;
-                if (rank === 1) rankDisplay = '🥇';
-                else if (rank === 2) rankDisplay = '🥈';
-                else if (rank === 3) rankDisplay = '🥉';
-                
-                const pulseClass = rank === 1 ? 'gold-pulse' : '';
-                
                 card.innerHTML = `
-                    ${isPremium ? '<div class="card-premium">👑</div>' : ''}
-                    <div class="card-rank ${pulseClass}">${rankDisplay}</div>
+                    ${isPremium ? '<div class="card-premium"><i class="fas fa-crown" style="font-size:0.6rem;"></i></div>' : ''}
+                    <div class="card-rank">${rankDisplay}</div>
                     <img src="${avatarUrl}" class="card-avatar" onerror="this.src='https://placehold.co/100x100/1a1a1a/fbbf24?text=?'">
                     <div class="card-info">
                         <div class="card-name">
@@ -1727,6 +1898,50 @@
                 rank++;
             });
         }
+
+        // ===== СКРОЛЛ К СВОЕМУ МЕСТУ =====
+        window.scrollToMyRank = function() {
+            const user = window.currentUser || auth.currentUser;
+            if (!user) {
+                console.log('❌ Пользователь не авторизован');
+                return;
+            }
+            
+            console.log('🔍 Ищем пользователя:', user.uid);
+            
+            // ===== ИЩЕМ В ТАБЛИЦЕ (ДЕСКТОП) =====
+            let targetRow = document.querySelector(`#ratingTableBody tr[data-user-id="${user.uid}"]`);
+            
+            if (targetRow) {
+                console.log('✅ Найдена строка в таблице');
+                targetRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                targetRow.style.transition = 'background 0.5s ease';
+                targetRow.style.background = 'rgba(59,130,246,0.3)';
+                setTimeout(() => {
+                    targetRow.style.background = '';
+                }, 2000);
+                return;
+            }
+            
+            // ===== ИЩЕМ В КАРТОЧКАХ (МОБИЛЬНЫЕ) =====
+            let targetCard = document.querySelector(`.fighter-card-horizontal[data-user-id="${user.uid}"]`);
+            
+            if (targetCard) {
+                console.log('✅ Найдена карточка (мобильная версия)');
+                targetCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                targetCard.style.transition = 'border-color 0.5s ease, box-shadow 0.5s ease';
+                targetCard.style.borderColor = '#3b82f6';
+                targetCard.style.boxShadow = '0 0 40px rgba(59,130,246,0.3)';
+                setTimeout(() => {
+                    targetCard.style.borderColor = '';
+                    targetCard.style.boxShadow = '';
+                }, 2000);
+                return;
+            }
+            
+            console.log('❌ Ничего не найдено');
+            alert('⚠️ Вы не найдены в текущем рейтинге. Проверьте фильтры.');
+        };
 
         function setActiveSportButton(sport) {
             document.querySelectorAll('.filter-btn').forEach(btn => {
@@ -1807,6 +2022,7 @@
         });
 
         onAuthStateChanged(auth, (user) => {
+            window.currentUser = user;
             if (user) {
                 setTimeout(updateHeaderBalance, 1000);
             } else {
