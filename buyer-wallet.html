@@ -10,291 +10,255 @@
     <meta name="mobile-web-app-capable" content="yes">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Мой кошелёк | PRORANK</title>
+    <title>Кошелёк | PRORANK</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700;14..32,800;14..32,900&display=swap" rel="stylesheet">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        
+
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            background: radial-gradient(ellipse at 30% 40%, rgba(251, 191, 36, 0.12) 0%, transparent 60%),
-                        radial-gradient(ellipse at 70% 80%, rgba(251, 191, 36, 0.06) 0%, transparent 50%),
-                        linear-gradient(135deg, #121212 0%, #0a0a0a 100%);
+            background: radial-gradient(ellipse at 30% 40%, rgba(251, 191, 36, 0.15) 0%, transparent 60%),
+                        radial-gradient(ellipse at 70% 80%, rgba(251, 191, 36, 0.08) 0%, transparent 50%),
+                        linear-gradient(135deg, #1a1a1a 0%, #0f0f0f 40%, #1a1a1a 100%);
             background-attachment: fixed;
-            color: #e5e5e5;
+            color: #fff;
             min-height: 100vh;
             display: flex;
             flex-direction: column;
+            -webkit-font-smoothing: antialiased;
         }
-        
+
         main { flex: 1; }
-        
-        .gold-top { 
-            position: fixed; 
-            top: 0; 
-            left: 0; 
-            width: 100%; 
-            height: 3px; 
-            background: linear-gradient(90deg, #fbbf24, #ffdd88, #fbbf24, #b8860b); 
-            z-index: 1001; 
+
+        /* ===== GOLD TOP LINE ===== */
+        .gold-top {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(90deg, #fbbf24, #d4a017, #fbbf24, #b8860b);
+            z-index: 1001;
         }
-        
-        .container { 
-            max-width: 500px; 
-            margin: 0 auto; 
-            padding: 0 20px; 
-            width: 100%; 
+
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+            padding: 0 20px;
+            width: 100%;
         }
-        
+
+        /* ===== NAVBAR ===== */
         .navbar {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 12px 20px;
-            background: rgba(0, 0, 0, 0.8);
+            padding: 14px 20px;
+            background: rgba(0, 0, 0, 0.75);
             backdrop-filter: blur(16px);
             border-bottom: 1px solid rgba(251, 191, 36, 0.25);
             position: sticky;
             top: 0;
             z-index: 1000;
         }
-        
+
         .logo {
-            font-size: 1.6rem;
+            font-size: 1.5rem;
             font-weight: 800;
             letter-spacing: -0.5px;
             cursor: pointer;
             background: linear-gradient(135deg, #ffffff, #fbbf24);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
             background-clip: text;
-            color: transparent;
         }
-        
-        .logo span { 
-            background: linear-gradient(135deg, #fbbf24, #ffdd77); 
-            background-clip: text; 
-            color: transparent; 
+
+        .logo span {
+            background: linear-gradient(135deg, #fbbf24, #ffdd77);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
-        
+
         .menu-toggle {
             display: none;
-            background: rgba(251,191,36,0.1);
-            border: 1px solid #fbbf24;
+            background: rgba(251, 191, 36, 0.1);
+            border: 1px solid rgba(251, 191, 36, 0.3);
             color: #fbbf24;
-            font-size: 1.4rem;
+            font-size: 1.3rem;
             cursor: pointer;
             padding: 8px 14px;
             border-radius: 12px;
             min-height: 44px;
             min-width: 44px;
+            transition: all 0.2s;
         }
-        
+
+        .menu-toggle:active {
+            background: rgba(251, 191, 36, 0.2);
+        }
+
         .nav-links {
             display: flex;
-            gap: 6px;
-            background: rgba(15,15,15,0.8);
+            gap: 4px;
+            background: rgba(15, 15, 15, 0.7);
             backdrop-filter: blur(12px);
-            padding: 5px 14px;
+            padding: 4px 12px;
             border-radius: 60px;
-            border: 1px solid rgba(251,191,36,0.2);
+            border: 1px solid rgba(251, 191, 36, 0.2);
         }
-        
-        .nav-links a { 
-            color: #ddd; 
-            text-decoration: none; 
-            font-size: 0.85rem; 
-            font-weight: 500; 
-            padding: 8px 16px; 
-            border-radius: 40px; 
-            transition: all 0.2s; 
-            min-height: 40px;
+
+        .nav-links a {
+            color: #ddd;
+            text-decoration: none;
+            font-size: 0.8rem;
+            font-weight: 500;
+            padding: 8px 14px;
+            border-radius: 40px;
+            transition: all 0.2s;
+            min-height: 38px;
             display: inline-flex;
             align-items: center;
-        }
-        
-        .nav-links a i { 
-            margin-right: 8px; 
-            color: #fbbf24; 
-        }
-        
-        .nav-links a:active { 
-            color: #fbbf24; 
-            background: rgba(251,191,36,0.15); 
-        }
-        
-        .page-header { 
-            text-align: center; 
-            padding: 20px 16px 8px; 
-        }
-        
-        .page-header h1 { 
-            font-size: 1.6rem; 
-            font-weight: 800; 
-            background: linear-gradient(135deg, #fff, #fbbf24); 
-            background-clip: text; 
-            color: transparent; 
+            letter-spacing: 0.2px;
         }
 
-        /* ===== БОНУСНЫЙ БАННЕР ===== */
-        .bonus-banner {
-            background: linear-gradient(135deg, rgba(251,191,36,0.15), rgba(251,191,36,0.05));
-            border: 1px solid rgba(251,191,36,0.3);
-            border-radius: 20px;
-            padding: 16px 20px;
-            margin: 12px 0 16px;
+        .nav-links a i {
+            margin-right: 7px;
+            color: #fbbf24;
+            font-size: 0.8rem;
+        }
+
+        .nav-links a:hover {
+            color: #fff;
+            background: rgba(251, 191, 36, 0.08);
+        }
+
+        .nav-links a:active {
+            color: #fbbf24;
+            background: rgba(251, 191, 36, 0.15);
+        }
+
+        /* ===== PAGE HEADER ===== */
+        .page-header {
+            padding: 20px 0 6px;
             display: flex;
             align-items: center;
-            gap: 14px;
-            animation: bannerGlow 2.5s ease-in-out infinite;
-            cursor: pointer;
-            transition: transform 0.2s;
-        }
-        
-        .bonus-banner:active {
-            transform: scale(0.98);
-        }
-        
-        @keyframes bannerGlow {
-            0%, 100% { box-shadow: 0 0 20px rgba(251,191,36,0.05); }
-            50% { box-shadow: 0 0 40px rgba(251,191,36,0.15); }
-        }
-        
-        .bonus-banner .bonus-icon {
-            font-size: 2rem;
-            color: #fbbf24;
-            animation: giftBounce 2s ease-in-out infinite;
-            flex-shrink: 0;
-        }
-        
-        @keyframes giftBounce {
-            0%, 100% { transform: scale(1) rotate(0deg); }
-            25% { transform: scale(1.1) rotate(-5deg); }
-            75% { transform: scale(1.1) rotate(5deg); }
-        }
-        
-        .bonus-banner .bonus-content {
-            flex: 1;
-        }
-        
-        .bonus-banner .bonus-content h4 {
-            font-size: 0.9rem;
-            font-weight: 700;
-            color: #fbbf24;
-            margin-bottom: 2px;
-        }
-        
-        .bonus-banner .bonus-content p {
-            font-size: 0.7rem;
-            color: #aaa;
-        }
-        
-        .bonus-banner .btn-bonus {
-            background: #fbbf24;
-            color: #000;
-            border: none;
-            padding: 8px 18px;
-            border-radius: 40px;
-            font-weight: 700;
-            font-size: 0.75rem;
-            cursor: pointer;
-            white-space: nowrap;
-            transition: all 0.2s;
-            min-height: 36px;
-        }
-        
-        .bonus-banner .btn-bonus:active {
-            transform: scale(0.95);
+            justify-content: space-between;
         }
 
-        /* ===== КАРТОЧКА БАЛАНСА ===== */
+        .page-header h1 {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #fff;
+            letter-spacing: -0.3px;
+        }
+
+        .page-header h1 i {
+            color: #fbbf24;
+            margin-right: 10px;
+        }
+
+        .page-header .header-badge {
+            font-size: 0.65rem;
+            background: rgba(251, 191, 36, 0.12);
+            color: #fbbf24;
+            padding: 4px 14px;
+            border-radius: 40px;
+            border: 1px solid rgba(251, 191, 36, 0.15);
+            font-weight: 500;
+        }
+
+        /* ===== BALANCE CARD ===== */
         .balance-card {
-            background: rgba(20, 20, 20, 0.7);
-            backdrop-filter: blur(4px);
-            border-radius: 24px;
-            padding: 24px 20px;
-            text-align: center;
-            margin: 8px 0 16px;
-            border: 1px solid rgba(251, 191, 36, 0.3);
-            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            background: rgba(15, 15, 15, 0.7);
+            backdrop-filter: blur(12px);
+            border-radius: 28px;
+            padding: 32px 24px 28px;
+            margin: 8px 0 20px;
+            border: 1px solid rgba(251, 191, 36, 0.15);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
             position: relative;
             overflow: hidden;
+            transition: border-color 0.3s;
         }
-        
+
+        .balance-card:hover {
+            border-color: rgba(251, 191, 36, 0.35);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4), 0 0 30px rgba(251, 191, 36, 0.05);
+        }
+
         .balance-card::before {
             content: '';
             position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: radial-gradient(circle at 30% 40%, rgba(251,191,36,0.05), transparent 70%);
-            animation: balanceBg 8s ease-in-out infinite;
+            top: -60%;
+            right: -30%;
+            width: 80%;
+            height: 80%;
+            background: radial-gradient(circle, rgba(251, 191, 36, 0.05), transparent 70%);
+            pointer-events: none;
         }
-        
-        @keyframes balanceBg {
-            0%, 100% { transform: translate(0, 0); }
-            50% { transform: translate(10%, 10%); }
+
+        .balance-card .balance-label {
+            font-size: 0.7rem;
+            font-weight: 500;
+            color: #888;
+            letter-spacing: 0.8px;
+            text-transform: uppercase;
+            margin-bottom: 6px;
+            position: relative;
+            z-index: 1;
         }
-        
-        .balance-card .balance-icon {
-            font-size: 2rem;
+
+        .balance-card .balance-amount {
+            font-size: 3.2rem;
+            font-weight: 800;
+            color: #fff;
+            line-height: 1.1;
+            position: relative;
+            z-index: 1;
+            letter-spacing: -1px;
+        }
+
+        .balance-card .balance-amount .currency {
+            font-size: 1.6rem;
+            font-weight: 600;
             color: #fbbf24;
-            margin-bottom: 4px;
-            position: relative;
-            z-index: 1;
+            margin-left: 4px;
         }
-        
-        .balance-card .balance-content {
-            position: relative;
-            z-index: 1;
-        }
-        
-        .balance-card .balance-label { 
-            font-size: 0.75rem; 
-            color: #aaa; 
-            margin-bottom: 4px; 
-            letter-spacing: 1px;
-        }
-        
-        .balance-card .balance-amount { 
-            font-size: 3rem; 
-            font-weight: 900; 
-            background: linear-gradient(135deg, #fbbf24, #ffdd77, #fbbf24);
-            background-size: 200% 200%;
-            background-clip: text;
-            color: transparent;
-            line-height: 1.2;
-            animation: balanceGradient 3s ease-in-out infinite;
-        }
-        
-        @keyframes balanceGradient {
-            0%, 100% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-        }
-        
+
         .balance-card .balance-sub {
-            font-size: 0.6rem;
+            font-size: 0.65rem;
             color: #666;
-            margin-top: 4px;
+            margin-top: 6px;
             position: relative;
             z-index: 1;
-        }
-        
-        .balance-actions {
             display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .balance-card .balance-sub i {
+            color: #10b981;
+            font-size: 0.55rem;
+        }
+
+        .balance-actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
             gap: 12px;
-            margin-top: 18px;
+            margin-top: 22px;
             position: relative;
             z-index: 1;
         }
-        
-        .btn-deposit, .btn-withdraw {
-            flex: 1;
-            padding: 14px 12px;
+
+        .btn-deposit,
+        .btn-withdraw {
+            padding: 15px 12px;
             border-radius: 60px;
-            font-weight: 700;
-            font-size: 0.95rem;
+            font-weight: 600;
+            font-size: 0.9rem;
             cursor: pointer;
             transition: all 0.2s;
             min-height: 52px;
@@ -303,393 +267,425 @@
             justify-content: center;
             gap: 8px;
             border: none;
+            letter-spacing: 0.2px;
         }
-        
+
         .btn-deposit {
-            background: linear-gradient(135deg, #fbbf24, #f59e0b);
-            color: #000;
-            box-shadow: 0 4px 15px rgba(251,191,36,0.3);
+            background: linear-gradient(135deg, #fbbf24, #e5a800);
+            color: #0b0b0b;
+            box-shadow: 0 4px 20px rgba(251, 191, 36, 0.2);
         }
-        
+
         .btn-deposit:active {
             transform: scale(0.97);
-            box-shadow: 0 2px 10px rgba(251,191,36,0.2);
+            box-shadow: 0 2px 12px rgba(251, 191, 36, 0.15);
         }
-        
+
         .btn-withdraw {
-            background: rgba(251, 191, 36, 0.12);
-            border: 1px solid rgba(251, 191, 36, 0.4);
+            background: transparent;
+            border: 1px solid rgba(251, 191, 36, 0.25);
             color: #fbbf24;
         }
-        
+
         .btn-withdraw:active {
-            background: rgba(251, 191, 36, 0.25);
+            background: rgba(251, 191, 36, 0.08);
             transform: scale(0.97);
         }
 
-        /* ===== СТАТУС ПОЛЬЗОВАТЕЛЯ ===== */
-        .status-card {
+        /* ===== STATS ROW ===== */
+        .stats-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin: 4px 0 20px;
+        }
+
+        .stat-item {
             background: rgba(15, 15, 15, 0.6);
+            backdrop-filter: blur(8px);
             border-radius: 20px;
             padding: 16px 18px;
-            margin: 12px 0;
-            border: 1px solid rgba(251,191,36,0.1);
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            transition: border-color 0.2s;
         }
-        
+
+        .stat-item:hover {
+            border-color: rgba(251, 191, 36, 0.15);
+        }
+
+        .stat-item .stat-label {
+            font-size: 0.6rem;
+            color: #777;
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+            font-weight: 500;
+        }
+
+        .stat-item .stat-value {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #fff;
+            margin-top: 2px;
+        }
+
+        .stat-item .stat-value.gold {
+            color: #fbbf24;
+        }
+
+        /* ===== STATUS CARD ===== */
+        .status-card {
+            background: rgba(15, 15, 15, 0.6);
+            backdrop-filter: blur(8px);
+            border-radius: 20px;
+            padding: 18px 20px;
+            margin: 0 0 20px;
+            border: 1px solid rgba(251, 191, 36, 0.12);
+            transition: border-color 0.3s;
+        }
+
+        .status-card:hover {
+            border-color: rgba(251, 191, 36, 0.25);
+        }
+
         .status-header {
             display: flex;
             align-items: center;
             gap: 12px;
             margin-bottom: 12px;
         }
-        
-        .status-header i {
-            font-size: 1.5rem;
+
+        .status-header .status-icon {
+            font-size: 1.2rem;
             color: #fbbf24;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(251, 191, 36, 0.08);
+            border-radius: 50%;
         }
-        
+
         .status-header .status-name {
-            font-size: 1rem;
+            font-size: 0.95rem;
             font-weight: 700;
-            color: #fbbf24;
+            color: #fff;
         }
-        
+
         .status-header .status-level {
             margin-left: auto;
-            font-size: 0.65rem;
-            color: #666;
-            background: rgba(255,255,255,0.05);
-            padding: 4px 12px;
+            font-size: 0.6rem;
+            color: #888;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 3px 12px;
             border-radius: 20px;
+            font-weight: 500;
         }
-        
+
         .status-progress {
-            margin-bottom: 10px;
+            margin-bottom: 12px;
         }
-        
+
         .status-progress .progress-bar-bg {
             width: 100%;
-            height: 6px;
-            background: rgba(255,255,255,0.08);
+            height: 4px;
+            background: rgba(255, 255, 255, 0.06);
             border-radius: 10px;
             overflow: hidden;
         }
-        
+
         .status-progress .progress-bar-fill {
             height: 100%;
-            background: linear-gradient(90deg, #fbbf24, #ffdd77);
+            background: linear-gradient(90deg, #fbbf24, #d4a017);
             border-radius: 10px;
             transition: width 0.8s ease;
             width: 0%;
         }
-        
+
         .status-progress .progress-text {
             display: flex;
             justify-content: space-between;
             font-size: 0.6rem;
-            color: #888;
-            margin-top: 4px;
+            color: #777;
+            margin-top: 5px;
+            font-weight: 500;
         }
-        
+
         .status-benefits {
             display: flex;
             gap: 16px;
             flex-wrap: wrap;
             font-size: 0.65rem;
             color: #10b981;
+            padding-top: 2px;
         }
-        
+
         .status-benefits span {
             display: flex;
             align-items: center;
-            gap: 4px;
+            gap: 5px;
         }
 
-        /* ===== БЫСТРЫЕ ПОКУПКИ ===== */
-        .quick-purchases {
-            margin: 16px 0;
+        /* ===== ACHIEVEMENTS ===== */
+        .achievements-section {
+            margin: 0 0 20px;
         }
-        
-        .quick-purchases h4 {
-            font-size: 0.9rem;
-            color: #fbbf24;
+
+        .achievements-section .section-title {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
             margin-bottom: 12px;
             display: flex;
             align-items: center;
             gap: 8px;
         }
-        
-        .purchase-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 10px;
-        }
-        
-        .purchase-item {
-            background: rgba(15, 15, 15, 0.6);
-            border: 1px solid rgba(251,191,36,0.15);
-            border-radius: 16px;
-            padding: 14px 12px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.2s;
-            min-height: 80px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 4px;
-        }
-        
-        .purchase-item:active {
-            transform: scale(0.96);
-            border-color: rgba(251,191,36,0.4);
-        }
-        
-        .purchase-item i {
-            font-size: 1.4rem;
+
+        .achievements-section .section-title i {
             color: #fbbf24;
-        }
-        
-        .purchase-item .purchase-name {
-            font-size: 0.7rem;
-            font-weight: 600;
-            color: #ddd;
-        }
-        
-        .purchase-item .purchase-price {
-            font-size: 0.8rem;
-            font-weight: 700;
-            color: #fbbf24;
-        }
-        
-        .purchase-item .purchase-badge {
-            font-size: 0.5rem;
-            background: #10b981;
-            color: #fff;
-            padding: 2px 8px;
-            border-radius: 20px;
-            margin-top: 2px;
         }
 
-        /* ===== СТАТИСТИКА ===== */
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 12px;
-            margin: 16px 0;
-        }
-        
-        .stat-card {
-            background: rgba(15, 15, 15, 0.6);
-            border-radius: 20px;
-            padding: 14px 12px;
-            text-align: center;
-            backdrop-filter: blur(4px);
-        }
-        
-        .stat-card .stat-icon {
-            font-size: 1.2rem;
-            color: #fbbf24;
-            margin-bottom: 4px;
-        }
-        
-        .stat-card .stat-value { 
-            font-size: 1.2rem; 
-            font-weight: 700; 
-            color: #fbbf24; 
-        }
-        
-        .stat-card .stat-label { 
-            font-size: 0.65rem; 
-            color: #888; 
-            margin-top: 4px; 
-        }
-
-        /* ===== ДОСТИЖЕНИЯ ===== */
-        .achievements-section {
-            margin: 16px 0 20px;
-        }
-        
-        .achievements-section h4 {
-            font-size: 0.9rem;
-            color: #fbbf24;
-            margin-bottom: 10px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        
         .achievement-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
             gap: 10px;
         }
-        
+
         .achievement {
-            background: rgba(15, 15, 15, 0.6);
+            background: rgba(20, 20, 25, 0.6);
+            backdrop-filter: blur(4px);
             border-radius: 16px;
-            padding: 12px;
+            padding: 14px 12px;
             text-align: center;
-            border: 1px solid rgba(255,255,255,0.05);
-            transition: all 0.2s;
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            transition: all 0.3s;
         }
-        
+
         .achievement.unlocked {
-            border-color: rgba(251,191,36,0.3);
-            background: rgba(251,191,36,0.05);
+            border-color: rgba(251, 191, 36, 0.2);
+            background: rgba(251, 191, 36, 0.04);
         }
-        
+
         .achievement.locked {
             opacity: 0.4;
         }
-        
-        .achievement i {
+
+        .achievement .ach-icon {
             font-size: 1.5rem;
             margin-bottom: 4px;
             display: block;
         }
-        
-        .achievement.unlocked i {
+
+        .achievement.unlocked .ach-icon {
             color: #fbbf24;
         }
-        
-        .achievement.locked i {
-            color: #555;
+
+        .achievement.locked .ach-icon {
+            color: #444;
         }
-        
+
         .achievement .ach-name {
             font-size: 0.6rem;
             font-weight: 600;
             color: #ddd;
+            display: block;
         }
-        
+
         .achievement .ach-progress {
             font-size: 0.5rem;
             color: #666;
+            display: block;
             margin-top: 2px;
         }
 
-        /* ===== ТРАНЗАКЦИИ ===== */
+        /* ===== TRANSACTIONS ===== */
         .transactions-list {
             background: rgba(15, 15, 15, 0.6);
+            backdrop-filter: blur(8px);
             border-radius: 20px;
-            padding: 20px;
-            margin: 16px 0 40px;
+            padding: 20px 0 8px;
+            margin: 0 0 40px;
+            border: 1px solid rgba(251, 191, 36, 0.12);
+            transition: border-color 0.3s;
         }
-        
-        .transactions-list h3 {
-            margin-bottom: 16px;
-            font-size: 1rem;
-            color: #fbbf24;
+
+        .transactions-list:hover {
+            border-color: rgba(251, 191, 36, 0.2);
+        }
+
+        .transactions-list .tx-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px 16px;
+        }
+
+        .transactions-list .tx-header h3 {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #fff;
             display: flex;
             align-items: center;
             gap: 8px;
         }
-        
+
+        .transactions-list .tx-header h3 i {
+            color: #fbbf24;
+        }
+
+        .transactions-list .tx-header .tx-count {
+            font-size: 0.6rem;
+            color: #666;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 2px 12px;
+            border-radius: 40px;
+        }
+
         .transaction-item {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 12px 0;
-            border-bottom: 1px solid rgba(255,255,255,0.06);
-            flex-wrap: wrap;
-            gap: 6px;
+            padding: 14px 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+            transition: background 0.2s;
         }
-        
+
+        .transaction-item:hover {
+            background: rgba(255, 255, 255, 0.02);
+        }
+
         .transaction-item:last-child {
             border-bottom: none;
         }
-        
+
         .transaction-left {
             display: flex;
             align-items: center;
-            gap: 10px;
-            flex: 2;
+            gap: 14px;
+            flex: 1;
+            min-width: 0;
         }
-        
+
         .transaction-left .tx-icon {
-            width: 36px;
-            height: 36px;
+            width: 38px;
+            height: 38px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             flex-shrink: 0;
         }
-        
+
         .transaction-left .tx-icon.deposit {
-            background: rgba(16, 185, 129, 0.15);
+            background: rgba(16, 185, 129, 0.12);
             color: #10b981;
         }
-        
+
         .transaction-left .tx-icon.payment {
-            background: rgba(245, 158, 11, 0.15);
+            background: rgba(245, 158, 11, 0.12);
             color: #f59e0b;
         }
-        
+
         .transaction-left .tx-icon.refund {
-            background: rgba(59, 130, 246, 0.15);
+            background: rgba(59, 130, 246, 0.12);
             color: #3b82f6;
         }
-        
+
         .transaction-left .tx-icon.withdrawal {
-            background: rgba(239, 68, 68, 0.15);
+            background: rgba(239, 68, 68, 0.12);
             color: #ef4444;
         }
-        
+
+        .transaction-left .tx-icon.hold {
+            background: rgba(139, 92, 246, 0.12);
+            color: #8b5cf6;
+        }
+
+        .transaction-left .tx-icon.release {
+            background: rgba(16, 185, 129, 0.12);
+            color: #10b981;
+        }
+
         .transaction-left .tx-info {
             flex: 1;
+            min-width: 0;
         }
-        
+
         .transaction-left .tx-name {
             font-size: 0.8rem;
             font-weight: 600;
-            color: #ddd;
+            color: #e0e0e0;
         }
-        
+
         .transaction-left .tx-date {
             font-size: 0.6rem;
             color: #666;
+            margin-top: 1px;
         }
-        
+
+        .transaction-left .tx-desc {
+            font-size: 0.55rem;
+            color: #555;
+            margin-top: 1px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
         .transaction-right {
             text-align: right;
+            flex-shrink: 0;
+            margin-left: 12px;
         }
-        
+
         .transaction-right .tx-amount {
             font-weight: 700;
             font-size: 0.9rem;
+            letter-spacing: -0.2px;
         }
-        
+
         .transaction-right .tx-amount.positive {
             color: #10b981;
         }
-        
+
         .transaction-right .tx-amount.negative {
             color: #f59e0b;
         }
-        
+
         .transaction-right .tx-status {
             font-size: 0.5rem;
             color: #f59e0b;
+            font-weight: 500;
+            display: block;
+            margin-top: 1px;
         }
-        
-        .empty-state { 
-            text-align: center; 
-            padding: 30px 20px; 
-            color: #666; 
+
+        .transaction-right .tx-status.completed {
+            color: #10b981;
         }
-        
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #555;
+        }
+
         .empty-state i {
             font-size: 2rem;
-            color: #444;
-            margin-bottom: 8px;
+            color: #2a2a2a;
+            margin-bottom: 10px;
             display: block;
         }
 
-        /* ===== МОДАЛКИ ===== */
+        .empty-state p {
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        /* ===== MODALS ===== */
         .modal-overlay {
             display: none;
             position: fixed;
@@ -697,222 +693,252 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.85);
+            background: rgba(0, 0, 0, 0.9);
             backdrop-filter: blur(8px);
             justify-content: center;
             align-items: center;
             z-index: 2000;
+            padding: 20px;
         }
-        
+
         .modal-overlay.active {
             display: flex;
         }
-        
-        .deposit-modal {
+
+        .modal-content {
             background: #151515;
             border-radius: 28px;
-            width: 90%;
+            width: 100%;
             max-width: 400px;
-            padding: 24px 20px 28px;
-            border: 1px solid rgba(251, 191, 36, 0.3);
+            padding: 28px 24px 32px;
+            border: 1px solid rgba(251, 191, 36, 0.2);
             animation: modalFadeIn 0.25s ease;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
         }
-        
+
         @keyframes modalFadeIn {
             from {
                 opacity: 0;
-                transform: scale(0.95) translateY(10px);
+                transform: scale(0.96) translateY(12px);
             }
             to {
                 opacity: 1;
                 transform: scale(1) translateY(0);
             }
         }
-        
-        .deposit-modal h3 {
-            color: #fbbf24;
+
+        .modal-content h3 {
+            color: #fff;
             text-align: center;
-            margin-bottom: 20px;
-            font-size: 1.2rem;
+            margin-bottom: 22px;
+            font-size: 1.15rem;
+            font-weight: 700;
         }
-        
-        .amount-input {
-            margin-bottom: 16px;
+
+        .modal-content h3 i {
+            color: #fbbf24;
+            margin-right: 10px;
         }
-        
-        .amount-input label {
+
+        .modal-content .field-label {
             display: block;
-            color: #aaa;
-            font-size: 0.75rem;
-            margin-bottom: 6px;
+            color: #888;
+            font-size: 0.7rem;
+            font-weight: 500;
+            margin-bottom: 4px;
+            letter-spacing: 0.3px;
         }
-        
-        .amount-input input {
+
+        .modal-content .field-input {
             width: 100%;
             padding: 14px 18px;
             background: #1a1a1a;
-            border: 1px solid rgba(251, 191, 36, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.06);
             color: #fff;
             border-radius: 60px;
-            font-size: 1.1rem;
-            text-align: center;
-            font-weight: 600;
-        }
-        
-        .amount-input input:focus {
+            font-size: 1rem;
+            font-weight: 500;
+            transition: border-color 0.2s;
             outline: none;
-            border-color: #fbbf24;
         }
-        
-        .preset-amounts {
+
+        .modal-content .field-input:focus {
+            border-color: rgba(251, 191, 36, 0.3);
+        }
+
+        .modal-content .field-input::placeholder {
+            color: #444;
+            font-weight: 400;
+        }
+
+        .modal-content .preset-amounts {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
             gap: 8px;
-            margin-bottom: 16px;
+            margin: 12px 0 18px;
         }
-        
-        .preset-btn {
+
+        .modal-content .preset-btn {
             background: #1a1a1a;
-            border: 1px solid rgba(251, 191, 36, 0.2);
-            color: #fbbf24;
-            padding: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            color: #aaa;
+            padding: 9px 6px;
             border-radius: 40px;
             cursor: pointer;
             font-weight: 600;
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             transition: all 0.2s;
             min-height: 40px;
         }
-        
-        .preset-btn:active {
-            background: rgba(251, 191, 36, 0.2);
-            transform: scale(0.96);
+
+        .modal-content .preset-btn:active {
+            background: rgba(251, 191, 36, 0.12);
+            border-color: rgba(251, 191, 36, 0.2);
+            color: #fbbf24;
         }
-        
-        .payment-methods {
-            margin-bottom: 20px;
+
+        .modal-content .method-options {
+            margin: 16px 0 20px;
         }
-        
-        .payment-methods label {
+
+        .modal-content .method-options .method-label {
             display: block;
-            color: #aaa;
-            font-size: 0.75rem;
+            color: #888;
+            font-size: 0.7rem;
+            font-weight: 500;
             margin-bottom: 6px;
+            letter-spacing: 0.3px;
         }
-        
-        .method-option {
+
+        .modal-content .method-option {
             display: flex;
             align-items: center;
-            gap: 12px;
-            padding: 12px 14px;
+            gap: 14px;
+            padding: 12px 16px;
             background: #1a1a1a;
             border-radius: 16px;
             margin-bottom: 6px;
             cursor: pointer;
-            border: 1px solid rgba(251, 191, 36, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.04);
             transition: all 0.2s;
-            min-height: 52px;
+            min-height: 48px;
         }
-        
-        .method-option:active {
-            border-color: rgba(251, 191, 36, 0.5);
-            background: #222;
+
+        .modal-content .method-option:active {
+            border-color: rgba(251, 191, 36, 0.2);
         }
-        
-        .method-option.selected {
-            border-color: #fbbf24;
-            background: rgba(251, 191, 36, 0.08);
+
+        .modal-content .method-option.selected {
+            border-color: rgba(251, 191, 36, 0.25);
+            background: rgba(251, 191, 36, 0.04);
         }
-        
-        .method-option i {
-            font-size: 1.3rem;
+
+        .modal-content .method-option i {
+            font-size: 1.1rem;
             color: #fbbf24;
-            width: 36px;
+            width: 32px;
+            text-align: center;
         }
-        
-        .method-option .method-info {
-            flex: 1;
-        }
-        
-        .method-option .method-name {
+
+        .modal-content .method-option .method-name {
             font-weight: 600;
-            font-size: 0.85rem;
+            font-size: 0.8rem;
+            color: #ddd;
         }
-        
-        .method-option .method-desc {
-            font-size: 0.6rem;
-            color: #888;
+
+        .modal-content .method-option .method-desc {
+            font-size: 0.55rem;
+            color: #666;
         }
-        
+
         .modal-buttons {
-            display: flex;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
             gap: 12px;
-            margin-top: 8px;
+            margin-top: 6px;
         }
-        
-        .modal-buttons button {
-            flex: 1;
+
+        .modal-buttons .btn-confirm {
+            background: #fbbf24;
+            color: #0b0b0b;
+            border: none;
             padding: 14px;
             border-radius: 60px;
             font-weight: 700;
-            cursor: pointer;
-            border: none;
             font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s;
             min-height: 48px;
         }
-        
-        .btn-confirm {
-            background: #fbbf24;
-            color: #000;
-        }
-        
-        .btn-confirm:active {
+
+        .modal-buttons .btn-confirm:active {
+            transform: scale(0.97);
             background: #e5a800;
-            transform: scale(0.97);
         }
-        
-        .btn-cancel {
-            background: #2a2a2a;
-            color: #fff;
+
+        .modal-buttons .btn-confirm:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
         }
-        
-        .btn-cancel:active {
-            background: #3a3a3a;
-            transform: scale(0.97);
+
+        .modal-buttons .btn-cancel {
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            color: #888;
+            padding: 14px;
+            border-radius: 60px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            min-height: 48px;
         }
-        
-        .commission-info {
+
+        .modal-buttons .btn-cancel:active {
+            background: rgba(255, 255, 255, 0.04);
+        }
+
+        .modal-content .modal-hint {
             text-align: center;
-            margin-top: 14px;
+            margin-top: 16px;
             font-size: 0.6rem;
             color: #555;
         }
-        
-        .commission-info i {
+
+        .modal-content .modal-hint i {
             color: #fbbf24;
             margin-right: 4px;
         }
-        
+
         .loading-spinner {
             display: inline-block;
-            width: 18px;
-            height: 18px;
-            border: 2px solid rgba(0,0,0,0.3);
-            border-top-color: #000;
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(11, 11, 11, 0.2);
+            border-top-color: #0b0b0b;
             border-radius: 50%;
-            animation: spin 0.8s linear infinite;
+            animation: spin 0.7s linear infinite;
         }
-        
-        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .btn-withdraw .loading-spinner {
+            border-color: rgba(251, 191, 36, 0.2);
+            border-top-color: #fbbf24;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
 
         /* ===== FOOTER ===== */
         .main-footer {
             background: #0a0a0a;
-            border-top: 1px solid rgba(251,191,36,0.15);
-            margin-top: 20px;
+            border-top: 1px solid rgba(251, 191, 36, 0.15);
+            margin-top: 8px;
             padding: 24px 0 16px;
         }
-        
+
         .footer-inner {
             display: flex;
             justify-content: space-between;
@@ -920,88 +946,157 @@
             flex-wrap: wrap;
             gap: 16px;
         }
-        
+
         .footer-links {
             display: flex;
             gap: 16px;
             flex-wrap: wrap;
         }
-        
+
         .footer-links a {
-            color: #888;
+            color: #555;
             text-decoration: none;
-            font-size: 0.7rem;
+            font-size: 0.65rem;
+            transition: color 0.2s;
         }
-        
+
+        .footer-links a:hover {
+            color: #888;
+        }
+
         .footer-social {
             display: flex;
             gap: 12px;
         }
-        
+
         .social-icon {
-            color: #aaa;
-            font-size: 1rem;
+            color: #555;
+            font-size: 0.95rem;
             min-width: 36px;
             min-height: 36px;
             display: inline-flex;
             align-items: center;
             justify-content: center;
+            transition: color 0.2s;
         }
-        
+
+        .social-icon:hover {
+            color: #fbbf24;
+        }
+
         .footer-bottom {
             text-align: center;
             margin-top: 16px;
-            font-size: 0.6rem;
-            color: #444;
+            font-size: 0.55rem;
+            color: #333;
         }
 
-        /* ===== АДАПТИВ ===== */
+        /* ===== RESPONSIVE ===== */
         @media (max-width: 768px) {
-            .navbar { padding: 10px 16px; }
-            .menu-toggle { display: block; }
-            .nav-links { 
-                display: none; 
-                flex-direction: column; 
-                position: absolute; 
-                top: 60px; 
-                left: 16px; 
-                right: 16px; 
-                background: #0f0f0f; 
-                border-radius: 20px; 
-                padding: 16px; 
-                gap: 8px; 
-                border: 1px solid rgba(251,191,36,0.3); 
-                z-index: 1000; 
+            .navbar {
+                padding: 12px 16px;
             }
-            .nav-links.show { display: flex; }
-            .nav-links a { 
-                width: 100%; 
-                text-align: center; 
-                padding: 12px; 
+
+            .menu-toggle {
+                display: block;
+            }
+
+            .nav-links {
+                display: none;
+                flex-direction: column;
+                position: absolute;
+                top: 62px;
+                left: 16px;
+                right: 16px;
+                background: #0f0f0f;
+                border-radius: 20px;
+                padding: 16px;
+                gap: 6px;
+                border: 1px solid rgba(251, 191, 36, 0.2);
+                z-index: 1000;
+                backdrop-filter: blur(20px);
+            }
+
+            .nav-links.show {
+                display: flex;
+            }
+
+            .nav-links a {
+                width: 100%;
+                text-align: center;
+                padding: 12px;
                 justify-content: center;
+                font-size: 0.85rem;
             }
-            .container { padding: 0 16px; }
-            .balance-amount { font-size: 2.4rem; }
-            .stats-grid { grid-template-columns: 1fr 1fr; gap: 8px; }
-            .balance-actions { flex-direction: column; gap: 8px; }
-            .preset-amounts { grid-template-columns: repeat(2, 1fr); }
-            .purchase-grid { grid-template-columns: 1fr 1fr; gap: 8px; }
-            .achievement-grid { grid-template-columns: 1fr 1fr; gap: 8px; }
-            .deposit-modal { padding: 20px 16px; }
-            .bonus-banner { padding: 14px 16px; flex-wrap: wrap; justify-content: center; }
-            .bonus-banner .btn-bonus { width: 100%; justify-content: center; }
-            .transaction-item { flex-direction: column; align-items: flex-start; }
-            .transaction-right { width: 100%; display: flex; justify-content: space-between; align-items: center; }
-            .footer-inner { flex-direction: column; text-align: center; gap: 12px; }
+
+            .container {
+                padding: 0 16px;
+            }
+
+            .balance-card .balance-amount {
+                font-size: 2.6rem;
+            }
+
+            .stats-row {
+                gap: 10px;
+            }
+
+            .balance-actions {
+                gap: 10px;
+            }
+
+            .modal-content {
+                padding: 24px 18px 28px;
+            }
+
+            .modal-content .preset-amounts {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .achievement-grid {
+                gap: 8px;
+            }
+
+            .transaction-item {
+                flex-wrap: wrap;
+                gap: 4px;
+            }
+
+            .transaction-right {
+                margin-left: 52px;
+                width: calc(100% - 52px);
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+
+            .transaction-right .tx-status {
+                margin-top: 0;
+            }
+
+            .footer-inner {
+                flex-direction: column;
+                text-align: center;
+                gap: 12px;
+            }
         }
-        
+
         @media (min-width: 600px) {
-            .container { max-width: 500px; }
+            .container {
+                max-width: 500px;
+            }
         }
-        
-        ::-webkit-scrollbar { width: 4px; }
-        ::-webkit-scrollbar-track { background: #1a1a1a; }
-        ::-webkit-scrollbar-thumb { background: #fbbf24; border-radius: 10px; }
+
+        ::-webkit-scrollbar {
+            width: 4px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #121212;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #fbbf24;
+            border-radius: 10px;
+        }
     </style>
 </head>
 <body>
@@ -1014,33 +1109,18 @@
     </header>
 
     <main class="container">
+        <!-- ===== HEADER ===== -->
         <div class="page-header">
-            <h1><i class="fas fa-wallet"></i> Мой кошелёк</h1>
+            <h1><i class="fas fa-wallet"></i> Кошелёк</h1>
+            <span class="header-badge"><i class="fas fa-shield-alt"></i> Защищён</span>
         </div>
 
-        <!-- ===== БОНУСНЫЙ БАННЕР ===== -->
-        <div class="bonus-banner" id="bonusBanner">
-            <div class="bonus-icon">
-                <i class="fas fa-gift"></i>
-            </div>
-            <div class="bonus-content">
-                <h4>🔥 Бонус 15%</h4>
-                <p>При первом пополнении от 500 ₽</p>
-            </div>
-            <button class="btn-bonus" id="bonusDepositBtn">
-                Пополнить
-            </button>
-        </div>
-
-        <!-- ===== КАРТОЧКА БАЛАНСА ===== -->
+        <!-- ===== BALANCE CARD ===== -->
         <div class="balance-card">
-            <div class="balance-icon">
-                <i class="fas fa-coins"></i>
-            </div>
-            <div class="balance-content">
-                <div class="balance-label">Доступно средств</div>
-                <div class="balance-amount" id="balanceAmount">0 ₽</div>
-                <div class="balance-sub" id="balanceSub">💰 Без комиссии</div>
+            <div class="balance-label">Доступно средств</div>
+            <div class="balance-amount" id="balanceAmount">0 <span class="currency">₽</span></div>
+            <div class="balance-sub">
+                <i class="fas fa-check-circle"></i> Без комиссии · Мгновенное зачисление
             </div>
             <div class="balance-actions">
                 <button class="btn-deposit" id="depositBtn">
@@ -1052,10 +1132,22 @@
             </div>
         </div>
 
-        <!-- ===== СТАТУС ПОЛЬЗОВАТЕЛЯ ===== -->
+        <!-- ===== STATS ===== -->
+        <div class="stats-row">
+            <div class="stat-item">
+                <div class="stat-label">Всего потрачено</div>
+                <div class="stat-value gold" id="totalSpent">0 ₽</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-label">Возвращено</div>
+                <div class="stat-value" id="totalRefunded">0 ₽</div>
+            </div>
+        </div>
+
+        <!-- ===== STATUS ===== -->
         <div class="status-card" id="statusCard">
             <div class="status-header">
-                <i class="fas fa-crown"></i>
+                <span class="status-icon"><i class="fas fa-crown"></i></span>
                 <span class="status-name" id="statusName">Bronze</span>
                 <span class="status-level" id="statusLevel">Уровень 1</span>
             </div>
@@ -1074,68 +1166,55 @@
             </div>
         </div>
 
-        <!-- ===== СТАТИСТИКА ===== -->
-        <div class="stats-grid">
-            <div class="stat-card">
-                <div class="stat-icon"><i class="fas fa-shopping-cart"></i></div>
-                <div class="stat-value" id="totalSpent">0 ₽</div>
-                <div class="stat-label">Всего потрачено</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon"><i class="fas fa-undo"></i></div>
-                <div class="stat-value" id="totalRefunded">0 ₽</div>
-                <div class="stat-label">Возвращено</div>
-            </div>
-        </div>
-
-        <!-- ===== ДОСТИЖЕНИЯ ===== -->
+        <!-- ===== ACHIEVEMENTS ===== -->
         <div class="achievements-section">
-            <h4><i class="fas fa-trophy"></i> Достижения</h4>
+            <div class="section-title"><i class="fas fa-trophy"></i> Достижения</div>
             <div class="achievement-grid" id="achievementGrid">
                 <div class="achievement unlocked" id="achFirstDeposit">
-                    <i class="fas fa-coins"></i>
+                    <span class="ach-icon"><i class="fas fa-coins"></i></span>
                     <span class="ach-name">Первый депозит</span>
                     <span class="ach-progress">✅ Выполнено</span>
                 </div>
                 <div class="achievement locked" id="achSpend500">
-                    <i class="fas fa-rocket"></i>
+                    <span class="ach-icon"><i class="fas fa-rocket"></i></span>
                     <span class="ach-name">500 ₽ на счету</span>
                     <span class="ach-progress">0 / 500 ₽</span>
                 </div>
                 <div class="achievement locked" id="achSpend1000">
-                    <i class="fas fa-star"></i>
+                    <span class="ach-icon"><i class="fas fa-star"></i></span>
                     <span class="ach-name">1000 ₽ на счету</span>
                     <span class="ach-progress">0 / 1000 ₽</span>
                 </div>
                 <div class="achievement locked" id="achFirstPurchase">
-                    <i class="fas fa-shopping-bag"></i>
+                    <span class="ach-icon"><i class="fas fa-shopping-bag"></i></span>
                     <span class="ach-name">Первая покупка</span>
                     <span class="ach-progress">⏳ Ждём</span>
                 </div>
             </div>
         </div>
 
-        <!-- ===== ИСТОРИЯ ОПЕРАЦИЙ ===== -->
+        <!-- ===== TRANSACTIONS ===== -->
         <div class="transactions-list">
-            <h3><i class="fas fa-history"></i> История операций</h3>
+            <div class="tx-header">
+                <h3><i class="fas fa-history"></i> История операций</h3>
+                <span class="tx-count" id="txCount">0</span>
+            </div>
             <div id="transactionsList">
                 <div class="empty-state">
                     <i class="fas fa-inbox"></i>
-                    История операций пуста
+                    <p>История операций пуста</p>
                 </div>
             </div>
         </div>
     </main>
 
-    <!-- ===== МОДАЛКА ПОПОЛНЕНИЯ ===== -->
+    <!-- ===== MODAL DEPOSIT ===== -->
     <div id="depositModal" class="modal-overlay">
-        <div class="deposit-modal">
+        <div class="modal-content">
             <h3><i class="fas fa-credit-card"></i> Пополнение</h3>
-            
-            <div class="amount-input">
-                <label>Сумма (₽)</label>
-                <input type="number" id="modalAmount" placeholder="Введите сумму" min="100" step="100">
-            </div>
+
+            <label class="field-label">Сумма (₽)</label>
+            <input type="number" class="field-input" id="modalAmount" placeholder="Введите сумму" min="100" step="100">
 
             <div class="preset-amounts">
                 <button class="preset-btn" data-amount="500">500 ₽</button>
@@ -1146,18 +1225,18 @@
                 <button class="preset-btn" data-amount="25000">25 000 ₽</button>
             </div>
 
-            <div class="payment-methods">
-                <label>Способ оплаты</label>
+            <div class="method-options">
+                <span class="method-label">Способ оплаты</span>
                 <div class="method-option selected" data-method="card">
                     <i class="fas fa-credit-card"></i>
-                    <div class="method-info">
+                    <div>
                         <div class="method-name">Банковская карта</div>
                         <div class="method-desc">Visa, Mastercard, МИР</div>
                     </div>
                 </div>
                 <div class="method-option" data-method="sbp">
                     <i class="fas fa-mobile-alt"></i>
-                    <div class="method-info">
+                    <div>
                         <div class="method-name">СБП</div>
                         <div class="method-desc">По номеру телефона</div>
                     </div>
@@ -1169,40 +1248,37 @@
                 <button id="cancelModalBtn" class="btn-cancel">Отмена</button>
             </div>
 
-            <div class="commission-info">
+            <div class="modal-hint">
                 <i class="fas fa-info-circle"></i> Без комиссии, мгновенное зачисление
             </div>
         </div>
     </div>
 
-    <!-- ===== МОДАЛКА ВЫВОДА СРЕДСТВ (ИСПРАВЛЕНА) ===== -->
+    <!-- ===== MODAL WITHDRAW ===== -->
     <div id="withdrawModal" class="modal-overlay">
-        <div class="deposit-modal">
+        <div class="modal-content">
             <h3><i class="fas fa-arrow-up"></i> Вывод средств</h3>
-            
-            <div class="amount-input">
-                <label>Доступно: <span id="availableBalanceDisplay">0</span> ₽</label>
-                <input type="number" id="withdrawAmount" placeholder="Сумма вывода" min="100" step="100">
+
+            <label class="field-label">Доступно: <span id="availableBalanceDisplay">0</span> ₽</label>
+            <input type="number" class="field-input" id="withdrawAmount" placeholder="Сумма вывода" min="100" step="100">
+
+            <div style="margin-top:14px;">
+                <label class="field-label">Реквизиты для вывода</label>
+                <input type="text" class="field-input" id="withdrawDetails" placeholder="Номер карты или Telegram ID">
             </div>
 
-            <!-- ДОБАВЛЕНО ПОЛЕ ДЛЯ РЕКВИЗИТОВ -->
-            <div class="amount-input">
-                <label>Реквизиты для вывода</label>
-                <input type="text" id="withdrawDetails" placeholder="Номер карты или Telegram ID">
-            </div>
-
-            <div class="payment-methods">
-                <label>Куда выводить</label>
+            <div class="method-options" style="margin-top:16px;">
+                <span class="method-label">Куда выводить</span>
                 <div class="method-option selected" data-withdraw-method="card">
                     <i class="fas fa-credit-card"></i>
-                    <div class="method-info">
+                    <div>
                         <div class="method-name">Банковская карта</div>
                         <div class="method-desc">Visa, Mastercard, МИР</div>
                     </div>
                 </div>
                 <div class="method-option" data-withdraw-method="sbp">
                     <i class="fas fa-mobile-alt"></i>
-                    <div class="method-info">
+                    <div>
                         <div class="method-name">СБП</div>
                         <div class="method-desc">На номер телефона</div>
                     </div>
@@ -1214,8 +1290,8 @@
                 <button id="cancelWithdrawBtn" class="btn-cancel">Отмена</button>
             </div>
 
-            <div class="commission-info">
-                <i class="fas fa-info-circle"></i> Вывод от 100 ₽. Время обработки до 3 рабочих дней
+            <div class="modal-hint">
+                <i class="fas fa-info-circle"></i> Вывод от 100 ₽ · Обработка до 3 рабочих дней
             </div>
         </div>
     </div>
@@ -1225,7 +1301,7 @@
             <div class="footer-inner">
                 <div class="footer-logo">
                     <div class="logo">PRO<span>RANK</span></div>
-                    <p style="font-size: 0.6rem; color: #666;">Рейтинг спортсменов-любителей</p>
+                    <p style="font-size: 0.55rem; color: #444; margin-top: 2px;">Рейтинг спортсменов-любителей</p>
                 </div>
                 <div class="footer-social">
                     <a href="#" class="social-icon"><i class="fab fa-telegram"></i></a>
@@ -1247,9 +1323,6 @@
 
     <div id="mobileBottomNavContainer"></div>
 
-    <!-- Контейнер для ошибок -->
-    <div id="errorContainer" style="position: fixed; top: 15px; left: 50%; transform: translateX(-50%); z-index: 9999; max-width: 90%; width: 480px; padding: 14px 20px; border-radius: 16px; font-weight: 600; font-size: 0.9rem; animation: slideDown 0.3s ease; box-shadow: 0 10px 30px rgba(0,0,0,0.4); backdrop-filter: blur(8px); display: none; text-align: center; border: 1px solid rgba(255,255,255,0.1);"></div>
-
     <script type="importmap">
         {
             "imports": {
@@ -1261,592 +1334,570 @@
     </script>
     <script type="module" src="header.js"></script>
     <script type="module">
-import { initializeApp } from "firebase/app";
-import { getFirestore, doc, getDoc, getDocs, collection, query, where, orderBy, updateDoc, addDoc, setDoc, runTransaction } from "firebase/firestore";
-import { getAuth, onAuthStateChanged } from "firebase/auth";
+        import { initializeApp } from "firebase/app";
+        import { getFirestore, doc, getDoc, getDocs, collection, query, where, orderBy, updateDoc, addDoc, setDoc, runTransaction, limit } from "firebase/firestore";
+        import { getAuth, onAuthStateChanged } from "firebase/auth";
 
-const firebaseConfig = {
-    apiKey: "AIzaSyDUGYJY7pX7q02MS5SACMIIQXpjpQ97mPw",
-    authDomain: "proranklive.firebaseapp.com",
-    projectId: "proranklive",
-    storageBucket: "proranklive.firebasestorage.app",
-    messagingSenderId: "716836144015",
-    appId: "1:716836144015:web:f1575147750608d0f881fa"
-};
-
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-const auth = getAuth(app);
-
-let currentUser = null;
-let selectedMethod = 'card';
-let selectedWithdrawMethod = 'card';
-let currentBalance = 0;
-
-// ============================================================
-// ФУНКЦИИ КОШЕЛЬКА ДЛЯ ПОКУПАТЕЛЯ (ПРЯМО В СТРАНИЦЕ)
-// ============================================================
-
-// Получить баланс покупателя
-async function getBuyerBalance(userId) {
-    try {
-        const balanceDoc = await getDoc(doc(db, "wallet_balances", userId));
-        if (balanceDoc.exists()) {
-            return balanceDoc.data();
-        }
-        // Создаём баланс по умолчанию
-        const defaultBalance = {
-            userId: userId,
-            userType: "fighter",
-            available: 0,
-            pending: 0,
-            totalSpent: 0,
-            totalRefunded: 0,
-            hasDeposit: false,
-            hasPurchase: false,
-            updatedAt: new Date()
+        const firebaseConfig = {
+            apiKey: "AIzaSyDUGYJY7pX7q02MS5SACMIIQXpjpQ97mPw",
+            authDomain: "proranklive.firebaseapp.com",
+            projectId: "proranklive",
+            storageBucket: "proranklive.firebasestorage.app",
+            messagingSenderId: "716836144015",
+            appId: "1:716836144015:web:f1575147750608d0f881fa"
         };
-        await setDoc(doc(db, "wallet_balances", userId), defaultBalance);
-        return defaultBalance;
-    } catch (err) {
-        console.error("Ошибка получения баланса:", err);
-        return { available: 0, pending: 0, totalSpent: 0, totalRefunded: 0 };
-    }
-}
 
-// Пополнить баланс покупателя
-async function depositBuyerFunds(userId, amount, method) {
-    if (!userId) throw new Error('Не указан ID пользователя');
-    if (!amount || amount < 100) throw new Error('Минимальная сумма пополнения — 100 ₽');
-    
-    const balanceRef = doc(db, "wallet_balances", userId);
-    
-    try {
-        await runTransaction(db, async (transaction) => {
-            const balanceDoc = await transaction.get(balanceRef);
-            const currentBalance = balanceDoc.exists() ? balanceDoc.data() : { available: 0, hasDeposit: false };
-            
-            transaction.update(balanceRef, {
-                available: (currentBalance.available || 0) + amount,
-                hasDeposit: true,
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+
+        let currentUser = null;
+        let selectedMethod = 'card';
+        let selectedWithdrawMethod = 'card';
+        let currentBalance = 0;
+
+        // ============================================================
+        // CORE WALLET FUNCTIONS
+        // ============================================================
+
+        async function getBuyerBalance(userId) {
+            try {
+                const balanceDoc = await getDoc(doc(db, "wallet_balances", userId));
+                if (balanceDoc.exists()) {
+                    return balanceDoc.data();
+                }
+                const defaultBalance = {
+                    userId: userId,
+                    userType: "fighter",
+                    available: 0,
+                    pending: 0,
+                    totalSpent: 0,
+                    totalRefunded: 0,
+                    hasDeposit: false,
+                    hasPurchase: false,
+                    updatedAt: new Date()
+                };
+                await setDoc(doc(db, "wallet_balances", userId), defaultBalance);
+                return defaultBalance;
+            } catch (err) {
+                console.error("Error getting balance:", err);
+                return { available: 0, pending: 0, totalSpent: 0, totalRefunded: 0 };
+            }
+        }
+
+        async function depositBuyerFunds(userId, amount, method) {
+            if (!userId) throw new Error('User not specified');
+            if (!amount || amount < 100) throw new Error('Minimum deposit is 100 ₽');
+
+            const balanceRef = doc(db, "wallet_balances", userId);
+
+            await runTransaction(db, async (transaction) => {
+                const balanceDoc = await transaction.get(balanceRef);
+                const currentBalance = balanceDoc.exists() ? balanceDoc.data() : { available: 0, hasDeposit: false };
+
+                transaction.update(balanceRef, {
+                    available: (currentBalance.available || 0) + amount,
+                    hasDeposit: true,
+                    updatedAt: new Date()
+                });
+            });
+
+            await addDoc(collection(db, "wallet_transactions"), {
+                userId: userId,
+                userType: "fighter",
+                type: "deposit",
+                amount: amount,
+                status: "completed",
+                description: `Пополнение баланса на ${amount} ₽ (${method})`,
+                createdAt: new Date()
+            });
+
+            return { success: true, amount: amount };
+        }
+
+        async function createBuyerWithdrawal(userId, amount, method, details) {
+            if (!userId) throw new Error('User not specified');
+            if (!amount || amount < 100) throw new Error('Minimum withdrawal is 100 ₽');
+            if (!details) throw new Error('Please specify withdrawal details');
+
+            const balanceRef = doc(db, "wallet_balances", userId);
+
+            await runTransaction(db, async (transaction) => {
+                const balanceDoc = await transaction.get(balanceRef);
+                if (!balanceDoc.exists()) {
+                    throw new Error('Wallet not found');
+                }
+
+                const data = balanceDoc.data();
+                const available = data.available || 0;
+
+                if (available < amount) {
+                    throw new Error(`Insufficient funds. Available: ${available} ₽`);
+                }
+
+                transaction.update(balanceRef, {
+                    available: available - amount,
+                    pendingWithdraw: (data.pendingWithdraw || 0) + amount,
+                    updatedAt: new Date()
+                });
+            });
+
+            const withdrawalRef = await addDoc(collection(db, "withdrawals"), {
+                userId: userId,
+                userType: "fighter",
+                amount: amount,
+                method: method,
+                details: details,
+                status: 'pending',
+                createdAt: new Date(),
                 updatedAt: new Date()
             });
-        });
-        
-        // Добавляем транзакцию
-        await addDoc(collection(db, "wallet_transactions"), {
-            userId: userId,
-            userType: "fighter",
-            type: "deposit",
-            amount: amount,
-            status: "completed",
-            description: `Пополнение баланса на ${amount} ₽ (${method})`,
-            createdAt: new Date()
-        });
-        
-        return { success: true, amount: amount };
-    } catch (err) {
-        console.error('Ошибка пополнения:', err);
-        throw new Error('Не удалось пополнить баланс');
-    }
-}
 
-// Создать заявку на вывод для покупателя
-async function createBuyerWithdrawal(userId, amount, method, details) {
-    if (!userId) throw new Error('Не указан ID пользователя');
-    if (!amount || amount < 100) throw new Error('Минимальная сумма вывода — 100 ₽');
-    if (!details) throw new Error('Укажите реквизиты для вывода');
-    
-    const balanceRef = doc(db, "wallet_balances", userId);
-    
-    try {
-        let result = null;
-        
-        await runTransaction(db, async (transaction) => {
-            const balanceDoc = await transaction.get(balanceRef);
-            if (!balanceDoc.exists()) {
-                throw new Error('Кошелёк не найден');
-            }
-            
-            const data = balanceDoc.data();
-            const available = data.available || 0;
-            
-            if (available < amount) {
-                throw new Error(`Недостаточно средств. Доступно: ${available} ₽`);
-            }
-            
-            transaction.update(balanceRef, {
-                available: available - amount,
-                pendingWithdraw: (data.pendingWithdraw || 0) + amount,
-                updatedAt: new Date()
+            await addDoc(collection(db, "wallet_transactions"), {
+                userId: userId,
+                userType: "fighter",
+                type: "withdrawal",
+                amount: amount,
+                status: "pending",
+                withdrawalId: withdrawalRef.id,
+                description: `Заявка на вывод ${amount} ₽ (${method})`,
+                createdAt: new Date()
             });
-        });
-        
-        // Создаём заявку на вывод
-        const withdrawalRef = await addDoc(collection(db, "withdrawals"), {
-            userId: userId,
-            userType: "fighter",
-            amount: amount,
-            method: method,
-            details: details,
-            status: 'pending',
-            createdAt: new Date(),
-            updatedAt: new Date()
-        });
-        
-        // Добавляем транзакцию
-        await addDoc(collection(db, "wallet_transactions"), {
-            userId: userId,
-            userType: "fighter",
-            type: "withdrawal",
-            amount: amount,
-            status: "pending",
-            withdrawalId: withdrawalRef.id,
-            description: `Заявка на вывод ${amount} ₽ (${method})`,
-            createdAt: new Date()
-        });
-        
-        return { id: withdrawalRef.id, status: 'pending' };
-    } catch (err) {
-        console.error('Ошибка создания заявки:', err);
-        throw err;
-    }
-}
 
-// Получить транзакции покупателя
-async function getBuyerTransactions(userId, limit = 50) {
-    if (!userId) return [];
-    
-    try {
-        const q = query(
-            collection(db, "wallet_transactions"),
-            where("userId", "==", userId),
-            where("userType", "==", "fighter"),
-            orderBy("createdAt", "desc"),
-            limit(limit)
-        );
-        
-        const snapshot = await getDocs(q);
-        const transactions = [];
-        snapshot.forEach(doc => {
-            const data = doc.data();
-            transactions.push({
-                id: doc.id,
-                ...data,
-                createdAt: data.createdAt?.toDate() || new Date()
-            });
-        });
-        
-        return transactions;
-    } catch (err) {
-        console.error('Ошибка получения транзакций:', err);
-        return [];
-    }
-}
-
-// ============================================================
-// СТАТУСЫ ПОЛЬЗОВАТЕЛЯ
-// ============================================================
-
-const LEVELS = [
-    { name: 'Bronze', min: 0, icon: '🥉', benefits: ['✅ Без комиссии', '✅ 5 бесплатных вызовов'] },
-    { name: 'Silver', min: 500, icon: '🥈', benefits: ['✅ Без комиссии', '✅ 10 бесплатных вызовов'] },
-    { name: 'Gold', min: 1500, icon: '🥇', benefits: ['✅ Без комиссии', '✅ 20 бесплатных вызовов', '✅ Скидка 10%',] },
-    { name: 'Platinum', min: 5000, icon: '💎', benefits: ['✅ Без комиссии', '✅ 50 бесплатных вызовов', '✅ Скидка 15%',] }
-];
-
-function getUserLevel(spent) {
-    let level = LEVELS[0];
-    for (let l of LEVELS) {
-        if (spent >= l.min) level = l;
-    }
-    return level;
-}
-
-function getNextLevel(spent) {
-    for (let l of LEVELS) {
-        if (spent < l.min) return l;
-    }
-    return null;
-}
-
-function updateStatus(spent) {
-    const currentLevel = getUserLevel(spent);
-    const nextLevel = getNextLevel(spent);
-    
-    document.getElementById('statusName').textContent = `${currentLevel.icon} ${currentLevel.name}`;
-    document.getElementById('statusLevel').textContent = `Уровень ${LEVELS.indexOf(currentLevel) + 1}`;
-    
-    const progressFill = document.getElementById('progressFill');
-    const progressCurrent = document.getElementById('progressCurrent');
-    const progressNext = document.getElementById('progressNext');
-    
-    if (nextLevel) {
-        const prevMin = currentLevel.min;
-        const nextMin = nextLevel.min;
-        const progress = ((spent - prevMin) / (nextMin - prevMin)) * 100;
-        progressFill.style.width = Math.min(progress, 100) + '%';
-        progressCurrent.textContent = `${spent.toLocaleString()} ₽`;
-        progressNext.textContent = `До ${nextLevel.name}: ${(nextMin - spent).toLocaleString()} ₽`;
-    } else {
-        progressFill.style.width = '100%';
-        progressCurrent.textContent = `${spent.toLocaleString()} ₽`;
-        progressNext.textContent = '👑 Максимальный уровень!';
-    }
-    
-    const benefitsContainer = document.getElementById('statusBenefits');
-    benefitsContainer.innerHTML = currentLevel.benefits.map(b => `<span>${b}</span>`).join('');
-}
-
-// ===== ДОСТИЖЕНИЯ =====
-function updateAchievements(spent, hasDeposit, hasPurchase) {
-    const achFirstDeposit = document.getElementById('achFirstDeposit');
-    const achSpend500 = document.getElementById('achSpend500');
-    const achSpend1000 = document.getElementById('achSpend1000');
-    const achFirstPurchase = document.getElementById('achFirstPurchase');
-    
-    if (hasDeposit) {
-        achFirstDeposit.className = 'achievement unlocked';
-        achFirstDeposit.querySelector('.ach-progress').textContent = '✅ Выполнено';
-    }
-    
-    if (spent >= 500) {
-        achSpend500.className = 'achievement unlocked';
-        achSpend500.querySelector('.ach-progress').textContent = '✅ Выполнено';
-    } else {
-        achSpend500.querySelector('.ach-progress').textContent = `${spent.toLocaleString()} / 500 ₽`;
-    }
-    
-    if (spent >= 1000) {
-        achSpend1000.className = 'achievement unlocked';
-        achSpend1000.querySelector('.ach-progress').textContent = '✅ Выполнено';
-    } else {
-        achSpend1000.querySelector('.ach-progress').textContent = `${spent.toLocaleString()} / 1000 ₽`;
-    }
-    
-    if (hasPurchase) {
-        achFirstPurchase.className = 'achievement unlocked';
-        achFirstPurchase.querySelector('.ach-progress').textContent = '✅ Выполнено';
-    }
-}
-
-// ===== БЫСТРЫЕ ПОКУПКИ =====
-document.querySelectorAll('.purchase-item').forEach(item => {
-    item.addEventListener('click', () => {
-        const productId = item.dataset.product;
-        if (!currentUser) {
-            alert('Войдите в аккаунт');
-            window.location.href = 'login.html';
-            return;
+            return { id: withdrawalRef.id, status: 'pending' };
         }
-        window.location.href = `shop.html?product=${productId}`;
-    });
-});
 
-// ===== ЗАГРУЗКА КОШЕЛЬКА =====
-async function loadWallet() {
-    if (!currentUser) return;
-    
-    try {
-        const balance = await getBuyerBalance(currentUser.uid);
-        if (balance) {
-            currentBalance = balance.available || 0;
-            document.getElementById('balanceAmount').innerHTML = `${(balance.available || 0).toLocaleString()} ₽`;
-            document.getElementById('totalSpent').innerHTML = `${(balance.totalSpent || 0).toLocaleString()} ₽`;
-            document.getElementById('totalRefunded').innerHTML = `${(balance.totalRefunded || 0).toLocaleString()} ₽`;
-            
-            updateStatus(balance.totalSpent || 0);
-            updateAchievements(
-                balance.totalSpent || 0,
-                balance.hasDeposit || false,
-                balance.hasPurchase || false
-            );
+        async function getBuyerTransactions(userId, txLimit = 50) {
+            if (!userId) return [];
+
+            try {
+                const q = query(
+                    collection(db, "wallet_transactions"),
+                    where("userId", "==", userId),
+                    where("userType", "==", "fighter"),
+                    orderBy("createdAt", "desc"),
+                    limit(txLimit)
+                );
+
+                const snapshot = await getDocs(q);
+                const transactions = [];
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    transactions.push({
+                        id: doc.id,
+                        ...data,
+                        createdAt: data.createdAt?.toDate() || new Date()
+                    });
+                });
+
+                return transactions;
+            } catch (err) {
+                console.error('Error getting transactions:', err);
+                return [];
+            }
         }
-        
-        const transactions = await getBuyerTransactions(currentUser.uid);
-        const container = document.getElementById('transactionsList');
-        
-        if (transactions.length === 0) {
-            container.innerHTML = `
-                <div class="empty-state">
-                    <i class="fas fa-inbox"></i>
-                    История операций пуста
-                </div>
-            `;
-            return;
+
+        // ============================================================
+        // USER LEVELS
+        // ============================================================
+
+        const LEVELS = [
+            { name: 'Bronze', min: 0, icon: '🥉', benefits: ['✅ Без комиссии', '✅ 5 бесплатных вызовов'] },
+            { name: 'Silver', min: 500, icon: '🥈', benefits: ['✅ Без комиссии', '✅ 10 бесплатных вызовов'] },
+            { name: 'Gold', min: 1500, icon: '🥇', benefits: ['✅ Без комиссии', '✅ 20 бесплатных вызовов', '✅ Скидка 10%'] },
+            { name: 'Platinum', min: 5000, icon: '💎', benefits: ['✅ Без комиссии', '✅ 50 бесплатных вызовов', '✅ Скидка 15%'] }
+        ];
+
+        function getUserLevel(spent) {
+            let level = LEVELS[0];
+            for (let l of LEVELS) {
+                if (spent >= l.min) level = l;
+            }
+            return level;
         }
-        
-        let html = '';
-        transactions.forEach(t => {
-            const typeNames = { 
-                'deposit': 'Пополнение', 
-                'payment': 'Оплата', 
-                'refund': 'Возврат',
-                'withdrawal': 'Вывод средств',
-                'hold': 'Заморозка',
-                'release': 'Поступление'
-            };
-            
-            const typeIcons = {
-                'deposit': 'deposit',
-                'payment': 'payment',
-                'refund': 'refund',
-                'withdrawal': 'withdrawal',
-                'hold': 'payment',
-                'release': 'deposit'
-            };
-            
-            const iconClass = typeIcons[t.type] || 'payment';
-            const sign = (t.type === 'deposit' || t.type === 'refund' || t.type === 'release') ? '+' : '−';
-            const isPositive = (t.type === 'deposit' || t.type === 'refund' || t.type === 'release');
-            const amountColor = isPositive ? 'positive' : 'negative';
-            const date = t.createdAt?.toLocaleString('ru-RU') || '—';
-            
-            html += `
-                <div class="transaction-item">
-                    <div class="transaction-left">
-                        <div class="tx-icon ${iconClass}">
-                            <i class="fas ${t.type === 'deposit' ? 'fa-arrow-down' : 
-                                (t.type === 'refund' ? 'fa-undo' : 
-                                (t.type === 'withdrawal' ? 'fa-arrow-up' : 
-                                (t.type === 'hold' ? 'fa-lock' : 'fa-shopping-cart')))}"></i>
+
+        function getNextLevel(spent) {
+            for (let l of LEVELS) {
+                if (spent < l.min) return l;
+            }
+            return null;
+        }
+
+        function updateStatus(spent) {
+            const currentLevel = getUserLevel(spent);
+            const nextLevel = getNextLevel(spent);
+
+            document.getElementById('statusName').textContent = `${currentLevel.icon} ${currentLevel.name}`;
+            document.getElementById('statusLevel').textContent = `Уровень ${LEVELS.indexOf(currentLevel) + 1}`;
+
+            const progressFill = document.getElementById('progressFill');
+            const progressCurrent = document.getElementById('progressCurrent');
+            const progressNext = document.getElementById('progressNext');
+
+            if (nextLevel) {
+                const prevMin = currentLevel.min;
+                const nextMin = nextLevel.min;
+                const progress = ((spent - prevMin) / (nextMin - prevMin)) * 100;
+                progressFill.style.width = Math.min(progress, 100) + '%';
+                progressCurrent.textContent = `${spent.toLocaleString()} ₽`;
+                progressNext.textContent = `До ${nextLevel.name}: ${(nextMin - spent).toLocaleString()} ₽`;
+            } else {
+                progressFill.style.width = '100%';
+                progressCurrent.textContent = `${spent.toLocaleString()} ₽`;
+                progressNext.textContent = '👑 Максимальный уровень!';
+            }
+
+            const benefitsContainer = document.getElementById('statusBenefits');
+            benefitsContainer.innerHTML = currentLevel.benefits.map(b => `<span>${b}</span>`).join('');
+        }
+
+        // ===== ACHIEVEMENTS =====
+        function updateAchievements(spent, hasDeposit, hasPurchase) {
+            const achFirstDeposit = document.getElementById('achFirstDeposit');
+            const achSpend500 = document.getElementById('achSpend500');
+            const achSpend1000 = document.getElementById('achSpend1000');
+            const achFirstPurchase = document.getElementById('achFirstPurchase');
+
+            if (hasDeposit) {
+                achFirstDeposit.className = 'achievement unlocked';
+                achFirstDeposit.querySelector('.ach-progress').textContent = '✅ Выполнено';
+            }
+
+            if (spent >= 500) {
+                achSpend500.className = 'achievement unlocked';
+                achSpend500.querySelector('.ach-progress').textContent = '✅ Выполнено';
+            } else {
+                achSpend500.querySelector('.ach-progress').textContent = `${spent.toLocaleString()} / 500 ₽`;
+            }
+
+            if (spent >= 1000) {
+                achSpend1000.className = 'achievement unlocked';
+                achSpend1000.querySelector('.ach-progress').textContent = '✅ Выполнено';
+            } else {
+                achSpend1000.querySelector('.ach-progress').textContent = `${spent.toLocaleString()} / 1000 ₽`;
+            }
+
+            if (hasPurchase) {
+                achFirstPurchase.className = 'achievement unlocked';
+                achFirstPurchase.querySelector('.ach-progress').textContent = '✅ Выполнено';
+            }
+        }
+
+        // ============================================================
+        // LOAD WALLET
+        // ============================================================
+
+        async function loadWallet() {
+            if (!currentUser) return;
+
+            try {
+                const balance = await getBuyerBalance(currentUser.uid);
+                if (balance) {
+                    currentBalance = balance.available || 0;
+                    document.getElementById('balanceAmount').innerHTML =
+                        `${(balance.available || 0).toLocaleString()} <span class="currency">₽</span>`;
+                    document.getElementById('totalSpent').innerHTML = `${(balance.totalSpent || 0).toLocaleString()} ₽`;
+                    document.getElementById('totalRefunded').innerHTML = `${(balance.totalRefunded || 0).toLocaleString()} ₽`;
+
+                    updateStatus(balance.totalSpent || 0);
+                    updateAchievements(
+                        balance.totalSpent || 0,
+                        balance.hasDeposit || false,
+                        balance.hasPurchase || false
+                    );
+                }
+
+                const transactions = await getBuyerTransactions(currentUser.uid);
+                const container = document.getElementById('transactionsList');
+                const txCount = document.getElementById('txCount');
+                txCount.textContent = transactions.length;
+
+                if (transactions.length === 0) {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <i class="fas fa-inbox"></i>
+                            <p>История операций пуста</p>
                         </div>
-                        <div class="tx-info">
-                            <div class="tx-name">${typeNames[t.type] || t.type}</div>
-                            <div class="tx-date">${date}</div>
-                        </div>
-                    </div>
-                    <div class="transaction-right">
-                        <div class="tx-amount ${amountColor}">${sign} ${(t.amount || 0).toLocaleString()} ₽</div>
-                        ${t.status === 'pending' ? '<div class="tx-status">⏳ Обработка</div>' : ''}
-                    </div>
-                    ${t.description ? `<div style="width:100%;font-size:0.6rem;color:#666;padding-left:46px;">${t.description}</div>` : ''}
-                </div>
-            `;
-        });
-        container.innerHTML = html;
-    } catch (err) {
-        console.error('Ошибка загрузки кошелька:', err);
-        document.getElementById('transactionsList').innerHTML = '<div class="empty-state">Ошибка загрузки</div>';
-    }
-}
+                    `;
+                    return;
+                }
 
-// ===== ПОПОЛНЕНИЕ =====
-async function processPayment() {
-    if (!currentUser) {
-        alert('Войдите в аккаунт');
-        window.location.href = 'login.html';
-        return;
-    }
-    
-    const amount = parseInt(document.getElementById('modalAmount').value);
-    if (!amount || amount < 100) {
-        alert('Минимальная сумма пополнения — 100 ₽');
-        return;
-    }
-    
-    const confirmBtn = document.getElementById('confirmModalBtn');
-    const originalText = confirmBtn.innerHTML;
-    confirmBtn.innerHTML = '<div class="loading-spinner"></div>';
-    confirmBtn.disabled = true;
-    
-    try {
-        // ===== РЕАЛЬНЫЙ ПЛАТЕЖ ЧЕРЕЗ ЮKASSA =====
-        const { createPayment } = await import('./payment.js');
-        
-        // Создаём виртуальный товар "Пополнение баланса"
-        const result = await createPayment(
-            'deposit_' + Date.now(), // productId
-            currentUser.uid,
-            amount,
-            'Пополнение баланса'
-        );
-        
-        if (result.paymentUrl) {
-            // Перенаправляем на оплату
-            window.location.href = result.paymentUrl;
-        } else {
-            // Тестовый режим
-            await depositBuyerFunds(currentUser.uid, amount, selectedMethod === 'card' ? 'card' : 'sbp');
-            alert(`✅ Баланс пополнен на ${amount.toLocaleString()} ₽!`);
+                let html = '';
+                transactions.forEach(t => {
+                    const typeNames = {
+                        'deposit': 'Пополнение',
+                        'payment': 'Оплата',
+                        'refund': 'Возврат',
+                        'withdrawal': 'Вывод средств',
+                        'hold': 'Заморозка',
+                        'release': 'Поступление'
+                    };
+
+                    const typeIcons = {
+                        'deposit': 'deposit',
+                        'payment': 'payment',
+                        'refund': 'refund',
+                        'withdrawal': 'withdrawal',
+                        'hold': 'hold',
+                        'release': 'release'
+                    };
+
+                    const iconClass = typeIcons[t.type] || 'payment';
+                    const sign = (t.type === 'deposit' || t.type === 'refund' || t.type === 'release') ? '+' : '−';
+                    const isPositive = (t.type === 'deposit' || t.type === 'refund' || t.type === 'release');
+                    const amountColor = isPositive ? 'positive' : 'negative';
+                    const date = t.createdAt?.toLocaleString('ru-RU', {
+                        day: '2-digit',
+                        month: '2-digit',
+                        year: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    }) || '—';
+
+                    const statusText = t.status === 'pending' ? '⏳ Обработка' :
+                        t.status === 'completed' ? '✅ Выполнено' : '';
+                    const statusClass = t.status === 'completed' ? 'completed' : '';
+
+                    html += `
+                        <div class="transaction-item">
+                            <div class="transaction-left">
+                                <div class="tx-icon ${iconClass}">
+                                    <i class="fas ${t.type === 'deposit' ? 'fa-arrow-down' : 
+                                        (t.type === 'refund' ? 'fa-undo' : 
+                                        (t.type === 'withdrawal' ? 'fa-arrow-up' : 
+                                        (t.type === 'hold' ? 'fa-lock' : 'fa-shopping-cart')))}"></i>
+                                </div>
+                                <div class="tx-info">
+                                    <div class="tx-name">${typeNames[t.type] || t.type}</div>
+                                    <div class="tx-date">${date}</div>
+                                    ${t.description ? `<div class="tx-desc">${t.description}</div>` : ''}
+                                </div>
+                            </div>
+                            <div class="transaction-right">
+                                <div class="tx-amount ${amountColor}">${sign} ${(t.amount || 0).toLocaleString()} ₽</div>
+                                ${statusText ? `<span class="tx-status ${statusClass}">${statusText}</span>` : ''}
+                            </div>
+                        </div>
+                    `;
+                });
+                container.innerHTML = html;
+            } catch (err) {
+                console.error('Error loading wallet:', err);
+                document.getElementById('transactionsList').innerHTML =
+                    '<div class="empty-state"><i class="fas fa-exclamation-triangle"></i><p>Ошибка загрузки</p></div>';
+            }
+        }
+
+        // ============================================================
+        // PAYMENT & WITHDRAW HANDLERS
+        // ============================================================
+
+        async function processPayment() {
+            if (!currentUser) {
+                alert('Войдите в аккаунт');
+                window.location.href = 'login.html';
+                return;
+            }
+
+            const amount = parseInt(document.getElementById('modalAmount').value);
+            if (!amount || amount < 100) {
+                alert('Минимальная сумма пополнения — 100 ₽');
+                return;
+            }
+
+            const confirmBtn = document.getElementById('confirmModalBtn');
+            const originalText = confirmBtn.innerHTML;
+            confirmBtn.innerHTML = '<div class="loading-spinner"></div>';
+            confirmBtn.disabled = true;
+
+            try {
+                // Real payment via YooKassa
+                const { createPayment } = await import('./payment.js');
+
+                const result = await createPayment(
+                    'deposit_' + Date.now(),
+                    currentUser.uid,
+                    amount,
+                    'Пополнение баланса'
+                );
+
+                if (result.paymentUrl) {
+                    window.location.href = result.paymentUrl;
+                } else {
+                    // Test mode
+                    await depositBuyerFunds(currentUser.uid, amount, selectedMethod === 'card' ? 'card' : 'sbp');
+                    alert(`✅ Баланс пополнен на ${amount.toLocaleString()} ₽!`);
+                    document.getElementById('depositModal').classList.remove('active');
+                    document.getElementById('modalAmount').value = '';
+                    await loadWallet();
+                }
+            } catch (err) {
+                console.error('Error:', err);
+                alert(`❌ ${err.message || 'Ошибка при пополнении баланса'}`);
+            } finally {
+                confirmBtn.innerHTML = originalText;
+                confirmBtn.disabled = false;
+            }
+        }
+
+        async function requestWithdraw() {
+            if (!currentUser) {
+                alert('Войдите в аккаунт');
+                return;
+            }
+
+            const amount = parseInt(document.getElementById('withdrawAmount').value);
+            const details = document.getElementById('withdrawDetails').value.trim();
+
+            if (!amount || amount < 100) {
+                alert('Минимальная сумма вывода — 100 ₽');
+                return;
+            }
+
+            if (!details) {
+                alert('Укажите реквизиты для вывода (номер карты или Telegram ID)');
+                return;
+            }
+
+            if (amount > currentBalance) {
+                alert(`Недостаточно средств. Доступно: ${currentBalance.toLocaleString()} ₽`);
+                return;
+            }
+
+            if (!confirm(`Вывести ${amount.toLocaleString()} ₽ на ${selectedWithdrawMethod === 'card' ? 'карту' : 'СБП'}?`)) return;
+
+            const confirmBtn = document.getElementById('confirmWithdrawBtn');
+            const originalText = confirmBtn.innerHTML;
+            confirmBtn.innerHTML = '<div class="loading-spinner"></div>';
+            confirmBtn.disabled = true;
+
+            try {
+                await createBuyerWithdrawal(
+                    currentUser.uid,
+                    amount,
+                    selectedWithdrawMethod,
+                    details
+                );
+
+                alert(`✅ Заявка на вывод ${amount.toLocaleString()} ₽ принята!`);
+
+                document.getElementById('withdrawModal').classList.remove('active');
+                document.getElementById('withdrawAmount').value = '';
+                document.getElementById('withdrawDetails').value = '';
+                await loadWallet();
+            } catch (err) {
+                alert(`❌ ${err.message}`);
+            } finally {
+                confirmBtn.innerHTML = originalText;
+                confirmBtn.disabled = false;
+            }
+        }
+
+        // ============================================================
+        // EVENT LISTENERS
+        // ============================================================
+
+        document.getElementById('depositBtn')?.addEventListener('click', () => {
+            if (!currentUser) {
+                alert('Войдите в аккаунт');
+                window.location.href = 'login.html';
+                return;
+            }
+            document.getElementById('depositModal').classList.add('active');
+        });
+
+        document.getElementById('cancelModalBtn')?.addEventListener('click', () => {
             document.getElementById('depositModal').classList.remove('active');
             document.getElementById('modalAmount').value = '';
-            await loadWallet();
+        });
+
+        document.getElementById('depositModal')?.addEventListener('click', (e) => {
+            if (e.target === document.getElementById('depositModal')) {
+                document.getElementById('depositModal').classList.remove('active');
+                document.getElementById('modalAmount').value = '';
+            }
+        });
+
+        document.getElementById('confirmModalBtn')?.addEventListener('click', processPayment);
+
+        document.getElementById('withdrawBtn')?.addEventListener('click', async () => {
+            if (!currentUser) {
+                alert('Войдите в аккаунт');
+                window.location.href = 'login.html';
+                return;
+            }
+            document.getElementById('availableBalanceDisplay').textContent = currentBalance.toLocaleString();
+            document.getElementById('withdrawModal').classList.add('active');
+        });
+
+        document.getElementById('cancelWithdrawBtn')?.addEventListener('click', () => {
+            document.getElementById('withdrawModal').classList.remove('active');
+            document.getElementById('withdrawAmount').value = '';
+            document.getElementById('withdrawDetails').value = '';
+        });
+
+        document.getElementById('withdrawModal')?.addEventListener('click', (e) => {
+            if (e.target === document.getElementById('withdrawModal')) {
+                document.getElementById('withdrawModal').classList.remove('active');
+                document.getElementById('withdrawAmount').value = '';
+                document.getElementById('withdrawDetails').value = '';
+            }
+        });
+
+        document.getElementById('confirmWithdrawBtn')?.addEventListener('click', requestWithdraw);
+
+        document.querySelectorAll('[data-method]').forEach(opt => {
+            opt.addEventListener('click', () => {
+                document.querySelectorAll('[data-method]').forEach(o => o.classList.remove('selected'));
+                opt.classList.add('selected');
+                selectedMethod = opt.dataset.method;
+            });
+        });
+
+        document.querySelectorAll('[data-withdraw-method]').forEach(opt => {
+            opt.addEventListener('click', () => {
+                document.querySelectorAll('[data-withdraw-method]').forEach(o => o.classList.remove('selected'));
+                opt.classList.add('selected');
+                selectedWithdrawMethod = opt.dataset.withdrawMethod;
+            });
+        });
+
+        document.querySelectorAll('.preset-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.getElementById('modalAmount').value = btn.dataset.amount;
+            });
+        });
+
+        // ===== AUTH =====
+        onAuthStateChanged(auth, (user) => {
+            currentUser = user;
+            if (user) {
+                loadWallet();
+            } else {
+                document.getElementById('balanceAmount').innerHTML = '0 <span class="currency">₽</span>';
+                document.getElementById('totalSpent').innerHTML = '0 ₽';
+                document.getElementById('totalRefunded').innerHTML = '0 ₽';
+                document.getElementById('transactionsList').innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-user"></i>
+                        <p>Войдите в аккаунт</p>
+                    </div>
+                `;
+                document.getElementById('txCount').textContent = '0';
+            }
+        });
+
+        // ===== MOBILE MENU =====
+        const menuToggle = document.getElementById('menuToggle');
+        const navLinks = document.getElementById('navLinks');
+        if (menuToggle && navLinks) {
+            menuToggle.addEventListener('click', () => navLinks.classList.toggle('show'));
+            document.addEventListener('click', (e) => {
+                if (!menuToggle.contains(e.target) && !navLinks.contains(e.target)) {
+                    navLinks.classList.remove('show');
+                }
+            });
         }
-    } catch (err) {
-        console.error('Ошибка:', err);
-        alert(`❌ ${err.message || 'Ошибка при пополнении баланса'}`);
-    } finally {
-        confirmBtn.innerHTML = originalText;
-        confirmBtn.disabled = false;
-    }
-}
-
-// ===== ВЫВОД =====
-async function requestWithdraw() {
-    if (!currentUser) {
-        alert('Войдите в аккаунт');
-        return;
-    }
-    
-    const amount = parseInt(document.getElementById('withdrawAmount').value);
-    const details = document.getElementById('withdrawDetails').value.trim();
-    
-    if (!amount || amount < 100) {
-        alert('Минимальная сумма вывода — 100 ₽');
-        return;
-    }
-    
-    if (!details) {
-        alert('Укажите реквизиты для вывода (номер карты или Telegram ID)');
-        return;
-    }
-    
-    if (amount > currentBalance) {
-        alert(`Недостаточно средств. Доступно: ${currentBalance.toLocaleString()} ₽`);
-        return;
-    }
-    
-    if (!confirm(`Вывести ${amount.toLocaleString()} ₽ на ${selectedWithdrawMethod === 'card' ? 'карту' : 'СБП'}?`)) return;
-    
-    const confirmBtn = document.getElementById('confirmWithdrawBtn');
-    const originalText = confirmBtn.innerHTML;
-    confirmBtn.innerHTML = '<div class="loading-spinner"></div>';
-    confirmBtn.disabled = true;
-    
-    try {
-        await createBuyerWithdrawal(
-            currentUser.uid, 
-            amount, 
-            selectedWithdrawMethod,
-            details
-        );
-        
-        alert(`✅ Заявка на вывод ${amount.toLocaleString()} ₽ принята!`);
-        
-        document.getElementById('withdrawModal').classList.remove('active');
-        document.getElementById('withdrawAmount').value = '';
-        document.getElementById('withdrawDetails').value = '';
-        await loadWallet();
-    } catch (err) {
-        alert(`❌ ${err.message}`);
-    } finally {
-        confirmBtn.innerHTML = originalText;
-        confirmBtn.disabled = false;
-    }
-}
-
-// ============================================================
-// СОБЫТИЯ
-// ============================================================
-
-document.getElementById('bonusDepositBtn')?.addEventListener('click', () => {
-    document.getElementById('depositBtn').click();
-});
-
-document.getElementById('bonusBanner')?.addEventListener('click', (e) => {
-    if (e.target.closest('.btn-bonus')) return;
-    document.getElementById('depositBtn').click();
-});
-
-document.getElementById('depositBtn')?.addEventListener('click', () => {
-    if (!currentUser) { 
-        alert('Войдите в аккаунт'); 
-        window.location.href = 'login.html'; 
-        return; 
-    }
-    document.getElementById('depositModal').classList.add('active');
-});
-
-document.getElementById('cancelModalBtn')?.addEventListener('click', () => {
-    document.getElementById('depositModal').classList.remove('active');
-    document.getElementById('modalAmount').value = '';
-});
-
-document.getElementById('depositModal')?.addEventListener('click', (e) => {
-    if (e.target === document.getElementById('depositModal')) {
-        document.getElementById('depositModal').classList.remove('active');
-        document.getElementById('modalAmount').value = '';
-    }
-});
-
-document.getElementById('confirmModalBtn')?.addEventListener('click', processPayment);
-
-document.getElementById('withdrawBtn')?.addEventListener('click', async () => {
-    if (!currentUser) {
-        alert('Войдите в аккаунт');
-        window.location.href = 'login.html';
-        return;
-    }
-    document.getElementById('availableBalanceDisplay').innerHTML = currentBalance.toLocaleString();
-    document.getElementById('withdrawModal').classList.add('active');
-});
-
-document.getElementById('cancelWithdrawBtn')?.addEventListener('click', () => {
-    document.getElementById('withdrawModal').classList.remove('active');
-    document.getElementById('withdrawAmount').value = '';
-    document.getElementById('withdrawDetails').value = '';
-});
-
-document.getElementById('withdrawModal')?.addEventListener('click', (e) => {
-    if (e.target === document.getElementById('withdrawModal')) {
-        document.getElementById('withdrawModal').classList.remove('active');
-        document.getElementById('withdrawAmount').value = '';
-        document.getElementById('withdrawDetails').value = '';
-    }
-});
-
-document.getElementById('confirmWithdrawBtn')?.addEventListener('click', requestWithdraw);
-
-document.querySelectorAll('[data-method]').forEach(opt => {
-    opt.addEventListener('click', () => {
-        document.querySelectorAll('[data-method]').forEach(o => o.classList.remove('selected'));
-        opt.classList.add('selected');
-        selectedMethod = opt.dataset.method;
-    });
-});
-
-document.querySelectorAll('[data-withdraw-method]').forEach(opt => {
-    opt.addEventListener('click', () => {
-        document.querySelectorAll('[data-withdraw-method]').forEach(o => o.classList.remove('selected'));
-        opt.classList.add('selected');
-        selectedWithdrawMethod = opt.dataset.withdrawMethod;
-    });
-});
-
-document.querySelectorAll('.preset-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-        document.getElementById('modalAmount').value = btn.dataset.amount;
-    });
-});
-
-onAuthStateChanged(auth, (user) => {
-    currentUser = user;
-    if (user) {
-        loadWallet();
-    } else {
-        document.getElementById('balanceAmount').innerHTML = '0 ₽';
-        document.getElementById('totalSpent').innerHTML = '0 ₽';
-        document.getElementById('totalRefunded').innerHTML = '0 ₽';
-        document.getElementById('transactionsList').innerHTML = `
-            <div class="empty-state">
-                <i class="fas fa-user"></i>
-                Войдите в аккаунт
-            </div>
-        `;
-    }
-});
-
-const menuToggle = document.getElementById('menuToggle');
-const navLinks = document.getElementById('navLinks');
-if (menuToggle && navLinks) {
-    menuToggle.addEventListener('click', () => navLinks.classList.toggle('show'));
-    document.addEventListener('click', (e) => {
-        if (!menuToggle.contains(e.target) && !navLinks.contains(e.target)) {
-            navLinks.classList.remove('show');
-        }
-    });
-}
-</script>
+    </script>
 </body>
 </html>
