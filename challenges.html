@@ -241,6 +241,65 @@
             color: #fbbf24;
         }
 
+        .challenges-section .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .challenges-section .section-header h2 {
+            margin-bottom: 0;
+        }
+
+        .btn-clear-history {
+            background: rgba(239,68,68,0.15);
+            border: 1px solid rgba(239,68,68,0.3);
+            color: #ef4444;
+            padding: 6px 16px;
+            border-radius: 40px;
+            cursor: pointer;
+            font-size: 0.75rem;
+            font-weight: 600;
+            transition: all 0.2s;
+            min-height: 36px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-clear-history:hover {
+            background: rgba(239,68,68,0.25);
+            transform: translateY(-2px);
+        }
+
+        .btn-clear-history:active { transform: scale(0.95); }
+
+        .btn-refresh {
+            background: rgba(251,191,36,0.1);
+            border: 1px solid rgba(251,191,36,0.2);
+            color: #fbbf24;
+            padding: 6px 16px;
+            border-radius: 40px;
+            cursor: pointer;
+            font-size: 0.75rem;
+            font-weight: 600;
+            transition: all 0.2s;
+            min-height: 36px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-refresh:hover {
+            background: rgba(251,191,36,0.2);
+            transform: translateY(-2px);
+        }
+
+        .btn-refresh:active { transform: scale(0.95); }
+
         .challenge-card {
             background: #1a1a1a;
             border-radius: 20px;
@@ -299,7 +358,7 @@
             flex-wrap: wrap;
         }
 
-        .btn-accept, .btn-reject, .btn-chat, .btn-respond {
+        .btn-accept, .btn-reject, .btn-chat, .btn-respond, .btn-cancel-challenge {
             padding: 8px 20px;
             border-radius: 40px;
             border: none;
@@ -322,6 +381,8 @@
         .btn-respond { background: #fbbf24; color: #000; }
         .btn-respond:hover { background: #ffdd44; transform: translateY(-2px); }
         .btn-respond:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+        .btn-cancel-challenge { background: #555; color: #fff; }
+        .btn-cancel-challenge:hover { background: #444; transform: translateY(-2px); }
 
         .btn-publish {
             background: #fbbf24;
@@ -345,6 +406,26 @@
 
         .empty-state { text-align: center; color: #888; padding: 40px 20px; }
         .empty-state i { font-size: 2.5rem; margin-bottom: 12px; color: #555; }
+
+        .empty-state .btn-buy-challenges {
+            margin-top: 16px;
+            background: #fbbf24;
+            color: #000;
+            border: none;
+            padding: 10px 24px;
+            border-radius: 40px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .empty-state .btn-buy-challenges:hover {
+            background: #ffdd44;
+            transform: translateY(-2px);
+        }
 
         /* ===== ФИЛЬТРЫ ===== */
         .filters-row {
@@ -430,21 +511,30 @@
 
         .offer-card .offer-details i { color: #fbbf24; width: 16px; }
         .offer-card .offer-message { font-size: 0.8rem; color: #aaa; margin: 8px 0; padding: 8px 12px; background: rgba(255,255,255,0.03); border-radius: 8px; }
-        .offer-card .offer-actions { margin-top: 12px; }
+        .offer-card .offer-actions { margin-top: 12px; display: flex; gap: 8px; flex-wrap: wrap; }
 
         .own-offer { border-color: rgba(251,191,36,0.3); background: rgba(251,191,36,0.05); }
 
-        .leagues-hint {
-            background: linear-gradient(135deg, rgba(30,42,26,0.8), rgba(15,26,15,0.8));
-            border-radius: 24px;
-            padding: 20px;
-            margin: 20px 0 40px;
-            text-align: center;
-            border: 1px solid rgba(251,191,36,0.3);
+        .btn-delete-offer {
+            background: rgba(239,68,68,0.15);
+            border: 1px solid rgba(239,68,68,0.3);
+            color: #ef4444;
+            padding: 6px 16px;
+            border-radius: 40px;
+            cursor: pointer;
+            font-size: 0.7rem;
+            font-weight: 600;
+            transition: all 0.2s;
+            min-height: 34px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
         }
 
-        .leagues-hint a { color: #fbbf24; text-decoration: none; font-weight: 600; }
-        .leagues-hint a:hover { text-decoration: underline; }
+        .btn-delete-offer:hover {
+            background: rgba(239,68,68,0.25);
+            transform: translateY(-2px);
+        }
 
         /* ===== МОДАЛКА ПРЕДЛОЖЕНИЯ ===== */
         .modal {
@@ -599,6 +689,9 @@
             .footer-inner { flex-direction: column; text-align: center; }
             .filters-row { flex-direction: column; gap: 8px; }
             .filter-group { min-width: unset; }
+            .challenges-section .section-header { flex-direction: column; align-items: stretch; }
+            .challenges-section .section-header .header-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+            .challenges-section .section-header .header-actions .btn { flex: 1; justify-content: center; }
         }
 
         @media (max-width: 480px) {
@@ -626,13 +719,55 @@
             border-radius: 50%;
             animation: spin 0.8s linear infinite;
         }
-/* Принудительно показываем вкладку "Доска" на мобилке (для теста) */
-@media (max-width: 768px) {
-    #sparring-board.active {
-        display: block !important;
-    }
-}
+
         @keyframes spin { to { transform: rotate(360deg); } }
+
+        .manual-hall-input {
+            margin-top: 8px;
+        }
+
+        .manual-hall-input input {
+            width: 100%;
+            padding: 10px 14px;
+            background: #1a1a1a;
+            border: 1px solid rgba(251,191,36,0.2);
+            color: #fff;
+            border-radius: 12px;
+            font-size: 0.85rem;
+            transition: 0.2s;
+        }
+
+        .manual-hall-input input:focus {
+            outline: none;
+            border-color: #fbbf24;
+        }
+
+        .hall-select-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .hall-select-group select {
+            width: 100%;
+            padding: 12px 16px;
+            background: #1a1a1a;
+            border: 1px solid rgba(251,191,36,0.25);
+            color: #fff;
+            border-radius: 12px;
+            font-size: 0.9rem;
+            transition: 0.2s;
+        }
+
+        .hall-select-group select:focus {
+            outline: none;
+            border-color: #fbbf24;
+        }
+
+        .hall-select-group .hall-option-other {
+            color: #888;
+            font-style: italic;
+        }
     </style>
 </head>
 <body>
@@ -664,7 +799,13 @@
         <!-- ===== ВКЛАДКА: МОИ ВЫЗОВЫ ===== -->
         <div id="my-challenges" class="tab-content active">
             <div id="incomingSection" class="challenges-section">
-                <h2><i class="fas fa-arrow-down icon-gold"></i> Входящие вызовы</h2>
+                <div class="section-header">
+                    <h2><i class="fas fa-arrow-down icon-gold"></i> Входящие вызовы</h2>
+                    <div class="header-actions" style="display:flex; gap:8px; flex-wrap:wrap;">
+                        <button class="btn-refresh" id="refreshChallengesBtn"><i class="fas fa-sync"></i> Обновить</button>
+                        <button class="btn-clear-history" id="clearHistoryBtn"><i class="fas fa-trash"></i> Очистить историю</button>
+                    </div>
+                </div>
                 <div id="incomingList"><div class="loading"><div class="loading-spinner"></div> Загрузка...</div></div>
             </div>
 
@@ -698,27 +839,25 @@
                         <input type="text" id="filterCity" placeholder="Поиск города...">
                     </div>
                     <div class="filter-group">
-                        <label>Вес (кг)</label>
+                        <label>Весовая категория</label>
                         <select id="filterWeight">
                             <option value="all">Все</option>
-                            <option value="60">до 60 кг</option>
-                            <option value="70">до 70 кг</option>
-                            <option value="80">до 80 кг</option>
-                            <option value="90">до 90 кг</option>
-                            <option value="100">до 100 кг</option>
-                            <option value="100+">100+ кг</option>
+                            <option value="Наилегчайшая (45–50 кг)">Наилегчайшая (45–50 кг)</option>
+                            <option value="Легчайшая (51–56 кг)">Легчайшая (51–56 кг)</option>
+                            <option value="Полулёгкая (57–61 кг)">Полулёгкая (57–61 кг)</option>
+                            <option value="Лёгкая (62–66 кг)">Лёгкая (62–66 кг)</option>
+                            <option value="1-я полусредняя (67–71 кг)">1-я полусредняя (67–71 кг)</option>
+                            <option value="Полусредняя (72–77 кг)">Полусредняя (72–77 кг)</option>
+                            <option value="1-я средняя (78–83 кг)">1-я средняя (78–83 кг)</option>
+                            <option value="Средняя (84–89 кг)">Средняя (84–89 кг)</option>
+                            <option value="Полутяжёлая (90–99 кг)">Полутяжёлая (90–99 кг)</option>
+                            <option value="Тяжёлая (100+ кг)">Тяжёлая (100+ кг)</option>
                         </select>
                     </div>
                 </div>
 
                 <div id="offersList"><div class="loading"><div class="loading-spinner"></div> Загрузка...</div></div>
             </div>
-        </div>
-
-        <div class="leagues-hint">
-            <i class="fas fa-trophy icon-gold"></i>
-            <strong>Хочешь получать больше вызовов?</strong> Чем выше твоя <a href="leagues.html">лига</a>, тем больше уважения и вызовов!
-            <a href="leagues.html">Подробнее о лигах <i class="fas fa-arrow-right"></i></a>
         </div>
     </main>
 
@@ -740,7 +879,6 @@
                     <a href="privacy.html">Конфиденциальность</a>
                     <a href="disclaimer.html">Дисклеймер</a>
                     <a href="rules.html">Правила</a>
-                    <a href="leagues.html">Лиги</a>
                 </div>
             </div>
             <div class="footer-bottom">
@@ -767,12 +905,16 @@
 
             <div class="input-group">
                 <label><i class="fas fa-map-marker-alt" style="color: #fbbf24;"></i> Место проведения</label>
-                <select id="offerPlace">
-                    <option value="Зал">🏋️ Зал</option>
-                    <option value="Открытая площадка">🌳 Открытая площадка</option>
-                    <option value="Дома">🏠 Дома</option>
-                    <option value="Другое">📍 Другое</option>
-                </select>
+                <div class="hall-select-group">
+                    <select id="offerHall">
+                        <option value="">-- Выберите зал --</option>
+                        <!-- Залы загружаются из Firebase -->
+                        <option value="other" class="hall-option-other">✏️ Другое (ввести вручную)</option>
+                    </select>
+                    <div class="manual-hall-input" id="manualHallContainer" style="display:none;">
+                        <input type="text" id="manualHallInput" placeholder="Введите название зала...">
+                    </div>
+                </div>
             </div>
 
             <div class="input-group">
@@ -792,8 +934,8 @@
         </div>
     </div>
 
-<!-- Контейнер для ошибок — ВСЕГДА СВЕРХУ -->
-<div id="errorContainer" style="position: fixed; top: 15px; left: 50%; transform: translateX(-50%); z-index: 9999; max-width: 90%; width: 480px; padding: 14px 20px; border-radius: 16px; font-weight: 600; font-size: 0.9rem; animation: slideDown 0.3s ease; box-shadow: 0 10px 30px rgba(0,0,0,0.4); backdrop-filter: blur(8px); display: none; text-align: center; border: 1px solid rgba(255,255,255,0.1);"></div>
+    <!-- Контейнер для ошибок -->
+    <div id="errorContainer" style="position: fixed; top: 15px; left: 50%; transform: translateX(-50%); z-index: 9999; max-width: 90%; width: 480px; padding: 14px 20px; border-radius: 16px; font-weight: 600; font-size: 0.9rem; animation: slideDown 0.3s ease; box-shadow: 0 10px 30px rgba(0,0,0,0.4); backdrop-filter: blur(8px); display: none; text-align: center; border: 1px solid rgba(255,255,255,0.1);"></div>
 
     <script type="importmap">
         {
@@ -810,7 +952,6 @@
         import { getFirestore, collection, query, where, getDocs, updateDoc, doc, setDoc, getDoc, orderBy, addDoc, deleteDoc, Timestamp } from "firebase/firestore";
         import { getAuth, onAuthStateChanged } from "firebase/auth";
         import { showError, handleFirebaseError, withErrorHandling } from './error-handler.js';
-        // ===== ДОБАВЛЕНО: ИМПОРТ ДЛЯ PUSH-УВЕДОМЛЕНИЙ =====
         import { notifyAboutChallenge, notifyAboutChallengeAccepted } from './push-sender.js';
 
         const firebaseConfig = {
@@ -830,61 +971,48 @@
 
         let currentUser = null;
         let currentUserData = null;
+        let allHalls = [];
 
         // ===== ТАБЫ =====
-        // ===== ТАБЫ (ИСПРАВЛЕННАЯ ВЕРСИЯ) =====
-function initTabs() {
-    const tabs = document.querySelectorAll('.tab-btn');
-    const contents = {
-        'my-challenges': document.getElementById('my-challenges'),
-        'sparring-board': document.getElementById('sparring-board')
-    };
+        function initTabs() {
+            const tabs = document.querySelectorAll('.tab-btn');
+            const contents = {
+                'my-challenges': document.getElementById('my-challenges'),
+                'sparring-board': document.getElementById('sparring-board')
+            };
 
-    // Проверяем, что элементы найдены
-    if (tabs.length === 0) {
-        console.error('❌ Кнопки вкладок не найдены');
-        return;
-    }
-
-    if (!contents['my-challenges'] || !contents['sparring-board']) {
-        console.error('❌ Контент вкладок не найден');
-        return;
-    }
-
-    tabs.forEach(btn => {
-        // Удаляем старые обработчики (чтобы не было дублирования)
-        btn.removeEventListener('click', () => {});
-        btn.addEventListener('click', function(e) {
-            e.preventDefault();
-            const target = this.dataset.tab;
-            
-            // Убираем активный класс со всех вкладок
-            tabs.forEach(b => b.classList.remove('active'));
-            this.classList.add('active');
-            
-            // Скрываем все контенты
-            Object.keys(contents).forEach(key => {
-                contents[key].classList.remove('active');
-            });
-            
-            // Показываем нужный контент
-            if (contents[target]) {
-                contents[target].classList.add('active');
-                console.log('✅ Показана вкладка:', target);
-            } else {
-                console.error('❌ Контент для вкладки не найден:', target);
+            if (tabs.length === 0) {
+                console.error('❌ Кнопки вкладок не найдены');
+                return;
             }
-        });
-    });
 
-    // По умолчанию показываем "Мои вызовы"
-    const defaultTab = document.querySelector('.tab-btn.active') || tabs[0];
-    if (defaultTab) {
-        defaultTab.click();
-    }
+            tabs.forEach(btn => {
+                btn.removeEventListener('click', () => {});
+                btn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const target = this.dataset.tab;
+                    
+                    tabs.forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    Object.keys(contents).forEach(key => {
+                        contents[key].classList.remove('active');
+                    });
+                    
+                    if (contents[target]) {
+                        contents[target].classList.add('active');
+                        console.log('✅ Показана вкладка:', target);
+                    }
+                });
+            });
 
-    console.log('✅ Табы инициализированы');
-}
+            const defaultTab = document.querySelector('.tab-btn.active') || tabs[0];
+            if (defaultTab) {
+                defaultTab.click();
+            }
+
+            console.log('✅ Табы инициализированы');
+        }
 
         // ===== ОБНОВЛЕНИЕ БАЛАНСА =====
         async function updateHeaderBalance() {
@@ -900,6 +1028,62 @@ function initTabs() {
                 balanceCount.innerText = total;
                 balanceDiv.style.display = 'flex';
             } catch (err) { console.error(err); }
+        }
+
+        // ===== ЗАГРУЗКА ЗАЛОВ =====
+        async function loadHalls() {
+            try {
+                const snapshot = await getDocs(collection(db, "halls"));
+                allHalls = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                console.log(`✅ Загружено залов: ${allHalls.length}`);
+                populateHallSelect();
+            } catch (err) {
+                console.error('Ошибка загрузки залов:', err);
+                allHalls = [];
+                populateHallSelect();
+            }
+        }
+
+        function populateHallSelect() {
+            const select = document.getElementById('offerHall');
+            if (!select) return;
+
+            // Сохраняем текущее выбранное значение
+            const currentValue = select.value;
+
+            // Очищаем, оставляя только первую опцию
+            select.innerHTML = '<option value="">-- Выберите зал --</option>';
+
+            // Добавляем залы из базы
+            allHalls.forEach(hall => {
+                const option = document.createElement('option');
+                option.value = hall.id;
+                option.textContent = hall.name || hall.id;
+                select.appendChild(option);
+            });
+
+            // Добавляем опцию "Другое"
+            const otherOption = document.createElement('option');
+            otherOption.value = 'other';
+            otherOption.textContent = '✏️ Другое (ввести вручную)';
+            otherOption.className = 'hall-option-other';
+            select.appendChild(otherOption);
+
+            // Восстанавливаем выбранное значение, если оно было
+            if (currentValue) {
+                select.value = currentValue;
+            }
+
+            // Показываем/скрываем поле ручного ввода
+            toggleManualHallInput();
+        }
+
+        function toggleManualHallInput() {
+            const select = document.getElementById('offerHall');
+            const manualContainer = document.getElementById('manualHallContainer');
+            if (select && manualContainer) {
+                manualContainer.style.display = select.value === 'other' ? 'block' : 'none';
+            }
         }
 
         // ===== ЗАГРУЗКА ВЫЗОВОВ =====
@@ -939,98 +1123,172 @@ function initTabs() {
 
         function renderIncoming(docs) {
             const container = document.getElementById('incomingList');
-            if (docs.length === 0) {
-                container.innerHTML = '<div class="empty-state"><i class="fas fa-inbox"></i><p>Нет входящих вызовов</p></div>';
+            
+            const active = docs.filter(d => d.data().status === 'pending' || d.data().status === 'accepted');
+            const history = docs.filter(d => d.data().status === 'rejected' || d.data().status === 'completed');
+
+            if (active.length === 0 && history.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-inbox"></i>
+                        <p>Нет входящих вызовов</p>
+                    </div>
+                `;
                 return;
             }
 
-            container.innerHTML = '';
-            for (const docSnap of docs) {
-                const challenge = docSnap.data();
-                const challengeId = docSnap.id;
+            let html = '';
 
-                const card = document.createElement('div');
-                card.className = 'challenge-card incoming';
-                card.innerHTML = `
-                    <div class="challenge-header">
-                        <span class="challenge-name"><i class="fas fa-fist-raised icon-gold"></i> ${escapeHtml(challenge.fromName || 'Боец')}</span>
-                        <span class="challenge-status status-${challenge.status}">${getStatusText(challenge.status)}</span>
-                    </div>
-                    <div class="challenge-details">
-                        <span><i class="fas fa-weight-hanging"></i> Вес: ${challenge.fromWeight || 'не указан'} кг</span>
-                        <span><i class="fas fa-calendar-alt"></i> ${challenge.date ? new Date(challenge.date).toLocaleString('ru-RU') : '—'}</span>
-                        <span><i class="fas fa-map-marker-alt"></i> ${challenge.place || '—'}</span>
-                        <span><i class="fas fa-fist-raised"></i> ${challenge.sport || '—'}</span>
-                    </div>
-                    ${challenge.message ? `<div class="challenge-message"><i class="fas fa-quote-left"></i> ${escapeHtml(challenge.message)}</div>` : ''}
-                    ${challenge.status === 'pending' ? `
-                        <div class="challenge-actions">
-                            <button class="btn-accept" data-id="${challengeId}"><i class="fas fa-check"></i> Принять</button>
-                            <button class="btn-reject" data-id="${challengeId}"><i class="fas fa-times"></i> Отклонить</button>
-                        </div>
-                    ` : ''}
-                    ${challenge.status === 'accepted' ? `
-                        <div class="challenge-actions">
-                            <button class="btn-chat" data-chat-id="${challenge.fromUserId}_${challenge.toUserId}"><i class="fas fa-comments"></i> Перейти в чат</button>
-                        </div>
-                        <div class="challenge-details"><i class="fas fa-check-circle icon-green"></i> Вы приняли вызов!</div>
-                    ` : ''}
-                `;
-                container.appendChild(card);
+            // Активные вызовы
+            if (active.length > 0) {
+                active.forEach(docSnap => renderChallengeCard(docSnap, container, 'incoming', true));
             }
 
-            document.querySelectorAll('.btn-accept').forEach(btn => {
-                btn.addEventListener('click', () => updateChallengeStatus(btn.dataset.id, 'accepted'));
+            // История (свернутая, с кнопкой показать)
+            if (history.length > 0) {
+                html += `<div style="margin-top:16px;padding-top:16px;border-top:1px solid rgba(255,255,255,0.05);">
+                    <details>
+                        <summary style="cursor:pointer;color:#888;font-size:0.8rem;padding:8px 0;">
+                            📜 История (${history.length})
+                        </summary>
+                        <div style="margin-top:8px;">`;
+                history.forEach(docSnap => {
+                    html += renderChallengeCardHTML(docSnap, 'incoming');
+                });
+                html += `</div></details></div>`;
+            }
+
+            container.innerHTML = html;
+        }
+
+        function renderOutgoing(docs) {
+            const container = document.getElementById('outgoingList');
+            
+            if (docs.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-paper-plane"></i>
+                        <p>Нет исходящих вызовов</p>
+                    </div>
+                `;
+                return;
+            }
+
+            let html = '';
+
+            // ВСЕ вызовы (активные + история) — без разделения
+            docs.forEach(docSnap => {
+                const challenge = docSnap.data();
+                const challengeId = docSnap.id;
+                const chatId = `${challenge.fromUserId}_${challenge.toUserId}`;
+
+                html += `
+                    <div class="challenge-card outgoing">
+                        <div class="challenge-header">
+                            <span class="challenge-name"><i class="fas fa-arrow-up icon-gold"></i> ${escapeHtml(challenge.toName || 'Соперник')}</span>
+                            <span class="challenge-status status-${challenge.status}">${getStatusText(challenge.status)}</span>
+                        </div>
+                        <div class="challenge-details">
+                            <span><i class="fas fa-weight-hanging"></i> Вес: ${challenge.toWeight || 'не указан'} кг</span>
+                            <span><i class="fas fa-calendar-alt"></i> ${challenge.date ? new Date(challenge.date).toLocaleString('ru-RU') : '—'}</span>
+                            <span><i class="fas fa-map-marker-alt"></i> ${challenge.place || '—'}</span>
+                            <span><i class="fas fa-fist-raised"></i> ${challenge.sport || '—'}</span>
+                        </div>
+                        ${challenge.message ? `<div class="challenge-message"><i class="fas fa-quote-left"></i> ${escapeHtml(challenge.message)}</div>` : ''}
+                        <div class="challenge-actions">
+                            ${challenge.status === 'pending' ? `
+                                <button class="btn-cancel-challenge" data-id="${challengeId}"><i class="fas fa-times"></i> Отменить вызов</button>
+                            ` : ''}
+                            ${challenge.status === 'accepted' ? `
+                                <button class="btn-chat" data-chat-id="${chatId}"><i class="fas fa-comments"></i> Перейти в чат</button>
+                                <div class="challenge-details"><i class="fas fa-check-circle icon-green"></i> Соперник принял вызов!</div>
+                            ` : ''}
+                            ${challenge.status === 'rejected' ? '<div class="challenge-details"><i class="fas fa-times-circle icon-red"></i> Соперник отклонил вызов</div>' : ''}
+                            ${challenge.status === 'completed' ? '<div class="challenge-details"><i class="fas fa-check-circle icon-green"></i> Вызов завершён</div>' : ''}
+                        </div>
+                    </div>
+                `;
             });
-            document.querySelectorAll('.btn-reject').forEach(btn => {
-                btn.addEventListener('click', () => updateChallengeStatus(btn.dataset.id, 'rejected'));
+
+            container.innerHTML = html;
+
+            // Обработчики
+            container.querySelectorAll('.btn-cancel-challenge').forEach(btn => {
+                btn.addEventListener('click', () => cancelChallenge(btn.dataset.id));
             });
-            document.querySelectorAll('.btn-chat').forEach(btn => {
+            container.querySelectorAll('.btn-chat').forEach(btn => {
                 btn.addEventListener('click', () => {
                     window.location.href = `chat.html?id=${btn.dataset.chatId}`;
                 });
             });
         }
 
-        function renderOutgoing(docs) {
-            const container = document.getElementById('outgoingList');
-            if (docs.length === 0) {
-                container.innerHTML = '<div class="empty-state"><i class="fas fa-paper-plane"></i><p>Нет исходящих вызовов</p></div>';
-                return;
+        function renderChallengeCardHTML(docSnap, type) {
+            const challenge = docSnap.data();
+            const challengeId = docSnap.id;
+            const isIncoming = type === 'incoming';
+            const chatId = `${challenge.fromUserId}_${challenge.toUserId}`;
+
+            let actionsHtml = '';
+            if (isIncoming && challenge.status === 'pending') {
+                actionsHtml = `
+                    <div class="challenge-actions">
+                        <button class="btn-accept" data-id="${challengeId}"><i class="fas fa-check"></i> Принять</button>
+                        <button class="btn-reject" data-id="${challengeId}"><i class="fas fa-times"></i> Отклонить</button>
+                    </div>
+                `;
+            } else if (challenge.status === 'accepted') {
+                actionsHtml = `
+                    <div class="challenge-actions">
+                        <button class="btn-chat" data-chat-id="${chatId}"><i class="fas fa-comments"></i> Перейти в чат</button>
+                    </div>
+                    <div class="challenge-details"><i class="fas fa-check-circle icon-green"></i> ${isIncoming ? 'Вы приняли вызов!' : 'Соперник принял вызов!'}</div>
+                `;
+            } else if (!isIncoming && challenge.status === 'pending') {
+                actionsHtml = `
+                    <div class="challenge-actions">
+                        <button class="btn-cancel-challenge" data-id="${challengeId}"><i class="fas fa-times"></i> Отменить вызов</button>
+                    </div>
+                `;
+            } else if (challenge.status === 'rejected') {
+                actionsHtml = `<div class="challenge-details"><i class="fas fa-times-circle icon-red"></i> ${isIncoming ? 'Вы отклонили вызов' : 'Соперник отклонил вызов'}</div>`;
             }
 
-            container.innerHTML = '';
-            for (const docSnap of docs) {
-                const challenge = docSnap.data();
-                const chatId = `${challenge.fromUserId}_${challenge.toUserId}`;
-
-                const card = document.createElement('div');
-                card.className = 'challenge-card outgoing';
-                card.innerHTML = `
+            return `
+                <div class="challenge-card ${isIncoming ? 'incoming' : 'outgoing'}">
                     <div class="challenge-header">
-                        <span class="challenge-name"><i class="fas fa-bullseye"></i> ${escapeHtml(challenge.toName || 'Соперник')}</span>
+                        <span class="challenge-name"><i class="fas ${isIncoming ? 'fa-arrow-down icon-gold' : 'fa-arrow-up icon-gold'}"></i> ${escapeHtml(isIncoming ? challenge.fromName || 'Боец' : challenge.toName || 'Соперник')}</span>
                         <span class="challenge-status status-${challenge.status}">${getStatusText(challenge.status)}</span>
                     </div>
                     <div class="challenge-details">
-                        <span><i class="fas fa-weight-hanging"></i> Вес: ${challenge.toWeight || 'не указан'} кг</span>
+                        <span><i class="fas fa-weight-hanging"></i> Вес: ${isIncoming ? (challenge.fromWeight || 'не указан') : (challenge.toWeight || 'не указан')} кг</span>
                         <span><i class="fas fa-calendar-alt"></i> ${challenge.date ? new Date(challenge.date).toLocaleString('ru-RU') : '—'}</span>
                         <span><i class="fas fa-map-marker-alt"></i> ${challenge.place || '—'}</span>
                         <span><i class="fas fa-fist-raised"></i> ${challenge.sport || '—'}</span>
                     </div>
                     ${challenge.message ? `<div class="challenge-message"><i class="fas fa-quote-left"></i> ${escapeHtml(challenge.message)}</div>` : ''}
-                    ${challenge.status === 'accepted' ? `
-                        <div class="challenge-actions">
-                            <button class="btn-chat" data-chat-id="${chatId}"><i class="fas fa-comments"></i> Перейти в чат</button>
-                        </div>
-                        <div class="challenge-details"><i class="fas fa-check-circle icon-green"></i> Соперник принял вызов!</div>
-                    ` : ''}
-                    ${challenge.status === 'rejected' ? '<div class="challenge-details"><i class="fas fa-times-circle icon-red"></i> Соперник отклонил вызов</div>' : ''}
-                    ${challenge.status === 'pending' ? '<div class="challenge-details"><i class="fas fa-hourglass-half"></i> Ожидает ответа</div>' : ''}
-                `;
-                container.appendChild(card);
-            }
+                    ${actionsHtml}
+                </div>
+            `;
+        }
 
-            document.querySelectorAll('.btn-chat').forEach(btn => {
+        function renderChallengeCard(docSnap, container, type) {
+            const html = renderChallengeCardHTML(docSnap, type);
+            const temp = document.createElement('div');
+            temp.innerHTML = html;
+            container.appendChild(temp.firstElementChild);
+
+            // Обработчики
+            container.querySelectorAll('.btn-accept').forEach(btn => {
+                btn.addEventListener('click', () => updateChallengeStatus(btn.dataset.id, 'accepted'));
+            });
+            container.querySelectorAll('.btn-reject').forEach(btn => {
+                btn.addEventListener('click', () => updateChallengeStatus(btn.dataset.id, 'rejected'));
+            });
+            container.querySelectorAll('.btn-cancel-challenge').forEach(btn => {
+                btn.addEventListener('click', () => cancelChallenge(btn.dataset.id));
+            });
+            container.querySelectorAll('.btn-chat').forEach(btn => {
                 btn.addEventListener('click', () => {
                     window.location.href = `chat.html?id=${btn.dataset.chatId}`;
                 });
@@ -1066,7 +1324,6 @@ function initTabs() {
                         });
                     }
 
-                    // ===== ДОБАВЛЕНО: УВЕДОМЛЕНИЕ О ПРИНЯТИИ ВЫЗОВА =====
                     await notifyAboutChallengeAccepted(challenge.fromUserId, challenge.toUserId, challenge.toName || 'Соперник');
                 }
 
@@ -1078,13 +1335,65 @@ function initTabs() {
             }
         }
 
+        async function cancelChallenge(challengeId) {
+            if (!confirm('Отменить вызов?')) return;
+            try {
+                await deleteDoc(doc(db, "challenges", challengeId));
+                alert('✅ Вызов отменён');
+                loadChallenges();
+            } catch (err) {
+                console.error('Ошибка:', err);
+                alert('❌ Ошибка при отмене');
+            }
+        }
+
         function getStatusText(status) {
             const statuses = {
                 'pending': '⏳ Ожидает',
                 'accepted': '✅ Принят',
-                'rejected': '❌ Отклонён'
+                'rejected': '❌ Отклонён',
+                'completed': '✅ Завершён'
             };
             return statuses[status] || status;
+        }
+
+        // ===== ОЧИСТКА ИСТОРИИ =====
+        async function clearHistory() {
+            if (!currentUser) return;
+            if (!confirm('Удалить все завершённые вызовы (принятые и отклонённые)?')) return;
+
+            try {
+                const incomingQuery = query(
+                    collection(db, "challenges"),
+                    where("toUserId", "==", currentUser.uid)
+                );
+                const outgoingQuery = query(
+                    collection(db, "challenges"),
+                    where("fromUserId", "==", currentUser.uid)
+                );
+
+                const [incomingSnap, outgoingSnap] = await Promise.all([
+                    getDocs(incomingQuery),
+                    getDocs(outgoingQuery)
+                ]);
+
+                let deleted = 0;
+                const allDocs = [...incomingSnap.docs, ...outgoingSnap.docs];
+                
+                for (const docSnap of allDocs) {
+                    const data = docSnap.data();
+                    if (data.status === 'rejected' || data.status === 'completed') {
+                        await deleteDoc(doc(db, "challenges", docSnap.id));
+                        deleted++;
+                    }
+                }
+
+                alert(`✅ Удалено ${deleted} записей истории`);
+                loadChallenges();
+            } catch (err) {
+                console.error('Ошибка очистки:', err);
+                alert('❌ Ошибка при очистке истории');
+            }
         }
 
         // ===== ДОСКА ОБЪЯВЛЕНИЙ =====
@@ -1119,16 +1428,23 @@ function initTabs() {
                 const data = doc.data();
                 if (sportFilter !== 'all' && data.sport !== sportFilter) return false;
                 if (cityFilter && !(data.userCity || '').toLowerCase().includes(cityFilter)) return false;
-                if (weightFilter !== 'all') {
-                    const weight = data.userWeight || 0;
-                    if (weightFilter === '100+') { if (weight <= 100) return false; }
-                    else if (parseInt(weightFilter) && weight > parseInt(weightFilter)) return false;
-                }
+                if (weightFilter !== 'all' && data.userWeight !== weightFilter) return false;
                 return true;
             });
 
+            // ===== СОРТИРОВКА: СВОИ ПЕРВЫМИ =====
+            filtered.sort((a, b) => {
+                const aData = a.data();
+                const bData = b.data();
+                const aIsOwn = aData.userId === currentUser?.uid;
+                const bIsOwn = bData.userId === currentUser?.uid;
+                if (aIsOwn && !bIsOwn) return -1;
+                if (!aIsOwn && bIsOwn) return 1;
+                return 0;
+            });
+
             if (filtered.length === 0) {
-                container.innerHTML = '<div class="empty-state"><i class="fas fa-bullhorn"></i><p>Нет активных предложений</p><p style="font-size:0.75rem;color:#666;">Нажми «Предложить спарринг» чтобы создать своё</p></div>';
+                container.innerHTML = `<div class="empty-state"><i class="fas fa-bullhorn"></i><p>Нет активных предложений</p><p style="font-size:0.75rem;color:#666;">Нажми «Предложить спарринг» чтобы создать своё</p></div>`;
                 return;
             }
 
@@ -1143,7 +1459,7 @@ function initTabs() {
                 card.innerHTML = `
                     <div class="offer-header">
                         <span class="offer-name">
-                            ${escapeHtml(offer.userName || 'Боец')}
+                            ${isOwn ? '⭐ ' : ''}${escapeHtml(offer.userName || 'Боец')}
                             <span class="city"><i class="fas fa-map-marker-alt"></i> ${escapeHtml(offer.userCity || '—')}</span>
                         </span>
                         <span style="font-size:0.7rem;color:#666;">
@@ -1153,7 +1469,7 @@ function initTabs() {
                     </div>
                     <div class="offer-details">
                         <span><i class="fas fa-fist-raised"></i> ${offer.sport || '—'}</span>
-                        <span><i class="fas fa-weight-hanging"></i> ${offer.userWeight || '—'} кг</span>
+                        <span><i class="fas fa-weight-hanging"></i> ${offer.userWeight || '—'}</span>
                         <span><i class="fas fa-map-marker-alt"></i> ${offer.place || '—'}</span>
                         <span><i class="fas fa-calendar-alt"></i> ${offer.date ? new Date(offer.date).toLocaleString('ru-RU') : '—'}</span>
                     </div>
@@ -1164,8 +1480,8 @@ function initTabs() {
                                 <i class="fas fa-fist-raised"></i> Хочу спарринг
                             </button>
                         ` : `
-                            <button class="btn-reject" data-offer-id="${offerId}" style="background:#555;color:#fff;">
-                                <i class="fas fa-times"></i> Снять предложение
+                            <button class="btn-delete-offer" data-offer-id="${offerId}">
+                                <i class="fas fa-trash"></i> Удалить
                             </button>
                         `}
                     </div>
@@ -1173,6 +1489,7 @@ function initTabs() {
                 container.appendChild(card);
             }
 
+            // Обработчики
             document.querySelectorAll('.btn-respond').forEach(btn => {
                 btn.addEventListener('click', () => {
                     const offerId = btn.dataset.offerId;
@@ -1182,17 +1499,17 @@ function initTabs() {
                 });
             });
 
-            document.querySelectorAll('.offer-card .btn-reject').forEach(btn => {
+            document.querySelectorAll('.btn-delete-offer').forEach(btn => {
                 btn.addEventListener('click', async () => {
                     const offerId = btn.dataset.offerId;
-                    if (confirm('Снять предложение?')) {
+                    if (confirm('Удалить своё предложение?')) {
                         try {
                             await deleteDoc(doc(db, "sparring_offers", offerId));
-                            alert('✅ Предложение снято');
+                            alert('✅ Предложение удалено');
                             loadOffers();
                         } catch (err) {
                             console.error('Ошибка:', err);
-                            alert('❌ Ошибка при снятии');
+                            alert('❌ Ошибка при удалении');
                         }
                     }
                 });
@@ -1210,7 +1527,6 @@ function initTabs() {
                 return;
             }
 
-            // ✅ Проверяем, что данные пользователя загружены
             if (!currentUserData) {
                 const userDoc = await getDoc(doc(db, "fighters", currentUser.uid));
                 if (!userDoc.exists()) {
@@ -1243,10 +1559,10 @@ function initTabs() {
                 await addDoc(collection(db, "challenges"), {
                     fromUserId: currentUser.uid,
                     fromName: currentUserData?.name || 'Боец',
-                    fromWeight: parseInt(currentUserData?.weightClass) || 0,
+                    fromWeight: currentUserData?.weightClass || 'не указан',
                     toUserId: userId,
                     toName: userName,
-                    toWeight: offer.userWeight || 0,
+                    toWeight: offer.userWeight || 'не указан',
                     sport: offer.sport || '—',
                     place: offer.place || '—',
                     date: offer.date || new Date().toISOString(),
@@ -1256,7 +1572,6 @@ function initTabs() {
                     updatedAt: new Date()
                 });
 
-                // ===== ДОБАВЛЕНО: УВЕДОМЛЕНИЕ О ВЫЗОВЕ =====
                 await notifyAboutChallenge(currentUser.uid, userId, currentUserData?.name || 'Боец');
 
                 if (freeChallenges > 0) {
@@ -1278,7 +1593,7 @@ function initTabs() {
                 alert('✅ Вызов отправлен!');
                 loadOffers();
                 loadChallenges();
-                if (window.updateHeaderBalance) window.updateHeaderBalance();
+                updateHeaderBalance();
 
             } catch (err) {
                 console.error('Ошибка:', err);
@@ -1294,12 +1609,69 @@ function initTabs() {
             }
 
             const sport = document.getElementById('offerSport').value;
-            const place = document.getElementById('offerPlace').value;
+            const hallSelect = document.getElementById('offerHall');
+            const manualHall = document.getElementById('manualHallInput').value.trim();
             const date = document.getElementById('offerDate').value;
             const message = document.getElementById('offerMessage').value.trim();
 
+            // Определяем место
+            let place = '';
+            if (hallSelect.value === 'other') {
+                if (!manualHall) {
+                    alert('Введите название зала');
+                    return;
+                }
+                place = manualHall;
+            } else if (hallSelect.value) {
+                const selectedHall = allHalls.find(h => h.id === hallSelect.value);
+                place = selectedHall ? selectedHall.name : hallSelect.value;
+            } else {
+                alert('Выберите зал или введите название');
+                return;
+            }
+
             if (!sport || !place || !date) {
                 alert('Заполните все обязательные поля');
+                return;
+            }
+
+            // ===== ПРОВЕРКА ЛИМИТА =====
+            try {
+                const userOffersQuery = query(
+                    collection(db, "sparring_offers"),
+                    where("userId", "==", currentUser.uid),
+                    where("status", "==", "active")
+                );
+                const userOffersSnap = await getDocs(userOffersQuery);
+                
+                if (userOffersSnap.size >= 3) {
+                    alert('❌ У вас уже 3 активных предложения на доске. Сначала удалите одно из них.');
+                    return;
+                }
+            } catch (err) {
+                console.error('Ошибка проверки лимита:', err);
+                alert('❌ Ошибка при проверке лимита');
+                return;
+            }
+
+            // ===== ПРОВЕРКА БАЛАНСА ВЫЗОВОВ =====
+            if (!currentUserData) {
+                const userDoc = await getDoc(doc(db, "fighters", currentUser.uid));
+                if (!userDoc.exists()) {
+                    alert('❌ Данные пользователя не найдены');
+                    return;
+                }
+                currentUserData = userDoc.data();
+            }
+
+            let freeChallenges = currentUserData.freeChallenges || 0;
+            let purchasedChallenges = currentUserData.purchasedChallenges || 0;
+            let totalChallenges = freeChallenges + purchasedChallenges;
+
+            if (totalChallenges <= 0) {
+                if (confirm('❌ У вас закончились вызовы!\nПерейти в магазин?')) {
+                    window.location.href = 'shop.html';
+                }
                 return;
             }
 
@@ -1308,11 +1680,23 @@ function initTabs() {
             btn.innerHTML = '<div class="loading-spinner" style="width:20px;height:20px;"></div> Публикация...';
 
             try {
+                // ===== СПИСЫВАЕМ ВЫЗОВ =====
+                if (freeChallenges > 0) {
+                    await updateDoc(doc(db, "fighters", currentUser.uid), {
+                        freeChallenges: freeChallenges - 1
+                    });
+                } else {
+                    await updateDoc(doc(db, "fighters", currentUser.uid), {
+                        purchasedChallenges: purchasedChallenges - 1
+                    });
+                }
+
+                // ===== СОЗДАЁМ ПРЕДЛОЖЕНИЕ =====
                 await addDoc(collection(db, "sparring_offers"), {
                     userId: currentUser.uid,
                     userName: currentUserData?.name || 'Боец',
                     userCity: currentUserData?.city || '—',
-                    userWeight: parseInt(currentUserData?.weightClass) || 0,
+                    userWeight: currentUserData?.weightClass || '—',
                     sport: sport,
                     place: place,
                     date: date,
@@ -1322,11 +1706,17 @@ function initTabs() {
                     expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
                 });
 
-                alert('✅ Предложение опубликовано!');
+                alert('✅ Предложение опубликовано! Потрачен 1 вызов.');
                 document.getElementById('offerModal').classList.remove('active');
                 document.getElementById('offerMessage').value = '';
                 document.getElementById('offerDate').value = '';
+                document.getElementById('offerHall').value = '';
+                document.getElementById('manualHallInput').value = '';
+                document.getElementById('manualHallContainer').style.display = 'none';
+                
+                updateHeaderBalance();
                 loadOffers();
+                loadChallenges();
 
             } catch (err) {
                 console.error('Ошибка:', err);
@@ -1352,12 +1742,18 @@ function initTabs() {
         initTabs();
         initFilters();
 
+        document.getElementById('offerHall')?.addEventListener('change', toggleManualHallInput);
+
+        document.getElementById('clearHistoryBtn')?.addEventListener('click', clearHistory);
+        document.getElementById('refreshChallengesBtn')?.addEventListener('click', loadChallenges);
+
         onAuthStateChanged(auth, async (user) => {
             currentUser = user;
             if (user) {
                 const userDoc = await getDoc(doc(db, "fighters", user.uid));
                 currentUserData = userDoc.data();
                 updateHeaderBalance();
+                await loadHalls();
                 loadChallenges();
                 loadOffers();
             } else {

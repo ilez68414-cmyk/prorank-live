@@ -2128,6 +2128,138 @@
         grid-template-columns: repeat(6, 1fr) !important;
     }
 }
+/* ===== ВЫБОР ЗАЛА В МОДАЛКЕ ===== */
+.hall-select-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.hall-select-group select {
+    width: 100%;
+    padding: 12px 16px;
+    background: #1a1a1a;
+    border: 1px solid rgba(251,191,36,0.25);
+    color: #fff;
+    border-radius: 12px;
+    font-size: 0.9rem;
+    transition: 0.2s;
+}
+
+.hall-select-group select:focus {
+    outline: none;
+    border-color: #fbbf24;
+}
+
+.hall-select-group .hall-option-other {
+    color: #888;
+    font-style: italic;
+}
+
+.manual-hall-input input {
+    width: 100%;
+    padding: 10px 14px;
+    background: #1a1a1a;
+    border: 1px solid rgba(251,191,36,0.2);
+    color: #fff;
+    border-radius: 12px;
+    font-size: 0.85rem;
+    transition: 0.2s;
+}
+
+.manual-hall-input input:focus {
+    outline: none;
+    border-color: #fbbf24;
+}
+/* ===== КНОПКА ДОБАВИТЬ В ДРУЗЬЯ ===== */
+.add-friend-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 5px 16px 5px 12px;
+    border-radius: 40px;
+    border: none;
+    font-weight: 600;
+    font-size: 0.75rem;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    background: rgba(251, 191, 36, 0.08);
+    color: #fbbf24;
+    min-height: 34px;
+    font-family: 'Inter', sans-serif;
+    border: 1px solid rgba(251, 191, 36, 0.15);
+}
+
+.add-friend-btn:hover {
+    background: rgba(251, 191, 36, 0.15);
+    transform: translateY(-2px);
+    border-color: rgba(251, 191, 36, 0.3);
+}
+
+.add-friend-btn:active {
+    transform: scale(0.97);
+}
+
+.add-friend-btn i {
+    font-size: 0.9rem;
+    transition: transform 0.3s ease;
+}
+
+.add-friend-btn:hover i {
+    transform: scale(1.1);
+}
+
+.add-friend-btn .friend-text {
+    font-size: 0.7rem;
+    font-weight: 600;
+}
+
+/* ===== СОСТОЯНИЕ "В ДРУЗЬЯХ" ===== */
+.add-friend-btn.friend {
+    background: rgba(16, 185, 129, 0.12);
+    border-color: rgba(16, 185, 129, 0.2);
+    color: #34d399;
+}
+
+.add-friend-btn.friend:hover {
+    background: rgba(16, 185, 129, 0.2);
+    border-color: rgba(16, 185, 129, 0.3);
+}
+
+.add-friend-btn.friend i {
+    color: #34d399;
+}
+
+/* ===== АДАПТИВ ДЛЯ МОБИЛЫ ===== */
+@media (max-width: 768px) {
+    .add-friend-btn {
+        padding: 6px 14px 6px 10px !important;
+        font-size: 0.7rem !important;
+        min-height: 36px !important;
+        gap: 6px !important;
+    }
+    .add-friend-btn i {
+        font-size: 0.85rem !important;
+    }
+    .add-friend-btn .friend-text {
+        font-size: 0.65rem !important;
+    }
+}
+
+@media (max-width: 480px) {
+    .add-friend-btn {
+        padding: 4px 12px 4px 8px !important;
+        font-size: 0.6rem !important;
+        min-height: 30px !important;
+        gap: 4px !important;
+    }
+    .add-friend-btn i {
+        font-size: 0.7rem !important;
+    }
+    .add-friend-btn .friend-text {
+        font-size: 0.55rem !important;
+    }
+}
 </style>
 </head>
 <body>   
@@ -2204,12 +2336,11 @@
 
                             <!-- 3 СТРОКА: Подписка + Кнопки действий -->
                             <div class="actions-row">
-                                <!-- Подписка - только для гостей -->
+                                <!-- Добавить в друзья - только для гостей -->
                                 <div class="guest-only" style="display: inline-flex;">
-                                    <button id="btnSubscribe" class="subscribe-btn">
-                                        <i class="fas fa-bell"></i>
-                                        <span class="subscribe-text">Подписаться</span>
-                                        <span class="subscribe-count" id="subscribeCount">0</span>
+                                    <button id="btnAddFriend" class="add-friend-btn">
+                                        <i class="fas fa-user-plus"></i>
+                                        <span class="friend-text">Добавить в друзья</span>
                                     </button>
                                 </div>
                                 
@@ -2301,9 +2432,7 @@
                     <div class="profile-bio">
                         <div class="bio-header">
                             <h3><i class="fas fa-address-card icon-gold"></i> О себе</h3>
-                            <button id="editBtn" class="btn-edit edit-bio-btn" style="padding: 6px 16px; font-size: 0.8rem;">
-                                <i class="fas fa-pen"></i> Редактировать
-                            </button>
+
                         </div>
                         <div id="bioText">Тут пока пусто...</div>
                         <textarea id="bioInput" class="hidden" rows="4" style="width:100%; background:#1a1a1a; border:1px solid #333; color:#fff; border-radius:12px; padding:12px; margin-top:8px;"></textarea>
@@ -2426,12 +2555,14 @@
         </div>
     </div>
 
+    <!-- ===== МОДАЛКА ВЫЗОВА (НОВАЯ) ===== -->
     <div id="challengeModal" class="modal">
         <div class="modal-content">
             <h3><i class="fas fa-fist-raised" style="color: #fbbf24;"></i> Вызов спарринга</h3>
             <p style="font-size: 0.85rem; color: #aaa; margin-bottom: 16px;">
                 Соперник: <strong id="challengeOpponentName" style="color: #fbbf24;">—</strong>
             </p>
+
             <div class="input-group">
                 <label><i class="fas fa-fist-raised" style="color: #fbbf24;"></i> Вид спорта</label>
                 <select id="challengeSport">
@@ -2440,30 +2571,33 @@
                     <option value="Борьба">🤼 Борьба</option>
                 </select>
             </div>
+
             <div class="input-group">
                 <label><i class="fas fa-map-marker-alt" style="color: #fbbf24;"></i> Место проведения</label>
-                <select id="challengePlace">
-                    <option value="Зал">🏋️ Зал</option>
-                    <option value="Открытая площадка">🌳 Открытая площадка</option>
-                    <option value="Дома">🏠 Дома</option>
-                    <option value="Другое">📍 Другое</option>
-                </select>
+                <div class="hall-select-group">
+                    <select id="challengeHall">
+                        <option value="">-- Выберите зал --</option>
+                        <option value="other" class="hall-option-other">✏️ Другое (ввести вручную)</option>
+                    </select>
+                    <div class="manual-hall-input" id="challengeManualHallContainer" style="display:none; margin-top:8px;">
+                        <input type="text" id="challengeManualHallInput" placeholder="Введите название зала...">
+                    </div>
+                </div>
             </div>
+
             <div class="input-group">
                 <label><i class="fas fa-calendar-alt" style="color: #fbbf24;"></i> Дата и время</label>
                 <input type="datetime-local" id="challengeDate">
             </div>
+
             <div class="input-group">
                 <label><i class="fas fa-comment" style="color: #fbbf24;"></i> Сообщение сопернику</label>
                 <textarea id="challengeMessage" rows="2" placeholder="Хочешь спарринг? Укажи детали..."></textarea>
             </div>
-            <div class="modal-buttons" style="display: flex; gap: 12px; margin-top: 20px;">
-                <button id="sendChallengeBtn" class="btn-confirm" style="flex: 2;">
-                    <i class="fas fa-paper-plane"></i> Отправить вызов
-                </button>
-                <button id="closeChallengeModal" class="btn-cancel" style="flex: 1;">
-                    <i class="fas fa-times"></i> Отмена
-                </button>
+
+            <div class="modal-buttons">
+                <button id="sendChallengeBtn" class="btn-confirm"><i class="fas fa-paper-plane"></i> Отправить вызов</button>
+                <button id="closeChallengeModal" class="btn-cancel"><i class="fas fa-times"></i> Отмена</button>
             </div>
         </div>
     </div>
@@ -2539,10 +2673,65 @@
     
     let currentProfileUserId = null;
     
-    // ===== МОДАЛКА ВЫЗОВА =====
+    // ============================================================
+    // МОДАЛКА ВЫЗОВА (НОВАЯ ВЕРСИЯ)
+    // ============================================================
+
     let selectedFighterId = null;
     let selectedFighterName = '';
+    let allHalls = [];
 
+    // Загрузка залов
+    async function loadHallsForChallenge() {
+        try {
+            const snapshot = await getDocs(collection(db, "halls"));
+            allHalls = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            populateChallengeHallSelect();
+        } catch (err) {
+            console.error('Ошибка загрузки залов:', err);
+            allHalls = [];
+            populateChallengeHallSelect();
+        }
+    }
+
+    function populateChallengeHallSelect() {
+        const select = document.getElementById('challengeHall');
+        if (!select) return;
+
+        const currentValue = select.value;
+        select.innerHTML = '<option value="">-- Выберите зал --</option>';
+
+        allHalls.forEach(hall => {
+            const option = document.createElement('option');
+            option.value = hall.id;
+            option.textContent = hall.name || hall.id;
+            select.appendChild(option);
+        });
+
+        const otherOption = document.createElement('option');
+        otherOption.value = 'other';
+        otherOption.textContent = '✏️ Другое (ввести вручную)';
+        otherOption.className = 'hall-option-other';
+        select.appendChild(otherOption);
+
+        if (currentValue) {
+            select.value = currentValue;
+        }
+
+        toggleChallengeManualHallInput();
+    }
+
+    function toggleChallengeManualHallInput() {
+        const select = document.getElementById('challengeHall');
+        const manualContainer = document.getElementById('challengeManualHallContainer');
+        if (select && manualContainer) {
+            manualContainer.style.display = select.value === 'other' ? 'block' : 'none';
+        }
+    }
+
+    document.getElementById('challengeHall')?.addEventListener('change', toggleChallengeManualHallInput);
+
+    // Открытие модалки вызова
     window.openChallengeModal = function(fighterId, fighterName) {
         selectedFighterId = fighterId;
         selectedFighterName = fighterName;
@@ -2550,6 +2739,7 @@
         document.getElementById('challengeModal').style.display = 'flex';
         document.getElementById('challengeOpponentName').textContent = fighterName;
         
+        // Подставляем вид спорта из профиля
         const user = auth.currentUser;
         if (user) {
             getDoc(doc(db, "fighters", user.uid)).then(docSnap => {
@@ -2561,14 +2751,21 @@
                 }
             });
         }
+        
+        // Загружаем залы
+        loadHallsForChallenge();
     };
 
     function closeChallengeModal() {
         document.getElementById('challengeModal').style.display = 'none';
         document.getElementById('challengeMessage').value = '';
         document.getElementById('challengeDate').value = '';
+        document.getElementById('challengeHall').value = '';
+        document.getElementById('challengeManualHallInput').value = '';
+        document.getElementById('challengeManualHallContainer').style.display = 'none';
     }
 
+    // Отправка вызова
     async function sendChallenge() {
         const user = auth.currentUser;
         if (!user) {
@@ -2577,7 +2774,8 @@
         }
 
         const sport = document.getElementById('challengeSport').value;
-        const place = document.getElementById('challengePlace').value;
+        const hallSelect = document.getElementById('challengeHall');
+        const manualHall = document.getElementById('challengeManualHallInput').value.trim();
         const date = document.getElementById('challengeDate').value;
         const message = document.getElementById('challengeMessage').value.trim();
 
@@ -2585,10 +2783,23 @@
             showError('Выберите вид спорта', 'warning');
             return;
         }
-        if (!place) {
-            showError('Выберите место проведения', 'warning');
+
+        // Определяем место
+        let place = '';
+        if (hallSelect.value === 'other') {
+            if (!manualHall) {
+                showError('Введите название зала', 'warning');
+                return;
+            }
+            place = manualHall;
+        } else if (hallSelect.value) {
+            const selectedHall = allHalls.find(h => h.id === hallSelect.value);
+            place = selectedHall ? selectedHall.name : hallSelect.value;
+        } else {
+            showError('Выберите зал или введите название', 'warning');
             return;
         }
+
         if (!date) {
             showError('Выберите дату и время', 'warning');
             return;
@@ -2610,6 +2821,8 @@
 
         const targetDoc = await getDoc(doc(db, "fighters", selectedFighterId));
         const targetData = targetDoc.data();
+        
+        // Проверка веса
         const currentWeight = parseInt(userData.weightClass) || 0;
         const targetWeight = parseInt(targetData.weightClass) || 0;
         const weightDiff = Math.abs(currentWeight - targetWeight);
@@ -2633,10 +2846,10 @@
             await addDoc(collection(db, "challenges"), {
                 fromUserId: user.uid,
                 fromName: userData.name || 'Боец',
-                fromWeight: currentWeight,
+                fromWeight: currentWeight || 'не указан',
                 toUserId: selectedFighterId,
                 toName: selectedFighterName,
-                toWeight: targetWeight,
+                toWeight: targetWeight || 'не указан',
                 sport: sport,
                 place: place,
                 date: date,
@@ -2656,6 +2869,7 @@
                 });
             }
 
+            // Уведомление в Telegram
             if (targetData.telegramId) {
                 try {
                     await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
@@ -2681,9 +2895,10 @@
         }
     }
 
+    // Обработчики
     document.getElementById('closeChallengeModal')?.addEventListener('click', closeChallengeModal);
     document.getElementById('sendChallengeBtn')?.addEventListener('click', sendChallenge);
-    
+
     window.addEventListener('click', (e) => {
         const modal = document.getElementById('challengeModal');
         if (e.target === modal) closeChallengeModal();
@@ -2780,6 +2995,27 @@
         notificationToggleBtn.addEventListener('click', handleNotificationToggle);
     }
 
+    // ===== ПРОВЕРКА СТАТУСА ДРУЗЕЙ =====
+async function checkFriendStatus(profileUserId) {
+    const user = auth.currentUser;
+    if (!user || user.uid === profileUserId) return;
+    
+    try {
+        const friendDoc = await getDoc(doc(db, "users", user.uid, "friends", profileUserId));
+        const btn = document.getElementById('btnAddFriend');
+        if (!btn) return;
+        
+        if (friendDoc.exists()) {
+            btn.classList.add('friend');
+            btn.innerHTML = `<i class="fas fa-user-check"></i><span class="friend-text">В друзьях</span>`;
+        } else {
+            btn.classList.remove('friend');
+            btn.innerHTML = `<i class="fas fa-user-plus"></i><span class="friend-text">Добавить в друзья</span>`;
+        }
+    } catch (err) {
+        console.error('Ошибка проверки друзей:', err);
+    }
+}
     // ============================================================
     // ОСТАЛЬНЫЕ ФУНКЦИИ
     // ============================================================
@@ -2922,23 +3158,91 @@
             if (notificationSection) notificationSection.style.display = 'none';
         }
     });
-    </script>
-    <script>
-// Генерация частиц
-(function() {
-    const container = document.getElementById('arenaParticles');
-    if (!container) return;
-    for (let i = 0; i < 35; i++) {
-        const p = document.createElement('div');
-        p.className = 'arena-particle';
-        p.style.left = Math.random() * 100 + '%';
-        p.style.width = (1 + Math.random() * 3) + 'px';
-        p.style.height = p.style.width;
-        p.style.animationDelay = (Math.random() * 18) + 's';
-        p.style.animationDuration = (14 + Math.random() * 10) + 's';
-        container.appendChild(p);
+    // ============================================================
+// ДОБАВЛЕНИЕ В ДРУЗЬЯ
+// ============================================================
+document.getElementById('btnAddFriend')?.addEventListener('click', async () => {
+    const user = auth.currentUser;
+    if (!user) {
+        showError('Войдите в аккаунт', 'warning');
+        setTimeout(() => window.location.href = 'login.html', 1000);
+        return;
     }
-})();
-</script>
+
+    const profileUserId = currentProfileUserId;
+    if (!profileUserId) return;
+    if (user.uid === profileUserId) {
+        showError('Это ваш профиль', 'info');
+        return;
+    }
+
+    const btn = document.getElementById('btnAddFriend');
+    const isFriend = btn.classList.contains('friend');
+
+    try {
+        const friendRef = doc(db, "users", user.uid, "friends", profileUserId);
+        const friendSnap = await getDoc(friendRef);
+        
+        if (friendSnap.exists()) {
+            // Удаляем из друзей
+            await deleteDoc(friendRef);
+            
+            btn.classList.remove('friend');
+            btn.innerHTML = `<i class="fas fa-user-plus"></i><span class="friend-text">Добавить в друзья</span>`;
+            showError('👋 Пользователь удалён из друзей', 'info');
+            
+            // Удаляем взаимно
+            const otherFriendRef = doc(db, "users", profileUserId, "friends", user.uid);
+            await deleteDoc(otherFriendRef);
+        } else {
+            // Добавляем в друзья
+            await setDoc(friendRef, {
+                userId: profileUserId,
+                addedAt: new Date()
+            });
+            
+            btn.classList.add('friend');
+            btn.innerHTML = `<i class="fas fa-user-check"></i><span class="friend-text">В друзьях</span>`;
+            showError('✅ Пользователь добавлен в друзья!', 'success');
+            
+            // Добавляем взаимно
+            const otherFriendRef = doc(db, "users", profileUserId, "friends", user.uid);
+            await setDoc(otherFriendRef, {
+                userId: user.uid,
+                addedAt: new Date()
+            });
+        }
+    } catch (err) {
+        console.error('Ошибка:', err);
+        showError('❌ Ошибка при добавлении в друзья', 'error');
+    }
+});
+
+// ===== ПРОВЕРКА СТАТУСА ДРУЗЕЙ =====
+async function checkFriendStatus(profileUserId) {
+    const user = auth.currentUser;
+    if (!user || user.uid === profileUserId) return;
+    
+    try {
+        const friendRef = doc(db, "users", user.uid, "friends", profileUserId);
+        const friendSnap = await getDoc(friendRef);
+        const btn = document.getElementById('btnAddFriend');
+        if (!btn) return;
+        
+        if (friendSnap.exists()) {
+            btn.classList.add('friend');
+            btn.innerHTML = `<i class="fas fa-user-check"></i><span class="friend-text">В друзьях</span>`;
+        } else {
+            btn.classList.remove('friend');
+            btn.innerHTML = `<i class="fas fa-user-plus"></i><span class="friend-text">Добавить в друзья</span>`;
+        }
+    } catch (err) {
+        console.error('Ошибка проверки друзей:', err);
+    }
+}
+
+// Делаем функцию глобальной для вызова из profile.js
+window.checkFriendStatus = checkFriendStatus;
+    </script>
 </body>
 </html>

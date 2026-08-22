@@ -1304,19 +1304,31 @@ async function updateLikesUI() {
 async function updateSubscribeUI() {
     if (!currentFighterId) return;
     try {
-        const subs = currentFighterData?.subscribers || 0;
-        const btn = document.getElementById('btnSubscribe');
-        if (btn) {
-            btn.innerHTML = `<i class="fas fa-bell"></i> ${subs}`;
-            const user = auth.currentUser;
-            if (user && user.uid !== currentFighterId) {
-                const sub = await getDoc(doc(db, "subscriptions", `${user.uid}_${currentFighterId}`));
-                if (sub.exists()) { btn.classList.add('subscribed'); btn.innerHTML = `<i class="fas fa-check-circle"></i> ${subs}`; btn.style.background = '#16a34a'; }
-                else { btn.classList.remove('subscribed'); btn.innerHTML = `<i class="fas fa-bell"></i> ${subs}`; btn.style.background = '#8b5cf6'; }
-            } else { btn.disabled = true; btn.style.background = '#555'; }
+        const btn = document.getElementById('btnAddFriend');
+        if (!btn) return;
+
+        const user = auth.currentUser;
+        if (!user || user.uid === currentFighterId) {
+            btn.style.display = 'none';
+            return;
         }
-        await checkAndAwardAchievements(currentFighterId);
-    } catch(e) { console.error('Subscribe error:', e); }
+
+        // Проверяем, есть ли пользователь в друзьях
+        const friendRef = doc(db, "users", user.uid, "friends", currentFighterId);
+        const friendSnap = await getDoc(friendRef);
+        
+        if (friendSnap.exists()) {
+            btn.classList.add('friend');
+            btn.innerHTML = `<i class="fas fa-user-check"></i><span class="friend-text">В друзьях</span>`;
+        } else {
+            btn.classList.remove('friend');
+            btn.innerHTML = `<i class="fas fa-user-plus"></i><span class="friend-text">Добавить в друзья</span>`;
+        }
+        
+        btn.style.display = 'inline-flex';
+    } catch(e) { 
+        console.error('Subscribe error:', e); 
+    }
 }
 
 function setupLikeButton() {
@@ -1341,8 +1353,9 @@ function setupLikeButton() {
 }
 
 function setupSubscribeButton() {
-    const btn = document.getElementById('btnSubscribe');
+    const btn = document.getElementById('btnAddFriend');
     if (!btn) return;
+    
     btn.onclick = async () => {
         const user = auth.currentUser;
         if (!user) {
@@ -1350,22 +1363,48 @@ function setupSubscribeButton() {
             return;
         }
         if (user.uid === currentFighterId) {
-            showError('Нельзя подписаться на себя', 'warning');
+            showError('Это ваш профиль', 'info');
             return;
         }
-        const ref = doc(db, "subscriptions", `${user.uid}_${currentFighterId}`);
-        const exists = (await getDoc(ref)).exists();
-        const cur = currentFighterData?.subscribers || 0;
-        if (exists) {
-            await deleteDoc(ref);
-            await updateDoc(doc(db, "fighters", currentFighterId), { subscribers: Math.max(0, cur - 1) });
-            currentFighterData.subscribers = cur - 1;
-        } else {
-            await setDoc(ref, { fromUserId: user.uid, toUserId: currentFighterId, createdAt: new Date() });
-            await updateDoc(doc(db, "fighters", currentFighterId), { subscribers: cur + 1 });
-            currentFighterData.subscribers = cur + 1;
+        
+        const friendRef = doc(db, "users", user.uid, "friends", currentFighterId);
+        const friendSnap = await getDoc(friendRef);
+        const isFriend = friendSnap.exists();
+        
+        try {
+            if (isFriend) {
+                // Удаляем из друзей
+                await deleteDoc(friendRef);
+                
+                // Удаляем взаимно
+                const otherFriendRef = doc(db, "users", currentFighterId, "friends", user.uid);
+                await deleteDoc(otherFriendRef);
+                
+                btn.classList.remove('friend');
+                btn.innerHTML = `<i class="fas fa-user-plus"></i><span class="friend-text">Добавить в друзья</span>`;
+                showError('👋 Пользователь удалён из друзей', 'info');
+            } else {
+                // Добавляем в друзья
+                await setDoc(friendRef, {
+                    userId: currentFighterId,
+                    addedAt: new Date()
+                });
+                
+                // Добавляем взаимно
+                const otherFriendRef = doc(db, "users", currentFighterId, "friends", user.uid);
+                await setDoc(otherFriendRef, {
+                    userId: user.uid,
+                    addedAt: new Date()
+                });
+                
+                btn.classList.add('friend');
+                btn.innerHTML = `<i class="fas fa-user-check"></i><span class="friend-text">В друзьях</span>`;
+                showError('✅ Пользователь добавлен в друзья!', 'success');
+            }
+        } catch (err) {
+            console.error('Ошибка:', err);
+            showError('❌ Ошибка при добавлении в друзья', 'error');
         }
-        await updateSubscribeUI();
     };
 }
 
