@@ -1368,7 +1368,7 @@
 
     function getStatusInfo(status) {
         const map = {
-            'pending': { label: '⏳ На рассмотрении', class: 'pending', icon: 'fa-hourglass-half' },
+            'pending': { label: '⏳ Ожидает оплаты', class: 'pending', icon: 'fa-hourglass-half' },  // ← ДОБАВЛЕНО
             'paid': { label: '💳 Оплачен', class: 'paid', icon: 'fa-credit-card' },
             'shipped': { label: '🚚 В пути', class: 'shipped', icon: 'fa-truck' },
             'delivered': { label: '📦 Доставлен', class: 'delivered', icon: 'fa-box-open' },
@@ -1436,7 +1436,15 @@
     async function loadOrders() {
         if (!currentUser) return;
         
+        // ===== ПОКАЗЫВАЕМ СКЕЛЕТОН =====
+        const activeContainer = document.getElementById('ordersListActive');
+        const historyContainer = document.getElementById('ordersListHistory');
+        if (activeContainer && !allOrders.length) {
+            activeContainer.innerHTML = showSkeletonLoader(5);
+        }
+        
         try {
+            // ===== ЗАГРУЖАЕМ СВЕЖИЕ ДАННЫЕ =====
             const ordersQuery = query(
                 collection(db, "orders"),
                 where("userId", "==", currentUser.uid),
@@ -1445,6 +1453,7 @@
             );
             const snapshot = await getDocs(ordersQuery);
             
+            // ===== ОБНОВЛЯЕМ STATE =====
             allOrders = [];
             for (const docSnap of snapshot.docs) {
                 const order = { id: docSnap.id, ...docSnap.data() };
@@ -1480,8 +1489,12 @@
 
     // ===== ОБНОВЛЕНИЕ БЕЙДЖЕЙ =====
     function updateBadges() {
-        const activeOrders = allOrders.filter(o => o.status === 'pending' || o.status === 'paid' || o.status === 'shipped' || o.status === 'delivered');
-        const historyOrders = allOrders.filter(o => o.status === 'completed' || o.status === 'cancelled' || o.status === 'rejected');
+        const activeOrders = allOrders.filter(o => 
+            o.status === 'pending' || o.status === 'paid' || o.status === 'shipped' || o.status === 'delivered'
+        );
+        const historyOrders = allOrders.filter(o => 
+            o.status === 'completed' || o.status === 'cancelled' || o.status === 'rejected'
+        );
         
         document.getElementById('badgeActive').textContent = activeOrders.length;
         document.getElementById('badgeHistory').textContent = historyOrders.length;
@@ -1495,9 +1508,13 @@
         
         let filtered = [];
         if (tab === 'active') {
-            filtered = allOrders.filter(o => o.status === 'pending' || o.status === 'paid' || o.status === 'shipped' || o.status === 'delivered');
+            filtered = allOrders.filter(o => 
+                o.status === 'pending' || o.status === 'paid' || o.status === 'shipped' || o.status === 'delivered'
+            );
         } else {
-            filtered = allOrders.filter(o => o.status === 'completed' || o.status === 'cancelled' || o.status === 'rejected');
+            filtered = allOrders.filter(o => 
+                o.status === 'completed' || o.status === 'cancelled' || o.status === 'rejected'
+            );
         }
 
         if (filtered.length === 0) {
@@ -1664,6 +1681,24 @@
 
         container.innerHTML = html;
         attachHandlers(container);
+    }
+
+    function showSkeletonLoader(count = 3) {
+        return Array(count).fill(`
+            <div class="order-card skeleton">
+                <div style="display:flex;justify-content:space-between;padding:16px;">
+                    <div style="flex:1;display:flex;flex-direction:column;gap:8px;">
+                        <div class="skeleton-line" style="width:30%;height:14px;background:rgba(255,255,255,0.05);border-radius:4px;"></div>
+                        <div class="skeleton-line" style="width:60%;height:14px;background:rgba(255,255,255,0.05);border-radius:4px;"></div>
+                        <div class="skeleton-line" style="width:40%;height:14px;background:rgba(255,255,255,0.05);border-radius:4px;"></div>
+                    </div>
+                    <div style="flex:1;display:flex;flex-direction:column;gap:8px;align-items:flex-end;">
+                        <div class="skeleton-line" style="width:40%;height:14px;background:rgba(255,255,255,0.05);border-radius:4px;"></div>
+                        <div class="skeleton-line" style="width:30%;height:14px;background:rgba(255,255,255,0.05);border-radius:4px;"></div>
+                    </div>
+                </div>
+            </div>
+        `).join('');
     }
 
     // ===== ОБРАБОТЧИКИ =====
@@ -1857,6 +1892,37 @@
                 btn.innerHTML = originalText;
                 btn.disabled = false;
                 return;
+            }
+            
+            // ===== УМЕНЬШАЕМ STOCK ДЛЯ КАЖДОГО ТОВАРА =====
+            if (orderData.items && orderData.items.length > 0) {
+                for (const item of orderData.items) {
+                    const productId = item.productId || item.id;
+                    if (!productId) continue;
+                    
+                    try {
+                        const productRef = doc(db, "products", productId);
+                        const productSnap = await getDoc(productRef);
+                        
+                        if (productSnap.exists()) {
+                            const currentStock = productSnap.data().stock || 0;
+                            const quantity = item.quantity || 1;
+                            const newStock = Math.max(0, currentStock - quantity);
+                            
+                            await updateDoc(productRef, {
+                                stock: newStock
+                            });
+                            
+                            if (newStock === 0) {
+                                await updateDoc(productRef, {
+                                    outOfStock: true
+                                });
+                            }
+                        }
+                    } catch (err) {
+                        console.error(`Ошибка обновления stock для товара ${productId}:`, err);
+                    }
+                }
             }
             
             const { releaseFunds } = await import('./wallet.js');

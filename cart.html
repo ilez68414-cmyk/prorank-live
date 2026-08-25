@@ -1353,7 +1353,7 @@
     <script type="module">
     import { initializeApp } from "firebase/app";
     import { getAuth, onAuthStateChanged } from "firebase/auth";
-    import { getFirestore, addDoc, collection, doc, getDoc, serverTimestamp } from "firebase/firestore";
+    import { getFirestore, addDoc, collection, doc, getDoc, serverTimestamp, updateDoc, runTransaction } from "firebase/firestore";
 
     const firebaseConfig = {
         apiKey: "AIzaSyDUGYJY7pX7q02MS5SACMIIQXpjpQ97mPw",
@@ -1759,82 +1759,146 @@
         btn.disabled = true;
         
         try {
-            const itemsList = selectedItems.map(item => ({
-                productId: item.id,
-                productName: item.name,
-                price: item.price,
-                quantity: item.quantity || 1,
-                totalPrice: item.price * (item.quantity || 1),
-                partnerId: item.partnerId || null,
-                partnerName: item.partnerName || null,
-                image: item.image || null
-            }));
+            // ===== 1. ГРУППИРУЕМ ТОВАРЫ ПО ПРОДАВЦАМ =====
+            const itemsBySeller = {};
+            selectedItems.forEach(item => {
+                const sellerId = item.partnerId || 'unknown';
+                if (!itemsBySeller[sellerId]) {
+                    itemsBySeller[sellerId] = {
+                        sellerId: sellerId,
+                        sellerName: item.partnerName || 'Продавец',
+                        items: [],
+                        total: 0
+                    };
+                }
+                itemsBySeller[sellerId].items.push(item);
+                itemsBySeller[sellerId].total += (item.price || 0) * (item.quantity || 1);
+            });
             
-            const totalPrice = itemsList.reduce((sum, item) => sum + item.totalPrice, 0);
-            const uniquePartnerIds = [...new Set(itemsList.map(item => item.partnerId).filter(id => id && id !== 'null'))];
+            // ===== 2. ПРОВЕРЯЕМ НАЛИЧИЕ ТОВАРОВ =====
+            for (const [sellerId, group] of Object.entries(itemsBySeller)) {
+                for (const item of group.items) {
+                    const productRef = doc(db, "products", item.id);
+                    const productDoc = await getDoc(productRef);
+                    
+                    if (!productDoc.exists()) {
+                        throw new Error(`Товар "${item.name}" больше не доступен`);
+                    }
+                    
+                    const productData = productDoc.data();
+                    const currentStock = productData.stock || 0;
+                    const requestedQuantity = item.quantity || 1;
+                    
+                    if (currentStock < requestedQuantity) {
+                        throw new Error(`Товара "${item.name}" осталось только ${currentStock} шт, а вы заказали ${requestedQuantity}`);
+                    }
+                }
+            }
             
+            // ===== 3. УМЕНЬШАЕМ STOCK ДЛЯ КАЖДОГО ТОВАРА =====
+            for (const [sellerId, group] of Object.entries(itemsBySeller)) {
+                for (const item of group.items) {
+                    const productRef = doc(db, "products", item.id);
+                    const productDoc = await getDoc(productRef);
+                    const currentStock = productDoc.data().stock || 0;
+                    const newStock = currentStock - (item.quantity || 1);
+                    
+                    await updateDoc(productRef, {
+                        stock: newStock
+                    });
+                    
+                    if (newStock === 0) {
+                        await updateDoc(productRef, {
+                            outOfStock: true
+                        });
+                    }
+                }
+            }
+            
+            // ===== 4. УДАЛЯЕМ ТОВАРЫ ИЗ КОРЗИНЫ =====
             let cart = JSON.parse(localStorage.getItem('cart') || '[]');
             const selectedIds = selectedItems.map(i => i.id);
             cart = cart.filter(i => !selectedIds.includes(i.id));
             localStorage.setItem('cart', JSON.stringify(cart));
             
+            // ===== 5. СОЗДАЁМ ОТДЕЛЬНЫЙ ЗАКАЗ ДЛЯ КАЖДОГО ПРОДАВЦА =====
+            const createdOrders = [];
+            let totalAll = 0;
+
+            for (const [sellerId, group] of Object.entries(itemsBySeller)) {
+                const orderItems = group.items.map(item => ({
+                    productId: item.id,
+                    productName: item.name,
+                    price: item.price,
+                    quantity: item.quantity || 1,
+                    totalPrice: item.price * (item.quantity || 1),
+                    partnerId: sellerId,
+                    partnerName: group.sellerName,
+                    image: item.image || null
+                }));
+                
+                totalAll += group.total;
+                
+                // ===== ОПРЕДЕЛЯЕМ СТАТУС В ЗАВИСИМОСТИ ОТ СПОСОБА ОПЛАТЫ =====
+                let orderStatus = 'pending';
+                if (paymentMethod === 'card') {
+                    orderStatus = 'paid';  // Карта — сразу оплачено
+                } else {
+                    orderStatus = 'pending';  // Баланс — ожидает подтверждения
+                }
+                
+                const orderData = {
+                    userId: currentUser.uid,
+                    userName: orderName,
+                    userPhone: orderPhone,
+                    userAddress: orderAddress,
+                    userComment: orderComment,
+                    items: orderItems,
+                    partnerId: sellerId,           // ← ЭТО ГЛАВНОЕ!
+                    partnerName: group.sellerName,
+                    totalPrice: group.total,
+                    commission: Math.floor(group.total * 0.1),
+                    paymentMethod: paymentMethod,
+                    type: 'physical',
+                    status: orderStatus,           // ← ИСПОЛЬЗУЕМ ПЕРЕМЕННУЮ
+                    createdAt: serverTimestamp()
+                };
+                
+                const orderRef = await addDoc(collection(db, "orders"), orderData);
+                createdOrders.push({ id: orderRef.id, sellerId, total: group.total });
+            }
+            
+            // ===== 6. ОПЛАТА (если с баланса) =====
             if (paymentMethod === 'balance') {
                 const { hasSufficientBalance, deductFunds, holdFunds } = await import('./wallet.js');
                 
-                const hasBalance = await hasSufficientBalance(currentUser.uid, totalPrice);
+                const hasBalance = await hasSufficientBalance(currentUser.uid, totalAll);
                 if (!hasBalance) {
                     alert('❌ Недостаточно средств на балансе. Пополните баланс или выберите оплату картой.');
                     btn.innerHTML = originalText;
                     btn.disabled = false;
-                    cart = JSON.parse(localStorage.getItem('cart') || '[]');
+                    // Возвращаем товары в корзину
+                    const cartRestore = JSON.parse(localStorage.getItem('cart') || '[]');
                     selectedItems.forEach(item => {
                         for (let i = 0; i < (item.quantity || 1); i++) {
-                            cart.push({ ...item, quantity: 1 });
+                            cartRestore.push({ ...item, quantity: 1 });
                         }
                     });
-                    localStorage.setItem('cart', JSON.stringify(cart));
+                    localStorage.setItem('cart', JSON.stringify(cartRestore));
                     loadCart();
                     return;
                 }
                 
-                const orderRef = await addDoc(collection(db, "orders"), {
-                    userId: currentUser.uid,
-                    userName: orderName,
-                    userPhone: orderPhone,
-                    userAddress: orderAddress,
-                    userComment: orderComment,
-                    items: itemsList,
-                    partnerIds: uniquePartnerIds,
-                    totalPrice: totalPrice,
-                    commission: Math.floor(totalPrice * 0.1),
-                    paymentMethod: 'balance',
-                    type: 'physical',
-                    status: 'pending',
-                    createdAt: serverTimestamp()
-                });
+                // Замораживаем средства по каждому заказу
+                for (const order of createdOrders) {
+                    await holdFunds(currentUser.uid, order.total, order.id);
+                    await deductFunds(currentUser.uid, order.total, order.id);
+                }
                 
-                await deductFunds(currentUser.uid, totalPrice, orderRef.id);
-                await holdFunds(currentUser.uid, totalPrice, orderRef.id);
-                
-                alert('✅ Заказ оформлен! Средства заморожены до получения товара.');
+                alert(`✅ Заказы оформлены! Средства заморожены до получения товара.\nСоздано заказов: ${createdOrders.length}`);
                 
             } else {
-                await addDoc(collection(db, "orders"), {
-                    userId: currentUser.uid,
-                    userName: orderName,
-                    userPhone: orderPhone,
-                    userAddress: orderAddress,
-                    userComment: orderComment,
-                    items: itemsList,
-                    partnerIds: uniquePartnerIds,
-                    totalPrice: totalPrice,
-                    commission: Math.floor(totalPrice * 0.1),
-                    paymentMethod: 'card',
-                    status: 'paid',
-                    createdAt: serverTimestamp()
-                });
-                
-                alert('✅ Заказ оформлен! Продавец скоро свяжется с вами.');
+                alert(`✅ Заказы оформлены! Продавцы скоро свяжутся с вами.\nСоздано заказов: ${createdOrders.length}`);
             }
             
             modal.style.display = 'none';
@@ -1843,15 +1907,7 @@
             
         } catch (err) {
             console.error('Ошибка:', err);
-            alert('❌ Ошибка при оформлении заказа. Попробуйте позже.');
-            const cart = JSON.parse(localStorage.getItem('cart') || '[]');
-            selectedItems.forEach(item => {
-                for (let i = 0; i < (item.quantity || 1); i++) {
-                    cart.push({ ...item, quantity: 1 });
-                }
-            });
-            localStorage.setItem('cart', JSON.stringify(cart));
-            loadCart();
+            alert(`❌ ${err.message || 'Ошибка при оформлении заказа'}`);
         } finally {
             btn.innerHTML = originalText;
             btn.disabled = false;

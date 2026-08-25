@@ -1968,12 +1968,15 @@ main {
         class OrdersCache {
             constructor() {
                 this.cacheKey = 'prorank_orders_cache_v2';
-                this.ttl = 3 * 60 * 1000; // 3 минуты
+                this.ttl = 5 * 60 * 1000; // 5 минут
                 this.memoryCache = new Map();
             }
             
             get(partnerId, tab) {
-                // Проверяем memory cache
+                // ===== УБИРАЕМ ПРОВЕРКУ НА HISTORY! =====
+                // Раньше было: if (tab === 'history') return null;
+                // ТЕПЕРЬ: КЭШИРУЕМ ВСЁ!
+                
                 const key = `${partnerId}_${tab}`;
                 if (this.memoryCache.has(key)) {
                     const cached = this.memoryCache.get(key);
@@ -1983,7 +1986,6 @@ main {
                     this.memoryCache.delete(key);
                 }
                 
-                // Проверяем localStorage
                 try {
                     const data = localStorage.getItem(this.cacheKey);
                     if (!data) return null;
@@ -1993,7 +1995,6 @@ main {
                     if (parsed.tab !== tab) return null;
                     if (Date.now() - parsed.timestamp > this.ttl) return null;
                     
-                    // Сохраняем в memory cache
                     this.memoryCache.set(key, {
                         data: parsed.orders,
                         timestamp: parsed.timestamp
@@ -2006,13 +2007,15 @@ main {
             }
             
             set(partnerId, tab, orders) {
+                // ===== УБИРАЕМ ПРОВЕРКУ НА HISTORY! =====
+                // Раньше было: if (tab === 'history') return;
+                // ТЕПЕРЬ: СОХРАНЯЕМ ВСЁ!
+                
                 const key = `${partnerId}_${tab}`;
                 const timestamp = Date.now();
                 
-                // Сохраняем в memory cache
                 this.memoryCache.set(key, { data: orders, timestamp });
                 
-                // Сохраняем в localStorage
                 try {
                     localStorage.setItem(this.cacheKey, JSON.stringify({
                         partnerId,
@@ -2022,29 +2025,6 @@ main {
                     }));
                 } catch (e) {
                     console.warn('Не удалось сохранить кэш:', e);
-                }
-            }
-            
-            clear() {
-                this.memoryCache.clear();
-                localStorage.removeItem(this.cacheKey);
-            }
-            
-            invalidate(partnerId, tab) {
-                const key = `${partnerId}_${tab}`;
-                this.memoryCache.delete(key);
-                // Не удаляем из localStorage полностью, а только помечаем как устаревший
-                try {
-                    const data = localStorage.getItem(this.cacheKey);
-                    if (data) {
-                        const parsed = JSON.parse(data);
-                        if (parsed.partnerId === partnerId && parsed.tab === tab) {
-                            parsed.timestamp = 0;
-                            localStorage.setItem(this.cacheKey, JSON.stringify(parsed));
-                        }
-                    }
-                } catch (e) {
-                    console.warn('Не удалось инвалидировать кэш:', e);
                 }
             }
         }
@@ -2154,17 +2134,19 @@ main {
 
             getStatusText(status) {
                 const map = { 
-                    'paid': 'Оплачен', 
-                    'shipped': 'В пути', 
-                    'completed': 'Завершён', 
-                    'cancelled': 'Отменён' 
+                    'pending': '⏳ Ожидает подтверждения',
+                    'paid': '💳 Оплачен', 
+                    'shipped': '🚚 В пути', 
+                    'completed': '✅ Завершён', 
+                    'cancelled': '❌ Отменён' 
                 };
                 return map[status] || status;
             },
 
             getStatusColor(status) {
                 const map = { 
-                    'paid': '#f59e0b', 
+                    'pending': '#f59e0b',
+                    'paid': '#10b981', 
                     'shipped': '#8b5cf6', 
                     'completed': '#10b981', 
                     'cancelled': '#ef4444' 
@@ -2174,7 +2156,8 @@ main {
 
             getStatusDot(status) {
                 const map = { 
-                    'paid': '#f59e0b', 
+                    'pending': '#f59e0b',
+                    'paid': '#10b981', 
                     'shipped': '#8b5cf6', 
                     'completed': '#10b981', 
                     'cancelled': '#ef4444' 
@@ -2196,15 +2179,15 @@ main {
             },
 
             isUrgent(order) {
-                return order.status === 'paid' && 
-                       order.userComment && 
-                       order.userComment.toLowerCase().includes('срочно');
+                return (order.status === 'pending' || order.status === 'paid') && 
+                    order.userComment && 
+                    order.userComment.toLowerCase().includes('срочно');
             },
 
             isOverdue(order) {
                 const createdAt = order.createdAt?.seconds || 0;
-                return order.status === 'paid' && 
-                       (Date.now() - createdAt * 1000) > 2 * 3600000;
+                return (order.status === 'pending' || order.status === 'paid') && 
+                    (Date.now() - createdAt * 1000) > 2 * 3600000;
             }
         };
 
@@ -2246,8 +2229,14 @@ main {
                 const balanceDoc = await getDoc(doc(db, "wallet_balances", state.partnerId));
                 if (balanceDoc.exists()) {
                     const available = balanceDoc.data().available || 0;
-                    document.getElementById('walletBalance').textContent = Utils.formatCurrency(available);
-                    document.getElementById('walletIndicator').style.display = 'flex';
+                    const walletBalance = document.getElementById('walletBalance');
+                    const walletIndicator = document.getElementById('walletIndicator');
+                    if (walletBalance) {
+                        walletBalance.textContent = Utils.formatCurrency(available);
+                    }
+                    if (walletIndicator) {
+                        walletIndicator.style.display = 'flex';
+                    }
                 }
             } catch (err) {
                 console.error('Ошибка загрузки баланса:', err);
@@ -2256,8 +2245,7 @@ main {
 
         // =============================================
         // ===== НОВАЯ ЗАГРУЗКА ЗАКАЗОВ С КЭШЕМ =====
-        // =============================================
-        
+        // =============================================   
         async function loadOrders(forceRefresh = false) {
             if (!state.partnerId) return;
             
@@ -2265,49 +2253,54 @@ main {
             const loadingId = tab === 'active' ? 'activeLoading' : 'historyLoading';
             const containerId = tab === 'active' ? 'activeOrdersContainer' : 'historyOrdersContainer';
             
-            // Показываем скелетон если нет данных
             const container = document.getElementById(containerId);
-            if (container && !forceRefresh && !state.allOrders.length) {
-                container.innerHTML = showSkeletonLoader(5);
-            }
             
-            // Проверяем кэш
+            // ===== 1. ВСЕГДА ПРОВЕРЯЕМ КЭШ (ДАЖЕ ДЛЯ ИСТОРИИ!) =====
             if (!forceRefresh) {
                 const cached = ordersCache.get(state.partnerId, tab);
                 if (cached && cached.length > 0) {
-                    // Обновляем состояние
-                    const existingIds = new Set(state.allOrders.map(o => o.id));
-                    cached.forEach(order => {
-                        if (!existingIds.has(order.id)) {
-                            state.allOrders.push(order);
-                        }
+                    console.log(`⚡ Мгновенный показ из кэша (${tab}):`, cached.length, 'заказов');
+                    
+                    // Обновляем state из кэша
+                    const otherTab = tab === 'active' ? 'history' : 'active';
+                    const otherOrders = state.allOrders.filter(o => {
+                        const isActive = o.status === 'pending' || o.status === 'paid' || o.status === 'shipped';
+                        const isHistory = o.status === 'completed' || o.status === 'cancelled';
+                        return tab === 'active' ? isHistory : isActive;
                     });
+                    
+                    state.allOrders = [...cached, ...otherOrders];
+                    
                     updateStats();
                     renderActiveOrders();
                     renderHistoryOrders();
+                    
+                    // ===== 2. В ФОНЕ ОБНОВЛЯЕМ (если изменилось) =====
+                    loadFreshData(tab, containerId, loadingId);
                     return;
                 }
+            }
+            
+            // ===== 3. ЕСЛИ КЭША НЕТ — ПОКАЗЫВАЕМ СКЕЛЕТОН =====
+            if (container) {
+                container.innerHTML = showSkeletonLoader(5);
             }
             
             try {
                 state.isLoading[tab] = true;
                 document.getElementById(loadingId).classList.add('show');
                 
-                // Определяем статусы для запроса
-                const statuses = tab === 'active' ? ['paid', 'shipped'] : ['completed', 'cancelled'];
+                const statuses = tab === 'active' 
+                    ? ['pending', 'paid', 'shipped']
+                    : ['completed', 'cancelled'];
                 
-                // --- ОПТИМИЗИРОВАННЫЙ ЗАПРОС С ПАГИНАЦИЕЙ ---
-                // Загружаем только нужные поля для производительности
                 const q = query(
                     collection(db, "orders"),
                     where("partnerId", "==", state.partnerId),
                     where("status", "in", statuses),
                     orderBy("createdAt", "desc"),
-                    limit(100) // Ограничиваем загрузку
+                    limit(100)
                 );
-                
-                // Добавляем select для выбора только нужных полей
-                // (Firestore не поддерживает select в query, но мы можем фильтровать после)
                 
                 const ordersSnap = await getDocs(q);
                 const orders = ordersSnap.docs.map(doc => ({
@@ -2318,15 +2311,74 @@ main {
                 // Сохраняем в кэш
                 ordersCache.set(state.partnerId, tab, orders);
                 
-                // Обновляем состояние
-                const existingIds = new Set(state.allOrders.map(o => o.id));
-                orders.forEach(order => {
-                    if (!existingIds.has(order.id)) {
-                        state.allOrders.push(order);
-                    }
+                // Обновляем state
+                const otherTab = tab === 'active' ? 'history' : 'active';
+                const otherOrders = state.allOrders.filter(o => {
+                    const isActive = o.status === 'pending' || o.status === 'paid' || o.status === 'shipped';
+                    const isHistory = o.status === 'completed' || o.status === 'cancelled';
+                    return tab === 'active' ? isHistory : isActive;
                 });
                 
-                // Обновляем UI
+                state.allOrders = [...orders, ...otherOrders];
+                
+                updateStats();
+                renderActiveOrders();
+                renderHistoryOrders();
+                
+            } catch (err) {
+                console.error('Ошибка загрузки заказов:', err);
+                document.getElementById(containerId).innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-exclamation-triangle" style="color:#f59e0b;"></i>
+                        <h3>Ошибка загрузки</h3>
+                        <p>Попробуйте обновить страницу</p>
+                    </div>
+                `;
+            } finally {
+                state.isLoading[tab] = false;
+                document.getElementById(loadingId).classList.remove('show');
+            }
+        }
+
+        // ===== НОВАЯ ФУНКЦИЯ ДЛЯ ЗАГРУЗКИ СВЕЖИХ ДАННЫХ =====
+        async function loadFreshData(tab, containerId, loadingId) {
+            try {
+                state.isLoading[tab] = true;
+                document.getElementById(loadingId).classList.add('show');
+                
+                const statuses = tab === 'active' 
+                    ? ['pending', 'paid', 'shipped']
+                    : ['completed', 'cancelled'];
+                
+                const q = query(
+                    collection(db, "orders"),
+                    where("partnerId", "==", state.partnerId),
+                    where("status", "in", statuses),
+                    orderBy("createdAt", "desc"),
+                    limit(100)
+                );
+                
+                const ordersSnap = await getDocs(q);
+                const orders = ordersSnap.docs.map(doc => ({
+                    id: doc.id,
+                    ...doc.data()
+                }));
+                
+                // ===== СОХРАНЯЕМ В КЭШ =====
+                ordersCache.set(state.partnerId, tab, orders);
+                
+                // ===== ОБНОВЛЯЕМ STATE =====
+                // Очищаем старые заказы этого типа
+                const otherTab = tab === 'active' ? 'history' : 'active';
+                const otherOrders = state.allOrders.filter(o => {
+                    const isActive = o.status === 'pending' || o.status === 'paid' || o.status === 'shipped';
+                    const isHistory = o.status === 'completed' || o.status === 'cancelled';
+                    return tab === 'active' ? isHistory : isActive;
+                });
+                
+                // Новые заказы + заказы из другой вкладки
+                state.allOrders = [...orders, ...otherOrders];
+                
                 updateStats();
                 renderActiveOrders();
                 renderHistoryOrders();
@@ -2367,15 +2419,17 @@ main {
 
         // ===== UPDATE STATS =====
         function updateStats() {
+            const pending = state.allOrders.filter(o => o.status === 'pending').length;
             const paid = state.allOrders.filter(o => o.status === 'paid').length;
             const shipped = state.allOrders.filter(o => o.status === 'shipped').length;
             const completed = state.allOrders.filter(o => o.status === 'completed').length;
-            const active = paid + shipped;
-            const totalRevenue = state.allOrders.reduce((sum, o) => sum + (o.partnerOrderTotal || 0), 0);
+            const active = pending + paid + shipped;
             
-            document.getElementById('pendingCount').textContent = paid;
+            document.getElementById('pendingCount').textContent = pending + paid;
             document.getElementById('shippedCount').textContent = shipped;
             document.getElementById('completedCount').textContent = completed;
+            
+            const totalRevenue = state.allOrders.reduce((sum, o) => sum + (o.partnerOrderTotal || o.totalPrice || 0), 0);
             document.getElementById('totalRevenueStat').textContent = Utils.formatCurrency(totalRevenue);
             
             const historyCount = state.allOrders.filter(o => o.status === 'completed' || o.status === 'cancelled').length;
@@ -2389,7 +2443,7 @@ main {
             const { search, status, sort } = state.filters;
             
             if (tab === 'active') {
-                list = list.filter(o => o.status === 'paid' || o.status === 'shipped');
+                list = list.filter(o => o.status === 'pending' || o.status === 'paid' || o.status === 'shipped');
             } else {
                 list = list.filter(o => o.status === 'completed' || o.status === 'cancelled');
             }
@@ -2419,83 +2473,134 @@ main {
 
         // ===== RENDER ORDER CARD =====
         function renderOrderCard(order, isHistory = false) {
-            const isSelected = state.selectedOrders.has(order.id);
-            const statusText = Utils.getStatusText(order.status);
-            const statusColor = Utils.getStatusColor(order.status);
-            const dotColor = Utils.getStatusDot(order.status);
-            const canShip = order.status === 'paid';
-            const canCancel = order.status === 'paid' || order.status === 'shipped';
-            const isUrgent = Utils.isUrgent(order);
-            const isOverdue = Utils.isOverdue(order);
-            const isShipped = order.status === 'shipped';
-            const itemsHtml = order.partnerItems?.map(item => 
-                `<span class="item-tag">${Utils.escapeHtml(item.productName)} <span class="qty">×${item.quantity}</span></span>`
-            ).join('') || '<span style="color:#666;font-size:0.7rem;">—</span>';
+            try {
+                const isSelected = state.selectedOrders.has(order.id);
+                const statusText = Utils.getStatusText(order.status);
+                const statusColor = Utils.getStatusColor(order.status);
+                const dotColor = Utils.getStatusDot(order.status);
+                
+                // ===== УСЛОВИЯ ДЛЯ КНОПОК =====
+                const isPending = order.status === 'pending';
+                const isPaid = order.status === 'paid';
+                const isShipped = order.status === 'shipped';
+                
+                const canConfirm = isPending;           // ✅ Подтвердить заказ
+                const canReject = isPending;            // ❌ Отклонить заказ
+                const canShip = isPaid;                 // 📦 Отправить заказ
+                const canCancel = isPaid || isShipped;  // 🔴 Отменить заказ
+                const isUrgent = Utils.isUrgent(order);
+                const isOverdue = Utils.isOverdue(order);
+                
+                // ===== БЕЗОПАСНАЯ ПРОВЕРКА items =====
+                let itemsHtml = '';
+                if (order.items && Array.isArray(order.items) && order.items.length > 0) {
+                    itemsHtml = order.items.map(item => {
+                        const productName = item.productName || item.name || 'Товар';
+                        const quantity = item.quantity || 1;
+                        return `<span class="item-tag">${Utils.escapeHtml(productName)} <span class="qty">×${quantity}</span></span>`;
+                    }).join('');
+                } else if (order.partnerItems && Array.isArray(order.partnerItems) && order.partnerItems.length > 0) {
+                    itemsHtml = order.partnerItems.map(item => {
+                        const productName = item.productName || item.name || 'Товар';
+                        const quantity = item.quantity || 1;
+                        return `<span class="item-tag">${Utils.escapeHtml(productName)} <span class="qty">×${quantity}</span></span>`;
+                    }).join('');
+                } else {
+                    itemsHtml = '<span style="color:#666;font-size:0.7rem;">—</span>';
+                }
 
-            return `
-                <div class="order-card ${isSelected ? 'selected' : ''}" data-order-id="${order.id}">
-                    <div class="card-header">
-                        <div class="order-id">
-                            <span class="checkbox-wrap" onclick="event.stopPropagation();">
-                                ${!isShipped ? 
-                                    `<input type="checkbox" class="order-checkbox" data-id="${order.id}" ${isSelected ? 'checked' : ''}>` : 
-                                    `<span class="locked-icon" title="Заказы в пути нельзя выбрать для массовой отправки"><i class="fas fa-lock"></i></span>`
-                                }
-                            </span>
-                            ${order.id}
-                            <span style="font-size:0.7rem;color:#555;font-weight:400;">${Utils.formatDate(order.createdAt)}</span>
+                const totalAmount = order.partnerOrderTotal || order.totalPrice || 0;
+                const userName = order.userName || 'Покупатель';
+                const userPhone = order.userPhone || '—';
+                const userAddress = order.userAddress || '—';
+                const userComment = order.userComment || '';
+                const trackingNumber = order.trackingNumber || '';
+                const cancelReason = order.cancelReason || '';
+
+                return `
+                    <div class="order-card ${isSelected ? 'selected' : ''}" data-order-id="${order.id}">
+                        <div class="card-header">
+                            <div class="order-id">
+                                <span class="checkbox-wrap" onclick="event.stopPropagation();">
+                                    ${!isShipped ? 
+                                        `<input type="checkbox" class="order-checkbox" data-id="${order.id}" ${isSelected ? 'checked' : ''}>` : 
+                                        `<span class="locked-icon" title="Заказы в пути нельзя выбрать для массовой отправки"><i class="fas fa-lock"></i></span>`
+                                    }
+                                </span>
+                                ${order.id.slice(0, 8)}
+                                <span style="font-size:0.7rem;color:#555;font-weight:400;">${Utils.formatDate(order.createdAt)}</span>
+                            </div>
+                            <div class="card-right" style="flex-direction:row;align-items:center;gap:12px;">
+                                <span class="total-amount">${Utils.formatCurrency(totalAmount)}</span>
+                                <span class="status-badge" style="background:${statusColor}20;color:${statusColor};border:1px solid ${statusColor}30;">
+                                    <span class="dot" style="background:${dotColor};"></span>
+                                    ${statusText}
+                                </span>
+                                ${isUrgent ? '<span class="urgent-tag"><i class="fas fa-bolt"></i> Срочно</span>' : ''}
+                                ${isOverdue ? '<span class="overdue-tag"><i class="fas fa-clock"></i> Просрочка</span>' : ''}
+                            </div>
                         </div>
-                        <div class="card-right" style="flex-direction:row;align-items:center;gap:12px;">
-                            <span class="total-amount">${Utils.formatCurrency(order.partnerOrderTotal || 0)}</span>
-                            <span class="status-badge" style="background:${statusColor}20;color:${statusColor};border:1px solid ${statusColor}30;">
-                                <span class="dot" style="background:${dotColor};"></span>
-                                ${statusText}
-                            </span>
-                            ${isUrgent ? '<span class="urgent-tag"><i class="fas fa-bolt"></i> Срочно</span>' : ''}
-                            ${isOverdue ? '<span class="overdue-tag"><i class="fas fa-clock"></i> Просрочка</span>' : ''}
+                        
+                        <div class="card-body">
+                            <div class="info-item">
+                                <span class="label">👤 Покупатель</span>
+                                <div class="value">
+                                    <div class="name">${Utils.escapeHtml(userName)}</div>
+                                    <div class="phone">${Utils.escapeHtml(userPhone)}</div>
+                                </div>
+                            </div>
+                            
+                            <div class="info-item hide-mobile">
+                                <span class="label">📍 Адрес</span>
+                                <div class="value">
+                                    <div class="address">${Utils.escapeHtml(userAddress)}</div>
+                                    ${userComment ? `<div class="comment">💬 ${Utils.escapeHtml(userComment)}</div>` : ''}
+                                </div>
+                            </div>
+                            
+                            <div class="info-item">
+                                <span class="label">🛒 Товары</span>
+                                <div class="value">
+                                    <div class="items-preview">${itemsHtml}</div>
+                                    ${trackingNumber ? `<div class="tracking-tag">📦 ${Utils.escapeHtml(trackingNumber)}</div>` : ''}
+                                    ${cancelReason ? `<div class="cancel-reason">❌ ${Utils.escapeHtml(cancelReason)}</div>` : ''}
+                                </div>
+                            </div>
+                            
+                            <div class="card-right" style="flex-direction:row;align-items:center;gap:8px;flex-wrap:wrap;">
+                                <div class="card-actions" onclick="event.stopPropagation();">
+                                    <button class="btn btn-view" onclick="openViewModal('${order.id}')"><i class="fas fa-eye"></i></button>
+                                    
+                                    ${canConfirm ? `<button class="btn" onclick="confirmOrder('${order.id}')" style="background:#10b981;color:#fff;border:none;padding:4px 14px;border-radius:20px;font-size:0.65rem;font-weight:600;cursor:pointer;"><i class="fas fa-check-circle"></i> Подтвердить</button>` : ''}
+                                    
+                                    ${canReject ? `<button class="btn" onclick="rejectOrder('${order.id}')" style="background:#ef4444;color:#fff;border:none;padding:4px 14px;border-radius:20px;font-size:0.65rem;font-weight:600;cursor:pointer;"><i class="fas fa-times-circle"></i> Отклонить</button>` : ''}
+                                    
+                                    ${canShip ? `<button class="btn btn-ship" onclick="openShipModal('${order.id}')"><i class="fas fa-truck"></i> Отправить</button>` : ''}
+                                    
+                                    ${canCancel ? `<button class="btn btn-cancel" onclick="openCancelModal('${order.id}')"><i class="fas fa-ban"></i></button>` : ''}
+                                    
+                                    ${order.userId ? `<button class="btn btn-chat" onclick="openChat('${order.userId}','${order.id}')"><i class="fas fa-comments"></i></button>` : ''}
+                                    
+                                    <button class="btn btn-print" onclick="window.printOrderInvoice && window.printOrderInvoice('${order.id}')">
+                                        <i class="fas fa-print"></i>
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                    
-                    <div class="card-body">
-                        <div class="info-item">
-                            <span class="label">👤 Покупатель</span>
-                            <div class="value">
-                                <div class="name">${Utils.escapeHtml(order.userName || 'Покупатель')}</div>
-                                <div class="phone">${Utils.escapeHtml(order.userPhone || '—')}</div>
-                            </div>
-                        </div>
-                        
-                        <div class="info-item hide-mobile">
-                            <span class="label">📍 Адрес</span>
-                            <div class="value">
-                                <div class="address">${Utils.escapeHtml(order.userAddress || '—')}</div>
-                                ${order.userComment ? `<div class="comment">💬 ${Utils.escapeHtml(order.userComment)}</div>` : ''}
-                            </div>
-                        </div>
-                        
-                        <div class="info-item">
-                            <span class="label">🛒 Товары</span>
-                            <div class="value">
-                                <div class="items-preview">${itemsHtml}</div>
-                                ${order.trackingNumber ? `<div class="tracking-tag">📦 ${Utils.escapeHtml(order.trackingNumber)}</div>` : ''}
-                                ${order.cancelReason ? `<div class="cancel-reason">❌ ${Utils.escapeHtml(order.cancelReason)}</div>` : ''}
-                            </div>
-                        </div>
-                        
-                        <div class="card-right" style="flex-direction:row;align-items:center;gap:8px;flex-wrap:wrap;">
-                            <div class="card-actions" onclick="event.stopPropagation();">
-                                <button class="btn btn-view" onclick="openViewModal('${order.id}')"><i class="fas fa-eye"></i></button>
-                                ${canShip ? `<button class="btn btn-ship" onclick="openShipModal('${order.id}')"><i class="fas fa-truck"></i></button>` : ''}
-                                <button class="btn btn-chat" onclick="openChat('${order.userId || ''}','${order.id}')"><i class="fas fa-comments"></i></button>
-                                <button class="btn btn-print" onclick="window.printOrderInvoice('${order.id}')">
-                                    <i class="fas fa-print"></i>
-                                </button>
-                                ${canCancel ? `<button class="btn btn-cancel" onclick="openCancelModal('${order.id}')"><i class="fas fa-ban"></i></button>` : ''}
-                            </div>
+                `;
+            } catch (err) {
+                console.error('Ошибка в renderOrderCard для заказа', order.id, err);
+                return `
+                    <div class="order-card" style="border-color:#ef4444;background:rgba(239,68,68,0.05);">
+                        <div style="color:#ef4444;padding:12px;">
+                            <i class="fas fa-exclamation-triangle"></i> 
+                            Ошибка отображения заказа #${order.id.slice(0, 8)}
+                            <div style="font-size:0.7rem;color:#666;margin-top:4px;">${err.message}</div>
                         </div>
                     </div>
-                </div>
-            `;
+                `;
+            }
         }
 
         // ===== RENDER ACTIVE ORDERS =====
@@ -2519,15 +2624,31 @@ main {
                     </div>
                 `;
             } else {
-                container.innerHTML = `<div class="orders-grid">${items.map(o => renderOrderCard(o)).join('')}</div>`;
+                let html = '<div class="orders-grid">';
+                items.forEach(order => {
+                    try {
+                        html += renderOrderCard(order);
+                    } catch (err) {
+                        console.error('Ошибка рендера заказа:', order.id, err);
+                        html += `
+                            <div class="order-card" style="border-color:#ef4444;">
+                                <div style="color:#ef4444;padding:12px;">
+                                    <i class="fas fa-exclamation-triangle"></i> 
+                                    Ошибка отображения заказа #${order.id.slice(0, 8)}
+                                    <div style="font-size:0.7rem;color:#666;margin-top:4px;">${err.message}</div>
+                                </div>
+                            </div>
+                        `;
+                    }
+                });
+                html += '</div>';
+                container.innerHTML = html;
             }
             
-            // Pagination
             document.getElementById('activePaginationInfo').textContent = 
                 total ? `Показано ${start + 1}-${Math.min(start + perPage, total)} из ${total}` : 'Нет заказов';
             renderPagination('activePaginationPages', pages, state.pagination.active.page, 'active');
             
-            // Attach checkbox events
             document.querySelectorAll('#activeOrdersContainer .order-checkbox').forEach(cb => {
                 cb.removeEventListener('change', handleCheckboxChange);
                 cb.addEventListener('change', handleCheckboxChange);
@@ -2595,6 +2716,75 @@ main {
             
             container.innerHTML = html;
         }
+
+        window.confirmOrder = async function(orderId) {
+            if (!confirm('Подтвердить заказ? Деньги будут списаны с баланса покупателя.')) return;
+            
+            try {
+                const orderRef = doc(db, "orders", orderId);
+                const orderSnap = await getDoc(orderRef);
+                const order = orderSnap.data();
+                
+                if (!order || order.status !== 'pending') {
+                    showNotification('❌ Заказ нельзя подтвердить (статус: ' + (order?.status || 'неизвестен') + ')', 'warning');
+                    return;
+                }
+                
+                if (order.paymentMethod === 'balance' && order.userId) {
+                    const { deductFunds, holdFunds } = await import('./wallet.js');
+                    await deductFunds(order.userId, order.totalPrice || 0, orderId);
+                    await holdFunds(order.userId, order.totalPrice || 0, orderId);
+                }
+                
+                await updateDoc(orderRef, {
+                    status: 'paid',
+                    confirmedAt: new Date()
+                });
+                
+                showToast('✅ Заказ подтверждён!');
+                
+                // ===== ПРИНУДИТЕЛЬНОЕ ОБНОВЛЕНИЕ =====
+                localStorage.removeItem('prorank_orders_cache_v2');
+                ordersCache.clear();
+                await loadOrders(true);
+                
+            } catch (err) {
+                console.error('Ошибка:', err);
+                showNotification('❌ Не удалось подтвердить заказ: ' + err.message, 'error');
+            }
+        };
+
+        window.rejectOrder = async function(orderId) {
+            const reason = prompt('Укажите причину отклонения заказа (необязательно):');
+            
+            if (!confirm('Отклонить заказ?')) return;
+            
+            try {
+                const orderRef = doc(db, "orders", orderId);
+                const orderSnap = await getDoc(orderRef);
+                const order = orderSnap.data();
+                
+                if (!order || order.status !== 'pending') {
+                    showNotification('❌ Заказ нельзя отклонить (статус: ' + (order?.status || 'неизвестен') + ')', 'warning');
+                    return;
+                }
+                
+                await updateDoc(orderRef, {
+                    status: 'cancelled',
+                    cancelledBy: 'partner',
+                    cancelledAt: new Date(),
+                    cancelReason: reason || 'Отклонён продавцом'
+                });
+                
+                showToast('✅ Заказ отклонён');
+                ordersCache.invalidate(state.partnerId, 'active');
+                await loadOrders(true);
+                
+            } catch (err) {
+                console.error('Ошибка:', err);
+                showNotification('❌ Не удалось отклонить заказ', 'error');
+            }
+        };
 
         window.changePage = function(page, type) {
             if (type === 'active') {
@@ -2878,6 +3068,37 @@ main {
                     return;
                 }
                 
+                // Уменьшаем stock для каждого товара
+                if (order.items && order.items.length > 0) {
+                    for (const item of order.items) {
+                        const productId = item.productId || item.id;
+                        if (!productId) continue;
+                        
+                        try {
+                            const productRef = doc(db, "products", productId);
+                            const productSnap = await getDoc(productRef);
+                            
+                            if (productSnap.exists()) {
+                                const currentStock = productSnap.data().stock || 0;
+                                const quantity = item.quantity || 1;
+                                const newStock = Math.max(0, currentStock - quantity);
+                                
+                                await updateDoc(productRef, {
+                                    stock: newStock
+                                });
+                                
+                                if (newStock === 0) {
+                                    await updateDoc(productRef, {
+                                        outOfStock: true
+                                    });
+                                }
+                            }
+                        } catch (err) {
+                            console.error(`Ошибка обновления stock для товара ${productId}:`, err);
+                        }
+                    }
+                }
+                
                 await updateDoc(orderRef, {
                     status: 'shipped',
                     trackingNumber: trackingNumber,
@@ -2906,7 +3127,38 @@ main {
                     return;
                 }
                 
-                // 1. Возвращаем деньги покупателю (если оплачено с баланса)
+                // Возвращаем stock (если заказ был отправлен)
+                if (order.status === 'shipped' && order.items && order.items.length > 0) {
+                    for (const item of order.items) {
+                        const productId = item.productId || item.id;
+                        if (!productId) continue;
+                        
+                        try {
+                            const productRef = doc(db, "products", productId);
+                            const productSnap = await getDoc(productRef);
+                            
+                            if (productSnap.exists()) {
+                                const currentStock = productSnap.data().stock || 0;
+                                const quantity = item.quantity || 1;
+                                const newStock = currentStock + quantity;
+                                
+                                await updateDoc(productRef, {
+                                    stock: newStock
+                                });
+                                
+                                if (productSnap.data().outOfStock) {
+                                    await updateDoc(productRef, {
+                                        outOfStock: false
+                                    });
+                                }
+                            }
+                        } catch (err) {
+                            console.error(`Ошибка возврата stock для товара ${productId}:`, err);
+                        }
+                    }
+                }
+                
+                // Возвращаем деньги покупателю
                 if (order.paymentMethod === 'balance' && order.userId) {
                     try {
                         const { refundFunds } = await import('./wallet.js');
@@ -2917,7 +3169,6 @@ main {
                     }
                 }
                 
-                // 2. Отменяем заказ
                 await updateDoc(orderRef, {
                     status: 'cancelled',
                     cancelledBy: 'partner',
@@ -2925,7 +3176,7 @@ main {
                     cancelReason: reason || 'Отменён продавцом'
                 });
                 
-                showToast('✅ Заказ отменён, средства возвращены покупателю');
+                showToast('✅ Заказ отменён');
                 state.selectedOrders.delete(orderId);
                 ordersCache.invalidate(state.partnerId, 'active');
                 ordersCache.invalidate(state.partnerId, 'history');
