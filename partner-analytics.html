@@ -1791,32 +1791,50 @@
         return sum / productReviews.length;
     }
 
-    // ===== РАСЧЁТ СТАТИСТИКИ =====
+    // ===== РАСЧЁТ СТАТИСТИКИ (АВТОМАТИЧЕСКИ) =====
     function calculateStats(orders, period) {
         const totalOrders = orders.length;
-        const totalRevenue = orders.reduce((sum, o) => sum + (o.total || 0), 0);
-        const uniqueCustomers = new Set(orders.map(o => o.buyerId).filter(id => id));
+        
+        // ===== 1. ВЫРУЧКА: СУММИРУЕМ ВСЕ ЗАКАЗЫ =====
+        let totalRevenue = 0;
+        orders.forEach(order => {
+            const orderTotal = order.totalPrice || order.partnerOrderTotal || order.total || 0;
+            totalRevenue += orderTotal;
+        });
+        
+        // ===== 2. ПОКУПАТЕЛИ: УНИКАЛЬНЫЕ USER ID =====
+        const customersSet = new Set();
+        orders.forEach(order => {
+            const userId = order.userId || order.buyerId || order.customerId;
+            if (userId) customersSet.add(userId);
+        });
+        const uniqueCustomers = customersSet.size;
+        
+        // ===== 3. СРЕДНИЙ ЧЕК =====
         const avgCheck = totalOrders > 0 ? totalRevenue / totalOrders : 0;
         
+        // ===== 4. СТАТУСЫ ЗАКАЗОВ =====
         const statusCounts = {
             completed: 0,
             pending: 0,
+            paid: 0,
             shipped: 0,
-            cancelled: 0
+            cancelled: 0,
+            delivered: 0
         };
         
         orders.forEach(o => {
-            if (o.status === 'completed') statusCounts.completed++;
-            else if (o.status === 'pending') statusCounts.pending++;
-            else if (o.status === 'shipped' || o.status === 'paid' || o.status === 'delivered') {
-                statusCounts.shipped++;
-            } else if (o.status === 'cancelled') statusCounts.cancelled++;
+            const status = o.status || 'unknown';
+            if (statusCounts[status] !== undefined) {
+                statusCounts[status]++;
+            }
         });
         
+        // ===== 5. ТОВАРЫ (из заказов) =====
         const productSales = {};
         
+        // Сначала добавляем ВСЕ товары продавца (с нулевыми показателями)
         allProducts.forEach(product => {
-            const rating = calculateProductRating(product.id);
             productSales[product.id] = {
                 id: product.id,
                 name: product.name || product.id,
@@ -1824,7 +1842,7 @@
                 revenue: 0,
                 orders: 0,
                 productId: product.id,
-                rating: rating,
+                rating: calculateProductRating(product.id),
                 image: product.image || null,
                 price: product.price || 0,
                 description: product.description || '',
@@ -1832,65 +1850,103 @@
             };
         });
         
+        // Потом добавляем данные из заказов (обновляем существующие)
         orders.forEach(order => {
-            if (order.items) {
-                order.items.forEach(item => {
-                    const productId = item.productId;
-                    if (productSales[productId]) {
-                        productSales[productId].count += item.quantity || 1;
-                        productSales[productId].revenue += (item.price || 0) * (item.quantity || 1);
-                        productSales[productId].orders += 1;
-                    } else {
-                        const key = productId || item.productName;
-                        const rating = calculateProductRating(productId);
-                        productSales[key] = {
-                            id: productId || key,
-                            name: item.productName || key,
-                            count: item.quantity || 1,
-                            revenue: (item.price || 0) * (item.quantity || 1),
-                            orders: 1,
-                            productId: productId || key,
-                            rating: rating,
-                            image: null,
-                            price: item.price || 0,
-                            description: '',
-                            category: ''
-                        };
-                    }
-                });
-            }
+            const itemsArray = order.items || order.partnerItems || [];
+            itemsArray.forEach(item => {
+                const productId = item.productId || item.id;
+                const key = productId || item.productName;
+                
+                if (!productSales[key]) {
+                    productSales[key] = {
+                        id: productId || key,
+                        name: item.productName || key,
+                        count: 0,
+                        revenue: 0,
+                        orders: 0,
+                        productId: productId || key,
+                        rating: 0,
+                        image: item.image || null,
+                        price: item.price || 0,
+                        description: '',
+                        category: ''
+                    };
+                }
+                
+                const quantity = item.quantity || 1;
+                const price = item.price || 0;
+                productSales[key].count += quantity;
+                productSales[key].revenue += price * quantity;
+                productSales[key].orders += 1;
+            });
         });
         
+        // ===== 6. ДОБАВЛЯЕМ РЕЙТИНГ =====
         Object.keys(productSales).forEach(key => {
             const rating = calculateProductRating(productSales[key].id);
             productSales[key].rating = rating;
         });
         
+        // ===== 7. ТОП-20 ТОВАРОВ =====
         const topProducts = Object.values(productSales)
             .sort((a, b) => b.revenue - a.revenue)
             .slice(0, 20);
         
+        // ===== 8. ПРЕДЫДУЩИЙ ПЕРИОД ДЛЯ СРАВНЕНИЯ (ИСПРАВЛЕНО!) =====
         let prevStats = null;
-        if (period !== 'all') {
-            const prevPeriod = getPreviousPeriod(parseInt(period));
+        if (period !== 'all' && period > 0) {
+            const days = parseInt(period);
+            const now = new Date();
+            
+            // Текущий период: от (сегодня - days) до сегодня
+            const currentFrom = new Date(now);
+            currentFrom.setDate(currentFrom.getDate() - days);
+            
+            // Предыдущий период: от (сегодня - days*2) до (сегодня - days)
+            const prevFrom = new Date(now);
+            prevFrom.setDate(prevFrom.getDate() - days * 2);
+            const prevTo = new Date(now);
+            prevTo.setDate(prevTo.getDate() - days);
+            
+            // Фильтруем заказы для предыдущего периода
             const prevOrders = orders.filter(order => {
                 if (!order.createdAt) return false;
                 const date = order.createdAt.toDate ? order.createdAt.toDate() : new Date(order.createdAt.seconds * 1000);
-                return date >= prevPeriod.from && date < prevPeriod.to;
+                return date >= prevFrom && date < prevTo;
+            });
+            
+            // Считаем выручку за предыдущий период
+            let prevRevenue = 0;
+            prevOrders.forEach(o => {
+                const orderTotal = o.totalPrice || o.partnerOrderTotal || o.total || 0;
+                prevRevenue += orderTotal;
+            });
+            
+            // Считаем уникальных покупателей за предыдущий период
+            const prevCustomers = new Set();
+            prevOrders.forEach(o => {
+                const userId = o.userId || o.buyerId || o.customerId;
+                if (userId) prevCustomers.add(userId);
             });
             
             prevStats = {
                 orders: prevOrders.length,
-                revenue: prevOrders.reduce((sum, o) => sum + (o.total || 0), 0),
-                customers: new Set(prevOrders.map(o => o.buyerId).filter(id => id)).size,
-                avgCheck: prevOrders.length > 0 ? prevOrders.reduce((sum, o) => sum + (o.total || 0), 0) / prevOrders.length : 0
+                revenue: prevRevenue,
+                customers: prevCustomers.size,
+                avgCheck: prevOrders.length > 0 ? prevRevenue / prevOrders.length : 0
             };
+            
+            console.log(`📊 Сравнение за ${days} дней:`, {
+                текущий: { заказов: totalOrders, выручка: totalRevenue },
+                предыдущий: { заказов: prevOrders.length, выручка: prevRevenue }
+            });
         }
         
+        // ===== 9. ВОЗВРАЩАЕМ РЕЗУЛЬТАТ =====
         return {
             totalOrders,
             totalRevenue,
-            uniqueCustomers: uniqueCustomers.size,
+            uniqueCustomers,
             avgCheck,
             statusCounts,
             topProducts,
@@ -2016,14 +2072,49 @@
         }
     }
 
+   
     // ===== ОТРИСОВКА ГРАФИКА =====
     function renderChart(orders) {
-        if (currentChartType === 'line') renderLine(orders);
-        else if (currentChartType === 'bars') renderBars(orders);
-        else if (currentChartType === 'donut') renderDonut(orders);
+        // Обновляем данные для всех типов
+        renderLine(orders);
+        renderBars(orders);
+        renderDonut(orders);
+        
+        // Показываем активный
+        const chartLine = document.getElementById('chartLine');
+        const chartBars = document.getElementById('chartBars');
+        const chartDonut = document.getElementById('chartDonut');
+        
+        // Скрываем все
+        if (chartLine) chartLine.classList.add('hidden');
+        if (chartBars) chartBars.classList.add('hidden');
+        if (chartDonut) chartDonut.classList.add('hidden');
+        
+        // Показываем нужный
+        if (currentChartType === 'line' && chartLine) {
+            chartLine.classList.remove('hidden');
+        } else if (currentChartType === 'bars' && chartBars) {
+            chartBars.classList.remove('hidden');
+        } else if (currentChartType === 'donut' && chartDonut) {
+            chartDonut.classList.remove('hidden');
+        }
     }
 
-    // ===== ЛИНИЯ =====
+    // ===== ПЕРЕКЛЮЧЕНИЕ ГРАФИКОВ =====
+    function switchChartType(type) {
+        currentChartType = type;
+        
+        // Обновляем кнопки
+        document.querySelectorAll('.chart-types button').forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.chart === type);
+        });
+        
+        // Перерисовываем
+        const filtered = filterOrdersByPeriod(allOrders, currentPeriod);
+        renderChart(filtered);
+    }
+
+    // ===== ЛИНИЯ (ТОЛЬКО ПРИ 2+ ПРОДАЖАХ) =====
     function renderLine(orders) {
         const svg = document.getElementById('lineSvg');
         
@@ -2040,7 +2131,7 @@
             if (!daysMap[key]) {
                 daysMap[key] = { date: date, total: 0, count: 0 };
             }
-            daysMap[key].total += order.total || 0;
+            daysMap[key].total += order.totalPrice || order.partnerOrderTotal || order.total || 0;
             daysMap[key].count += 1;
         });
 
@@ -2048,11 +2139,23 @@
         const daysData = sortedDays.map(key => daysMap[key]);
         const displayData = daysData.slice(-30);
         
+        // ===== ЕСЛИ МЕНЬШЕ 2 ТОЧЕК — ПОКАЗЫВАЕМ СООБЩЕНИЕ =====
         if (displayData.length < 2) {
-            svg.innerHTML = `<text x="450" y="140" class="no-data-text">Недостаточно данных</text>`;
+            svg.innerHTML = `
+                <text x="450" y="120" text-anchor="middle" fill="#666" font-size="18" font-weight="600">
+                    📊 Требуется минимум 2 продажи для построения линии
+                </text>
+                <text x="450" y="150" text-anchor="middle" fill="#444" font-size="13">
+                    Переключитесь на "Столбцы" или "Круг"
+                </text>
+                <text x="450" y="175" text-anchor="middle" fill="#fbbf24" font-size="14" font-weight="600">
+                    Текущих продаж: ${displayData.length}
+                </text>
+            `;
             return;
         }
 
+        // ===== 2+ ТОЧКИ — РИСУЕМ ЛИНИЮ =====
         const maxTotal = Math.max(...displayData.map(d => d.total), 1);
         const minTotal = Math.min(...displayData.map(d => d.total), 0);
         const range = maxTotal - minTotal || 1;
@@ -2176,7 +2279,8 @@
             if (!daysMap[key]) {
                 daysMap[key] = { date: date, total: 0 };
             }
-            daysMap[key].total += order.total || 0;
+            // ===== ИСПРАВЛЕНО: правильно берём сумму =====
+            daysMap[key].total += order.totalPrice || order.partnerOrderTotal || order.total || 0;
         });
 
         const sortedDays = Object.keys(daysMap).sort();
@@ -2204,95 +2308,72 @@
         container.innerHTML = html;
     }
 
-    // ===== КРУГ =====
+    // ===== КРУГ (КРАСИВЫЙ, БЕЗ СМАЙЛИКОВ, АДАПТИВНЫЙ) =====
     function renderDonut(orders) {
         const container = document.getElementById('chartDonut');
         
+        if (!container) {
+            console.error('❌ chartDonut не найден!');
+            return;
+        }
+        
+        container.classList.remove('hidden');
+        
         if (orders.length === 0) {
-            container.innerHTML = `<div class="no-data-donut">Нет данных</div>`;
+            container.innerHTML = `<div style="text-align:center;color:#444;padding:60px 0;font-size:22px;font-weight:700;">Нет данных</div>`;
             return;
         }
 
         const statusConfig = {
-            completed: { label: 'Выполнены', color: '#34d399' },
+            completed: { label: 'Завершены', color: '#34d399' },
             pending: { label: 'В обработке', color: '#fbbf24' },
-            shipped: { label: 'Отправлены', color: '#60a5fa' },
+            paid: { label: 'Оплачены', color: '#60a5fa' },
+            shipped: { label: 'Отправлены', color: '#8b5cf6' },
             cancelled: { label: 'Отменены', color: '#ef4444' }
         };
 
-        const counts = { completed: 0, pending: 0, shipped: 0, cancelled: 0 };
+        const counts = {};
         orders.forEach(o => {
-            if (o.status === 'completed') counts.completed++;
-            else if (o.status === 'pending') counts.pending++;
-            else if (o.status === 'shipped' || o.status === 'paid' || o.status === 'delivered') counts.shipped++;
-            else if (o.status === 'cancelled') counts.cancelled++;
+            const status = o.status || 'unknown';
+            if (!counts[status]) counts[status] = 0;
+            counts[status]++;
         });
 
         const total = Object.values(counts).reduce((a, b) => a + b, 0);
         
         if (total === 0) {
-            container.innerHTML = `<div class="no-data-donut">Нет данных</div>`;
+            container.innerHTML = `<div style="text-align:center;color:#444;padding:60px 0;font-size:22px;font-weight:700;">Нет данных</div>`;
             return;
         }
 
+        const entries = Object.entries(statusConfig).filter(([key]) => counts[key] > 0);
+        const colors = entries.map(([, config]) => config.color);
+        const data = entries.map(([key]) => counts[key]);
+
+        const canvasId = 'donutCanvas_' + Date.now();
+        
         let html = `
-            <div class="chart-donut-wrap">
-                <div class="donut">
-                    <svg viewBox="0 0 100 100">
-        `;
-
-        let currentAngle = 0;
-        const radius = 38;
-        const center = 50;
-
-        Object.keys(statusConfig).forEach(key => {
-            const count = counts[key] || 0;
-            if (count === 0) return;
-            
-            const percent = count / total;
-            const angle = percent * 360;
-            const endAngle = currentAngle + angle;
-            
-            const rad1 = (currentAngle - 90) * Math.PI / 180;
-            const rad2 = (endAngle - 90) * Math.PI / 180;
-            
-            const x1 = center + radius * Math.cos(rad1);
-            const y1 = center + radius * Math.sin(rad1);
-            const x2 = center + radius * Math.cos(rad2);
-            const y2 = center + radius * Math.sin(rad2);
-            
-            const largeArc = angle > 180 ? 1 : 0;
-            
-            html += `
-                <path class="donut-segment" 
-                      d="M ${center} ${center} L ${x1} ${y1} A ${radius} ${radius} 0 ${largeArc} 1 ${x2} ${y2} Z" 
-                      fill="${statusConfig[key].color}" 
-                      opacity="0.9" />
-            `;
-            
-            currentAngle = endAngle;
-        });
-
-        html += `
-                    </svg>
-                    <div class="donut-center">
-                        <div class="num">${total}</div>
-                        <div class="label">всего заказов</div>
+            <div style="display:flex;align-items:center;justify-content:center;gap:40px;height:100%;flex-wrap:wrap;padding:10px 0;">
+                <div style="position:relative;width:200px;height:200px;flex-shrink:0;">
+                    <canvas id="${canvasId}" width="200" height="200" style="width:200px;height:200px;border-radius:50%;display:block;"></canvas>
+                    <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;pointer-events:none;">
+                        <div style="font-size:28px;font-weight:900;color:#fff;letter-spacing:-0.5px;">${total}</div>
+                        <div style="font-size:11px;color:#888;font-weight:500;">всего заказов</div>
                     </div>
                 </div>
-                <div class="donut-legend">
+                <div style="display:flex;flex-direction:column;gap:8px;min-width:140px;flex:1;max-width:220px;">
         `;
 
-        Object.keys(statusConfig).forEach(key => {
+        entries.forEach(([key, config], index) => {
             const count = counts[key] || 0;
             if (count === 0) return;
             const percent = (count / total * 100).toFixed(1);
             html += `
-                <div class="item">
-                    <span class="dot" style="background:${statusConfig[key].color}"></span>
-                    ${statusConfig[key].label}
-                    <span class="pct">${percent}%</span>
-                    <span class="val">${count}</span>
+                <div style="display:flex;align-items:center;gap:10px;font-size:13px;color:#ccc;padding:4px 0;border-bottom:1px solid rgba(255,255,255,0.04);">
+                    <span style="width:12px;height:12px;border-radius:50%;flex-shrink:0;background:${config.color};box-shadow:0 0 10px ${config.color}40;"></span>
+                    <span style="flex:1;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${config.label}</span>
+                    <span style="font-size:12px;color:#888;flex-shrink:0;">${percent}%</span>
+                    <span style="font-weight:700;color:#fff;font-size:14px;min-width:24px;text-align:right;flex-shrink:0;">${count}</span>
                 </div>
             `;
         });
@@ -2303,6 +2384,53 @@
         `;
 
         container.innerHTML = html;
+
+        // Рисуем круг на canvas
+        setTimeout(() => {
+            const canvas = document.getElementById(canvasId);
+            if (!canvas) return;
+            
+            const ctx = canvas.getContext('2d');
+            const centerX = 100;
+            const centerY = 100;
+            const radius = 82;
+            const innerRadius = 50;
+            
+            ctx.clearRect(0, 0, 200, 200);
+            
+            let startAngle = -Math.PI / 2;
+            const totalItems = data.reduce((a, b) => a + b, 0);
+            
+            data.forEach((value, i) => {
+                if (value === 0) return;
+                
+                const sliceAngle = (value / totalItems) * 2 * Math.PI;
+                const endAngle = startAngle + sliceAngle;
+                
+                ctx.beginPath();
+                ctx.moveTo(centerX, centerY);
+                ctx.arc(centerX, centerY, radius, startAngle, endAngle);
+                ctx.closePath();
+                ctx.fillStyle = colors[i % colors.length];
+                ctx.fill();
+                
+                startAngle = endAngle;
+            });
+            
+            // Внутренний круг (пончик)
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, innerRadius, 0, 2 * Math.PI);
+            ctx.fillStyle = '#0a0a0a';
+            ctx.fill();
+            
+            // Обводка
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
+            ctx.strokeStyle = 'rgba(255,255,255,0.06)';
+            ctx.lineWidth = 1;
+            ctx.stroke();
+            
+        }, 50);
     }
 
     // ===== ГЕНЕРАЦИЯ МИНИ-ГРАФИКА =====
@@ -2690,12 +2818,10 @@
         });
     });
 
-    document.querySelectorAll('.chart-types button').forEach(btn => {
+        document.querySelectorAll('.chart-types button').forEach(btn => {
         btn.addEventListener('click', function() {
-            document.querySelectorAll('.chart-types button').forEach(b => b.classList.remove('active'));
-            this.classList.add('active');
-            currentChartType = this.dataset.chart;
-            updateAnalytics();
+            const type = this.dataset.chart;
+            switchChartType(type);
         });
     });
 
