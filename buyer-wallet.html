@@ -1711,15 +1711,9 @@
             confirmBtn.disabled = true;
 
             try {
-                // Real payment via YooKassa
-                const { createPayment } = await import('./payment.js');
-
-                const result = await createPayment(
-                    'deposit_' + Date.now(),
-                    currentUser.uid,
-                    amount,
-                    'Пополнение баланса'
-                );
+                // ===== ИСПРАВЛЕНО: используем createDepositPayment =====
+                const { createDepositPayment } = await import('./payment.js');
+                const result = await createDepositPayment(currentUser.uid, amount, 'Пополнение баланса');
 
                 if (result.paymentUrl) {
                     window.location.href = result.paymentUrl;
