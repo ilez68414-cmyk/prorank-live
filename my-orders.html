@@ -1416,12 +1416,15 @@
     function groupItemsBySeller(items) {
         const groups = {};
         items.forEach(item => {
-            const sellerId = item.partnerId || item.sellerId || 'unknown';
+            // ===== ИСПРАВЛЕНО: если partnerId нет — берём из item =====
+            const sellerId = item.partnerId || item.sellerId || item.partner_id || null;
+            if (!sellerId || sellerId === 'null' || sellerId === 'undefined') return;
+            
             const key = sellerId;
             if (!groups[key]) {
                 groups[key] = {
                     sellerId: key,
-                    sellerName: item.partnerName || 'Продавец',
+                    sellerName: item.partnerName || item.sellerName || 'Продавец',
                     items: [],
                     total: 0
                 };
@@ -1588,7 +1591,7 @@
                     sellerBlocksHtml += `
                         <div class="seller-block">
                             <div class="seller-header">
-                                <div class="seller-info" data-seller-id="${group.sellerId}">
+                                <div class="seller-info" data-seller-id="${group.sellerId}" style="cursor:pointer;">
                                     <img src="${sellerData.avatar}" class="seller-avatar" onerror="this.src='https://ui-avatars.com/api/?name=Продавец&background=333&color=fff&size=64'">
                                     <span class="seller-name">${escapeHtml(sellerData.name)} <i class="fas fa-store"></i></span>
                                 </div>
@@ -1737,8 +1740,13 @@
         e.stopPropagation();
         const el = e.currentTarget;
         const sellerId = el.dataset.sellerId;
-        if (sellerId && sellerId !== 'null' && sellerId !== 'undefined') {
-            window.location.href = `store-profile.html?id=${sellerId}`;
+        
+        console.log('🔄 Клик по продавцу, sellerId:', sellerId);
+        
+        if (sellerId && sellerId !== 'null' && sellerId !== 'undefined' && sellerId !== 'unknown') {
+            window.location.href = `partner-dashboard.html?id=${sellerId}`;
+        } else {
+            showNotification('❌ Не удалось найти продавца', 'error');
         }
     }
 
