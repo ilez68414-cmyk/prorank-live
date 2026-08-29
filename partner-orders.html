@@ -2006,27 +2006,45 @@ main {
                 }
             }
             
-            set(partnerId, tab, orders) {
-                // ===== УБИРАЕМ ПРОВЕРКУ НА HISTORY! =====
-                // Раньше было: if (tab === 'history') return;
-                // ТЕПЕРЬ: СОХРАНЯЕМ ВСЁ!
-                
-                const key = `${partnerId}_${tab}`;
-                const timestamp = Date.now();
-                
-                this.memoryCache.set(key, { data: orders, timestamp });
-                
-                try {
-                    localStorage.setItem(this.cacheKey, JSON.stringify({
-                        partnerId,
-                        tab,
-                        orders,
-                        timestamp
-                    }));
-                } catch (e) {
-                    console.warn('Не удалось сохранить кэш:', e);
-                }
-            }
+                    set(partnerId, tab, orders) {
+                        const key = `${partnerId}_${tab}`;
+                        const timestamp = Date.now();
+                        
+                        this.memoryCache.set(key, { data: orders, timestamp });
+                        
+                        try {
+                            localStorage.setItem(this.cacheKey, JSON.stringify({
+                                partnerId,
+                                tab,
+                                orders,
+                                timestamp
+                            }));
+                        } catch (e) {
+                            console.warn('Не удалось сохранить кэш:', e);
+                        }
+                    }
+                    
+                    invalidate(partnerId, tab) {
+                        const key = `${partnerId}_${tab}`;
+                        this.memoryCache.delete(key);
+                        
+                        try {
+                            const data = localStorage.getItem(this.cacheKey);
+                            if (!data) return;
+                            
+                            const parsed = JSON.parse(data);
+                            if (parsed.partnerId === partnerId && parsed.tab === tab) {
+                                localStorage.removeItem(this.cacheKey);
+                            }
+                        } catch (e) {
+                            console.warn('Ошибка инвалидации кэша:', e);
+                        }
+                    }
+                    
+                    clear() {
+                        this.memoryCache.clear();
+                        localStorage.removeItem(this.cacheKey);
+                    }
         }
 
         // =============================================
@@ -2249,45 +2267,18 @@ main {
         async function loadOrders(forceRefresh = false) {
             if (!state.partnerId) return;
             
-            const tab = state.currentTab;
-            const loadingId = tab === 'active' ? 'activeLoading' : 'historyLoading';
-            const containerId = tab === 'active' ? 'activeOrdersContainer' : 'historyOrdersContainer';
-            
-            const container = document.getElementById(containerId);
-            
-            // ===== 1. ВСЕГДА ПРОВЕРЯЕМ КЭШ (ДАЖЕ ДЛЯ ИСТОРИИ!) =====
-            if (!forceRefresh) {
-                const cached = ordersCache.get(state.partnerId, tab);
-                if (cached && cached.length > 0) {
-                    console.log(`⚡ Мгновенный показ из кэша (${tab}):`, cached.length, 'заказов');
-                    
-                    // Обновляем state из кэша
-                    const otherTab = tab === 'active' ? 'history' : 'active';
-                    const otherOrders = state.allOrders.filter(o => {
-                        const isActive = o.status === 'pending' || o.status === 'paid' || o.status === 'shipped';
-                        const isHistory = o.status === 'completed' || o.status === 'cancelled';
-                        return tab === 'active' ? isHistory : isActive;
-                    });
-                    
-                    state.allOrders = [...cached, ...otherOrders];
-                    
-                    updateStats();
-                    renderActiveOrders();
-                    renderHistoryOrders();
-                    
-                    // ===== 2. В ФОНЕ ОБНОВЛЯЕМ (если изменилось) =====
-                    loadFreshData(tab, containerId, loadingId);
-                    return;
-                }
-            }
-            
-            // ===== 3. ЕСЛИ КЭША НЕТ — ПОКАЗЫВАЕМ СКЕЛЕТОН =====
-            if (container) {
-                container.innerHTML = showSkeletonLoader(5);
-            }
-            
+            // Загружаем ОБЕ вкладки сразу
+            await Promise.all([
+                loadTabOrders('active', forceRefresh),
+                loadTabOrders('history', forceRefresh)
+            ]);
+        }
+
+        async function loadTabOrders(tab, forceRefresh = false) {
             try {
-                state.isLoading[tab] = true;
+                const loadingId = tab === 'active' ? 'activeLoading' : 'historyLoading';
+                const containerId = tab === 'active' ? 'activeOrdersContainer' : 'historyOrdersContainer';
+                
                 document.getElementById(loadingId).classList.add('show');
                 
                 const statuses = tab === 'active' 
@@ -2295,7 +2286,7 @@ main {
                     : ['completed', 'cancelled'];
                 
                 const q = query(
-                    collection(db, "orders"),
+                    collection(db, "physical_orders"),
                     where("partnerId", "==", state.partnerId),
                     where("status", "in", statuses),
                     orderBy("createdAt", "desc"),
@@ -2311,7 +2302,7 @@ main {
                 // Сохраняем в кэш
                 ordersCache.set(state.partnerId, tab, orders);
                 
-                // Обновляем state
+                // Обновляем state: убираем старые заказы этого типа, добавляем новые
                 const otherTab = tab === 'active' ? 'history' : 'active';
                 const otherOrders = state.allOrders.filter(o => {
                     const isActive = o.status === 'pending' || o.status === 'paid' || o.status === 'shipped';
@@ -2326,74 +2317,9 @@ main {
                 renderHistoryOrders();
                 
             } catch (err) {
-                console.error('Ошибка загрузки заказов:', err);
-                document.getElementById(containerId).innerHTML = `
-                    <div class="empty-state">
-                        <i class="fas fa-exclamation-triangle" style="color:#f59e0b;"></i>
-                        <h3>Ошибка загрузки</h3>
-                        <p>Попробуйте обновить страницу</p>
-                    </div>
-                `;
+                console.error(`Ошибка загрузки (${tab}):`, err);
             } finally {
-                state.isLoading[tab] = false;
-                document.getElementById(loadingId).classList.remove('show');
-            }
-        }
-
-        // ===== НОВАЯ ФУНКЦИЯ ДЛЯ ЗАГРУЗКИ СВЕЖИХ ДАННЫХ =====
-        async function loadFreshData(tab, containerId, loadingId) {
-            try {
-                state.isLoading[tab] = true;
-                document.getElementById(loadingId).classList.add('show');
-                
-                const statuses = tab === 'active' 
-                    ? ['pending', 'paid', 'shipped']
-                    : ['completed', 'cancelled'];
-                
-                const q = query(
-                    collection(db, "orders"),
-                    where("partnerId", "==", state.partnerId),
-                    where("status", "in", statuses),
-                    orderBy("createdAt", "desc"),
-                    limit(100)
-                );
-                
-                const ordersSnap = await getDocs(q);
-                const orders = ordersSnap.docs.map(doc => ({
-                    id: doc.id,
-                    ...doc.data()
-                }));
-                
-                // ===== СОХРАНЯЕМ В КЭШ =====
-                ordersCache.set(state.partnerId, tab, orders);
-                
-                // ===== ОБНОВЛЯЕМ STATE =====
-                // Очищаем старые заказы этого типа
-                const otherTab = tab === 'active' ? 'history' : 'active';
-                const otherOrders = state.allOrders.filter(o => {
-                    const isActive = o.status === 'pending' || o.status === 'paid' || o.status === 'shipped';
-                    const isHistory = o.status === 'completed' || o.status === 'cancelled';
-                    return tab === 'active' ? isHistory : isActive;
-                });
-                
-                // Новые заказы + заказы из другой вкладки
-                state.allOrders = [...orders, ...otherOrders];
-                
-                updateStats();
-                renderActiveOrders();
-                renderHistoryOrders();
-                
-            } catch (err) {
-                console.error('Ошибка загрузки заказов:', err);
-                document.getElementById(containerId).innerHTML = `
-                    <div class="empty-state">
-                        <i class="fas fa-exclamation-triangle" style="color:#f59e0b;"></i>
-                        <h3>Ошибка загрузки</h3>
-                        <p>Попробуйте обновить страницу</p>
-                    </div>
-                `;
-            } finally {
-                state.isLoading[tab] = false;
+                const loadingId = tab === 'active' ? 'activeLoading' : 'historyLoading';
                 document.getElementById(loadingId).classList.remove('show');
             }
         }
@@ -2721,7 +2647,7 @@ main {
             if (!confirm('Подтвердить заказ? Деньги будут списаны с баланса покупателя.')) return;
             
             try {
-                const orderRef = doc(db, "orders", orderId);
+                const orderRef = doc(db, "physical_orders", orderId);
                 const orderSnap = await getDoc(orderRef);
                 const order = orderSnap.data();
                 
@@ -2760,7 +2686,7 @@ main {
             if (!confirm('Отклонить заказ?')) return;
             
             try {
-                const orderRef = doc(db, "orders", orderId);
+                const orderRef = doc(db, "physical_orders", orderId);
                 const orderSnap = await getDoc(orderRef);
                 const order = orderSnap.data();
                 
@@ -2869,11 +2795,11 @@ main {
                 const results = await batchProcessor.processOrders(
                     orderIds,
                     async (orderId) => {
-                        await updateDoc(doc(db, "orders", orderId), {
-                            status: 'shipped',
-                            trackingNumber: tracking + '-' + orderId.slice(-4),
-                            shippedAt: new Date()
-                        });
+                        await updateDoc(doc(db, "physical_orders", orderId), {
+                        status: 'shipped',
+                        trackingNumber: tracking + '-' + orderId.slice(-4),
+                        shippedAt: new Date()
+                    });
                     },
                     (completed, total) => {
                         // Прогресс-колбэк
@@ -3059,7 +2985,7 @@ main {
         // ===== SHIP ORDER =====
         async function shipOrder(orderId, trackingNumber) {
             try {
-                const orderRef = doc(db, "orders", orderId);
+                const orderRef = doc(db, "physical_orders", orderId);
                 const orderSnap = await getDoc(orderRef);
                 const order = orderSnap.data();
                 
@@ -3118,7 +3044,7 @@ main {
         // ===== CANCEL ORDER =====
         async function cancelOrder(orderId, reason) {
             try {
-                const orderRef = doc(db, "orders", orderId);
+                const orderRef = doc(db, "physical_orders", orderId);
                 const orderSnap = await getDoc(orderRef);
                 const order = orderSnap.data();
                 

@@ -233,7 +233,7 @@ export async function applyProduct(userId, product, orderId) {
     updates.orders = orders;
 
     await updateDoc(userRef, updates);
-    await updateDoc(doc(db, "orders", orderId), {
+    await updateDoc(doc(db, "digital_orders", orderId), {
         status: 'paid',
         paidAt: new Date()
     });
@@ -270,7 +270,7 @@ export async function createPayment(productId, userId) {
         }
     };
 
-    const orderRef = await addDoc(collection(db, "orders"), orderData);
+    const orderRef = await addDoc(collection(db, "digital_orders"), orderData);
     const orderId = orderRef.id;
 
     if (PAYMENT_MODE === 'test') {
@@ -794,7 +794,7 @@ export async function checkPaymentStatus(paymentId) {
 // 9. ПРОВЕРКА СТАТУСА ЗАКАЗА ПО ID
 // ============================================================
 export async function checkOrderStatus(orderId) {
-    const orderRef = doc(db, "orders", orderId);
+    const orderRef = doc(db, "digital_orders", orderId);
     const orderSnap = await getDoc(orderRef);
     if (!orderSnap.exists()) return null;
     const data = orderSnap.data();
@@ -952,7 +952,7 @@ export async function handleYookassaWebhook(req, res) {
                 return res.status(400).send('Missing metadata');
             }
             
-            const orderRef = doc(db, "orders", orderId);
+            const orderRef = doc(db, "digital_orders", orderId);
             const orderSnap = await getDoc(orderRef);
             
             if (!orderSnap.exists()) {
