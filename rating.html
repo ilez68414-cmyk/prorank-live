@@ -1909,38 +1909,65 @@
             
             console.log('🔍 Ищем пользователя:', user.uid);
             
-            // ===== ИЩЕМ В ТАБЛИЦЕ (ДЕСКТОП) =====
-            let targetRow = document.querySelector(`#ratingTableBody tr[data-user-id="${user.uid}"]`);
+            // ===== ОПРЕДЕЛЯЕМ ТИП УСТРОЙСТВА =====
+            const isMobile = window.innerWidth <= 768;
             
-            if (targetRow) {
-                console.log('✅ Найдена строка в таблице');
-                targetRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                targetRow.style.transition = 'background 0.5s ease';
-                targetRow.style.background = 'rgba(59,130,246,0.3)';
-                setTimeout(() => {
-                    targetRow.style.background = '';
-                }, 2000);
+            // ===== ИЩЕМ ЭЛЕМЕНТ =====
+            let targetElement = null;
+            
+            if (isMobile) {
+                // На телефоне — ищем карточку
+                targetElement = document.querySelector(`.fighter-card-horizontal[data-user-id="${user.uid}"]`);
+            } else {
+                // На компьютере — ищем строку таблицы
+                targetElement = document.querySelector(`#ratingTableBody tr[data-user-id="${user.uid}"]`);
+            }
+            
+            // ===== ЕСЛИ НЕ НАШЛИ В ОСНОВНОМ ВИДЕ — ИЩЕМ В ДРУГОМ =====
+            if (!targetElement) {
+                if (isMobile) {
+                    targetElement = document.querySelector(`#ratingTableBody tr[data-user-id="${user.uid}"]`);
+                } else {
+                    targetElement = document.querySelector(`.fighter-card-horizontal[data-user-id="${user.uid}"]`);
+                }
+            }
+            
+            if (!targetElement) {
+                console.log('❌ Элемент не найден');
+                alert('⚠️ Вы не найдены в текущем рейтинге. Проверьте фильтры.');
                 return;
             }
             
-            // ===== ИЩЕМ В КАРТОЧКАХ (МОБИЛЬНЫЕ) =====
-            let targetCard = document.querySelector(`.fighter-card-horizontal[data-user-id="${user.uid}"]`);
+            console.log('✅ Элемент найден');
             
-            if (targetCard) {
-                console.log('✅ Найдена карточка (мобильная версия)');
-                targetCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                targetCard.style.transition = 'border-color 0.5s ease, box-shadow 0.5s ease';
-                targetCard.style.borderColor = '#3b82f6';
-                targetCard.style.boxShadow = '0 0 40px rgba(59,130,246,0.3)';
+            // ===== ПЛАВНЫЙ СКРОЛЛ =====
+            const rect = targetElement.getBoundingClientRect();
+            const absoluteTop = rect.top + window.pageYOffset;
+            const targetY = absoluteTop - window.innerHeight / 2 + rect.height / 2;
+            
+            window.scrollTo({
+                top: Math.max(0, targetY),
+                behavior: 'smooth'
+            });
+            
+            // ===== ПОДСВЕТКА =====
+            if (isMobile) {
+                targetElement.style.transition = 'border-color 0.5s ease, box-shadow 0.5s ease, background 0.5s ease';
+                targetElement.style.borderColor = '#3b82f6';
+                targetElement.style.boxShadow = '0 0 40px rgba(59,130,246,0.4)';
+                targetElement.style.background = 'rgba(59,130,246,0.08)';
                 setTimeout(() => {
-                    targetCard.style.borderColor = '';
-                    targetCard.style.boxShadow = '';
+                    targetElement.style.borderColor = '';
+                    targetElement.style.boxShadow = '';
+                    targetElement.style.background = '';
                 }, 2000);
-                return;
+            } else {
+                targetElement.style.transition = 'background 0.5s ease';
+                targetElement.style.background = 'rgba(59,130,246,0.3)';
+                setTimeout(() => {
+                    targetElement.style.background = '';
+                }, 2000);
             }
-            
-            console.log('❌ Ничего не найдено');
-            alert('⚠️ Вы не найдены в текущем рейтинге. Проверьте фильтры.');
         };
 
         function setActiveSportButton(sport) {
