@@ -1826,41 +1826,59 @@
         btn.disabled = true;
         
         try {
-           const orderRef = doc(db, "physical_orders", orderId);
+            const orderRef = doc(db, "physical_orders", orderId);
             const orderSnap = await getDoc(orderRef);
-            const orderData = orderSnap.data();
             
-            // 1. Если заказ уже отправлен — нельзя отменить
-            if (orderData.status === 'shipped' || orderData.status === 'delivered') {
-                showNotification('❌ Заказ уже отправлен. Обратитесь в поддержку.', 'error');
+            if (!orderSnap.exists()) {
+                showNotification('❌ Заказ не найден', 'error');
                 btn.innerHTML = originalText;
                 btn.disabled = false;
                 return;
             }
             
-            // 2. Если заказ ещё не оплачен (pending) — просто отменяем
+            const orderData = orderSnap.data() || {};
+            
+            // ===== ПРОВЕРКА: НЕЛЬЗЯ ОТМЕНИТЬ ПОСЛЕ ОТПРАВКИ =====
+            if (orderData.status === 'shipped' || orderData.status === 'delivered' || orderData.status === 'completed') {
+                showNotification('❌ Заказ уже отправлен. Отмена невозможна. Обратитесь в поддержку.', 'error');
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+                return;
+            }
+            
+            // ===== ОТМЕНА ДО ПОДТВЕРЖДЕНИЯ ПРОДАВЦОМ =====
             if (orderData.status === 'pending') {
+                // Если оплата была с баланса — возвращаем деньги
+                if (orderData.paymentMethod === 'balance' && orderData.totalPrice > 0) {
+                    const { refundFunds } = await import('./wallet.js');
+                    await refundFunds(currentUser.uid, orderData.totalPrice || 0, orderId);
+                }
+                
                 await updateDoc(orderRef, {
                     status: 'cancelled',
                     cancelledAt: new Date(),
-                    cancelReason: 'Отменено пользователем (не подтверждено продавцом)'
+                    cancelReason: 'Отменено пользователем (не подтверждено продавцом)',
+                    refundedAt: new Date()
                 });
-                showNotification('✅ Заказ отменён', 'success');
+                
+                showNotification('✅ Заказ отменён, средства возвращены на баланс', 'success');
                 await loadOrders();
                 return;
             }
             
-            // 3. Если заказ оплачен (paid) — возвращаем деньги
-            if (orderData.status === 'paid' || orderData.status === 'held') {
-                const { refundFunds } = await import('./wallet.js');
-                
-                // Возвращаем деньги покупателю
-                await refundFunds(currentUser.uid, orderData.totalPrice || 0, orderId);
+            // ===== ОТМЕНА ПОСЛЕ ОПЛАТЫ, НО ДО ОТПРАВКИ =====
+            if (orderData.status === 'paid') {
+                // Возвращаем деньги
+                if (orderData.totalPrice > 0) {
+                    const { refundFunds } = await import('./wallet.js');
+                    await refundFunds(currentUser.uid, orderData.totalPrice || 0, orderId);
+                }
                 
                 await updateDoc(orderRef, {
                     status: 'cancelled',
                     cancelledAt: new Date(),
-                    cancelReason: 'Отменено пользователем (возврат средств)'
+                    cancelReason: 'Отменено пользователем (возврат средств)',
+                    refundedAt: new Date()
                 });
                 
                 showNotification('✅ Заказ отменён, средства возвращены на баланс', 'success');
