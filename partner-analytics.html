@@ -1793,27 +1793,30 @@
 
     // ===== РАСЧЁТ СТАТИСТИКИ (АВТОМАТИЧЕСКИ) =====
     function calculateStats(orders, period) {
-        const totalOrders = orders.length;
+        // Исключаем отменённые
+        const validOrders = orders.filter(o => o.status !== 'cancelled');
         
-        // ===== 1. ВЫРУЧКА: СУММИРУЕМ ВСЕ ЗАКАЗЫ =====
+        const totalOrders = validOrders.length;
+        
+        // Выручка только с валидных заказов
         let totalRevenue = 0;
-        orders.forEach(order => {
+        validOrders.forEach(order => {
             const orderTotal = order.totalPrice || order.partnerOrderTotal || order.total || 0;
             totalRevenue += orderTotal;
         });
         
-        // ===== 2. ПОКУПАТЕЛИ: УНИКАЛЬНЫЕ USER ID =====
+        // Уникальные покупатели
         const customersSet = new Set();
-        orders.forEach(order => {
+        validOrders.forEach(order => {
             const userId = order.userId || order.buyerId || order.customerId;
             if (userId) customersSet.add(userId);
         });
         const uniqueCustomers = customersSet.size;
         
-        // ===== 3. СРЕДНИЙ ЧЕК =====
+        // Средний чек
         const avgCheck = totalOrders > 0 ? totalRevenue / totalOrders : 0;
         
-        // ===== 4. СТАТУСЫ ЗАКАЗОВ =====
+        // Статусы (считаем все)
         const statusCounts = {
             completed: 0,
             pending: 0,
@@ -1830,10 +1833,9 @@
             }
         });
         
-        // ===== 5. ТОВАРЫ (из заказов) =====
+        // Товары (только с валидных заказов)
         const productSales = {};
         
-        // Сначала добавляем ВСЕ товары продавца (с нулевыми показателями)
         allProducts.forEach(product => {
             productSales[product.id] = {
                 id: product.id,
@@ -1850,8 +1852,7 @@
             };
         });
         
-        // Потом добавляем данные из заказов (обновляем существующие)
-        orders.forEach(order => {
+        validOrders.forEach(order => {
             const itemsArray = order.items || order.partnerItems || [];
             itemsArray.forEach(item => {
                 const productId = item.productId || item.id;
@@ -1881,48 +1882,41 @@
             });
         });
         
-        // ===== 6. ДОБАВЛЯЕМ РЕЙТИНГ =====
+        // Рейтинг товаров
         Object.keys(productSales).forEach(key => {
             const rating = calculateProductRating(productSales[key].id);
             productSales[key].rating = rating;
         });
         
-        // ===== 7. ТОП-20 ТОВАРОВ =====
+        // Топ-20
         const topProducts = Object.values(productSales)
             .sort((a, b) => b.revenue - a.revenue)
             .slice(0, 20);
         
-        // ===== 8. ПРЕДЫДУЩИЙ ПЕРИОД ДЛЯ СРАВНЕНИЯ (ИСПРАВЛЕНО!) =====
+        // Предыдущий период (тоже без отменённых)
         let prevStats = null;
         if (period !== 'all' && period > 0) {
             const days = parseInt(period);
             const now = new Date();
             
-            // Текущий период: от (сегодня - days) до сегодня
-            const currentFrom = new Date(now);
-            currentFrom.setDate(currentFrom.getDate() - days);
-            
-            // Предыдущий период: от (сегодня - days*2) до (сегодня - days)
             const prevFrom = new Date(now);
             prevFrom.setDate(prevFrom.getDate() - days * 2);
             const prevTo = new Date(now);
             prevTo.setDate(prevTo.getDate() - days);
             
-            // Фильтруем заказы для предыдущего периода
             const prevOrders = orders.filter(order => {
                 if (!order.createdAt) return false;
+                if (order.status === 'cancelled') return false; // ← исключаем отменённые
                 const date = order.createdAt.toDate ? order.createdAt.toDate() : new Date(order.createdAt.seconds * 1000);
                 return date >= prevFrom && date < prevTo;
             });
             
-            // Считаем выручку за предыдущий период
             let prevRevenue = 0;
             prevOrders.forEach(o => {
                 const orderTotal = o.totalPrice || o.partnerOrderTotal || o.total || 0;
                 prevRevenue += orderTotal;
             });
             
-            // Считаем уникальных покупателей за предыдущий период
             const prevCustomers = new Set();
             prevOrders.forEach(o => {
                 const userId = o.userId || o.buyerId || o.customerId;
@@ -1935,14 +1929,8 @@
                 customers: prevCustomers.size,
                 avgCheck: prevOrders.length > 0 ? prevRevenue / prevOrders.length : 0
             };
-            
-            console.log(`📊 Сравнение за ${days} дней:`, {
-                текущий: { заказов: totalOrders, выручка: totalRevenue },
-                предыдущий: { заказов: prevOrders.length, выручка: prevRevenue }
-            });
         }
         
-        // ===== 9. ВОЗВРАЩАЕМ РЕЗУЛЬТАТ =====
         return {
             totalOrders,
             totalRevenue,
