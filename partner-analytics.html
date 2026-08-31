@@ -1476,6 +1476,25 @@
         }
         
         .footer-links a:hover { color: #fbbf24; }
+
+        #lineSvg {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: none;
+    pointer-events: auto;
+}
+
+#lineSvg text {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    pointer-events: none;
+}
     </style>
 </head>
 <body>
@@ -2255,33 +2274,49 @@
             ${dotsHtml}
         `;
 
-        // ===== ИНТЕРАКТИВНОСТЬ =====
+        // ===== ИНТЕРАКТИВНОСТЬ (КАК В АКЦИЯХ НА IPHONE) =====
         svg.style.cursor = 'crosshair';
-        
+        svg.style.touchAction = 'none';
+        svg.style.webkitUserSelect = 'none';
+        svg.style.userSelect = 'none';
+        svg.style.webkitTouchCallout = 'none';
+
         let isPressed = false;
-        
-        svg.onpointerdown = function(e) {
+        let activePointerId = null;
+
+        svg.addEventListener('pointerdown', function(e) {
             isPressed = true;
+            activePointerId = e.pointerId;
             svg.setPointerCapture(e.pointerId);
+            e.preventDefault();
             handleInteraction(e);
-        };
-        
-        svg.onpointermove = function(e) {
-            if (isPressed || e.pointerType === 'touch') {
+        });
+
+        svg.addEventListener('pointermove', function(e) {
+            if (isPressed && e.pointerId === activePointerId) {
+                e.preventDefault();
                 handleInteraction(e);
             }
-        };
-        
-        svg.onpointerup = function() {
+        });
+
+        svg.addEventListener('pointerup', function(e) {
             isPressed = false;
+            activePointerId = null;
             hideTooltip(svg);
-        };
-        
-        svg.onpointerleave = function() {
+        });
+
+        svg.addEventListener('pointercancel', function() {
             isPressed = false;
+            activePointerId = null;
             hideTooltip(svg);
-        };
-        
+        });
+
+        svg.addEventListener('pointerleave', function() {
+            if (!isPressed) {
+                hideTooltip(svg);
+            }
+        });
+
         function handleInteraction(e) {
             const rect = svg.getBoundingClientRect();
             const scaleX = width / rect.width;
