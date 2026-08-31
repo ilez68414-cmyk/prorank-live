@@ -1344,7 +1344,7 @@
         try {
             const batch = writeBatch(db);
             historyOrders.forEach(order => {
-                const orderRef = doc(db, "orders", order.id);
+                const orderRef = doc(db, "physical_orders", order.id);
                 batch.delete(orderRef);
             });
             await batch.commit();
@@ -1799,6 +1799,13 @@
         const action = btn.dataset.action;
         const orderId = btn.dataset.orderId;
         
+        console.log('🔍 Действие:', action, 'ID заказа:', orderId);
+        
+        if (!orderId || orderId === 'undefined' || orderId === 'null') {
+            showNotification('❌ Ошибка: ID заказа не найден', 'error');
+            return;
+        }
+        
         if (action === 'cancel') {
             await handleCancelOrder(orderId, btn);
         } else if (action === 'confirm') {
@@ -1882,12 +1889,29 @@
         btn.disabled = true;
         
         try {
-            const orderRef = doc(db, "orders", orderId);
+            const orderRef = doc(db, "physical_orders", orderId);
             const orderSnap = await getDoc(orderRef);
-            const orderData = orderSnap.data();
+            
+            if (!orderSnap.exists()) {
+                showNotification('❌ Заказ не найден', 'error');
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+                return;
+            }
+            
+            // ✅ ИСПРАВЛЕНО: data() может вернуть undefined
+            const orderData = orderSnap.data() || {};
+            
+            // ✅ ПРОВЕРКА НА items
+            if (!orderData.items || !Array.isArray(orderData.items) || orderData.items.length === 0) {
+                showNotification('❌ В заказе нет товаров', 'error');
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+                return;
+            }
             
             let sellerId = null;
-            if (orderData.items && orderData.items.length > 0) {
+            if (orderData.items.length > 0) {
                 sellerId = orderData.items[0]?.partnerId || orderData.items[0]?.sellerId || null;
             }
             if (!sellerId) {
@@ -1901,34 +1925,32 @@
                 return;
             }
             
-            // ===== УМЕНЬШАЕМ STOCK ДЛЯ КАЖДОГО ТОВАРА =====
-            if (orderData.items && orderData.items.length > 0) {
-                for (const item of orderData.items) {
-                    const productId = item.productId || item.id;
-                    if (!productId) continue;
+            // Уменьшаем stock
+            for (const item of orderData.items) {
+                const productId = item.productId || item.id;
+                if (!productId) continue;
+                
+                try {
+                    const productRef = doc(db, "products", productId);
+                    const productSnap = await getDoc(productRef);
                     
-                    try {
-                        const productRef = doc(db, "products", productId);
-                        const productSnap = await getDoc(productRef);
+                    if (productSnap.exists()) {
+                        const currentStock = productSnap.data().stock || 0;
+                        const quantity = item.quantity || 1;
+                        const newStock = Math.max(0, currentStock - quantity);
                         
-                        if (productSnap.exists()) {
-                            const currentStock = productSnap.data().stock || 0;
-                            const quantity = item.quantity || 1;
-                            const newStock = Math.max(0, currentStock - quantity);
-                            
+                        await updateDoc(productRef, {
+                            stock: newStock
+                        });
+                        
+                        if (newStock === 0) {
                             await updateDoc(productRef, {
-                                stock: newStock
+                                outOfStock: true
                             });
-                            
-                            if (newStock === 0) {
-                                await updateDoc(productRef, {
-                                    outOfStock: true
-                                });
-                            }
                         }
-                    } catch (err) {
-                        console.error(`Ошибка обновления stock для товара ${productId}:`, err);
                     }
+                } catch (err) {
+                    console.error(`Ошибка обновления stock для товара ${productId}:`, err);
                 }
             }
             
@@ -2019,7 +2041,7 @@
                 createdAt: new Date()
             });
 
-            await updateDoc(doc(db, "orders", selectedOrderId), {
+            await updateDoc(doc(db, "physical_orders", selectedOrderId), {
                 hasReview: true,
                 reviewedAt: new Date()
             });

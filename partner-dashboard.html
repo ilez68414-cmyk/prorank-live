@@ -1465,9 +1465,10 @@
                 <!-- ШАПКА МАГАЗИНА -->
                 <div class="store-header" id="storeHeader">
                     <div class="store-avatar-wrap">
-                        <div class="store-avatar editable" id="storeAvatar">
-                            <i class="fas fa-store"></i>
+                        <div class="store-avatar editable" id="storeAvatar" onclick="if(document.getElementById('avatarInput')) document.getElementById('avatarInput').click();">
+                            <i class="fas fa-store" id="storeAvatarIcon"></i>
                         </div>
+                        <input type="file" id="avatarInput" accept="image/*" style="display:none;">
                         <div class="store-avatar-ring"></div>
                         <div class="store-avatar-ring store-avatar-ring-2"></div>
                     </div>
@@ -1752,7 +1753,7 @@
     <script type="module" src="header.js"></script>
     <script type="module">
     import { initializeApp } from "firebase/app";
-    import { getFirestore, collection, getDocs, query, where, doc, getDoc, updateDoc, deleteDoc } from "firebase/firestore";
+    import { getFirestore, collection, getDocs, query, where, doc, getDoc, updateDoc, deleteDoc, setDoc } from "firebase/firestore";
     import { getAuth, onAuthStateChanged } from "firebase/auth";
 
     const firebaseConfig = {
@@ -1864,9 +1865,12 @@
     // РАСЧЁТ АНАЛИТИКИ
     // ============================================================
     function calculateAnalytics(ordersList) {
-        const totalOrders = ordersList.length;
-        const totalRevenue = ordersList.reduce((sum, o) => sum + (o.totalPrice || o.total || 0), 0);
-        const uniqueCustomers = new Set(ordersList.map(o => o.userId || o.buyerId).filter(id => id)).size;
+        // Исключаем отменённые заказы
+        const validOrders = ordersList.filter(o => o.status !== 'cancelled');
+        
+        const totalOrders = validOrders.length;
+        const totalRevenue = validOrders.reduce((sum, o) => sum + (o.totalPrice || o.total || 0), 0);
+        const uniqueCustomers = new Set(validOrders.map(o => o.userId || o.buyerId).filter(id => id)).size;
         const avgCheck = totalOrders > 0 ? totalRevenue / totalOrders : 0;
         
         const statusCounts = { pending: 0, paid: 0, shipped: 0, completed: 0, cancelled: 0 };
@@ -2009,6 +2013,24 @@
         
         const isOwner = currentUser && partnerDocId && currentUser.uid === partnerDocId;
         
+        // ===== СМЕНА АВАТАРКИ (только владелец) =====
+        const avatarInput = document.getElementById('avatarInput');
+        if (avatarInput) {
+            avatarInput.style.display = isOwner ? 'none' : 'none'; // скрыт всегда, вызывается по клику
+        }
+        const avatarEl = document.getElementById('storeAvatar');
+        if (avatarEl) {
+            if (isOwner) {
+                avatarEl.classList.add('editable');
+                avatarEl.style.cursor = 'pointer';
+                avatarEl.onclick = () => document.getElementById('avatarInput')?.click();
+            } else {
+                avatarEl.classList.remove('editable');
+                avatarEl.style.cursor = 'default';
+                avatarEl.onclick = null;  // ← Запрещаем клик
+            }
+        }
+
         // Кнопка "Все отзывы" — только для владельца
         const allReviewsBtn = document.querySelector('.btn-all-reviews');
         if (allReviewsBtn) {
@@ -2021,6 +2043,7 @@
             // Обновляем счётчик
             allReviewsHeaderBtn.innerHTML = `<i class="fas fa-arrow-right"></i> Все отзывы (${reviews.length})`;
         }
+
         // Шапка
         const nameDisplay = document.getElementById('storeNameDisplay');
         const descDisplay = document.getElementById('storeDescDisplay');
@@ -2086,22 +2109,20 @@
         }
         if (chatBtn) chatBtn.style.display = isOwner ? 'none' : 'inline-flex';
         
-        // Кнопка "Подписаться" — только для покупателей
-        let subscribeBtn = document.getElementById('subscribeBtn');
-        if (!subscribeBtn) {
-            const actions = document.getElementById('storeActions');
-            if (actions) {
-                const btn = document.createElement('button');
-                btn.id = 'subscribeBtn';
-                btn.className = 'btn btn-subscribe';
-                btn.innerHTML = '<i class="fas fa-bell-slash"></i> Подписаться';
-                btn.addEventListener('click', toggleSubscribe);
-                actions.appendChild(btn);
-                subscribeBtn = btn;
-            }
+        if (chatBtn && !isOwner) {
+            // Проверяем, есть ли уже чат
+            checkExistingChat().then(existingChatId => {
+                if (existingChatId) {
+                    chatBtn.innerHTML = '<i class="fas fa-comment"></i> Открыть чат';
+                } else {
+                    chatBtn.innerHTML = '<i class="fas fa-comment"></i> Написать';
+                }
+            });
         }
-        if (subscribeBtn) subscribeBtn.style.display = isOwner ? 'none' : 'inline-flex';
-        
+
+        // Кнопка "Подписаться" убрана
+        const subscribeBtn = document.getElementById('subscribeBtn');
+        if (subscribeBtn) subscribeBtn.remove();
         // Обновляем аналитику
         updateDashboardAnalytics(orders);
         
@@ -2304,7 +2325,33 @@
             setTimeout(() => window.location.href = 'login.html', 1000);
             return;
         }
-        showToast('💳 Оформление заказа (в разработке)');
+        
+        const product = products.find(p => p.id === productId);
+        if (!product) {
+            showNotification('❌ Товар не найден', 'error');
+            return;
+        }
+        
+        if (product.partnerId === currentUser.uid) {
+            showNotification('❌ Вы не можете купить свой товар', 'warning');
+            return;
+        }
+        
+        // Создаём корзину с одним товаром
+        const productForCart = {
+            id: product.id,
+            name: product.name,
+            price: product.price,
+            image: product.image,
+            desc: product.description || '',
+            partnerId: product.partnerId || null,
+            partnerName: partnerData?.name || null
+        };
+        
+        localStorage.setItem('cart', JSON.stringify([productForCart]));
+        
+        // Переходим на страницу оформления (cart.html)
+        window.location.href = 'cart.html';
     };
 
     window.addToCart = function(productId) {
@@ -2313,32 +2360,121 @@
             setTimeout(() => window.location.href = 'login.html', 1000);
             return;
         }
-        showToast('🛒 Товар добавлен в корзину');
+        
+        const product = products.find(p => p.id === productId);
+        if (!product) {
+            showNotification('❌ Товар не найден', 'error');
+            return;
+        }
+        
+        // Проверка: не свой ли товар
+        if (product.partnerId === currentUser.uid) {
+            showNotification('❌ Вы не можете купить свой товар', 'warning');
+            return;
+        }
+        
+        const productForCart = {
+            id: product.id,
+            name: product.name,
+            price: product.price,
+            image: product.image,
+            desc: product.description || '',
+            partnerId: product.partnerId || null,
+            partnerName: partnerData?.name || null
+        };
+        
+        let cart = JSON.parse(localStorage.getItem('cart') || '[]');
+        cart.push(productForCart);
+        localStorage.setItem('cart', JSON.stringify(cart));
+        
+        showNotification(`✅ ${product.name} добавлен в корзину`, 'success');
+        
+        // Обновляем счётчик корзины если есть
+        updateCartCount();
     };
 
-    window.openChat = function() {
+    function updateCartCount() {
+        const cart = JSON.parse(localStorage.getItem('cart') || '[]');
+        const cartCount = document.getElementById('cartCount');
+        if (cartCount) cartCount.innerText = cart.length;
+        const cartIcon = document.getElementById('cartIcon');
+        if (cartIcon) cartIcon.style.display = 'flex';
+    }
+
+    async function checkExistingChat() {
+        if (!currentUser || !partnerDocId) return null;
+        
+        try {
+            // Ищем чат по участникам
+            const chatsQuery = query(
+                collection(db, "chats"),
+                where("participants", "array-contains", currentUser.uid)
+            );
+            
+            const snapshot = await getDocs(chatsQuery);
+            
+            for (const docSnap of snapshot.docs) {
+                const chat = docSnap.data();
+                if (chat.participants && chat.participants.includes(partnerDocId)) {
+                    return docSnap.id;
+                }
+            }
+            
+            return null;
+        } catch (err) {
+            console.error('Ошибка проверки чата:', err);
+            return null;
+        }
+    }
+
+    window.openChat = async function() {
         if (!currentUser) {
             showNotification('Войдите в аккаунт', 'warning');
             setTimeout(() => window.location.href = 'login.html', 1000);
             return;
         }
-        showToast('💬 Чат с продавцом (в разработке)');
-    };
-
-    window.toggleSubscribe = function() {
-        if (!currentUser) {
-            showNotification('Войдите в аккаунт', 'warning');
-            setTimeout(() => window.location.href = 'login.html', 1000);
+        
+        if (!partnerDocId) {
+            showNotification('Продавец не найден', 'error');
             return;
         }
-        const btn = document.getElementById('subscribeBtn');
-        if (btn) {
-            const isSubscribed = btn.classList.contains('subscribed');
-            btn.classList.toggle('subscribed');
-            btn.innerHTML = isSubscribed ? 
-                '<i class="fas fa-bell-slash"></i> Подписаться' : 
-                '<i class="fas fa-bell"></i> Подписан';
-            showToast(isSubscribed ? '❌ Вы отписались' : '✅ Вы подписались');
+        
+        try {
+            // Сначала проверяем существующий чат
+            const existingChatId = await checkExistingChat();
+            
+            if (existingChatId) {
+                // Чат уже есть — просто переходим
+                window.location.href = `chat.html?id=${existingChatId}`;
+                return;
+            }
+            
+            // Чата нет — создаём новый
+            const chatId = `store_${partnerDocId}_${currentUser.uid}`;
+            const chatRef = doc(db, "chats", chatId);
+            const chatSnap = await getDoc(chatRef);
+            
+            if (!chatSnap.exists()) {
+                const buyerDoc = await getDoc(doc(db, "fighters", currentUser.uid));
+                const buyerName = buyerDoc.exists() ? (buyerDoc.data()?.name || 'Покупатель') : 'Покупатель';
+                
+                await setDoc(chatRef, {
+                    participants: [currentUser.uid, partnerDocId],
+                    participantNames: {
+                        [currentUser.uid]: buyerName,
+                        [partnerDocId]: partnerData?.name || 'Продавец'
+                    },
+                    createdAt: new Date(),
+                    lastMessage: 'Чат с магазином',
+                    lastMessageTime: new Date()
+                });
+            }
+            
+            window.location.href = `chat.html?id=${chatId}`;
+            
+        } catch (err) {
+            console.error('Ошибка создания чата:', err);
+            showNotification('❌ Не удалось открыть чат', 'error');
         }
     };
 
