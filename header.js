@@ -19,6 +19,7 @@ let challengesIndicator = null;
 let fighterMoneyIndicator = null;
 let partnerWalletIndicator = null;
 let deferredPrompt = null;
+let isClub = false;
 
 // ===== ГЛОБАЛЬНЫЕ СТИЛИ ДЛЯ МОДАЛКИ ДЕЙСТВИЙ =====
 function injectQuickActionsStyles() {
@@ -323,6 +324,10 @@ window.updateHeaderBalance = async function() {
     if (!user || !balanceCount) return;
     try {
         const userDoc = await getDoc(doc(db, "fighters", user.uid));
+        if (!userDoc.exists()) {
+            if (challengesIndicator) challengesIndicator.style.display = 'none';
+            return;
+        }
         const data = userDoc.data();
         if (data?.isPartner === true) {
             if (challengesIndicator) challengesIndicator.style.display = 'none';
@@ -331,7 +336,10 @@ window.updateHeaderBalance = async function() {
         const total = (data.freeChallenges || 0) + (data.purchasedChallenges || 0);
         balanceCount.innerText = total;
         if (challengesIndicator) challengesIndicator.style.display = 'flex';
-    } catch (err) { console.error(err); }
+    } catch (err) { 
+        console.error(err); 
+        if (challengesIndicator) challengesIndicator.style.display = 'none';
+    }
 };
 
 async function updateFighterMoneyBalance() {
@@ -339,6 +347,10 @@ async function updateFighterMoneyBalance() {
     if (!user || !fighterMoneyIndicator) return;
     try {
         const userDoc = await getDoc(doc(db, "fighters", user.uid));
+        if (!userDoc.exists()) {
+            fighterMoneyIndicator.style.display = 'none';
+            return;
+        }
         if (userDoc.data()?.isPartner === true) {
             fighterMoneyIndicator.style.display = 'none';
             return;
@@ -348,7 +360,10 @@ async function updateFighterMoneyBalance() {
         const moneyAmount = document.getElementById('fighterMoneyAmount');
         if (moneyAmount) moneyAmount.innerText = available.toLocaleString();
         fighterMoneyIndicator.style.display = 'flex';
-    } catch (err) { console.error(err); }
+    } catch (err) { 
+        console.error(err); 
+        fighterMoneyIndicator.style.display = 'none';
+    }
 }
 
 async function updatePartnerWalletBalance() {
@@ -356,6 +371,10 @@ async function updatePartnerWalletBalance() {
     if (!user || !partnerWalletIndicator) return;
     try {
         const userDoc = await getDoc(doc(db, "fighters", user.uid));
+        if (!userDoc.exists()) {
+            partnerWalletIndicator.style.display = 'none';
+            return;
+        }
         const isPartner = userDoc.data()?.isPartner === true;
         if (!isPartner) {
             partnerWalletIndicator.style.display = 'none';
@@ -373,7 +392,10 @@ async function updatePartnerWalletBalance() {
         const walletAmount = document.getElementById('partnerWalletAmount');
         if (walletAmount) walletAmount.innerText = available.toLocaleString() + ' ₽';
         partnerWalletIndicator.style.display = 'flex';
-    } catch (err) { console.error(err); }
+    } catch (err) { 
+        console.error(err); 
+        partnerWalletIndicator.style.display = 'none';
+    }
 }
 
 function ensureMobileNavContainer() {
@@ -393,21 +415,30 @@ async function renderMobileBottomNav() {
     const currentPage = window.location.pathname.split('/').pop() || 'index.html';
     const user = auth.currentUser;
     let isPartner = false;
+    let isClubUser = false;
     let userId = null;
     
     if (user) {
         userId = user.uid;
         try {
             const userDoc = await getDoc(doc(db, "fighters", userId));
-            isPartner = userDoc.data()?.isPartner === true;
+            
+            if (userDoc.exists()) {
+                isPartner = userDoc.data()?.isPartner === true;
+            } else {
+                const clubDoc = await getDoc(doc(db, "clubs", userId));
+                if (clubDoc.exists()) {
+                    isClubUser = true;
+                }
+            }
         } catch (err) {
             console.error('Ошибка загрузки данных пользователя:', err);
         }
     }
     
-    const profileLink = isPartner ? 'partner-dashboard.html' : `profile.html?id=${userId || ''}`;
-    const profileIcon = isPartner ? 'fa-chart-line' : 'fa-user';
-    const profileText = isPartner ? 'Кабинет' : 'Профиль';
+    const profileLink = isPartner ? 'partner-dashboard.html' : isClubUser ? `club-profile.html?id=${userId}` : `profile.html?id=${userId || ''}`;
+    const profileIcon = isPartner ? 'fa-chart-line' : isClubUser ? 'fa-users' : 'fa-user';
+    const profileText = isPartner ? 'Кабинет' : isClubUser ? 'Клуб' : 'Профиль';
     
     // ===== ПРОВЕРКА: мы на своей странице профиля? =====
     let isMyProfile = false;
@@ -421,6 +452,10 @@ async function renderMobileBottomNav() {
     }
     
     if (currentPage === 'partner-dashboard.html' && isPartner) {
+        isMyProfile = true;
+    }
+    
+    if (currentPage === 'club-profile.html' && isClubUser) {
         isMyProfile = true;
     }
     
@@ -465,13 +500,20 @@ async function renderMobileBottomNav() {
             let actions = [];
             
             if (isPartner) {
-                // 🔥 МЕНЮ ДЛЯ ПАРТНЁРА (без "Магазин" — он уже в навигации)
+                // 🔥 МЕНЮ ДЛЯ ПАРТНЁРА
                 actions = [
                     { text: 'Аналитика', icon: 'fa-chart-line', url: 'partner-analytics.html' },
                     { text: 'Товары', icon: 'fa-box', url: 'partner-products.html' },
                     { text: 'Заказы', icon: 'fa-shopping-cart', url: 'partner-orders.html' },
                     { text: 'Отзывы', icon: 'fa-star', url: 'partner-reviews.html' },
                     { text: 'Кошелёк', icon: 'fa-wallet', url: 'wallet.html' }
+                ];
+            } else if (isClubUser) {
+                // 🔥 МЕНЮ ДЛЯ КЛУБА
+                actions = [
+                    { text: 'Мой клуб', icon: 'fa-users', url: `club-profile.html?id=${userId}` },
+                    { text: 'Все клубы', icon: 'fa-building', url: 'clubs.html' },
+                    { text: 'Рейтинг', icon: 'fa-chart-line', url: 'rating.html' }
                 ];
             } else {
                 // 🔥 МЕНЮ ДЛЯ ОБЫЧНОГО БОЙЦА
@@ -481,7 +523,7 @@ async function renderMobileBottomNav() {
                     { text: 'Мой рейтинг', icon: 'fa-chart-line', url: 'rating.html' },
                     { text: 'Лиги', icon: 'fa-trophy', url: 'leagues.html' },
                     { text: 'Кошелёк', icon: 'fa-wallet', url: 'buyer-wallet.html' },
-                    { text: 'Залы', icon: 'fa-building', url: 'halls.html' },
+                    { text: 'Клубы', icon: 'fa-users', url: 'clubs.html' },
                     { text: 'О проекте', icon: 'fa-info-circle', url: 'about.html' }
                 ];
             }
@@ -497,7 +539,7 @@ async function renderMobileBottomNav() {
                 <div class="quick-actions-overlay">
                     <div class="quick-actions-panel">
                         <div class="quick-actions-header">
-                            <i class="fas fa-bolt"></i> ${isPartner ? 'Управление магазином' : 'Быстрые действия'}
+                            <i class="fas fa-bolt"></i> ${isPartner ? 'Управление магазином' : isClubUser ? 'Управление клубом' : 'Быстрые действия'}
                         </div>
                         ${actions.map(a => `
                             <div class="quick-action-item" data-url="${a.url || ''}" data-logout="${a.isLogout || false}">
@@ -736,6 +778,7 @@ async function initHeader() {
 
     const user = auth.currentUser;
     let isPartner = false;
+    let isClubUser = false;
     let userId = null;
     let userName = '';
 
@@ -743,13 +786,23 @@ async function initHeader() {
         userId = user.uid;
         try {
             const userDoc = await getDoc(doc(db, "fighters", userId));
-            isPartner = userDoc.data()?.isPartner === true;
-            userName = userDoc.data()?.name || 'Боец';
-            setTimeout(() => {
-                window.updateHeaderBalance();
-                updateFighterMoneyBalance();
-                updatePartnerWalletBalance();
-            }, 100);
+            
+            if (userDoc.exists()) {
+                isPartner = userDoc.data()?.isPartner === true;
+                userName = userDoc.data()?.name || 'Боец';
+                setTimeout(() => {
+                    window.updateHeaderBalance();
+                    updateFighterMoneyBalance();
+                    updatePartnerWalletBalance();
+                }, 100);
+            } else {
+                // Проверяем, не клуб ли это
+                const clubDoc = await getDoc(doc(db, "clubs", userId));
+                if (clubDoc.exists()) {
+                    isClubUser = true;
+                    userName = clubDoc.data()?.name || 'Клуб';
+                }
+            }
         } catch (err) { console.error(err); }
     }
 
@@ -790,14 +843,13 @@ async function initHeader() {
                     <button class="dropbtn"><i class="fas fa-comments"></i> Общение <i class="fas fa-chevron-down"></i></button>
                     <div class="dropdown-content">
                         <a href="chats.html"><i class="fas fa-comments"></i> Чаты</a>
-                        <a href="halls.html"><i class="fas fa-building"></i> Клубы</a>
+                        <a href="clubs.html"><i class="fas fa-users"></i> Клубы</a>
                     </div>
                 </div>
                 <div class="dropdown" data-section="shop">
                     <button class="dropbtn"><i class="fas fa-store"></i> Магазин <i class="fas fa-chevron-down"></i></button>
                     <div class="dropdown-content">
                         <a href="catalog.html"><i class="fas fa-boxes"></i> Каталог товаров</a>
-                        <a href="halls.html"><i class="fas fa-building"></i> Залы</a>
                     </div>
                 </div>
                 <div class="dropdown" data-section="finance">
@@ -815,6 +867,20 @@ async function initHeader() {
                     </div>
                 </div>
             `;
+        } else if (user && isClubUser) {
+            navLinks.innerHTML = `
+                <a href="index.html"><i class="fas fa-home"></i> Главная</a>
+                <a href="clubs.html"><i class="fas fa-users"></i> Клубы</a>
+                <a href="rating.html"><i class="fas fa-chart-line"></i> Рейтинг</a>
+                <div class="user-menu">
+                    <img src="Avatar.png" class="user-avatar" onerror="this.src='Avatar.png'">
+                    <div class="user-dropdown">
+                        <span class="user-name">${escapeHtml(userName)}</span>
+                        <a href="club-profile.html?id=${userId}"><i class="fas fa-users"></i> Мой клуб</a>
+                        <a href="#" id="logoutLink"><i class="fas fa-sign-out-alt"></i> Выйти</a>
+                    </div>
+                </div>
+            `;
         } else if (user && !isPartner) {
             navLinks.innerHTML = `
                 <a href="index.html"><i class="fas fa-home"></i> Главная</a>
@@ -823,7 +889,6 @@ async function initHeader() {
                     <button class="dropbtn"><i class="fas fa-store"></i> Магазин <i class="fas fa-chevron-down"></i></button>
                     <div class="dropdown-content">
                         <a href="catalog.html"><i class="fas fa-boxes"></i> Каталог</a>
-                        <a href="halls.html"><i class="fas fa-building"></i> Залы</a>
                         <a href="shop.html"><i class="fas fa-gem"></i> Премиум</a>
                     </div>
                 </div>
@@ -832,7 +897,7 @@ async function initHeader() {
                     <div class="dropdown-content">
                         <a href="chats.html"><i class="fas fa-comments"></i> Чаты</a>
                         <a href="challenges.html"><i class="fas fa-fist-raised"></i> Вызовы</a>
-                        <a href="halls.html"><i class="fas fa-building"></i> Клубы</a>
+                        <a href="clubs.html"><i class="fas fa-users"></i> Клубы</a>
                         <a href="leagues.html"><i class="fas fa-trophy"></i> Лиги</a>
                     </div>
                 </div>
@@ -862,7 +927,7 @@ async function initHeader() {
                     <div class="dropdown-content">
                         <a href="chats.html"><i class="fas fa-comments"></i> Чаты</a>
                         <a href="challenges.html"><i class="fas fa-fist-raised"></i> Вызовы</a>
-                        <a href="halls.html"><i class="fas fa-building"></i> Клубы</a>
+                        <a href="clubs.html"><i class="fas fa-users"></i> Клубы</a>
                     </div>
                 </div>
                 <a href="login.html" class="login-btn"><i class="fas fa-sign-in-alt"></i> Войти</a>
@@ -877,14 +942,13 @@ async function initHeader() {
                     <span class="mobile-submenu-trigger"><i class="fas fa-comments"></i> Общение <i class="fas fa-chevron-right"></i></span>
                     <div class="mobile-submenu-content">
                         <a href="chats.html"><i class="fas fa-comments"></i> Чаты</a>
-                        <a href="halls.html"><i class="fas fa-building"></i> Клубы</a>
+                        <a href="clubs.html"><i class="fas fa-users"></i> Клубы</a>
                     </div>
                 </div>
                 <div class="mobile-submenu">
                     <span class="mobile-submenu-trigger"><i class="fas fa-store"></i> Магазин <i class="fas fa-chevron-right"></i></span>
                     <div class="mobile-submenu-content">
                         <a href="catalog.html"><i class="fas fa-boxes"></i> Каталог</a>
-                        <a href="halls.html"><i class="fas fa-building"></i> Залы</a>
                     </div>
                 </div>
                 <div class="mobile-submenu">
@@ -896,6 +960,14 @@ async function initHeader() {
                 <a href="partner-dashboard.html"><i class="fas fa-tachometer-alt"></i> Кабинет</a>
                 <a href="#" id="logoutLink"><i class="fas fa-sign-out-alt"></i> Выйти</a>
             `;
+        } else if (user && isClubUser) {
+            navLinks.innerHTML = `
+                <a href="index.html"><i class="fas fa-home"></i> Главная</a>
+                <a href="clubs.html"><i class="fas fa-users"></i> Клубы</a>
+                <a href="rating.html"><i class="fas fa-chart-line"></i> Рейтинг</a>
+                <a href="club-profile.html?id=${userId}"><i class="fas fa-users"></i> Мой клуб</a>
+                <a href="#" id="logoutLink"><i class="fas fa-sign-out-alt"></i> Выйти</a>
+            `;
         } else if (user && !isPartner) {
             navLinks.innerHTML = `
                 <a href="index.html"><i class="fas fa-home"></i> Главная</a>
@@ -904,7 +976,6 @@ async function initHeader() {
                     <span class="mobile-submenu-trigger"><i class="fas fa-store"></i> Магазин <i class="fas fa-chevron-right"></i></span>
                     <div class="mobile-submenu-content">
                         <a href="catalog.html"><i class="fas fa-boxes"></i> Каталог</a>
-                        <a href="halls.html"><i class="fas fa-building"></i> Залы</a>
                         <a href="shop.html"><i class="fas fa-gem"></i> Премиум</a>
                     </div>
                 </div>
@@ -913,7 +984,7 @@ async function initHeader() {
                     <div class="mobile-submenu-content">
                         <a href="chats.html"><i class="fas fa-comments"></i> Чаты</a>
                         <a href="challenges.html"><i class="fas fa-fist-raised"></i> Вызовы</a>
-                        <a href="halls.html"><i class="fas fa-building"></i> Клубы</a>
+                        <a href="clubs.html"><i class="fas fa-users"></i> Клубы</a>
                         <a href="leagues.html"><i class="fas fa-trophy"></i> Лиги</a>
                     </div>
                 </div>
@@ -937,7 +1008,7 @@ async function initHeader() {
                     <div class="mobile-submenu-content">
                         <a href="chats.html"><i class="fas fa-comments"></i> Чаты</a>
                         <a href="challenges.html"><i class="fas fa-fist-raised"></i> Вызовы</a>
-                        <a href="halls.html"><i class="fas fa-building"></i> Клубы</a>
+                        <a href="clubs.html"><i class="fas fa-users"></i> Клубы</a>
                     </div>
                 </div>
                 <a href="login.html"><i class="fas fa-sign-in-alt"></i> Войти</a>

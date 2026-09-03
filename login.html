@@ -593,6 +593,7 @@
                         <select id="registerRole" required>
                             <option value="fighter">🥊 Боец (участие в рейтинге)</option>
                             <option value="partner">🏪 Партнёр (продажа экипировки)</option>
+                            <option value="club">🏆 Клуб (организация турниров)</option>
                         </select>
                     </div>
 
@@ -647,6 +648,38 @@
                         </div>
                     </div>
 
+                    <div id="clubFields" class="hidden">
+                        <div class="input-group">
+                            <label><i class="fas fa-users"></i> Название клуба</label>
+                            <input type="text" id="clubName" placeholder="Fight Club Moscow">
+                        </div>
+                        <div class="input-group">
+                            <label><i class="fas fa-city"></i> Город</label>
+                            <input type="text" id="clubCity" placeholder="Москва">
+                        </div>
+                        <div class="input-group">
+                            <label><i class="fas fa-map-marker-alt"></i> Адрес зала</label>
+                            <input type="text" id="clubAddress" placeholder="ул. Ленина, 10">
+                        </div>
+                        <div class="input-group">
+                            <label><i class="fas fa-phone"></i> Телефон для связи</label>
+                            <input type="tel" id="clubPhone" placeholder="+7 (999) 123-45-67">
+                        </div>
+                        <div class="input-group">
+                            <label><i class="fas fa-user-tie"></i> Имя владельца / главного тренера</label>
+                            <input type="text" id="clubOwnerName" placeholder="Иван Иванов">
+                        </div>
+                        <div class="input-group">
+                            <label><i class="fas fa-fist-raised"></i> Виды спорта</label>
+                            <select id="clubSports" multiple size="3">
+                                <option value="Бокс">Бокс</option>
+                                <option value="Борьба">Борьба</option>
+                                <option value="ММА">ММА</option>
+                            </select>
+                            <small style="color: #888; font-size: 0.7rem;">Удерживайте Ctrl для выбора нескольких</small>
+                        </div>
+                    </div>
+
                     <div class="input-group">
                         <label><i class="fas fa-envelope"></i> Email</label>
                         <input type="email" id="userEmail" placeholder="example@mail.ru" required>
@@ -667,7 +700,7 @@
 
             <div class="role-hint" id="roleHint">
                 <i class="fas fa-info-circle"></i> 
-                <span>🥊 Боец — участвует в рейтинге, вызывает на спарринги. 🏪 Партнёр — продаёт экипировку на платформе.</span>
+                <span>🥊 Боец — участвует в рейтинге, вызывает на спарринги. 🏪 Партнёр — продаёт экипировку на платформе. 🏆 Клуб — организация турниров и объединение бойцов.</span>
             </div>
         </div>
     </div>
@@ -698,20 +731,10 @@
         }
     }
     </script>
-    <script type="module" src="header.js?v=3"></script>
-    <script type="importmap">
-    {
-        "imports": {
-            "firebase/app": "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js",
-            "firebase/firestore": "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js",
-            "firebase/auth": "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js"
-        }
-    }
-</script>
 <script type="module" src="header.js"></script>
 <script type="module">
     import { initializeApp } from "firebase/app";
-    import { getFirestore, doc, setDoc, updateDoc, getDoc, collection, addDoc, serverTimestamp, query, where, getDocs } from "firebase/firestore";
+    import { getFirestore, doc, setDoc, updateDoc, getDoc, collection,  addDoc, serverTimestamp, query, where, getDocs } from "firebase/firestore";
     import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendPasswordResetEmail, fetchSignInMethodsForEmail } from "firebase/auth";
     import { showError, handleFirebaseError, withErrorHandling } from './error-handler.js';
 
@@ -762,13 +785,17 @@
     const registerRole = document.getElementById('registerRole');
     const fighterFields = document.getElementById('fighterFields');
     const partnerFields = document.getElementById('partnerFields');
+    const clubFields = document.getElementById('clubFields');
     const roleHintSpan = document.querySelector('#roleHint span');
 
     function updateRoleFields() {
         const role = registerRole.value;
+        
         if (role === 'fighter') {
             fighterFields.classList.remove('hidden');
             partnerFields.classList.add('hidden');
+            clubFields.classList.add('hidden');
+            
             if (roleHintSpan) roleHintSpan.innerHTML = '🥊 Боец — участвует в рейтинге, вызывает на спарринги, общается в чатах.';
             if (document.getElementById('userName')) document.getElementById('userName').required = true;
             if (document.getElementById('userCity')) document.getElementById('userCity').required = true;
@@ -777,9 +804,16 @@
             if (document.getElementById('partnerStoreName')) document.getElementById('partnerStoreName').required = false;
             if (document.getElementById('partnerStoreDesc')) document.getElementById('partnerStoreDesc').required = false;
             if (document.getElementById('partnerStoreUrl')) document.getElementById('partnerStoreUrl').required = false;
-        } else {
+            if (document.getElementById('clubName')) document.getElementById('clubName').required = false;
+            if (document.getElementById('clubCity')) document.getElementById('clubCity').required = false;
+            if (document.getElementById('clubAddress')) document.getElementById('clubAddress').required = false;
+            if (document.getElementById('clubPhone')) document.getElementById('clubPhone').required = false;
+            if (document.getElementById('clubOwnerName')) document.getElementById('clubOwnerName').required = false;
+        } else if (role === 'partner') {
             fighterFields.classList.add('hidden');
             partnerFields.classList.remove('hidden');
+            clubFields.classList.add('hidden');
+            
             if (roleHintSpan) roleHintSpan.innerHTML = '🏪 Партнёр — продаёт экипировку, получает 90% от продаж. После регистрации отправьте заявку на одобрение.';
             if (document.getElementById('userName')) document.getElementById('userName').required = false;
             if (document.getElementById('userCity')) document.getElementById('userCity').required = false;
@@ -788,6 +822,29 @@
             if (document.getElementById('partnerStoreName')) document.getElementById('partnerStoreName').required = true;
             if (document.getElementById('partnerStoreDesc')) document.getElementById('partnerStoreDesc').required = true;
             if (document.getElementById('partnerStoreUrl')) document.getElementById('partnerStoreUrl').required = true;
+            if (document.getElementById('clubName')) document.getElementById('clubName').required = false;
+            if (document.getElementById('clubCity')) document.getElementById('clubCity').required = false;
+            if (document.getElementById('clubAddress')) document.getElementById('clubAddress').required = false;
+            if (document.getElementById('clubPhone')) document.getElementById('clubPhone').required = false;
+            if (document.getElementById('clubOwnerName')) document.getElementById('clubOwnerName').required = false;
+        } else if (role === 'club') {
+            fighterFields.classList.add('hidden');
+            partnerFields.classList.add('hidden');
+            clubFields.classList.remove('hidden');
+            
+            if (roleHintSpan) roleHintSpan.innerHTML = '🏆 Клуб — создавайте турниры, объединяйте бойцов, продвигайте свой бренд.';
+            if (document.getElementById('userName')) document.getElementById('userName').required = false;
+            if (document.getElementById('userCity')) document.getElementById('userCity').required = false;
+            if (document.getElementById('userWeightClass')) document.getElementById('userWeightClass').required = false;
+            if (document.getElementById('userSport')) document.getElementById('userSport').required = false;
+            if (document.getElementById('partnerStoreName')) document.getElementById('partnerStoreName').required = false;
+            if (document.getElementById('partnerStoreDesc')) document.getElementById('partnerStoreDesc').required = false;
+            if (document.getElementById('partnerStoreUrl')) document.getElementById('partnerStoreUrl').required = false;
+            if (document.getElementById('clubName')) document.getElementById('clubName').required = true;
+            if (document.getElementById('clubCity')) document.getElementById('clubCity').required = true;
+            if (document.getElementById('clubAddress')) document.getElementById('clubAddress').required = true;
+            if (document.getElementById('clubPhone')) document.getElementById('clubPhone').required = true;
+            if (document.getElementById('clubOwnerName')) document.getElementById('clubOwnerName').required = true;
         }
     }
 
@@ -804,6 +861,12 @@
         switchToRegister();
         if (registerRole) {
             registerRole.value = 'fighter';
+            updateRoleFields();
+        }
+    } else if (roleParam === 'club') {
+        switchToRegister();
+        if (registerRole) {
+            registerRole.value = 'club';
             updateRoleFields();
         }
     }
@@ -922,6 +985,57 @@
                         window.location.href = 'index.html';
                     }, 2000);
                 }
+                else if (role === 'club') {
+                    const clubName = document.getElementById('clubName').value.trim();
+                    const clubCity = document.getElementById('clubCity').value.trim();
+                    const clubAddress = document.getElementById('clubAddress').value.trim();
+                    const clubPhone = document.getElementById('clubPhone').value.trim();
+                    const clubOwnerName = document.getElementById('clubOwnerName').value.trim();
+                    const clubSportsSelect = document.getElementById('clubSports');
+                    const clubSports = Array.from(clubSportsSelect.selectedOptions).map(opt => opt.value);
+
+                    if (!clubName || !clubCity || !clubAddress || !clubPhone || !clubOwnerName || clubSports.length === 0) {
+                        showError('Заполните все поля клуба и выберите минимум один вид спорта', 'warning');
+                        submitBtn.innerHTML = originalText;
+                        submitBtn.disabled = false;
+                        return;
+                    }
+
+                    // Создаем аккаунт клуба
+                    const userCred = await createUserWithEmailAndPassword(auth, email, password);
+                    const uid = userCred.user.uid;
+
+                    // Создаем запись в clubs со статусом pending
+                    await setDoc(doc(db, "clubs", uid), {
+                        name: clubName,
+                        description: '',
+                        logo: '',
+                        coverImage: '',
+                        city: clubCity,
+                        address: clubAddress,
+                        phone: clubPhone,
+                        sports: clubSports,
+                        ownerId: uid,
+                        ownerName: clubOwnerName,
+                        members: [],
+                        memberCount: 0,
+                        clubFRS: 0,
+                        wins: 0,
+                        losses: 0,
+                        finishes: 0,
+                        status: 'pending',
+                        joinPolicy: 'request',
+                        createdAt: serverTimestamp(),
+                        updatedAt: serverTimestamp(),
+                        isActive: true,
+                        email: email
+                    });
+
+                    showError('✅ Заявка на создание клуба отправлена! После одобрения администратором вы сможете войти.', 'success');
+                    setTimeout(() => {
+                        window.location.href = 'index.html';
+                    }, 2000);
+                }
             } catch (err) {
                 if (err.code === 'auth/email-already-in-use') {
                     showError('Этот email уже зарегистрирован', 'error');
@@ -965,24 +1079,59 @@
                     return;
                 }
 
+                // Проверяем pending клубы
+                const pendingClub = await getDocs(query(
+                    collection(db, "clubs"),
+                    where("email", "==", email),
+                    where("status", "==", "pending")
+                ));
+
+                if (!pendingClub.empty) {
+                    showError('⏳ Ваша заявка на создание клуба ещё не одобрена. Дождитесь подтверждения.', 'warning');
+                    submitBtn.innerHTML = originalText;
+                    submitBtn.disabled = false;
+                    return;
+                }
+
                 const userCred = await signInWithEmailAndPassword(auth, email, password);
                 const uid = userCred.user.uid;
                 
                 const fighterDoc = await getDoc(doc(db, "fighters", uid));
+                const clubDoc = await getDoc(doc(db, "clubs", uid));
                 
                 let isPartner = false;
+                let isClub = false;
                 
                 if (fighterDoc.exists()) {
                     isPartner = fighterDoc.data().isPartner === true;
                 } else {
-                    const partnerQuery = await getDocs(query(collection(db, "partners"), where("email", "==", email)));
-                    if (!partnerQuery.empty()) {
-                        isPartner = true;
+                    try {
+                        const partnerSnapshot = await getDocs(query(collection(db, "partners"), where("email", "==", email)));
+                        if (partnerSnapshot && !partnerSnapshot.empty) {
+                            isPartner = true;
+                        }
+                    } catch (err) {
+                        console.error('Ошибка проверки партнера:', err);
                     }
+                }
+                
+                // Проверяем, является ли пользователь клубом
+                if (clubDoc.exists()) {
+                    const clubData = clubDoc.data();
+                    if (clubData.status === 'banned') {
+                        showError('🚫 Ваш клуб заблокирован администратором.', 'error');
+                        await auth.signOut();
+                        submitBtn.innerHTML = originalText;
+                        submitBtn.disabled = false;
+                        return;
+                    }
+                    isClub = true;
                 }
                 
                 if (isPartner) {
                     window.location.href = 'partner-dashboard.html';
+                } else if (isClub) {
+                    window.location.href = `club-profile.html?id=${uid}`;
                 } else {
                     window.location.href = `profile.html?id=${uid}`;
                 }
@@ -993,7 +1142,7 @@
                 } else if (err.code === 'auth/wrong-password') {
                     showError('Неверный пароль', 'error');
                 } else if (err.code === 'auth/invalid-credential') {
-                    showError('Неверный email или пароль. Если вы партнёр — дождитесь одобрения заявки.', 'error');
+                    showError('Неверный email или пароль. Если вы партнёр или клуб — дождитесь одобрения заявки.', 'error');
                 } else {
                     showError(handleFirebaseError(err), 'error');
                 }
@@ -1115,6 +1264,5 @@
         });
     }
 </script>
-    
 </body>
 </html>

@@ -1245,6 +1245,12 @@
                     <span class="badge green" id="partnersBadge">0</span>
                 </div>
 
+                <div class="nav-item" data-section="clubs">
+                    <span class="icon"><i class="fas fa-users"></i></span>
+                    <span>Клубы</span>
+                    <span class="badge green" id="clubsBadge">0</span>
+                </div>
+
                 <div class="nav-section">Финансы</div>
                 
                 <div class="nav-item" data-section="commissions">
@@ -1411,7 +1417,44 @@
                 </div>
             </div>
 
-            
+            <!-- ===== CLUBS ===== -->
+            <div class="section-content" id="section-clubs">
+                <div class="page-header">
+                    <div>
+                        <h1><i class="fas fa-users"></i>Клубы</h1>
+                        <div class="subtitle">Управление клубами и заявками на регистрацию</div>
+                    </div>
+                    <div class="header-actions">
+                        <button class="btn btn-outline btn-sm"><i class="fas fa-file-export"></i> Экспорт</button>
+                    </div>
+                </div>
+
+                <!-- Вкладки: Активные / Заявки -->
+                <div class="tabs">
+                    <button class="tab active" data-club-tab="approved"><i class="fas fa-check-circle"></i> Активные (<span id="clubsApprovedCount">0</span>)</button>
+                    <button class="tab" data-club-tab="pending"><i class="fas fa-clock"></i> Заявки (<span id="clubsPendingCount">0</span>)</button>
+                </div>
+
+                <!-- Активные клубы -->
+                <div id="clubs-approved">
+                    <div class="admin-form">
+                        <h3><i class="fas fa-users"></i> Активные клубы</h3>
+                        <div id="clubsList">
+                            <div style="text-align:center; padding:20px; color:#666;"><div class="loading-spinner"></div> Загрузка...</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Заявки на клубы -->
+                <div id="clubs-pending" style="display:none;">
+                    <div class="admin-form">
+                        <h3><i class="fas fa-envelope"></i> Заявки на регистрацию клубов</h3>
+                        <div id="clubRequestsList">
+                            <div style="text-align:center; padding:20px; color:#666;"><div class="loading-spinner"></div> Загрузка...</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
             <!-- ===== COMMISSIONS ===== -->
             <div class="section-content" id="section-commissions">
@@ -1827,6 +1870,8 @@
                 loadFighters(),
                 loadPartners(),
                 loadRequests(),
+                loadClubs(),
+                loadClubRequests(),
                 loadOrdersForCommission(),
                 loadCommissions(),
                 loadDigitalProducts(),
@@ -1842,7 +1887,8 @@
             try {
                 const fightersSnap = await getDocs(collection(db, "fighters"));
                 const partnersSnap = await getDocs(collection(db, "partners"));
-                
+                const clubsSnap = await getDocs(collection(db, "clubs"));
+
                 // Считаем общую комиссию из завершённых заказов
                 let totalCommission = 0;
                 const ordersSnap = await getDocs(collection(db, "orders"));
@@ -1859,7 +1905,8 @@
                 
                 // Обновляем бейджи в сайдбаре
                 document.getElementById('partnersBadge').textContent = partnersSnap.size;
-                
+                 document.getElementById('clubsBadge').textContent = clubsSnap.size;
+
             } catch (e) {
                 console.error('Статистика:', e);
             }
@@ -2111,6 +2158,177 @@
                 alert('❌ Заявка отклонена');
             } catch (e) { alert('Ошибка: ' + e.message); }
         };
+
+        // ============================================================
+        // КЛУБЫ (CLUBS)
+        // ============================================================
+        let allClubs = [];
+        let allClubRequests = [];
+
+        async function loadClubs() {
+            try {
+                const snapshot = await getDocs(query(collection(db, "clubs"), where("status", "==", "approved")));
+                allClubs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                renderClubs();
+                document.getElementById('clubsApprovedCount').textContent = allClubs.length;
+                document.getElementById('clubsBadge').textContent = allClubs.length;
+            } catch (e) {
+                console.error('Клубы:', e);
+                document.getElementById('clubsList').innerHTML =
+                    '<div style="text-align:center; padding:20px; color:#666;">Ошибка загрузки</div>';
+            }
+        }
+
+        function renderClubs() {
+            const container = document.getElementById('clubsList');
+            if (!allClubs.length) {
+                container.innerHTML = '<div style="text-align:center; padding:20px; color:#666;">Нет активных клубов</div>';
+                return;
+            }
+            
+            let html = '<div class="table-wrap"><table><thead><tr><th>Название</th><th>Город</th><th>Владелец</th><th>Участники</th><th>FRS</th><th>Статус</th><th>Действия</th></tr></thead><tbody>';
+            
+            allClubs.forEach(club => {
+                html += `
+                    <tr>
+                        <td><strong>${escapeHtml(club.name || 'Клуб')}</strong></td>
+                        <td>${escapeHtml(club.city || '—')}</td>
+                        <td>${escapeHtml(club.ownerName || '—')}</td>
+                        <td>${club.memberCount || 0}</td>
+                        <td>${club.clubFRS || 0}</td>
+                        <td>
+                            ${club.isActive ? '<span class="status-badge active">✅ Активен</span>' : '<span class="status-badge inactive">🔒 Заблокирован</span>'}
+                        </td>
+                        <td>
+                            <div class="actions">
+                                ${club.isActive ? 
+                                    `<button class="btn btn-danger btn-sm" onclick="window.banClub('${club.id}')" title="Заблокировать"><i class="fas fa-ban"></i></button>` : 
+                                    `<button class="btn btn-success btn-sm" onclick="window.unbanClub('${club.id}')" title="Разблокировать"><i class="fas fa-check"></i></button>`
+                                }
+                                <button class="btn btn-danger btn-sm" onclick="window.deleteClub('${club.id}')" title="Удалить"><i class="fas fa-trash"></i></button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            });
+            
+            html += '</tbody></table></div>';
+            container.innerHTML = html;
+        }
+
+        window.banClub = async (clubId) => {
+            if (!confirm('Заблокировать клуб?')) return;
+            await updateDoc(doc(db, "clubs", clubId), { isActive: false, status: 'banned' });
+            await logAction('ban_club', clubId, 'Заблокировал клуб');
+            loadClubs();
+            loadStats();
+        };
+
+        window.unbanClub = async (clubId) => {
+            await updateDoc(doc(db, "clubs", clubId), { isActive: true, status: 'approved' });
+            await logAction('unban_club', clubId, 'Разблокировал клуб');
+            loadClubs();
+            loadStats();
+        };
+
+        window.deleteClub = async (clubId) => {
+            if (!confirm('Удалить клуб? Все данные будут потеряны.')) return;
+            try {
+                await deleteDoc(doc(db, "clubs", clubId));
+                await logAction('delete_club', clubId, 'Удалил клуб');
+                loadClubs();
+                loadStats();
+                alert('✅ Клуб удалён');
+            } catch (err) { alert('Ошибка: ' + err.message); }
+        };
+
+        // ============================================================
+        // ЗАЯВКИ КЛУБОВ
+        // ============================================================
+        async function loadClubRequests() {
+            try {
+                const snapshot = await getDocs(query(collection(db, "clubs"), where("status", "==", "pending")));
+                allClubRequests = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                renderClubRequests();
+                document.getElementById('clubsPendingCount').textContent = allClubRequests.length;
+            } catch (e) {
+                console.error('Заявки клубов:', e);
+                document.getElementById('clubRequestsList').innerHTML =
+                    '<div style="text-align:center; padding:20px; color:#666;">Ошибка загрузки</div>';
+            }
+        }
+
+        function renderClubRequests() {
+            const container = document.getElementById('clubRequestsList');
+            if (!allClubRequests.length) {
+                container.innerHTML = '<div style="text-align:center; padding:20px; color:#666;">Нет заявок на регистрацию клубов</div>';
+                return;
+            }
+            
+            let html = '';
+            allClubRequests.forEach(club => {
+                const date = club.createdAt?.toDate?.()?.toLocaleString() || '—';
+                html += `
+                    <div class="request-card">
+                        <div class="request-info">
+                            <div class="name"><i class="fas fa-users"></i>${escapeHtml(club.name || 'Новый клуб')}</div>
+                            <div class="desc">📍 ${escapeHtml(club.city || '—')} • 👤 ${escapeHtml(club.ownerName || '—')}</div>
+                            <div class="desc">📞 ${escapeHtml(club.phone || '—')} • 🏠 ${escapeHtml(club.address || '—')}</div>
+                            <div class="desc">🥊 ${club.sports ? club.sports.join(', ') : '—'}</div>
+                            <div class="meta"><i class="far fa-calendar-alt"></i> ${date}</div>
+                        </div>
+                        <div class="request-actions">
+                            <button class="btn btn-success btn-sm" onclick="window.approveClub('${club.id}')"><i class="fas fa-check"></i> Одобрить</button>
+                            <button class="btn btn-danger btn-sm" onclick="window.rejectClub('${club.id}')"><i class="fas fa-times"></i> Отклонить</button>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html;
+        }
+
+        window.approveClub = async (clubId) => {
+            if (!confirm('Одобрить заявку на создание клуба?')) return;
+            try {
+                await updateDoc(doc(db, "clubs", clubId), { 
+                    status: 'approved', 
+                    isActive: true,
+                    updatedAt: serverTimestamp() 
+                });
+                await logAction('approve_club', clubId, 'Одобрил заявку на создание клуба');
+                loadClubs();
+                loadClubRequests();
+                loadStats();
+                alert('✅ Клуб одобрен!');
+            } catch (e) { alert('Ошибка: ' + e.message); }
+        };
+
+        window.rejectClub = async (clubId) => {
+            if (!confirm('Отклонить заявку на создание клуба?')) return;
+            try {
+                await updateDoc(doc(db, "clubs", clubId), { 
+                    status: 'rejected',
+                    updatedAt: serverTimestamp() 
+                });
+                await logAction('reject_club', clubId, 'Отклонил заявку на создание клуба');
+                loadClubRequests();
+                alert('❌ Заявка отклонена');
+            } catch (e) { alert('Ошибка: ' + e.message); }
+        };
+
+        // ============================================================
+        // ВКЛАДКИ В КЛУБАХ
+        // ============================================================
+        document.querySelectorAll('[data-club-tab]').forEach(tab => {
+            tab.addEventListener('click', function() {
+                document.querySelectorAll('[data-club-tab]').forEach(t => t.classList.remove('active'));
+                this.classList.add('active');
+                const tabName = this.dataset.clubTab;
+                document.getElementById('clubs-approved').style.display = tabName === 'approved' ? 'block' : 'none';
+                document.getElementById('clubs-pending').style.display = tabName === 'pending' ? 'block' : 'none';
+            });
+        });
 
         // ============================================================
         // ВКЛАДКИ В МАГАЗИНАХ
