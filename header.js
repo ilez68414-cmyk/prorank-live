@@ -19,17 +19,14 @@ let challengesIndicator = null;
 let fighterMoneyIndicator = null;
 let partnerWalletIndicator = null;
 let deferredPrompt = null;
-let isClub = false;
 
 // ===== ГЛОБАЛЬНЫЕ СТИЛИ ДЛЯ МОДАЛКИ ДЕЙСТВИЙ =====
 function injectQuickActionsStyles() {
-    // Проверяем, есть ли уже стили
     if (document.getElementById('quickActionsStyles')) return;
     
     const styles = document.createElement('style');
     styles.id = 'quickActionsStyles';
     styles.textContent = `
-        /* ===== МОДАЛКА БЫСТРЫХ ДЕЙСТВИЙ ===== */
         .quick-actions-overlay {
             position: fixed !important;
             top: 0 !important;
@@ -120,7 +117,6 @@ function injectQuickActionsStyles() {
             to { opacity: 1; transform: translateY(0) scale(1); }
         }
         
-        /* ===== АДАПТИВ ДЛЯ МОДАЛКИ ===== */
         @media (max-width: 480px) {
             .quick-actions-panel {
                 padding: 18px !important;
@@ -137,17 +133,12 @@ function injectQuickActionsStyles() {
                 padding: 10px 12px !important;
                 font-size: 0.75rem !important;
             }
-            
-            .quick-action-item i {
-                font-size: 0.85rem !important;
-            }
         }
     `;
     
     document.head.appendChild(styles);
 }
 
-// Вызываем инъекцию сразу
 injectQuickActionsStyles();
 
 function getCurrentPage() {
@@ -255,10 +246,6 @@ function createIndicators() {
     };
 }
 
-// ============================================================
-// ФУНКЦИИ УВЕДОМЛЕНИЙ (ДЛЯ ИСПОЛЬЗОВАНИЯ В PROFILE.HTML)
-// ============================================================
-
 export async function getNotificationStatus() {
     try {
         const { isPushSupported, getPushStatus } = await import('./push-notifications.js');
@@ -314,7 +301,6 @@ export async function toggleNotifications() {
     }
 }
 
-// Делаем функции доступными глобально для использования в profile.html
 window.getNotificationStatus = getNotificationStatus;
 window.toggleNotifications = toggleNotifications;
 
@@ -416,6 +402,7 @@ async function renderMobileBottomNav() {
     const user = auth.currentUser;
     let isPartner = false;
     let isClubUser = false;
+    let myClubId = null;
     let userId = null;
     
     if (user) {
@@ -425,10 +412,12 @@ async function renderMobileBottomNav() {
             
             if (userDoc.exists()) {
                 isPartner = userDoc.data()?.isPartner === true;
+                myClubId = userDoc.data()?.clubId || null;
             } else {
                 const clubDoc = await getDoc(doc(db, "clubs", userId));
                 if (clubDoc.exists()) {
                     isClubUser = true;
+                    myClubId = userId;
                 }
             }
         } catch (err) {
@@ -440,7 +429,6 @@ async function renderMobileBottomNav() {
     const profileIcon = isPartner ? 'fa-chart-line' : isClubUser ? 'fa-users' : 'fa-user';
     const profileText = isPartner ? 'Кабинет' : isClubUser ? 'Клуб' : 'Профиль';
     
-    // ===== ПРОВЕРКА: мы на своей странице профиля? =====
     let isMyProfile = false;
     
     if (currentPage === 'profile.html') {
@@ -493,14 +481,12 @@ async function renderMobileBottomNav() {
         };
     }
     
-    // ===== КНОПКА "ДЕЙСТВИЯ" (МОЛНИЯ) =====
     const centerBtn = document.getElementById('centerActionBtn');
     if (centerBtn) {
         centerBtn.onclick = () => {
             let actions = [];
             
             if (isPartner) {
-                // 🔥 МЕНЮ ДЛЯ ПАРТНЁРА
                 actions = [
                     { text: 'Аналитика', icon: 'fa-chart-line', url: 'partner-analytics.html' },
                     { text: 'Товары', icon: 'fa-box', url: 'partner-products.html' },
@@ -509,21 +495,19 @@ async function renderMobileBottomNav() {
                     { text: 'Кошелёк', icon: 'fa-wallet', url: 'wallet.html' }
                 ];
             } else if (isClubUser) {
-                // 🔥 МЕНЮ ДЛЯ КЛУБА
                 actions = [
                     { text: 'Мой клуб', icon: 'fa-users', url: `club-profile.html?id=${userId}` },
                     { text: 'Все клубы', icon: 'fa-building', url: 'clubs.html' },
                     { text: 'Рейтинг', icon: 'fa-chart-line', url: 'rating.html' }
                 ];
             } else {
-                // 🔥 МЕНЮ ДЛЯ ОБЫЧНОГО БОЙЦА
                 actions = [
                     { text: 'Премиум и вызовы', icon: 'fa-gem', url: 'shop.html' },
                     { text: 'Кинуть вызов', icon: 'fa-fist-raised', url: 'challenges.html' },
                     { text: 'Мой рейтинг', icon: 'fa-chart-line', url: 'rating.html' },
                     { text: 'Лиги', icon: 'fa-trophy', url: 'leagues.html' },
                     { text: 'Кошелёк', icon: 'fa-wallet', url: 'buyer-wallet.html' },
-                    { text: 'Клубы', icon: 'fa-users', url: 'clubs.html' },
+                    { text: myClubId ? 'Мой клуб' : 'Клубы', icon: 'fa-users', url: myClubId ? `club-profile.html?id=${myClubId}` : 'clubs.html' },
                     { text: 'О проекте', icon: 'fa-info-circle', url: 'about.html' }
                 ];
             }
@@ -662,10 +646,6 @@ function escapeHtml(str) {
     return str;
 }
 
-// ============================================================
-// 🔥 АНИМАЦИЯ ПЕРЕХОДОВ - СВЕТОВАЯ ДОРОЖКА
-// ============================================================
-
 function createTransitionElement() {
     if (document.querySelector('.page-transition')) {
         return document.querySelector('.page-transition');
@@ -781,6 +761,7 @@ async function initHeader() {
     let isClubUser = false;
     let userId = null;
     let userName = '';
+    let myClubId = null;
 
     if (user) {
         userId = user.uid;
@@ -790,16 +771,17 @@ async function initHeader() {
             if (userDoc.exists()) {
                 isPartner = userDoc.data()?.isPartner === true;
                 userName = userDoc.data()?.name || 'Боец';
+                myClubId = userDoc.data()?.clubId || null;
                 setTimeout(() => {
                     window.updateHeaderBalance();
                     updateFighterMoneyBalance();
                     updatePartnerWalletBalance();
                 }, 100);
             } else {
-                // Проверяем, не клуб ли это
                 const clubDoc = await getDoc(doc(db, "clubs", userId));
                 if (clubDoc.exists()) {
                     isClubUser = true;
+                    myClubId = userId;
                     userName = clubDoc.data()?.name || 'Клуб';
                 }
             }
@@ -834,6 +816,10 @@ async function initHeader() {
         return;
     }
 
+    const clubLink = myClubId ? 
+        `<a href="club-profile.html?id=${myClubId}"><i class="fas fa-shield-alt"></i> Мой клуб</a>` : 
+        `<a href="clubs.html"><i class="fas fa-users"></i> Клубы</a>`;
+
     if (isDesktop) {
         if (user && isPartner) {
             navLinks.innerHTML = `
@@ -843,7 +829,7 @@ async function initHeader() {
                     <button class="dropbtn"><i class="fas fa-comments"></i> Общение <i class="fas fa-chevron-down"></i></button>
                     <div class="dropdown-content">
                         <a href="chats.html"><i class="fas fa-comments"></i> Чаты</a>
-                        <a href="clubs.html"><i class="fas fa-users"></i> Клубы</a>
+                        ${clubLink}
                     </div>
                 </div>
                 <div class="dropdown" data-section="shop">
@@ -870,13 +856,13 @@ async function initHeader() {
         } else if (user && isClubUser) {
             navLinks.innerHTML = `
                 <a href="index.html"><i class="fas fa-home"></i> Главная</a>
-                <a href="clubs.html"><i class="fas fa-users"></i> Клубы</a>
+                <a href="club-profile.html?id=${myClubId}"><i class="fas fa-shield-alt"></i> Мой клуб</a>
                 <a href="rating.html"><i class="fas fa-chart-line"></i> Рейтинг</a>
                 <div class="user-menu">
                     <img src="Avatar.png" class="user-avatar" onerror="this.src='Avatar.png'">
                     <div class="user-dropdown">
                         <span class="user-name">${escapeHtml(userName)}</span>
-                        <a href="club-profile.html?id=${userId}"><i class="fas fa-users"></i> Мой клуб</a>
+                        <a href="club-profile.html?id=${myClubId}"><i class="fas fa-users"></i> Мой клуб</a>
                         <a href="#" id="logoutLink"><i class="fas fa-sign-out-alt"></i> Выйти</a>
                     </div>
                 </div>
@@ -897,7 +883,7 @@ async function initHeader() {
                     <div class="dropdown-content">
                         <a href="chats.html"><i class="fas fa-comments"></i> Чаты</a>
                         <a href="challenges.html"><i class="fas fa-fist-raised"></i> Вызовы</a>
-                        <a href="clubs.html"><i class="fas fa-users"></i> Клубы</a>
+                        ${clubLink}
                         <a href="leagues.html"><i class="fas fa-trophy"></i> Лиги</a>
                     </div>
                 </div>
@@ -942,7 +928,7 @@ async function initHeader() {
                     <span class="mobile-submenu-trigger"><i class="fas fa-comments"></i> Общение <i class="fas fa-chevron-right"></i></span>
                     <div class="mobile-submenu-content">
                         <a href="chats.html"><i class="fas fa-comments"></i> Чаты</a>
-                        <a href="clubs.html"><i class="fas fa-users"></i> Клубы</a>
+                        ${clubLink}
                     </div>
                 </div>
                 <div class="mobile-submenu">
@@ -963,9 +949,8 @@ async function initHeader() {
         } else if (user && isClubUser) {
             navLinks.innerHTML = `
                 <a href="index.html"><i class="fas fa-home"></i> Главная</a>
-                <a href="clubs.html"><i class="fas fa-users"></i> Клубы</a>
+                <a href="club-profile.html?id=${myClubId}"><i class="fas fa-shield-alt"></i> Мой клуб</a>
                 <a href="rating.html"><i class="fas fa-chart-line"></i> Рейтинг</a>
-                <a href="club-profile.html?id=${userId}"><i class="fas fa-users"></i> Мой клуб</a>
                 <a href="#" id="logoutLink"><i class="fas fa-sign-out-alt"></i> Выйти</a>
             `;
         } else if (user && !isPartner) {
@@ -984,7 +969,7 @@ async function initHeader() {
                     <div class="mobile-submenu-content">
                         <a href="chats.html"><i class="fas fa-comments"></i> Чаты</a>
                         <a href="challenges.html"><i class="fas fa-fist-raised"></i> Вызовы</a>
-                        <a href="clubs.html"><i class="fas fa-users"></i> Клубы</a>
+                        ${clubLink}
                         <a href="leagues.html"><i class="fas fa-trophy"></i> Лиги</a>
                     </div>
                 </div>
@@ -1024,7 +1009,6 @@ async function initHeader() {
     setupGlobalNavigation();
 }
 
-// ===== ЭКСПОРТЫ ДЛЯ ДРУГИХ МОДУЛЕЙ =====
 export { 
     renderMobileBottomNav, 
     initHeader, 
@@ -1033,7 +1017,6 @@ export {
     updatePartnerWalletBalance
 };
 
-// ===== АНИМАЦИЯ ВХОДА НА СТРАНИЦУ =====
 if (document.readyState === 'complete') {
     setTimeout(animatePageIn, 100);
 } else {
