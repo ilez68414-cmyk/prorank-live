@@ -16,351 +16,313 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700;14..32,800;14..32,900&display=swap" rel="stylesheet">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+        /* ===== ДОПОЛНИТЕЛЬНЫЕ СТИЛИ ДЛЯ СТРАНИЦЫ КЛУБА ===== */
+        .club-container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 24px;
         }
 
-        body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            background: radial-gradient(ellipse at 30% 40%, rgba(251, 191, 36, 0.15) 0%, transparent 60%),
-                        radial-gradient(ellipse at 70% 80%, rgba(251, 191, 36, 0.08) 0%, transparent 50%),
-                        linear-gradient(135deg, #1a1a1a 0%, #0f0f0f 40%, #1a1a1a 100%);
-            background-attachment: fixed;
-            color: #fff;
-            line-height: 1.4;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-        }
-
-        main { flex: 1; }
-
-        .gold-top {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 3px;
-            background: linear-gradient(90deg, #fbbf24, #ffdd88, #fbbf24, #b8860b);
-            z-index: 1001;
-        }
-
-        .navbar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 16px 32px;
-            background: rgba(0, 0, 0, 0.75);
-            backdrop-filter: blur(16px);
-            border-bottom: 1px solid rgba(251, 191, 36, 0.25);
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-        }
-
-        .logo {
-            font-size: 1.8rem;
-            font-weight: 800;
-            cursor: pointer;
-            background: linear-gradient(135deg, #ffffff, #fbbf24);
-            background-clip: text;
-            color: transparent;
-        }
-
-        .logo span {
-            background: linear-gradient(135deg, #fbbf24, #ffdd77);
-            background-clip: text;
-            color: transparent;
-        }
-
-        .menu-toggle {
-            display: none;
-            background: rgba(251,191,36,0.1);
-            border: 1px solid #fbbf24;
-            color: #fbbf24;
-            font-size: 1.6rem;
-            cursor: pointer;
-            padding: 8px 14px;
-            border-radius: 12px;
-            min-height: 44px;
-            min-width: 44px;
-        }
-
-        .nav-links {
-            display: flex;
-            gap: 6px;
+        /* ===== КАРТОЧКА КЛУБА ===== */
+        .club-profile-card {
             background: rgba(15,15,15,0.7);
             backdrop-filter: blur(12px);
-            padding: 5px 14px;
-            border-radius: 60px;
-            border: 1px solid rgba(251,191,36,0.2);
+            -webkit-backdrop-filter: blur(12px);
+            border-radius: 28px;
+            padding: 20px 24px;
+            margin-bottom: 24px;
+            border: 1px solid rgba(251,191,36,0.15);
+            transition: all 0.3s ease;
+            animation: fadeInUp 0.5s ease;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
         }
 
-        .nav-links a {
-            color: #ddd;
-            text-decoration: none;
-            font-size: 0.9rem;
-            font-weight: 500;
-            padding: 8px 18px;
-            border-radius: 40px;
+        .club-profile-card:hover {
+            border-color: rgba(251,191,36,0.35);
+            box-shadow: 0 12px 40px rgba(0,0,0,0.4), 0 0 30px rgba(251,191,36,0.05);
+        }
+
+        .club-profile-top {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .club-avatar-section {
+            flex-shrink: 0;
+            position: relative;
+        }
+
+        .club-avatar-section img {
+            width: 72px;
+            height: 72px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2.5px solid #fbbf24;
+            background: #1a1a1a;
+            cursor: pointer;
+            box-shadow: 0 0 20px rgba(251,191,36,0.15);
+            transition: all 0.3s ease;
+        }
+
+        .club-avatar-section img:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 35px rgba(251,191,36,0.3);
+        }
+
+        .club-avatar-edit {
+            position: absolute;
+            bottom: -2px;
+            right: -2px;
+            width: 28px;
+            height: 28px;
+            background: #fbbf24;
+            border-radius: 50%;
+            border: 3px solid #1a1a1a;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
             transition: all 0.2s ease;
+            color: #000;
+            font-size: 11px;
         }
 
-        .nav-links a i {
-            margin-right: 8px;
+        .club-avatar-edit:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 20px rgba(251,191,36,0.4);
+        }
+
+        .club-avatar-edit.visible {
+            display: flex;
+        }
+
+        .club-info-section {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .club-top-row {
+            display: flex;
+            align-items: center;
+            gap: 6px 10px;
+            flex-wrap: wrap;
+            margin-bottom: 4px;
+        }
+
+        .club-name-text {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #fff;
+            letter-spacing: -0.3px;
+            white-space: nowrap;
+        }
+
+        .club-status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 2px 12px;
+            border-radius: 30px;
+            font-size: 0.5rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            height: 20px;
+        }
+
+        .club-status-badge.open {
+            background: rgba(16, 185, 129, 0.12);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            color: #10b981;
+        }
+
+        .club-status-badge.request {
+            background: rgba(251, 191, 36, 0.12);
+            border: 1px solid rgba(251, 191, 36, 0.2);
             color: #fbbf24;
         }
 
-        .nav-links a:hover {
-            color: #fbbf24;
-            background: rgba(251,191,36,0.1);
+        .club-status-badge.closed {
+            background: rgba(239, 68, 68, 0.12);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            color: #ef4444;
         }
 
-        .container {
-            max-width: 900px;
-            margin: 0 auto;
-            padding: 1.5rem 24px;
+        .club-status-badge i {
+            font-size: 0.4rem;
+        }
+
+        .club-details-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px 14px;
+            margin-bottom: 8px;
+            align-items: center;
+        }
+
+        .club-details-row span {
+            font-size: 0.7rem;
+            color: #999;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .club-details-row i {
+            color: #fbbf24;
+            font-size: 0.65rem;
+            width: 14px;
+            text-align: center;
+        }
+
+        /* FRS и Участники на карточке */
+        .club-frs-display {
+            display: inline-flex;
+            align-items: baseline;
+            gap: 4px;
+            background: rgba(251, 191, 36, 0.06);
+            padding: 2px 14px 2px 8px;
+            border-radius: 30px;
+            border: 1px solid rgba(251, 191, 36, 0.12);
+            height: 24px;
+        }
+
+        .club-frs-display i {
+            color: #fbbf24;
+            font-size: 0.65rem;
+        }
+
+        .club-frs-value {
+            font-size: 1.1rem;
+            font-weight: 800;
+            color: #fbbf24;
+            line-height: 1;
+        }
+
+        .club-frs-label {
+            font-size: 0.45rem;
+            font-weight: 700;
+            color: #888;
+            letter-spacing: 0.3px;
+        }
+
+        .club-members-display {
+            display: inline-flex;
+            align-items: baseline;
+            gap: 4px;
+            background: rgba(255, 255, 255, 0.04);
+            padding: 2px 14px 2px 8px;
+            border-radius: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            height: 24px;
+        }
+
+        .club-members-display i {
+            color: #fbbf24;
+            font-size: 0.65rem;
+        }
+
+        .club-members-value {
+            font-size: 1.1rem;
+            font-weight: 800;
+            color: #fbbf24;
+            line-height: 1;
+        }
+
+        .club-members-label {
+            font-size: 0.45rem;
+            font-weight: 700;
+            color: #888;
+            letter-spacing: 0.3px;
+        }
+
+        .club-actions-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .btn-club {
+            padding: 5px 16px;
+            border: none;
+            border-radius: 40px;
+            font-weight: 600;
+            font-size: 0.7rem;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            font-family: 'Inter', sans-serif;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            min-height: 34px;
+        }
+
+        .btn-club:active {
+            transform: scale(0.96);
+        }
+
+        .btn-club-primary {
+            background: linear-gradient(135deg, #fbbf24, #f59e0b);
+            color: #1a1a1a;
+            box-shadow: 0 4px 20px rgba(251,191,36,0.2);
+        }
+
+        .btn-club-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(251,191,36,0.3);
+        }
+
+        .btn-club-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-club-danger {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+        }
+
+        .btn-club-danger:hover {
+            background: rgba(239, 68, 68, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .btn-club-outline {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #fff;
+        }
+
+        .btn-club-outline:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .btn-club-outline-gold {
+            background: rgba(251,191,36,0.08);
+            border: 1px solid rgba(251,191,36,0.15);
+            color: #fbbf24;
+        }
+
+        .btn-club-outline-gold:hover {
+            background: rgba(251,191,36,0.15);
+            border-color: rgba(251,191,36,0.3);
+            transform: translateY(-2px);
+        }
+
+        .btn-club-sm {
+            padding: 4px 12px;
+            font-size: 0.6rem;
+            min-height: 28px;
         }
 
         /* ===== ВКЛАДКИ ===== */
         .club-tabs {
-            display: flex;
-            gap: 8px;
-            margin-bottom: 20px;
-        }
-
-        .club-tab {
-            flex: 1;
-            padding: 12px 20px;
-            background: rgba(15,15,15,0.7);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(251,191,36,0.15);
-            border-radius: 16px;
-            color: #888;
-            font-family: 'Inter', sans-serif;
-            font-weight: 700;
-            font-size: 0.9rem;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            min-height: 50px;
-            text-decoration: none;
-        }
-
-        .club-tab:hover {
-            border-color: rgba(251,191,36,0.3);
-            color: #fff;
-            transform: translateY(-2px);
-        }
-
-        .club-tab.active {
-            background: #fbbf24;
-            color: #000;
-            border-color: #fbbf24;
-            box-shadow: 0 4px 20px rgba(251, 191, 36, 0.3);
-        }
-
-        .club-tab i {
-            font-size: 1.2rem;
-        }
-
-        /* ===== CLUB PROFILE ===== */
-        .club-header {
-            background: rgba(15,15,15,0.7);
-            backdrop-filter: blur(12px);
-            border-radius: 24px;
-            padding: 30px;
-            margin-bottom: 20px;
-            border: 1px solid rgba(251,191,36,0.2);
-            text-align: center;
-            animation: fadeInUp 0.5s ease;
-        }
-
-        .club-logo {
-            width: 110px;
-            height: 110px;
-            border-radius: 50%;
-            background: #fbbf24;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 45px;
-            font-weight: bold;
-            color: #000;
-            border: 4px solid #fbbf24;
-            box-shadow: 0 0 40px rgba(251, 191, 36, 0.3);
-            overflow: hidden;
-            margin: 0 auto 15px;
-            position: relative;
-            transition: all 0.3s ease;
-        }
-
-        .club-logo.clickable:hover {
-            transform: scale(1.05);
-            box-shadow: 0 0 50px rgba(251, 191, 36, 0.5);
-        }
-
-        .club-logo img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        .club-name {
-            font-size: 1.8rem;
-            font-weight: 800;
-            color: #fff;
-            margin-bottom: 8px;
-        }
-
-        .club-status {
-            display: inline-block;
-            padding: 4px 14px;
-            border-radius: 20px;
-            font-size: 0.7rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 12px;
-        }
-
-        .club-status.open {
-            background: rgba(16,185,129,0.15);
-            border: 1px solid rgba(16,185,129,0.3);
-            color: #10b981;
-        }
-
-        .club-status.request {
-            background: rgba(251,191,36,0.15);
-            border: 1px solid rgba(251,191,36,0.3);
-            color: #fbbf24;
-        }
-
-        .club-status.closed {
-            background: rgba(239,68,68,0.15);
-            border: 1px solid rgba(239,68,68,0.3);
-            color: #ef4444;
-        }
-
-        .club-meta {
-            display: flex;
-            gap: 15px;
-            justify-content: center;
-            flex-wrap: wrap;
-            margin-bottom: 12px;
-            color: #888;
-            font-size: 0.85rem;
-        }
-
-        .club-meta span {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-
-        .club-meta i {
-            color: #fbbf24;
-        }
-
-        .club-actions {
-            display: flex;
-            gap: 10px;
-            justify-content: center;
-            flex-wrap: wrap;
-            margin-top: 15px;
-        }
-
-        .btn {
-            padding: 10px 24px;
-            border: none;
-            border-radius: 40px;
-            font-weight: 700;
-            cursor: pointer;
-            font-size: 0.9rem;
-            transition: all 0.2s ease;
-            font-family: 'Inter', sans-serif;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .btn-primary {
-            background: #fbbf24;
-            color: #000;
-        }
-
-        .btn-primary:hover {
-            background: #ffdd44;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 15px rgba(251, 191, 36, 0.25);
-        }
-
-        .btn-primary:disabled {
-            background: #555;
-            cursor: not-allowed;
-            transform: none;
-            box-shadow: none;
-        }
-
-        .btn-danger {
-            background: rgba(239,68,68,0.15);
-            border: 1px solid rgba(239,68,68,0.3);
-            color: #ef4444;
-        }
-
-        .btn-danger:hover {
-            background: rgba(239,68,68,0.25);
-        }
-
-        .btn-outline {
-            background: #333;
-            border: 1px solid #555;
-            color: #fff;
-        }
-
-        .btn-outline:hover {
-            background: #444;
-        }
-
-        .btn-sm {
-            padding: 6px 14px;
-            font-size: 0.75rem;
-        }
-
-        .stats-row {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-            gap: 12px;
-            margin-bottom: 20px;
-        }
-
-        .stat-card {
-            background: rgba(15,15,15,0.7);
-            backdrop-filter: blur(12px);
-            border-radius: 16px;
-            padding: 18px;
-            text-align: center;
-            border: 1px solid rgba(251,191,36,0.15);
-        }
-
-        .stat-value {
-            font-size: 1.5rem;
-            font-weight: 800;
-            color: #fbbf24;
-        }
-
-        .stat-label {
-            font-size: 0.75rem;
-            color: #888;
-            margin-top: 4px;
-        }
-
-        .tabs {
             display: flex;
             gap: 4px;
             background: rgba(15,15,15,0.5);
@@ -369,10 +331,9 @@
             padding: 4px;
             margin-bottom: 20px;
             border: 1px solid rgba(251,191,36,0.1);
-            overflow-x: auto;
         }
 
-        .tab-btn {
+        .club-tab-btn {
             flex: 1;
             padding: 10px 16px;
             border: none;
@@ -380,280 +341,496 @@
             color: #888;
             font-family: 'Inter', sans-serif;
             font-weight: 600;
-            font-size: 0.8rem;
+            font-size: 0.85rem;
             border-radius: 12px;
             cursor: pointer;
             transition: all 0.3s ease;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 6px;
-            min-height: 40px;
-            white-space: nowrap;
+            gap: 8px;
+            min-height: 44px;
         }
 
-        .tab-btn:hover {
+        .club-tab-btn i {
+            font-size: 1rem;
+            transition: transform 0.2s ease;
+        }
+
+        .club-tab-btn:hover {
             color: #fff;
             background: rgba(255,255,255,0.05);
         }
 
-        .tab-btn.active {
-            color: #fbbf24;
-            background: rgba(251,191,36,0.12);
+        .club-tab-btn:hover i {
+            transform: scale(1.1);
         }
 
-        .tab-content {
+        .club-tab-btn.active {
+            color: #fbbf24;
+            background: rgba(251,191,36,0.12);
+            box-shadow: 0 0 20px rgba(251,191,36,0.05);
+        }
+
+        .club-tab-btn.active i {
+            color: #fbbf24;
+        }
+
+        .club-tab-btn .badge {
+            background: rgba(251,191,36,0.12);
+            color: #fbbf24;
+            font-size: 0.6rem;
+            padding: 1px 8px;
+            border-radius: 10px;
+            font-weight: 700;
+        }
+
+        .club-tab-btn.owner-only {
+            border-left: 1px solid rgba(255,255,255,0.05);
+            color: #555;
+        }
+
+        .club-tab-btn.owner-only.active {
+            color: #fbbf24;
+        }
+
+        .club-tab-content {
             display: none;
             animation: fadeInUp 0.3s ease;
         }
 
-        .tab-content.active {
+        .club-tab-content.active {
             display: block;
         }
 
-        .panel {
+        /* ===== ПАНЕЛИ ===== */
+        .club-panel {
             background: rgba(15,15,15,0.7);
-            backdrop-filter: blur(12px);
-            border-radius: 20px;
+            backdrop-filter: blur(8px);
+            border-radius: 24px;
             padding: 20px;
             border: 1px solid rgba(251,191,36,0.15);
+            transition: all 0.3s ease;
         }
 
-        .panel-title {
+        .club-panel:hover {
+            border-color: rgba(251,191,36,0.3);
+        }
+
+        .club-panel-title {
             font-size: 1rem;
             font-weight: 700;
-            margin-bottom: 15px;
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
+            margin-bottom: 16px;
         }
 
-        .panel-title i {
+        .club-panel-title i {
             color: #fbbf24;
         }
 
-        .members-grid {
+        .club-panel-title span {
+            color: #888;
+            font-weight: 400;
+            font-size: 0.85rem;
+        }
+
+        /* ===== УЧАСТНИКИ ===== */
+        .club-members-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .club-search-input {
+            padding: 8px 16px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 40px;
+            color: #fff;
+            font-size: 0.8rem;
+            font-family: 'Inter', sans-serif;
+            outline: none;
+            transition: all 0.2s ease;
+            width: 180px;
+        }
+
+        .club-search-input::placeholder {
+            color: #555;
+        }
+
+        .club-search-input:focus {
+            border-color: rgba(251,191,36,0.25);
+            background: rgba(255,255,255,0.07);
+        }
+
+        .club-members-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
             gap: 10px;
         }
 
-        .member-card {
-            background: #0a0a0a;
-            border: 1px solid #333;
-            border-radius: 12px;
-            padding: 15px;
+        .club-member-card {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 14px;
+            padding: 12px 14px;
             display: flex;
             align-items: center;
-            gap: 10px;
-            cursor: pointer;
+            gap: 12px;
             transition: all 0.2s ease;
+            cursor: pointer;
             position: relative;
         }
 
-        .member-card:hover {
-            border-color: rgba(251,191,36,0.3);
+        .club-member-card:hover {
+            background: rgba(255,255,255,0.05);
+            border-color: rgba(251,191,36,0.1);
             transform: translateY(-2px);
         }
 
-        .member-avatar {
-            width: 45px;
-            height: 45px;
+        .club-member-avatar {
+            width: 40px;
+            height: 40px;
             border-radius: 50%;
-            background: #333;
+            background: linear-gradient(135deg, #333, #444);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-weight: bold;
+            font-weight: 700;
+            font-size: 16px;
             color: #fbbf24;
             overflow: hidden;
             flex-shrink: 0;
         }
 
-        .member-avatar img {
+        .club-member-avatar img {
             width: 100%;
             height: 100%;
             object-fit: cover;
         }
 
-        .member-info {
+        .club-member-info {
             flex: 1;
             min-width: 0;
         }
 
-        .member-name {
+        .club-member-name {
             font-weight: 600;
-            color: #fff;
             font-size: 0.85rem;
+            color: #fff;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
         }
 
-        .member-frs {
+        .club-member-name .you-tag {
+            font-size: 0.55rem;
+            font-weight: 700;
+            color: #fbbf24;
+            background: rgba(251,191,36,0.1);
+            padding: 1px 7px;
+            border-radius: 8px;
+            margin-left: 4px;
+        }
+
+        .club-member-frs {
             font-size: 0.7rem;
             color: #888;
         }
 
-        .member-role {
+        .club-member-frs i {
+            color: #fbbf24;
+            margin-right: 3px;
             font-size: 0.6rem;
-            padding: 2px 8px;
-            border-radius: 20px;
-            background: #fbbf24;
-            color: #000;
-            font-weight: 700;
-            flex-shrink: 0;
         }
 
-        .member-actions {
+        .club-member-role {
+            font-size: 0.55rem;
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 10px;
+            flex-shrink: 0;
+            background: rgba(251,191,36,0.08);
+            color: #fbbf24;
+            border: 1px solid rgba(251,191,36,0.08);
+        }
+
+        .club-member-role.captain {
+            background: rgba(251,191,36,0.12);
+            color: #fbbf24;
+            border-color: rgba(251,191,36,0.15);
+        }
+
+        .club-member-role.member {
+            background: rgba(255,255,255,0.03);
+            color: #777;
+            border-color: rgba(255,255,255,0.04);
+        }
+
+        .club-member-online {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: #10b981;
+            flex-shrink: 0;
+            box-shadow: 0 0 8px rgba(16,185,129,0.25);
+        }
+
+        .club-member-online.offline {
+            background: #444;
+            box-shadow: none;
+        }
+
+        .club-member-remove {
             display: none;
-            gap: 4px;
             position: absolute;
             right: 8px;
             top: 50%;
             transform: translateY(-50%);
-        }
-
-        .member-card.owner-mode:hover .member-actions {
-            display: flex;
-        }
-
-        .member-actions button {
-            width: 30px;
-            height: 30px;
+            background: rgba(239,68,68,0.15);
+            border: 1px solid rgba(239,68,68,0.2);
+            color: #ef4444;
+            width: 28px;
+            height: 28px;
             border-radius: 50%;
-            border: none;
             cursor: pointer;
-            font-size: 0.7rem;
-            display: flex;
+            transition: all 0.2s ease;
             align-items: center;
             justify-content: center;
-            transition: all 0.2s ease;
         }
 
-        .btn-remove {
-            background: rgba(239,68,68,0.15);
-            color: #ef4444;
-            border: 1px solid rgba(239,68,68,0.3) !important;
-        }
-
-        .btn-remove:hover {
-            background: rgba(239,68,68,0.3);
-        }
-
-        .btn-message {
-            background: rgba(59,130,246,0.15);
-            color: #60a5fa;
-            border: 1px solid rgba(59,130,246,0.3) !important;
-        }
-
-        .btn-message:hover {
-            background: rgba(59,130,246,0.3);
-        }
-
-        .applications-list {
+        .club-member-card.owner-mode:hover .club-member-remove {
             display: flex;
-            flex-direction: column;
+        }
+
+        .club-member-remove:hover {
+            background: rgba(239,68,68,0.3);
+            transform: scale(1.1);
+        }
+
+        /* ===== О КЛУБЕ ===== */
+        .club-about-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
             gap: 10px;
         }
 
-        .application-item {
-            background: #0a0a0a;
-            border: 1px solid #333;
+        .club-about-item {
+            background: rgba(255,255,255,0.03);
             border-radius: 12px;
             padding: 12px 16px;
             display: flex;
             align-items: center;
             gap: 12px;
+            border: 1px solid rgba(255,255,255,0.05);
+            transition: all 0.2s ease;
         }
 
-        .application-info {
+        .club-about-item:hover {
+            background: rgba(255,255,255,0.05);
+        }
+
+        .club-about-item i {
+            font-size: 16px;
+            color: #fbbf24;
+            width: 22px;
+            text-align: center;
+        }
+
+        .club-about-item .label {
+            font-size: 0.6rem;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+        }
+
+        .club-about-item .value {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #eee;
+        }
+
+        .club-about-item .value.empty {
+            color: #555;
+            font-weight: 400;
+        }
+
+        .club-about-description {
+            margin-top: 14px;
+            padding: 14px 18px;
+            background: rgba(255,255,255,0.02);
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.04);
+            color: #bbb;
+            font-size: 0.85rem;
+            line-height: 1.7;
+        }
+
+        .club-about-description strong {
+            color: #fbbf24;
+        }
+
+        /* ===== ЗАЯВКИ ===== */
+        .club-applications-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .club-application-item {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: all 0.2s ease;
+        }
+
+        .club-application-item:hover {
+            background: rgba(255,255,255,0.04);
+        }
+
+        .club-application-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: #333;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            color: #fbbf24;
+            flex-shrink: 0;
+            font-size: 14px;
+            overflow: hidden;
+        }
+
+        .club-application-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .club-application-info {
             flex: 1;
         }
 
-        .application-name {
+        .club-application-name {
             font-weight: 600;
             color: #fff;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
         }
 
-        .application-frs {
-            font-size: 0.75rem;
+        .club-application-frs {
+            font-size: 0.7rem;
             color: #888;
         }
 
-        .application-message {
+        .club-application-message {
             font-size: 0.75rem;
-            color: #666;
-            margin-top: 3px;
+            color: #777;
+            margin-top: 2px;
+            font-style: italic;
         }
 
-        .application-actions {
+        .club-application-actions {
             display: flex;
-            gap: 6px;
+            gap: 5px;
         }
 
-        .btn-approve {
-            padding: 6px 14px;
-            background: rgba(16,185,129,0.15);
-            border: 1px solid rgba(16,185,129,0.3);
-            color: #10b981;
-            border-radius: 20px;
-            cursor: pointer;
-            font-size: 0.75rem;
-            transition: all 0.2s ease;
-        }
-
-        .btn-approve:hover {
-            background: rgba(16,185,129,0.25);
-        }
-
-        .btn-reject {
-            padding: 6px 14px;
-            background: rgba(239,68,68,0.15);
-            border: 1px solid rgba(239,68,68,0.3);
-            color: #ef4444;
-            border-radius: 20px;
-            cursor: pointer;
-            font-size: 0.75rem;
-            transition: all 0.2s ease;
-        }
-
-        .btn-reject:hover {
-            background: rgba(239,68,68,0.25);
-        }
-
-        .empty-state {
-            text-align: center;
-            padding: 30px;
-            color: #888;
-        }
-
-        .empty-state i {
-            font-size: 2rem;
-            display: block;
-            margin-bottom: 10px;
-            color: #444;
-        }
-
-        .tournament-placeholder {
-            text-align: center;
-            padding: 40px;
-            color: #888;
-            background: rgba(251,191,36,0.03);
+        .btn-app-club {
+            padding: 5px 14px;
+            border: none;
             border-radius: 16px;
-            border: 1px dashed rgba(251,191,36,0.2);
+            font-size: 0.65rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: 'Inter', sans-serif;
         }
 
-        .tournament-placeholder i {
-            font-size: 3rem;
-            color: #fbbf24;
+        .btn-app-club.approve {
+            background: rgba(16,185,129,0.1);
+            color: #10b981;
+            border: 1px solid rgba(16,185,129,0.12);
+        }
+
+        .btn-app-club.approve:hover {
+            background: rgba(16,185,129,0.18);
+        }
+
+        .btn-app-club.reject {
+            background: rgba(239,68,68,0.06);
+            color: #ef4444;
+            border: 1px solid rgba(239,68,68,0.08);
+        }
+
+        .btn-app-club.reject:hover {
+            background: rgba(239,68,68,0.12);
+        }
+
+        /* ===== НАСТРОЙКИ ===== */
+        .club-settings-list {
+            display: grid;
+            gap: 10px;
+        }
+
+        .club-settings-item {
+            background: rgba(255,255,255,0.03);
+            padding: 14px 16px;
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .club-settings-item .label {
+            font-size: 0.65rem;
+            color: #666;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
             display: block;
-            margin-bottom: 15px;
-            opacity: 0.5;
+            margin-bottom: 4px;
         }
 
-        .modal {
+        .club-settings-item .value-row {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .club-settings-item .value-row input {
+            flex: 1;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 40px;
+            padding: 7px 14px;
+            color: #888;
+            font-size: 0.75rem;
+            font-family: 'Inter', sans-serif;
+            outline: none;
+            min-width: 0;
+        }
+
+        .club-settings-item .value-row input:focus {
+            border-color: rgba(251,191,36,0.2);
+        }
+
+        .club-settings-actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-top: 4px;
+        }
+
+        /* ===== МОДАЛКИ ===== */
+        .modal-club {
             display: none;
             position: fixed;
             top: 0;
@@ -665,120 +842,254 @@
             justify-content: center;
             align-items: center;
             z-index: 2000;
+            animation: fadeIn 0.2s ease;
+            padding: 20px;
         }
 
-        .modal.show {
+        .modal-club.show {
             display: flex;
         }
 
-        .modal-content {
+        .modal-club-content {
             background: #151515;
-            padding: 24px;
+            padding: 20px 24px;
             border-radius: 24px;
-            width: 90%;
-            max-width: 500px;
-            border: 1px solid rgba(251,191,36,0.3);
-            max-height: 85vh;
-            overflow-y: auto;
-        }
-
-        .modal-title {
-            font-size: 1.2rem;
-            font-weight: 700;
-            color: #fbbf24;
-            margin-bottom: 20px;
-        }
-
-        .input-group {
-            margin-bottom: 15px;
-        }
-
-        .input-group label {
-            display: block;
-            margin-bottom: 5px;
-            color: #ccc;
-            font-size: 0.8rem;
-        }
-
-        .input-group input,
-        .input-group select,
-        .input-group textarea {
             width: 100%;
-            padding: 10px 14px;
+            max-width: 480px;
+            max-height: 90vh;
+            border: 1px solid rgba(251,191,36,0.3);
+            animation: slideUp 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .modal-club-content .modal-scroll {
+            flex: 1;
+            overflow-y: auto;
+            padding-right: 4px;
+            margin-right: -4px;
+        }
+
+        .modal-club-content .modal-scroll::-webkit-scrollbar {
+            width: 3px;
+        }
+
+        .modal-club-content .modal-scroll::-webkit-scrollbar-thumb {
+            background: #fbbf24;
+            border-radius: 10px;
+        }
+
+        .modal-club-content .modal-scroll::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .modal-club-content .modal-footer {
+            padding-top: 16px;
+            border-top: 1px solid rgba(255,255,255,0.05);
+            margin-top: 16px;
+            flex-shrink: 0;
+        }
+
+        .modal-club-content h3 {
+            font-size: 1.1rem;
+            margin-bottom: 16px;
+            flex-shrink: 0;
+            color: #fbbf24;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .modal-club-content .input-group {
+            margin-bottom: 12px;
+        }
+
+        .modal-club-content .input-group label {
+            display: block;
+            font-size: 0.7rem;
+            color: #aaa;
+            margin-bottom: 3px;
+        }
+
+        .modal-club-content .input-group input,
+        .modal-club-content .input-group select,
+        .modal-club-content .input-group textarea {
+            width: 100%;
+            padding: 8px 14px;
             background: #1a1a1a;
             border: 1px solid rgba(251,191,36,0.25);
             color: #fff;
-            border-radius: 12px;
-            font-size: 0.9rem;
-            font-family: inherit;
-            transition: all 0.2s ease;
+            border-radius: 10px;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.85rem;
+            transition: 0.2s;
         }
 
-        .input-group textarea {
-            resize: vertical;
-            min-height: 80px;
-        }
-
-        .input-group input:focus,
-        .input-group select:focus,
-        .input-group textarea:focus {
+        .modal-club-content .input-group input:focus,
+        .modal-club-content .input-group select:focus,
+        .modal-club-content .input-group textarea:focus {
             outline: none;
             border-color: #fbbf24;
         }
 
-        .modal-actions {
+        .modal-club-content .input-group textarea {
+            resize: vertical;
+            min-height: 60px;
+        }
+
+        .modal-club-buttons {
             display: flex;
             gap: 10px;
-            margin-top: 20px;
+            margin-top: 0;
         }
 
-        .modal-actions button {
+        .modal-club-buttons button {
             flex: 1;
-            padding: 10px;
-            border: none;
-            border-radius: 40px;
+            padding: 10px 16px;
+            border-radius: 30px;
             font-weight: 600;
+            font-size: 0.85rem;
             cursor: pointer;
-            font-size: 0.9rem;
+            border: none;
             transition: all 0.2s ease;
             font-family: 'Inter', sans-serif;
+            min-height: 40px;
         }
 
-        .btn-confirm {
+        .modal-club-buttons .btn-confirm {
             background: #fbbf24;
             color: #000;
         }
 
-        .btn-confirm:hover {
+        .modal-club-buttons .btn-confirm:hover {
             background: #ffdd44;
+            transform: translateY(-2px);
         }
 
-        .btn-cancel {
-            background: #333;
+        .modal-club-buttons .btn-cancel {
+            background: #2a2a2a;
             color: #fff;
         }
 
-        .btn-cancel:hover {
-            background: #444;
+        .modal-club-buttons .btn-cancel:hover {
+            background: #3a3a3a;
+            transform: translateY(-2px);
         }
 
-        .loading {
+        .modal-club-buttons button:active {
+            transform: scale(0.97);
+        }
+
+        /* ===== АДАПТИВ ДЛЯ МОДАЛОК ===== */
+        @media (max-width: 480px) {
+            .modal-club-content {
+                padding: 16px 18px;
+                max-height: 92vh;
+                border-radius: 20px;
+            }
+
+            .modal-club-content h3 {
+                font-size: 1rem;
+                margin-bottom: 12px;
+            }
+
+            .modal-club-content .input-group {
+                margin-bottom: 10px;
+            }
+
+            .modal-club-content .input-group input,
+            .modal-club-content .input-group select,
+            .modal-club-content .input-group textarea {
+                padding: 6px 12px;
+                font-size: 0.8rem;
+                border-radius: 8px;
+            }
+
+            .modal-club-content .input-group textarea {
+                min-height: 50px;
+            }
+
+            .modal-club-buttons button {
+                padding: 8px 12px;
+                font-size: 0.75rem;
+                min-height: 36px;
+                border-radius: 24px;
+            }
+
+            .modal-club-content .modal-footer {
+                padding-top: 12px;
+                margin-top: 12px;
+            }
+        }
+
+        @media (max-width: 380px) {
+            .modal-club-content {
+                padding: 14px 14px;
+                max-height: 95vh;
+                border-radius: 16px;
+            }
+
+            .modal-club-content h3 {
+                font-size: 0.9rem;
+                margin-bottom: 10px;
+            }
+
+            .modal-club-content .input-group input,
+            .modal-club-content .input-group select,
+            .modal-club-content .input-group textarea {
+                padding: 5px 10px;
+                font-size: 0.75rem;
+            }
+
+            .modal-club-buttons {
+                flex-direction: column;
+                gap: 6px;
+            }
+
+            .modal-club-buttons button {
+                padding: 8px;
+                font-size: 0.7rem;
+                min-height: 34px;
+            }
+        }
+
+        /* ===== ЗАГРУЗКА ===== */
+        .club-loading {
             text-align: center;
-            padding: 50px;
+            padding: 60px;
             color: #888;
         }
 
-        .error-message {
+        .club-loading .loading-spinner {
+            display: inline-block;
+            width: 24px;
+            height: 24px;
+            border: 2px solid rgba(251,191,36,0.3);
+            border-top-color: #fbbf24;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* ===== ПУСТЫЕ СОСТОЯНИЯ ===== */
+        .club-empty-state {
             text-align: center;
-            padding: 50px;
-            color: #ef4444;
+            padding: 24px 20px;
+            color: #666;
         }
 
-        .error-message a {
-            color: #fbbf24;
-            text-decoration: none;
+        .club-empty-state i {
+            font-size: 24px;
+            color: #333;
+            display: block;
+            margin-bottom: 8px;
         }
 
+        /* ===== АНИМАЦИИ ===== */
         @keyframes fadeInUp {
             from {
                 opacity: 0;
@@ -790,106 +1101,385 @@
             }
         }
 
-        @keyframes spin {
-            to { transform: rotate(360deg); }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
         }
 
-        .loading-spinner {
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 2px solid rgba(251,191,36,0.3);
-            border-top-color: #fbbf24;
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
+        /* ===== СКРЫТЫЕ ЭЛЕМЕНТЫ ===== */
+        .hidden-club {
+            display: none !important;
+        }
+
+        /* ===== АДАПТИВ ===== */
         @media (max-width: 768px) {
-            .container { padding: 1rem 16px; }
-            .navbar { padding: 10px 16px; }
-            .menu-toggle { display: block; }
-            
-            .nav-links {
-                display: none;
-                flex-direction: column;
-                position: absolute;
-                top: 68px;
-                left: 18px;
-                right: 18px;
-                background: #0f0f0f;
-                border-radius: 24px;
-                padding: 20px;
-                gap: 10px;
-                border: 1px solid rgba(251,191,36,0.3);
-                z-index: 1000;
+            .club-container { padding: 0 16px; margin: 1rem auto; }
+
+            .club-profile-card {
+                padding: 18px 16px !important;
+                border-radius: 24px !important;
             }
-            
-            .nav-links.show {
-                display: flex;
+
+            .club-profile-top {
+                gap: 14px !important;
             }
-            
-            .nav-links a {
-                width: 100%;
-                text-align: center;
+
+            .club-avatar-section img {
+                width: 64px !important;
+                height: 64px !important;
             }
-            
-            .club-tab {
-                padding: 10px 16px;
-                font-size: 0.8rem;
-                min-height: 44px;
+
+            .club-name-text {
+                font-size: 1.1rem !important;
             }
-            
-            .club-tab i {
-                font-size: 1rem;
+
+            .club-frs-value {
+                font-size: 0.95rem !important;
             }
-            
-            .club-header {
-                padding: 20px;
+
+            .club-members-value {
+                font-size: 0.95rem !important;
             }
-            
-            .club-name {
-                font-size: 1.4rem;
+
+            .club-details-row span {
+                font-size: 0.65rem !important;
             }
-            
-            .members-grid {
-                grid-template-columns: 1fr;
+
+            .club-tabs {
+                gap: 2px !important;
+                padding: 3px !important;
             }
-            
-            .tab-btn {
-                font-size: 0.7rem;
-                padding: 8px 10px;
+
+            .club-tab-btn {
+                font-size: 0.7rem !important;
+                padding: 8px 10px !important;
+                min-height: 36px !important;
+            }
+
+            .club-tab-btn i {
+                font-size: 0.85rem !important;
+            }
+
+            .club-members-grid {
+                grid-template-columns: 1fr !important;
+            }
+
+            .club-about-grid {
+                grid-template-columns: 1fr !important;
+            }
+
+            .club-members-header {
+                flex-direction: column !important;
+                align-items: stretch !important;
+            }
+
+            .club-search-input {
+                width: 100% !important;
+            }
+
+            .club-application-item {
+                flex-wrap: wrap !important;
+            }
+
+            .club-application-actions {
+                width: 100% !important;
+                justify-content: flex-end !important;
+            }
+
+            .btn-club {
+                font-size: 0.65rem !important;
+                padding: 4px 12px !important;
+                min-height: 30px !important;
+            }
+
+            .club-frs-display {
+                height: 22px !important;
+                padding: 1px 10px 1px 6px !important;
+            }
+
+            .club-members-display {
+                height: 22px !important;
+                padding: 1px 10px 1px 6px !important;
+            }
+
+            .club-member-remove {
+                display: flex !important;
+                position: static !important;
+                transform: none !important;
+                width: 26px !important;
+                height: 26px !important;
             }
         }
 
         @media (max-width: 480px) {
-            .container { padding: 0.8rem 10px; }
-            
-            .club-tab {
-                padding: 8px 12px;
-                font-size: 0.7rem;
-                gap: 6px;
-                min-height: 40px;
+            .club-profile-card {
+                padding: 14px 12px !important;
+                border-radius: 20px !important;
             }
-            
-            .stats-row {
-                grid-template-columns: 1fr 1fr;
-                gap: 8px;
+
+            .club-avatar-section img {
+                width: 56px !important;
+                height: 56px !important;
             }
-            
-            .stat-card {
-                padding: 15px;
+
+            .club-name-text {
+                font-size: 1rem !important;
             }
-            
-            .stat-value {
-                font-size: 1.3rem;
+
+            .club-status-badge {
+                font-size: 0.45rem !important;
+                padding: 1px 8px !important;
+                height: 18px !important;
             }
-            
-            .member-actions {
-                display: flex !important;
-                position: static;
-                transform: none;
+
+            .club-details-row {
+                gap: 4px 8px !important;
+            }
+
+            .club-details-row span {
+                font-size: 0.6rem !important;
+            }
+
+            .club-frs-value {
+                font-size: 0.9rem !important;
+            }
+
+            .club-frs-label {
+                font-size: 0.4rem !important;
+            }
+
+            .club-members-value {
+                font-size: 0.9rem !important;
+            }
+
+            .club-members-label {
+                font-size: 0.4rem !important;
+            }
+
+            .club-frs-display {
+                height: 20px !important;
+                padding: 1px 8px 1px 5px !important;
+            }
+
+            .club-members-display {
+                height: 20px !important;
+                padding: 1px 8px 1px 5px !important;
+            }
+
+            .club-tab-btn {
+                font-size: 0.6rem !important;
+                padding: 6px 8px !important;
+                min-height: 32px !important;
+                gap: 4px !important;
+            }
+
+            .club-tab-btn i {
+                font-size: 0.75rem !important;
+            }
+
+            .club-panel {
+                padding: 14px !important;
+            }
+
+            .club-member-card {
+                padding: 10px 12px !important;
+            }
+
+            .club-member-avatar {
+                width: 34px !important;
+                height: 34px !important;
+                font-size: 14px !important;
+            }
+
+            .club-member-name {
+                font-size: 0.75rem !important;
+            }
+
+            .club-about-item {
+                padding: 10px 12px !important;
+            }
+
+            .club-about-item .value {
+                font-size: 0.75rem !important;
+            }
+
+            .btn-club {
+                font-size: 0.55rem !important;
+                padding: 3px 10px !important;
+                min-height: 26px !important;
+                gap: 4px !important;
+            }
+
+            .btn-app-club {
+                font-size: 0.55rem !important;
+                padding: 3px 10px !important;
+            }
+
+            .modal-club-content {
+                padding: 20px !important;
             }
         }
+
+        @media (max-width: 380px) {
+            .club-tab-btn span {
+                display: none !important;
+            }
+            .club-tab-btn i {
+                font-size: 1rem !important;
+                margin: 0 !important;
+            }
+            .club-name-text {
+                font-size: 0.9rem !important;
+            }
+            .club-avatar-section img {
+                width: 48px !important;
+                height: 48px !important;
+            }
+        }
+        /* ===== ПЕРЕКЛЮЧАТЕЛЬ МЕЖДУ КЛУБАМИ ===== */
+.club-switcher {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 24px;
+    background: rgba(15,15,15,0.5);
+    backdrop-filter: blur(8px);
+    border-radius: 16px;
+    padding: 4px;
+    border: 1px solid rgba(251,191,36,0.1);
+}
+
+.club-switch-btn {
+    flex: 1;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 12px;
+    background: transparent;
+    color: #888;
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    text-decoration: none;
+    min-height: 44px;
+}
+
+.club-switch-btn i {
+    font-size: 1rem;
+    transition: transform 0.2s ease;
+}
+
+.club-switch-btn:hover {
+    color: #fff;
+    background: rgba(255,255,255,0.05);
+}
+
+.club-switch-btn:hover i {
+    transform: scale(1.1);
+}
+
+.club-switch-btn.active {
+    color: #fbbf24;
+    background: rgba(251,191,36,0.12);
+    box-shadow: 0 0 20px rgba(251,191,36,0.05);
+}
+
+.club-switch-btn.active i {
+    color: #fbbf24;
+}
+
+.club-switch-badge {
+    background: rgba(251,191,36,0.12);
+    color: #fbbf24;
+    font-size: 0.55rem;
+    padding: 2px 10px;
+    border-radius: 12px;
+    font-weight: 700;
+    max-width: 100px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.club-switch-btn:not(.active) .club-switch-badge {
+    display: none;
+}
+
+/* ===== АДАПТИВ ДЛЯ ПЕРЕКЛЮЧАТЕЛЯ ===== */
+@media (max-width: 768px) {
+    .club-switcher {
+        gap: 4px;
+        padding: 3px;
+        border-radius: 14px;
+        margin-bottom: 16px;
+    }
+
+    .club-switch-btn {
+        padding: 10px 14px;
+        font-size: 0.75rem;
+        min-height: 38px;
+        border-radius: 10px;
+    }
+
+    .club-switch-btn i {
+        font-size: 0.85rem;
+    }
+
+    .club-switch-badge {
+        font-size: 0.5rem;
+        padding: 1px 8px;
+        max-width: 70px;
+    }
+}
+
+@media (max-width: 480px) {
+    .club-switcher {
+        border-radius: 12px;
+        margin-bottom: 12px;
+    }
+
+    .club-switch-btn {
+        padding: 8px 10px;
+        font-size: 0.65rem;
+        min-height: 34px;
+        gap: 5px;
+        border-radius: 8px;
+    }
+
+    .club-switch-btn i {
+        font-size: 0.75rem;
+    }
+
+    .club-switch-badge {
+        font-size: 0.45rem;
+        padding: 1px 6px;
+        max-width: 60px;
+    }
+}
+
+@media (max-width: 380px) {
+    .club-switch-btn span:not(.club-switch-badge) {
+        display: none;
+    }
+    .club-switch-btn i {
+        font-size: 1rem;
+    }
+}
     </style>
 </head>
 <body>
@@ -897,105 +1487,138 @@
 
     <header class="navbar">
         <div class="logo" onclick="window.location='index.html'">PRO<span>RANK</span></div>
+        <div class="balance-indicator" id="balanceIndicator" style="display: none;">
+            <i class="fas fa-crosshairs"></i>
+            <span class="balance-count" id="headerChallengesCount">0</span>
+            <button class="balance-plus" id="balancePlusBtn">+</button>
+        </div>
         <button class="menu-toggle" id="menuToggle"><i class="fas fa-bars"></i></button>
         <nav class="nav-links" id="navLinks"></nav>
     </header>
 
     <main>
-        <div class="container">
-            <!-- ВКЛАДКИ -->
-            <div class="club-tabs" id="clubTabs" style="display: none;">
-                <button class="club-tab active">
-                    <i class="fas fa-shield-alt"></i> Мой клуб
-                </button>
-                <a href="clubs.html" class="club-tab">
-                    <i class="fas fa-search"></i> Искать клубы
-                </a>
+        <div class="club-container" id="clubContainer">
+            <!-- Загрузка -->
+            <div id="clubLoading" class="club-loading">
+                <div class="loading-spinner"></div>
+                <p style="margin-top: 10px;">Загрузка клуба...</p>
             </div>
 
-            <!-- КЛУБ -->
-            <div id="clubContainer">
-                <div class="loading">
-                    <div class="loading-spinner"></div>
-                    <p style="margin-top: 10px;">Загрузка клуба...</p>
-                </div>
+            <!-- Контент -->
+            <div id="clubContent" style="display: none;"></div>
+
+            <!-- Ошибка -->
+            <div id="clubError" style="display: none;" class="club-empty-state">
+                <i class="fas fa-exclamation-triangle" style="color: #ef4444;"></i>
+                <p style="color: #ef4444;">Ошибка загрузки клуба</p>
             </div>
         </div>
     </main>
 
-    <input type="file" id="clubLogoInput" accept="image/*" style="display: none;">
+    <footer class="main-footer">
+        <div class="container">
+            <div class="footer-inner">
+                <div class="footer-logo">
+                    <div class="logo">PRO<span>RANK</span></div>
+                    <p>Рейтинг спортсменов-любителей</p>
+                </div>
+                <div class="footer-social">
+                    <a href="#" target="_blank" rel="noopener noreferrer" class="social-icon" aria-label="Telegram"><i class="fab fa-telegram"></i></a>
+                    <a href="#" target="_blank" rel="noopener noreferrer" class="social-icon" aria-label="VK"><i class="fab fa-vk"></i></a>
+                    <a href="#" target="_blank" rel="noopener noreferrer" class="social-icon" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
+                    <a href="#" target="_blank" rel="noopener noreferrer" class="social-icon" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+                </div>
+                <div class="footer-links">
+                    <a href="about.html">О проекте</a>
+                    <a href="privacy.html">Конфиденциальность</a>
+                    <a href="disclaimer.html">Дисклеймер</a>
+                    <a href="contacts.html">Контакты</a>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>© 2026 PRORANK. Все права защищены.</p>
+            </div>
+        </div>
+    </footer>
 
-    <!-- Модалка заявки -->
-    <div class="modal" id="applicationModal">
-        <div class="modal-content">
-            <div class="modal-title"><i class="fas fa-envelope"></i> Заявка на вступление</div>
+    <div id="mobileBottomNavContainer"></div>
+
+    <!-- ===== МОДАЛКА ЗАЯВКИ ===== -->
+    <div class="modal-club" id="applicationModal">
+        <div class="modal-club-content">
+            <h3><i class="fas fa-envelope"></i> Заявка на вступление</h3>
             <div class="input-group">
                 <label>Сообщение владельцу (опционально)</label>
-                <textarea id="applicationMessage" placeholder="Напишите о себе..."></textarea>
+                <textarea id="applicationMessageInput" placeholder="Напишите о себе..."></textarea>
             </div>
-            <div class="modal-actions">
+            <div class="modal-club-buttons">
                 <button class="btn-cancel" onclick="closeApplicationModal()">Отмена</button>
                 <button class="btn-confirm" onclick="submitApplication()">Отправить</button>
             </div>
         </div>
     </div>
 
-    <!-- Модалка редактирования -->
-    <div class="modal" id="editClubModal">
-        <div class="modal-content">
-            <div class="modal-title"><i class="fas fa-edit"></i> Редактировать клуб</div>
+    <!-- ===== МОДАЛКА РЕДАКТИРОВАНИЯ ===== -->
+    <div class="modal-club" id="editClubModal">
+        <div class="modal-club-content">
+            <h3><i class="fas fa-edit"></i> Редактировать клуб</h3>
             
-            <div class="input-group">
-                <label>Название клуба</label>
-                <input type="text" id="editClubName">
-            </div>
-            
-            <div class="input-group">
-                <label>Логотип клуба</label>
-                <div style="display: flex; gap: 10px; align-items: center;">
-                    <img id="editClubLogoPreview" src="" alt="Логотип" style="width: 60px; height: 60px; border-radius: 50%; object-fit: cover; background: #333; display: none;">
-                    <input type="file" id="editClubLogoInput" accept="image/*" style="flex: 1; padding: 8px; background: #1a1a1a; border: 1px solid rgba(251,191,36,0.25); color: #fff; border-radius: 12px; font-size: 0.8rem;">
+            <div class="modal-scroll">
+                <div class="input-group">
+                    <label>Название клуба</label>
+                    <input type="text" id="editClubName" placeholder="Название клуба">
                 </div>
-                <small style="color: #888; font-size: 0.7rem;">Рекомендуемый размер: 400x400 px</small>
+
+                <div class="input-group">
+                    <label>Логотип клуба</label>
+                    <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                        <img id="editClubLogoPreview" src="" alt="Логотип" style="width: 50px; height: 50px; border-radius: 50%; object-fit: cover; background: #333; display: none;">
+                        <input type="file" id="editClubLogoInput" accept="image/*" style="flex: 1; min-width: 120px; padding: 6px 12px; background: #1a1a1a; border: 1px solid rgba(251,191,36,0.25); color: #fff; border-radius: 10px; font-size: 0.75rem;">
+                    </div>
+                    <small style="color: #666; font-size: 0.6rem;">Рекомендуемый размер: 400x400 px</small>
+                </div>
+
+                <div class="input-group">
+                    <label>Город</label>
+                    <input type="text" id="editClubCity" placeholder="Город">
+                </div>
+
+                <div class="input-group">
+                    <label>Адрес зала</label>
+                    <input type="text" id="editClubAddress" placeholder="Адрес зала">
+                </div>
+
+                <div class="input-group">
+                    <label>Телефон</label>
+                    <input type="text" id="editClubPhone" placeholder="Телефон">
+                </div>
+
+                <div class="input-group">
+                    <label>Описание</label>
+                    <textarea id="editClubDescription" rows="3" placeholder="Расскажите о клубе..."></textarea>
+                </div>
+
+                <div class="input-group">
+                    <label>Политика вступления</label>
+                    <select id="editJoinPolicy">
+                        <option value="open">Открытый (все могут вступить)</option>
+                        <option value="request">По заявке (нужно одобрение)</option>
+                        <option value="closed">Закрытый (только по приглашению)</option>
+                    </select>
+                </div>
             </div>
 
-            <div class="input-group">
-                <label>Город</label>
-                <input type="text" id="editClubCity">
-            </div>
-            
-            <div class="input-group">
-                <label>Адрес зала</label>
-                <input type="text" id="editClubAddress">
-            </div>
-            
-            <div class="input-group">
-                <label>Телефон</label>
-                <input type="text" id="editClubPhone">
-            </div>
-            
-            <div class="input-group">
-                <label>Описание</label>
-                <textarea id="editClubDescription" rows="3"></textarea>
-            </div>
-            
-            <div class="input-group">
-                <label>Политика вступления</label>
-                <select id="editJoinPolicy">
-                    <option value="open">Открытый (все могут вступить)</option>
-                    <option value="request">По заявке (нужно одобрение)</option>
-                    <option value="closed">Закрытый (только по приглашению)</option>
-                </select>
-            </div>
-            
-            <div class="modal-actions">
-                <button class="btn-cancel" onclick="closeEditModal()">Отмена</button>
-                <button class="btn-confirm" onclick="saveClubChanges()">Сохранить</button>
+            <div class="modal-footer">
+                <div class="modal-club-buttons">
+                    <button class="btn-cancel" onclick="closeEditModal()">Отмена</button>
+                    <button class="btn-confirm" onclick="saveClubChanges()">Сохранить</button>
+                </div>
             </div>
         </div>
     </div>
 
-    <div id="mobileBottomNavContainer"></div>
+    <!-- ===== СКРЫТЫЙ INPUT ДЛЯ ЛОГОТИПА ===== -->
+    <input type="file" id="clubLogoInput" accept="image/*" style="display: none;">
 
     <script type="importmap">
         {
@@ -1009,9 +1632,15 @@
     <script type="module" src="header.js?v=3"></script>
     <script type="module">
         import { initializeApp } from "firebase/app";
-        import { getFirestore, doc, getDoc, setDoc, updateDoc, collection, getDocs, query, where, arrayUnion, arrayRemove, serverTimestamp, increment } from "firebase/firestore";
+        import {
+            getFirestore,
+            doc, getDoc, setDoc, updateDoc, collection,
+            getDocs, query, where, arrayUnion, arrayRemove,
+            serverTimestamp, increment, deleteDoc
+        } from "firebase/firestore";
         import { getAuth, onAuthStateChanged } from "firebase/auth";
 
+        // ===== FIREBASE КОНФИГ =====
         const firebaseConfig = {
             apiKey: "AIzaSyDUGYJY7pX7q02MS5SACMIIQXpjpQ97mPw",
             authDomain: "proranklive.firebaseapp.com",
@@ -1025,221 +1654,318 @@
         const db = getFirestore(app);
         const auth = getAuth(app);
 
-        const CLOUD_NAME = 'dbv7bfkgy'; 
-        const UPLOAD_PRESET = 'prorank_avatars'; 
+        const CLOUD_NAME = 'dbv7bfkgy';
+        const UPLOAD_PRESET = 'prorank_avatars';
 
+        // ===== СОСТОЯНИЕ =====
         let currentUser = null;
         let clubId = null;
         let clubData = null;
-        let userRole = 'guest';
+        let userRole = 'guest'; // 'owner' | 'member' | 'guest'
+        let applicationId = null;
+        let isSubmitting = false;
 
+        // ===== ПОЛУЧАЕМ ID КЛУБА ИЗ URL =====
         const urlParams = new URLSearchParams(window.location.search);
         clubId = urlParams.get('id');
 
-        onAuthStateChanged(auth, (user) => {
+        // ===== АВТОРИЗАЦИЯ =====
+        onAuthStateChanged(auth, async (user) => {
             currentUser = user;
-            
+
             if (!clubId) {
-                // Если нет id, пробуем найти клуб пользователя
+                // Если нет ID, ищем клуб пользователя
                 if (user) {
-                    getDoc(doc(db, 'fighters', user.uid)).then(fighterDoc => {
+                    try {
+                        const fighterDoc = await getDoc(doc(db, 'fighters', user.uid));
                         if (fighterDoc.exists() && fighterDoc.data().clubId) {
                             window.location.href = `club-profile.html?id=${fighterDoc.data().clubId}`;
-                        } else {
-                            window.location.href = 'clubs.html';
+                            return;
                         }
-                    });
-                } else {
-                    window.location.href = 'clubs.html';
+                    } catch (e) {
+                        console.error('Ошибка поиска клуба:', e);
+                    }
                 }
+                window.location.href = 'clubs.html';
                 return;
             }
-            
-            loadClubData();
+
+            await loadClubData();
         });
 
+        // ===== ЗАГРУЗКА ДАННЫХ КЛУБА =====
         async function loadClubData() {
-            const container = document.getElementById('clubContainer');
-            
+            const loading = document.getElementById('clubLoading');
+            const content = document.getElementById('clubContent');
+            const error = document.getElementById('clubError');
+
+            loading.style.display = 'block';
+            content.style.display = 'none';
+            error.style.display = 'none';
+
             try {
                 const clubDoc = await getDoc(doc(db, 'clubs', clubId));
-                
+
                 if (!clubDoc.exists()) {
-                    container.innerHTML = '<div class="error-message">Клуб не найден</div>';
+                    loading.style.display = 'none';
+                    error.style.display = 'block';
+                    error.innerHTML = `
+                        <i class="fas fa-exclamation-triangle" style="color: #ef4444;"></i>
+                        <p style="color: #ef4444;">Клуб не найден</p>
+                        <button class="btn-club btn-club-primary" onclick="window.location.href='clubs.html'" style="margin-top: 16px;">
+                            <i class="fas fa-arrow-left"></i> Вернуться к списку
+                        </button>
+                    `;
                     return;
                 }
-                
+
                 clubData = {
                     id: clubDoc.id,
                     ...clubDoc.data()
                 };
-                
-                if (currentUser && clubData.ownerId === currentUser.uid) {
-                    userRole = 'owner';
-                } else if (currentUser && clubData.members && clubData.members.includes(currentUser.uid)) {
-                    userRole = 'member';
+
+                // Определяем роль пользователя
+                if (currentUser) {
+                    if (clubData.ownerId === currentUser.uid) {
+                        userRole = 'owner';
+                    } else if (clubData.members && clubData.members.includes(currentUser.uid)) {
+                        userRole = 'member';
+                    } else {
+                        userRole = 'guest';
+                    }
                 } else {
                     userRole = 'guest';
                 }
-                
-                // Показываем вкладки только для member (не owner)
-                const clubTabs = document.getElementById('clubTabs');
-                if (userRole === 'member') {
-                    clubTabs.style.display = 'flex';
-                } else {
-                    clubTabs.style.display = 'none';
-                }
-                
-                if (clubData.status !== 'approved' && userRole !== 'owner') {
-                    container.innerHTML = '<div class="error-message">Клуб ещё не одобрен администратором</div>';
+
+                // Проверяем статус клуба
+                if (clubData.status !== 'approved' && userRole !== 'owner' && userRole !== 'member') {
+                    loading.style.display = 'none';
+                    error.style.display = 'block';
+                    error.innerHTML = `
+                        <i class="fas fa-clock" style="color: #fbbf24;"></i>
+                        <p style="color: #fbbf24;">Клуб ожидает одобрения администратора</p>
+                    `;
                     return;
                 }
-                
+
+                // Рендерим страницу
+                loading.style.display = 'none';
+                content.style.display = 'block';
                 renderClubPage();
-                
-            } catch (error) {
-                console.error('Ошибка загрузки:', error);
-                container.innerHTML = '<div class="error-message">Ошибка загрузки данных</div>';
+
+            } catch (err) {
+                console.error('Ошибка загрузки клуба:', err);
+                loading.style.display = 'none';
+                error.style.display = 'block';
+                error.innerHTML = `
+                    <i class="fas fa-exclamation-triangle" style="color: #ef4444;"></i>
+                    <p style="color: #ef4444;">Ошибка загрузки: ${err.message}</p>
+                `;
             }
         }
 
+        // ===== РЕНДЕР СТРАНИЦЫ =====
         function renderClubPage() {
-            const container = document.getElementById('clubContainer');
-            
-            const statusClass = clubData.joinPolicy === 'open' ? 'open' : 
-                               clubData.joinPolicy === 'request' ? 'request' : 'closed';
-            const statusText = clubData.joinPolicy === 'open' ? 'Открытый' : 
-                              clubData.joinPolicy === 'request' ? 'По заявке' : 'Закрытый';
-            
-            container.innerHTML = `
-                <div class="club-header">
-                    <div class="club-logo ${userRole === 'owner' ? 'clickable' : ''}" ${userRole === 'owner' ? `onclick="document.getElementById('clubLogoInput').click()" title="Изменить логотип"` : ''}>
-                        ${clubData.logo ? `<img src="${clubData.logo}" alt="${clubData.name}">` : clubData.name.charAt(0)}
-                        ${userRole === 'owner' ? `
-                            <div style="position: absolute; bottom: -5px; right: -5px; width: 30px; height: 30px; background: #fbbf24; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 2px solid #0a0a0a;">
-                                <i class="fas fa-camera" style="font-size: 0.7rem; color: #000;"></i>
+            const content = document.getElementById('clubContent');
+
+            const statusClass = clubData.joinPolicy === 'open' ? 'open' :
+                            clubData.joinPolicy === 'request' ? 'request' : 'closed';
+            const statusText = clubData.joinPolicy === 'open' ? 'Открытый' :
+                            clubData.joinPolicy === 'request' ? 'По заявке' : 'Закрытый';
+
+            const isOwner = userRole === 'owner';
+            const isMember = userRole === 'member';
+            const isInClub = isOwner || isMember;
+
+            content.innerHTML = `
+                <!-- ===== ПЕРЕКЛЮЧАТЕЛЬ (только для участников клуба) ===== -->
+                ${isInClub ? `
+                <div class="club-switcher">
+                    <a href="club-profile.html?id=${clubId}" class="club-switch-btn active">
+                        <i class="fas fa-shield-alt"></i> Мой клуб
+                        <span class="club-switch-badge">${clubData.name || ''}</span>
+                    </a>
+                    <a href="clubs.html" class="club-switch-btn">
+                        <i class="fas fa-search"></i> Клубы
+                    </a>
+                </div>
+                ` : ''}
+
+                <!-- КАРТОЧКА КЛУБА -->
+                <div class="club-profile-card">
+                    <div class="club-profile-top">
+                        <div class="club-avatar-section">
+                            <img src="${clubData.logo || `https://ui-avatars.com/api/?name=${encodeURIComponent(clubData.name || 'Клуб')}&background=fbbf24&color=000&size=80&rounded=true`}" 
+                                alt="${clubData.name || 'Клуб'}"
+                                id="clubAvatarImg">
+                            <div class="club-avatar-edit ${isOwner ? 'visible' : ''}" 
+                                onclick="document.getElementById('clubLogoInput').click()" 
+                                title="Изменить логотип">
+                                <i class="fas fa-camera"></i>
                             </div>
-                        ` : ''}
-                    </div>
-                    <div class="club-name">${clubData.name || 'Клуб'}</div>
-                    <div class="club-status ${statusClass}">${statusText}</div>
-                    
-                    <div class="club-meta">
-                        <span><i class="fas fa-map-marker-alt"></i> ${clubData.city || '—'}</span>
-                        <span><i class="fas fa-phone"></i> ${clubData.phone || '—'}</span>
-                        <span><i class="fas fa-fist-raised"></i> ${clubData.sports ? clubData.sports.join(', ') : '—'}</span>
-                        <span><i class="fas fa-user-tie"></i> ${clubData.ownerName || '—'}</span>
-                    </div>
-                    
-                    ${clubData.description ? `<p style="color: #ccc; margin-bottom: 15px;">${clubData.description}</p>` : ''}
-                    
-                    <div class="club-actions">
-                        ${renderActionButtons()}
-                    </div>
-                </div>
-                
-                <div class="stats-row">
-                    <div class="stat-card">
-                        <div class="stat-value">${clubData.clubFRS || 0}</div>
-                        <div class="stat-label">FRS клуба</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-value">${clubData.memberCount || 0}</div>
-                        <div class="stat-label">Участников</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-value">${clubData.wins || 0}</div>
-                        <div class="stat-label">Побед</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-value">${clubData.losses || 0}</div>
-                        <div class="stat-label">Поражений</div>
+                        </div>
+
+                        <div class="club-info-section">
+                            <div class="club-top-row">
+                                <span class="club-name-text">${clubData.name || 'Клуб без названия'}</span>
+                                <span class="club-status-badge ${statusClass}">
+                                    <i class="fas fa-circle"></i> ${statusText}
+                                </span>
+                            </div>
+
+                            <div class="club-details-row">
+                                <span><i class="fas fa-map-marker-alt"></i> ${clubData.city || '—'}</span>
+                                <span><i class="fas fa-user-tie"></i> ${clubData.ownerName || '—'}</span>
+                                ${clubData.createdAt ? `<span><i class="far fa-calendar-alt"></i> Осн. ${formatDate(clubData.createdAt)}</span>` : ''}
+
+                                <span class="club-frs-display">
+                                    <i class="fas fa-star"></i>
+                                    <span class="club-frs-value">${clubData.clubFRS || 0}</span>
+                                    <span class="club-frs-label">FRS</span>
+                                </span>
+
+                                <span class="club-members-display">
+                                    <i class="fas fa-users"></i>
+                                    <span class="club-members-value">${clubData.memberCount || 0}</span>
+                                    <span class="club-members-label">участников</span>
+                                </span>
+                            </div>
+
+                            <div class="club-actions-row">
+                                ${renderActionButtons()}
+                            </div>
+                        </div>
                     </div>
                 </div>
-                
-                <div class="tabs">
-                    <button class="tab-btn active" data-tab="members">
+
+                <!-- ВКЛАДКИ -->
+                <div class="club-tabs">
+                    <button class="club-tab-btn active" data-tab="members">
                         <i class="fas fa-users"></i> Участники
+                        <span class="badge">${clubData.memberCount || 0}</span>
                     </button>
-                    <button class="tab-btn" data-tab="about">
+                    <button class="club-tab-btn" data-tab="about">
                         <i class="fas fa-info-circle"></i> О клубе
                     </button>
-                    <button class="tab-btn" data-tab="tournaments">
-                        <i class="fas fa-trophy"></i> Турниры
-                    </button>
-                    ${userRole === 'owner' ? `
-                    <button class="tab-btn" data-tab="applications">
-                        <i class="fas fa-envelope"></i> Заявки
-                    </button>
-                    <button class="tab-btn" data-tab="settings">
-                        <i class="fas fa-cog"></i> Настройки
-                    </button>
+                    ${isOwner ? `
+                        <button class="club-tab-btn owner-only" data-tab="applications">
+                            <i class="fas fa-envelope"></i> Заявки
+                            <span class="badge" id="applicationsBadge">0</span>
+                        </button>
+                        <button class="club-tab-btn owner-only" data-tab="settings">
+                            <i class="fas fa-cog"></i> Настройки
+                        </button>
                     ` : ''}
                 </div>
-                
-                <div class="tab-content active" id="tab-members">
-                    <div class="panel">
-                        <div class="panel-title"><i class="fas fa-users"></i> Участники клуба</div>
-                        <div class="members-grid" id="membersGrid">
-                            <div class="empty-state">Загрузка...</div>
+
+                <!-- ВКЛАДКА: УЧАСТНИКИ -->
+                <div class="club-tab-content active" id="tab-members">
+                    <div class="club-panel">
+                        <div class="club-panel-title">
+                            <i class="fas fa-users"></i> Участники
+                            <span>— ${clubData.memberCount || 0} человек</span>
+                        </div>
+                        <div class="club-members-header">
+                            <input class="club-search-input" type="text" placeholder="🔍 Найти участника...">
+                        </div>
+                        <div class="club-members-grid" id="membersGrid">
+                            <div class="club-empty-state"><i class="fas fa-spinner fa-spin"></i> Загрузка...</div>
                         </div>
                     </div>
                 </div>
-                
-                <div class="tab-content" id="tab-about">
-                    <div class="panel">
-                        <div class="panel-title"><i class="fas fa-info-circle"></i> О клубе</div>
-                        <div style="color: #ccc; line-height: 1.6;">
-                            ${clubData.description ? clubData.description : 'Описание отсутствует'}
+
+                <!-- ВКЛАДКА: О КЛУБЕ -->
+                <div class="club-tab-content" id="tab-about">
+                    <div class="club-panel">
+                        <div class="club-panel-title">
+                            <i class="fas fa-info-circle"></i> О клубе
                         </div>
-                        <div style="margin-top: 20px; display: grid; gap: 10px;">
-                            <div style="display: flex; gap: 10px; align-items: center;">
-                                <i class="fas fa-map-marker-alt" style="color: #fbbf24; width: 20px;"></i>
-                                <span>${clubData.address || 'Адрес не указан'}</span>
+                        <div class="club-about-grid">
+                            <div class="club-about-item">
+                                <i class="fas fa-map-marker-alt"></i>
+                                <div>
+                                    <div class="label">Город</div>
+                                    <div class="value">${clubData.city || 'Не указан'}</div>
+                                </div>
                             </div>
-                            <div style="display: flex; gap: 10px; align-items: center;">
-                                <i class="fas fa-phone" style="color: #fbbf24; width: 20px;"></i>
-                                <span>${clubData.phone || 'Телефон не указан'}</span>
+                            <div class="club-about-item">
+                                <i class="fas fa-home"></i>
+                                <div>
+                                    <div class="label">Адрес</div>
+                                    <div class="value">${clubData.address || 'Не указан'}</div>
+                                </div>
                             </div>
-                            <div style="display: flex; gap: 10px; align-items: center;">
-                                <i class="fas fa-fist-raised" style="color: #fbbf24; width: 20px;"></i>
-                                <span>${clubData.sports ? clubData.sports.join(', ') : 'Виды спорта не указаны'}</span>
+                            <div class="club-about-item">
+                                <i class="fas fa-phone"></i>
+                                <div>
+                                    <div class="label">Телефон</div>
+                                    <div class="value">${clubData.phone || 'Не указан'}</div>
+                                </div>
                             </div>
+                            <div class="club-about-item">
+                                <i class="fas fa-fist-raised"></i>
+                                <div>
+                                    <div class="label">Виды спорта</div>
+                                    <div class="value">${clubData.sports ? clubData.sports.join(', ') : 'Не указаны'}</div>
+                                </div>
+                            </div>
+                            ${clubData.website ? `
+                            <div class="club-about-item" style="grid-column: 1 / -1;">
+                                <i class="fas fa-globe"></i>
+                                <div>
+                                    <div class="label">Сайт / Соцсети</div>
+                                    <div class="value" style="color: #60a5fa;">${clubData.website}</div>
+                                </div>
+                            </div>
+                            ` : ''}
+                        </div>
+
+                        <div class="club-about-description">
+                            <strong>О нас:</strong><br>
+                            ${clubData.description || 'Описание отсутствует'}
                         </div>
                     </div>
                 </div>
-                
-                <div class="tab-content" id="tab-tournaments">
-                    <div class="panel">
-                        <div class="panel-title"><i class="fas fa-trophy"></i> Турниры клуба</div>
-                        <div class="tournament-placeholder">
-                            <i class="fas fa-trophy"></i>
-                            <h3 style="margin-bottom: 10px;">Скоро здесь будут турниры</h3>
-                            <p style="font-size: 0.9rem;">Клуб сможет создавать турниры и соревнования</p>
+
+                ${isOwner ? `
+                <!-- ВКЛАДКА: ЗАЯВКИ -->
+                <div class="club-tab-content" id="tab-applications">
+                    <div class="club-panel">
+                        <div class="club-panel-title">
+                            <i class="fas fa-envelope"></i> Заявки на вступление
+                        </div>
+                        <div class="club-applications-list" id="applicationsList">
+                            <div class="club-empty-state"><i class="fas fa-spinner fa-spin"></i> Загрузка...</div>
                         </div>
                     </div>
                 </div>
-                
-                ${userRole === 'owner' ? `
-                <div class="tab-content" id="tab-applications">
-                    <div class="panel">
-                        <div class="panel-title"><i class="fas fa-envelope"></i> Заявки на вступление</div>
-                        <div class="applications-list" id="applicationsList">
-                            <div class="empty-state">Загрузка...</div>
+
+                <!-- ВКЛАДКА: НАСТРОЙКИ -->
+                <div class="club-tab-content" id="tab-settings">
+                    <div class="club-panel">
+                        <div class="club-panel-title">
+                            <i class="fas fa-cog"></i> Настройки клуба
                         </div>
-                    </div>
-                </div>
-                
-                <div class="tab-content" id="tab-settings">
-                    <div class="panel">
-                        <div class="panel-title"><i class="fas fa-cog"></i> Настройки клуба</div>
-                        
-                        <div style="display: grid; gap: 15px;">
-                            <div>
-                                <label style="font-size: 0.8rem; color: #888;">Ссылка на клуб</label>
-                                <div style="display: flex; gap: 8px; margin-top: 5px;">
-                                    <input type="text" id="clubLink" readonly value="${window.location.origin}/prorank-live/club-profile.html?id=${clubId}" style="flex: 1; padding: 10px; background: #1a1a1a; border: 1px solid rgba(251,191,36,0.25); color: #fff; border-radius: 12px; font-size: 0.75rem;">
-                                    <button class="btn btn-primary btn-sm" onclick="copyClubLink()"><i class="fas fa-copy"></i></button>
+                        <div class="club-settings-list">
+                            <div class="club-settings-item">
+                                <span class="label"><i class="fas fa-link"></i> Ссылка на клуб</span>
+                                <div class="value-row">
+                                    <input type="text" id="clubLinkInput" readonly value="${window.location.href}">
+                                    <button class="btn-club btn-club-primary btn-club-sm" onclick="copyClubLink()">
+                                        <i class="fas fa-copy"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="club-settings-item">
+                                <span class="label"><i class="fas fa-users"></i> Управление</span>
+                                <div class="club-settings-actions">
+                                    <button class="btn-club btn-club-outline btn-club-sm" onclick="openEditModal()">
+                                        <i class="fas fa-edit"></i> Редактировать
+                                    </button>
+                                    <button class="btn-club btn-club-danger btn-club-sm" onclick="deleteClub()">
+                                        <i class="fas fa-trash"></i> Удалить
+                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -1247,56 +1973,237 @@
                 </div>
                 ` : ''}
             `;
-            
-            document.querySelectorAll('.tab-btn').forEach(btn => {
+
+            // Подключаем события для вкладок
+            document.querySelectorAll('.club-tab-btn').forEach(btn => {
                 btn.addEventListener('click', function() {
-                    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                    document.querySelectorAll('.club-tab-btn').forEach(b => b.classList.remove('active'));
                     this.classList.add('active');
-                    
+
                     const tabName = this.dataset.tab;
-                    document.querySelectorAll('.tab-content').forEach(tc => tc.classList.remove('active'));
+                    document.querySelectorAll('.club-tab-content').forEach(tc => tc.classList.remove('active'));
                     document.getElementById('tab-' + tabName).classList.add('active');
                 });
             });
-            
+
+            // Поиск по участникам
+            const searchInput = document.querySelector('.club-search-input');
+            if (searchInput) {
+                searchInput.addEventListener('input', function() {
+                    const query = this.value.toLowerCase().trim();
+                    document.querySelectorAll('.club-member-card').forEach(card => {
+                        const name = card.querySelector('.club-member-name')?.textContent?.toLowerCase() || '';
+                        card.style.display = name.includes(query) ? 'flex' : 'none';
+                    });
+                });
+            }
+
+            // Загружаем данные
             loadMembers();
-            
-            if (userRole === 'owner') {
+            if (isOwner) {
                 loadApplications();
             }
+
+            // Проверяем существующую заявку для гостя
+            if (userRole === 'guest' && currentUser) {
+                checkExistingApplication();
+            }
         }
 
-       function renderActionButtons() {
+        // ===== РЕНДЕР КНОПОК ДЕЙСТВИЙ =====
+        function renderActionButtons() {
             if (!currentUser) {
-                return `<button class="btn btn-primary" onclick="window.location.href='login.html'"><i class="fas fa-sign-in-alt"></i> Войдите, чтобы вступить</button>`;
+                return `
+                    <button class="btn-club btn-club-primary" onclick="window.location.href='login.html'">
+                        <i class="fas fa-sign-in-alt"></i> Войдите, чтобы вступить
+                    </button>
+                `;
             }
-            
+
             if (userRole === 'owner') {
                 return `
-                    <button class="btn btn-primary" onclick="openEditModal()"><i class="fas fa-edit"></i> Редактировать</button>
-                    <button class="btn btn-outline" onclick="copyClubLink()"><i class="fas fa-share"></i> Поделиться</button>
+                    <button class="btn-club btn-club-primary" onclick="openEditModal()">
+                        <i class="fas fa-edit"></i> Редактировать
+                    </button>
+                    <button class="btn-club btn-club-outline-gold" onclick="copyClubLink()">
+                        <i class="fas fa-share-alt"></i> Поделиться
+                    </button>
+                    <button class="btn-club btn-club-outline" onclick="window.location.href='chats.html'">
+                        <i class="fas fa-comment"></i> Чат
+                    </button>
                 `;
             }
-            
+
             if (userRole === 'member') {
                 return `
-                    <button class="btn btn-danger" onclick="leaveClub()"><i class="fas fa-sign-out-alt"></i> Покинуть клуб</button>
+                    <button class="btn-club btn-club-danger" onclick="leaveClub()">
+                        <i class="fas fa-sign-out-alt"></i> Покинуть клуб
+                    </button>
+                    <button class="btn-club btn-club-outline" onclick="window.location.href='chats.html'">
+                        <i class="fas fa-comment"></i> Чат
+                    </button>
                 `;
             }
-            
+
+            // Гость
             if (clubData.joinPolicy === 'closed') {
-                return `<button class="btn btn-primary" disabled><i class="fas fa-lock"></i> Клуб закрыт</button>`;
+                return `
+                    <button class="btn-club btn-club-primary" disabled>
+                        <i class="fas fa-lock"></i> Клуб закрыт
+                    </button>
+                `;
             }
-            
-            // Проверяем, есть ли уже заявка
-            checkExistingApplication();
-            
-            return `<button class="btn btn-primary" id="joinButton" onclick="openApplicationModal()"><i class="fas fa-user-plus"></i> ${clubData.joinPolicy === 'open' ? 'Вступить в клуб' : 'Подать заявку'}</button>`;
+
+            const isOpen = clubData.joinPolicy === 'open';
+            return `
+                <button class="btn-club btn-club-primary" id="joinClubBtn" onclick="openApplicationModal()">
+                    <i class="fas fa-user-plus"></i> ${isOpen ? 'Вступить в клуб' : 'Подать заявку'}
+                </button>
+                <button class="btn-club btn-club-outline" onclick="copyClubLink()">
+                    <i class="fas fa-share-alt"></i> Поделиться
+                </button>
+            `;
         }
 
+        // ===== ЗАГРУЗКА УЧАСТНИКОВ =====
+        async function loadMembers() {
+            const grid = document.getElementById('membersGrid');
+            if (!grid) return;
+
+            if (!clubData.members || clubData.members.length === 0) {
+                grid.innerHTML = `
+                    <div class="club-empty-state">
+                        <i class="fas fa-users"></i>
+                        В клубе пока нет участников
+                    </div>
+                `;
+                return;
+            }
+
+            grid.innerHTML = '';
+
+            // Сортируем участников по FRS (от большего к меньшему)
+            const memberPromises = clubData.members.map(async (memberId) => {
+                try {
+                    const memberDoc = await getDoc(doc(db, 'fighters', memberId));
+                    if (memberDoc.exists()) {
+                        return { id: memberId, ...memberDoc.data() };
+                    }
+                    return null;
+                } catch (e) {
+                    return null;
+                }
+            });
+
+            const members = (await Promise.all(memberPromises)).filter(m => m !== null);
+            members.sort((a, b) => (b.frs || 0) - (a.frs || 0));
+
+            const isOwner = userRole === 'owner';
+            const currentUserId = currentUser?.uid;
+
+            members.forEach(member => {
+                const isOwnerMember = member.id === clubData.ownerId;
+                const isCurrentUser = member.id === currentUserId;
+                const card = document.createElement('div');
+                card.className = `club-member-card ${isOwner ? 'owner-mode' : ''}`;
+
+                const initials = member.name ? member.name.charAt(0) : '?';
+
+                card.innerHTML = `
+                    <div class="club-member-avatar" onclick="window.location.href='profile.html?id=${member.id}'">
+                        ${member.avatar ? `<img src="${member.avatar}" alt="${member.name}">` : initials}
+                    </div>
+                    <div class="club-member-info" onclick="window.location.href='profile.html?id=${member.id}'">
+                        <div class="club-member-name">
+                            ${member.name || 'Боец'}
+                            ${isOwnerMember ? '👑' : ''}
+                            ${isCurrentUser ? '<span class="you-tag">Вы</span>' : ''}
+                        </div>
+                        <div class="club-member-frs"><i class="fas fa-star"></i> FRS: ${member.frs || 0}</div>
+                    </div>
+                    ${isOwnerMember ? '<span class="club-member-role captain">Владелец</span>' : '<span class="club-member-role member">Участник</span>'}
+                    <span class="club-member-online ${Math.random() > 0.5 ? '' : 'offline'}"></span>
+                    ${isOwner && !isOwnerMember ? `
+                        <button class="club-member-remove" onclick="event.stopPropagation(); removeMember('${member.id}')" title="Исключить">
+                            <i class="fas fa-user-minus"></i>
+                        </button>
+                    ` : ''}
+                `;
+
+                grid.appendChild(card);
+            });
+        }
+
+        // ===== ЗАГРУЗКА ЗАЯВОК (ТОЛЬКО ВЛАДЕЛЕЦ) =====
+        async function loadApplications() {
+            const list = document.getElementById('applicationsList');
+            if (!list) return;
+
+            try {
+                const appsRef = collection(db, 'club_applications');
+                const q = query(
+                    appsRef,
+                    where('clubId', '==', clubId),
+                    where('status', '==', 'pending')
+                );
+
+                const snapshot = await getDocs(q);
+
+                const badge = document.getElementById('applicationsBadge');
+                if (badge) badge.textContent = snapshot.size;
+
+                if (snapshot.empty) {
+                    list.innerHTML = `
+                        <div class="club-empty-state">
+                            <i class="fas fa-envelope"></i>
+                            Нет заявок
+                        </div>
+                    `;
+                    return;
+                }
+
+                list.innerHTML = '';
+
+                snapshot.forEach((docSnap) => {
+                    const app = docSnap.data();
+                    const item = document.createElement('div');
+                    item.className = 'club-application-item';
+
+                    const initials = app.userName ? app.userName.charAt(0) : '?';
+
+                    item.innerHTML = `
+                        <div class="club-application-avatar">
+                            ${initials}
+                        </div>
+                        <div class="club-application-info">
+                            <div class="club-application-name">${app.userName || 'Боец'}</div>
+                            <div class="club-application-frs"><i class="fas fa-star" style="color:#fbbf24;"></i> FRS: ${app.userFRS || 0}</div>
+                            ${app.message ? `<div class="club-application-message">"${app.message}"</div>` : ''}
+                        </div>
+                        <div class="club-application-actions">
+                            <button class="btn-app-club approve" onclick="approveApplication('${docSnap.id}', '${app.userId}')">Принять</button>
+                            <button class="btn-app-club reject" onclick="rejectApplication('${docSnap.id}')">Отклонить</button>
+                        </div>
+                    `;
+
+                    list.appendChild(item);
+                });
+
+            } catch (error) {
+                console.error('Ошибка загрузки заявок:', error);
+                list.innerHTML = `
+                    <div class="club-empty-state">
+                        <i class="fas fa-exclamation-triangle" style="color: #ef4444;"></i>
+                        Ошибка загрузки
+                    </div>
+                `;
+            }
+        }
+
+        // ===== ПРОВЕРКА СУЩЕСТВУЮЩЕЙ ЗАЯВКИ =====
         async function checkExistingApplication() {
             if (!currentUser || !clubId) return;
-            
+
             try {
                 const appsRef = collection(db, 'club_applications');
                 const q = query(
@@ -1305,13 +2212,13 @@
                     where('userId', '==', currentUser.uid),
                     where('status', '==', 'pending')
                 );
-                
+
                 const snapshot = await getDocs(q);
-                
+
                 if (!snapshot.empty) {
-                    const btn = document.getElementById('joinButton');
+                    const btn = document.getElementById('joinClubBtn');
                     if (btn) {
-                        btn.textContent = 'Ожидает подтверждения';
+                        btn.textContent = '⏳ Ожидает подтверждения';
                         btn.disabled = true;
                     }
                 }
@@ -1320,127 +2227,40 @@
             }
         }
 
-        async function loadMembers() {
-            const membersGrid = document.getElementById('membersGrid');
-            
-            if (!clubData.members || clubData.members.length === 0) {
-                membersGrid.innerHTML = '<div class="empty-state"><i class="fas fa-users"></i> В клубе пока нет участников</div>';
-                return;
-            }
-            
-            membersGrid.innerHTML = '';
-            
-            for (const memberId of clubData.members) {
-                const memberDoc = await getDoc(doc(db, 'fighters', memberId));
-                
-                if (memberDoc.exists()) {
-                    const member = memberDoc.data();
-                    const memberCard = document.createElement('div');
-                    memberCard.className = 'member-card';
-                    
-                    if (userRole === 'owner') {
-                        memberCard.classList.add('owner-mode');
-                    }
-                    
-                    const isOwnerMember = memberId === clubData.ownerId;
-                    
-                    memberCard.innerHTML = `
-                        <div class="member-avatar" onclick="window.location.href='profile.html?id=${memberId}'">
-                            ${member.avatar ? `<img src="${member.avatar}" alt="${member.name}">` : member.name.charAt(0)}
-                        </div>
-                        <div class="member-info" onclick="window.location.href='profile.html?id=${memberId}'">
-                            <div class="member-name">${member.name || 'Боец'} ${isOwnerMember ? '👑' : ''}</div>
-                            <div class="member-frs">FRS: ${member.frs || 0}</div>
-                        </div>
-                        ${isOwnerMember ? '<span class="member-role">Глава</span>' : ''}
-                        ${userRole === 'owner' && !isOwnerMember ? `
-                            <div class="member-actions">
-                                <button class="btn-message" onclick="event.stopPropagation(); window.location.href='chats.html'" title="Написать">
-                                    <i class="fas fa-comment"></i>
-                                </button>
-                                <button class="btn-remove" onclick="event.stopPropagation(); removeMember('${memberId}')" title="Исключить">
-                                    <i class="fas fa-user-minus"></i>
-                                </button>
-                            </div>
-                        ` : ''}
-                    `;
-                    
-                    membersGrid.appendChild(memberCard);
-                }
-            }
-        }
-
-        async function loadApplications() {
-            const applicationsList = document.getElementById('applicationsList');
-            
-            try {
-                const appsRef = collection(db, 'club_applications');
-                const q = query(
-                    appsRef,
-                    where('clubId', '==', clubId),
-                    where('status', '==', 'pending')
-                );
-                
-                const snapshot = await getDocs(q);
-                
-                if (snapshot.empty) {
-                    applicationsList.innerHTML = '<div class="empty-state"><i class="fas fa-envelope"></i> Нет заявок</div>';
-                    return;
-                }
-                
-                applicationsList.innerHTML = '';
-                
-                snapshot.forEach((docSnap) => {
-                    const app = docSnap.data();
-                    const appItem = document.createElement('div');
-                    appItem.className = 'application-item';
-                    
-                    appItem.innerHTML = `
-                        <div class="application-info">
-                            <div class="application-name">${app.userName || 'Боец'}</div>
-                            <div class="application-frs">FRS: ${app.userFRS || 0}</div>
-                            ${app.message ? `<div class="application-message">${app.message}</div>` : ''}
-                        </div>
-                        <div class="application-actions">
-                            <button class="btn-approve" onclick="approveApplication('${docSnap.id}', '${app.userId}')">Принять</button>
-                            <button class="btn-reject" onclick="rejectApplication('${docSnap.id}')">Отклонить</button>
-                        </div>
-                    `;
-                    
-                    applicationsList.appendChild(appItem);
-                });
-                
-            } catch (error) {
-                console.error('Ошибка загрузки заявок:', error);
-                applicationsList.innerHTML = '<div class="empty-state">Ошибка загрузки</div>';
-            }
-        }
-
-        // ===== ФУНКЦИИ =====
+        // ===== ФУНКЦИИ ДЛЯ ГЛОБАЛЬНОГО ДОСТУПА =====
         window.openApplicationModal = function() {
             document.getElementById('applicationModal').classList.add('show');
+            document.getElementById('applicationMessageInput').value = '';
         };
 
         window.closeApplicationModal = function() {
             document.getElementById('applicationModal').classList.remove('show');
-            document.getElementById('applicationMessage').value = '';
         };
 
         window.submitApplication = async function() {
-            if (!currentUser || !clubId) return;
-            
-            const message = document.getElementById('applicationMessage').value.trim();
-            
+            if (!currentUser || !clubId || isSubmitting) return;
+
+            isSubmitting = true;
+            const message = document.getElementById('applicationMessageInput').value.trim();
+
             try {
                 const fighterDoc = await getDoc(doc(db, 'fighters', currentUser.uid));
-                
+
                 if (!fighterDoc.exists()) {
                     alert('Только бойцы могут вступать в клубы');
+                    isSubmitting = false;
                     return;
                 }
-                
+
                 const fighterData = fighterDoc.data();
-                
+
+                // Проверяем, не в клубе ли уже
+                if (fighterData.clubId) {
+                    alert('Вы уже состоите в клубе');
+                    isSubmitting = false;
+                    return;
+                }
+
                 const appsRef = collection(db, 'club_applications');
                 await setDoc(doc(appsRef), {
                     clubId: clubId,
@@ -1454,47 +2274,151 @@
                     processedAt: null,
                     processedBy: ''
                 });
-                
+
                 closeApplicationModal();
                 alert('✅ Заявка отправлена!');
-                
-               const btn = document.getElementById('joinButton');
+
+                const btn = document.getElementById('joinClubBtn');
                 if (btn) {
-                    btn.textContent = 'Ожидает подтверждения';
+                    btn.textContent = '⏳ Ожидает подтверждения';
                     btn.disabled = true;
                 }
-                
+
             } catch (error) {
                 console.error('Ошибка отправки:', error);
                 alert('Ошибка отправки заявки');
             }
+
+            isSubmitting = false;
         };
 
         window.leaveClub = async function() {
             if (!currentUser || !clubId) return;
-            
             if (!confirm('Вы уверены, что хотите покинуть клуб?')) return;
-            
+
             try {
                 await updateDoc(doc(db, 'clubs', clubId), {
                     members: arrayRemove(currentUser.uid),
                     memberCount: increment(-1),
                     updatedAt: serverTimestamp()
                 });
-                
+
                 await updateDoc(doc(db, 'fighters', currentUser.uid), {
                     clubId: null,
                     clubRole: null,
                     clubName: null,
                     clubLogo: null
                 });
-                
+
                 alert('Вы покинули клуб');
                 window.location.href = 'clubs.html';
-                
+
             } catch (error) {
                 console.error('Ошибка выхода:', error);
                 alert('Ошибка выхода из клуба');
+            }
+        };
+
+        window.removeMember = async function(memberId) {
+            if (!confirm('Исключить участника из клуба?')) return;
+
+            try {
+                // Получаем FRS участника для обновления клубного FRS
+                const memberDoc = await getDoc(doc(db, 'fighters', memberId));
+                const memberFRS = memberDoc.exists() ? (memberDoc.data().frs || 0) : 0;
+
+                await updateDoc(doc(db, 'clubs', clubId), {
+                    members: arrayRemove(memberId),
+                    memberCount: increment(-1),
+                    clubFRS: increment(-memberFRS),
+                    updatedAt: serverTimestamp()
+                });
+
+                await updateDoc(doc(db, 'fighters', memberId), {
+                    clubId: null,
+                    clubRole: null,
+                    clubName: null,
+                    clubLogo: null
+                });
+
+                // Обновляем локальные данные
+                clubData.members = clubData.members.filter(id => id !== memberId);
+                clubData.memberCount--;
+                clubData.clubFRS = (clubData.clubFRS || 0) - memberFRS;
+
+                loadMembers();
+                updateStatsDisplay();
+
+            } catch (error) {
+                console.error('Ошибка исключения:', error);
+                alert('Ошибка исключения участника');
+            }
+        };
+
+        window.approveApplication = async function(applicationId, userId) {
+            if (!confirm('Принять заявку?')) return;
+
+            try {
+                // Получаем данные заявителя
+                const fighterDoc = await getDoc(doc(db, 'fighters', userId));
+                if (!fighterDoc.exists()) {
+                    alert('Боец не найден');
+                    return;
+                }
+                const fighterData = fighterDoc.data();
+                const fighterFRS = fighterData.frs || 0;
+
+                await updateDoc(doc(db, 'club_applications', applicationId), {
+                    status: 'approved',
+                    processedAt: serverTimestamp(),
+                    processedBy: currentUser.uid
+                });
+
+                await updateDoc(doc(db, 'clubs', clubId), {
+                    members: arrayUnion(userId),
+                    memberCount: increment(1),
+                    clubFRS: increment(fighterFRS),
+                    updatedAt: serverTimestamp()
+                });
+
+                await updateDoc(doc(db, 'fighters', userId), {
+                    clubId: clubId,
+                    clubRole: 'member',
+                    clubName: clubData.name,
+                    clubLogo: clubData.logo || ''
+                });
+
+                // Обновляем локальные данные
+                if (!clubData.members) clubData.members = [];
+                clubData.members.push(userId);
+                clubData.memberCount = (clubData.memberCount || 0) + 1;
+                clubData.clubFRS = (clubData.clubFRS || 0) + fighterFRS;
+
+                alert('✅ Участник добавлен!');
+                loadApplications();
+                loadMembers();
+                updateStatsDisplay();
+
+            } catch (error) {
+                console.error('Ошибка одобрения:', error);
+                alert('Ошибка одобрения заявки');
+            }
+        };
+
+        window.rejectApplication = async function(applicationId) {
+            if (!confirm('Отклонить заявку?')) return;
+
+            try {
+                await updateDoc(doc(db, 'club_applications', applicationId), {
+                    status: 'rejected',
+                    processedAt: serverTimestamp(),
+                    processedBy: currentUser.uid
+                });
+
+                loadApplications();
+
+            } catch (error) {
+                console.error('Ошибка отклонения:', error);
             }
         };
 
@@ -1505,42 +2429,22 @@
             document.getElementById('editClubPhone').value = clubData.phone || '';
             document.getElementById('editClubDescription').value = clubData.description || '';
             document.getElementById('editJoinPolicy').value = clubData.joinPolicy || 'request';
-            
-            const logoPreview = document.getElementById('editClubLogoPreview');
+
+            const preview = document.getElementById('editClubLogoPreview');
             if (clubData.logo) {
-                logoPreview.src = clubData.logo;
-                logoPreview.style.display = 'block';
+                preview.src = clubData.logo;
+                preview.style.display = 'block';
             } else {
-                logoPreview.style.display = 'none';
+                preview.style.display = 'none';
             }
-            
+
             document.getElementById('editClubLogoInput').value = '';
-            
             document.getElementById('editClubModal').classList.add('show');
         };
 
         window.closeEditModal = function() {
             document.getElementById('editClubModal').classList.remove('show');
         };
-
-        async function uploadClubLogo(file) {
-            const formData = new FormData();
-            formData.append('file', file);
-            formData.append('upload_preset', UPLOAD_PRESET);
-            
-            const response = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, {
-                method: 'POST',
-                body: formData
-            });
-            
-            const data = await response.json();
-            
-            if (data.secure_url) {
-                return data.secure_url.replace('/upload/', '/upload/w_400,h_400,c_fill,f_auto,q_auto/');
-            } else {
-                throw new Error(data.error?.message || 'Ошибка загрузки');
-            }
-        }
 
         window.saveClubChanges = async function() {
             const name = document.getElementById('editClubName').value.trim();
@@ -1549,12 +2453,12 @@
             const phone = document.getElementById('editClubPhone').value.trim();
             const description = document.getElementById('editClubDescription').value.trim();
             const joinPolicy = document.getElementById('editJoinPolicy').value;
-            
-            if (!name || !city) {
-                alert('Название и город обязательны');
+
+            if (!name) {
+                alert('Название клуба обязательно');
                 return;
             }
-            
+
             try {
                 await updateDoc(doc(db, 'clubs', clubId), {
                     name: name,
@@ -1565,17 +2469,17 @@
                     joinPolicy: joinPolicy,
                     updatedAt: serverTimestamp()
                 });
-                
+
                 clubData.name = name;
                 clubData.city = city;
                 clubData.address = address;
                 clubData.phone = phone;
                 clubData.description = description;
                 clubData.joinPolicy = joinPolicy;
-                
+
                 closeEditModal();
                 renderClubPage();
-                
+
             } catch (error) {
                 console.error('Ошибка сохранения:', error);
                 alert('Ошибка сохранения');
@@ -1583,106 +2487,156 @@
         };
 
         window.copyClubLink = function() {
-            const link = `${window.location.origin}/prorank-live/club-profile.html?id=${clubId}`;
-            
+            const link = window.location.href;
+
             if (navigator.clipboard) {
                 navigator.clipboard.writeText(link).then(() => {
                     alert('Ссылка скопирована!');
+                }).catch(() => {
+                    fallbackCopy(link);
                 });
             } else {
-                const input = document.createElement('input');
-                input.value = link;
-                document.body.appendChild(input);
-                input.select();
-                document.execCommand('copy');
-                document.body.removeChild(input);
-                alert('Ссылка скопирована!');
+                fallbackCopy(link);
             }
         };
 
-        window.removeMember = async function(memberId) {
-            if (!confirm('Исключить участника из клуба?')) return;
-            
+        function fallbackCopy(text) {
+            const input = document.createElement('input');
+            input.value = text;
+            document.body.appendChild(input);
+            input.select();
+            document.execCommand('copy');
+            document.body.removeChild(input);
+            alert('Ссылка скопирована!');
+        }
+
+        window.deleteClub = async function() {
+            if (!confirm('Вы уверены, что хотите удалить клуб? Это действие необратимо!')) return;
+            if (!confirm('Все участники будут исключены. Продолжить?')) return;
+
             try {
+                // Удаляем клуб
+                await deleteDoc(doc(db, 'clubs', clubId));
+
+                // Обновляем всех участников (убираем clubId)
+                if (clubData.members && clubData.members.length > 0) {
+                    for (const memberId of clubData.members) {
+                        await updateDoc(doc(db, 'fighters', memberId), {
+                            clubId: null,
+                            clubRole: null,
+                            clubName: null,
+                            clubLogo: null
+                        });
+                    }
+                }
+
+                alert('Клуб удалён');
+                window.location.href = 'clubs.html';
+
+            } catch (error) {
+                console.error('Ошибка удаления:', error);
+                alert('Ошибка удаления клуба');
+            }
+        };
+
+        // ===== ОБНОВЛЕНИЕ СТАТИСТИКИ =====
+        function updateStatsDisplay() {
+            const frsDisplay = document.querySelector('.club-frs-value');
+            const membersDisplay = document.querySelector('.club-members-value');
+            const badge = document.querySelector('.club-tab-btn .badge');
+
+            if (frsDisplay) frsDisplay.textContent = clubData.clubFRS || 0;
+            if (membersDisplay) membersDisplay.textContent = clubData.memberCount || 0;
+            if (badge) badge.textContent = clubData.memberCount || 0;
+        }
+
+        // ===== ФОРМАТ ДАТЫ =====
+        function formatDate(timestamp) {
+            if (!timestamp) return 'Неизвестно';
+            try {
+                const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+                return date.toLocaleDateString('ru-RU', {
+                    day: 'numeric',
+                    month: 'short',
+                    year: 'numeric'
+                });
+            } catch (e) {
+                return 'Неизвестно';
+            }
+        }
+
+        // ===== ЗАГРУЗКА ЛОГОТИПА =====
+        async function uploadClubLogo(file) {
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('upload_preset', UPLOAD_PRESET);
+
+            const response = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, {
+                method: 'POST',
+                body: formData
+            });
+
+            const data = await response.json();
+
+            if (data.secure_url) {
+                return data.secure_url.replace('/upload/', '/upload/w_400,h_400,c_fill,f_auto,q_auto/');
+            } else {
+                throw new Error(data.error?.message || 'Ошибка загрузки');
+            }
+        }
+
+        document.getElementById('clubLogoInput')?.addEventListener('change', async function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            if (userRole !== 'owner') {
+                alert('Только владелец может менять логотип');
+                e.target.value = '';
+                return;
+            }
+
+            try {
+                const avatarImg = document.getElementById('clubAvatarImg');
+                if (avatarImg) {
+                    avatarImg.style.opacity = '0.5';
+                }
+
+                const logoUrl = await uploadClubLogo(file);
+
                 await updateDoc(doc(db, 'clubs', clubId), {
-                    members: arrayRemove(memberId),
-                    memberCount: increment(-1),
+                    logo: logoUrl,
                     updatedAt: serverTimestamp()
                 });
-                
-                await updateDoc(doc(db, 'fighters', memberId), {
-                    clubId: null,
-                    clubRole: null,
-                    clubName: null,
-                    clubLogo: null
-                });
-                
-                clubData.members = clubData.members.filter(id => id !== memberId);
-                clubData.memberCount--;
-                
-                loadMembers();
-                
-            } catch (error) {
-                console.error('Ошибка исключения:', error);
-                alert('Ошибка исключения участника');
-            }
-        };
 
-        window.approveApplication = async function(applicationId, userId) {
-            try {
-                await updateDoc(doc(db, 'club_applications', applicationId), {
-                    status: 'approved',
-                    processedAt: serverTimestamp(),
-                    processedBy: currentUser.uid
-                });
-                
-                await updateDoc(doc(db, 'clubs', clubId), {
-                    members: arrayUnion(userId),
-                    memberCount: increment(1),
-                    updatedAt: serverTimestamp()
-                });
-                
-                await updateDoc(doc(db, 'fighters', userId), {
-                    clubId: clubId,
-                    clubRole: 'member',
-                    clubName: clubData.name,
-                    clubLogo: clubData.logo || ''
-                });
-                
-                const fighterDoc = await getDoc(doc(db, 'fighters', userId));
-                const fighterFRS = fighterDoc.data().frs || 0;
-                await updateDoc(doc(db, 'clubs', clubId), {
-                    clubFRS: increment(fighterFRS)
-                });
-                
-                alert('✅ Участник добавлен!');
-                loadApplications();
-                loadMembers();
-                
-            } catch (error) {
-                console.error('Ошибка одобрения:', error);
-                alert('Ошибка одобрения заявки');
-            }
-        };
+                clubData.logo = logoUrl;
 
-        window.rejectApplication = async function(applicationId) {
-            if (!confirm('Отклонить заявку?')) return;
-            
-            try {
-                await updateDoc(doc(db, 'club_applications', applicationId), {
-                    status: 'rejected',
-                    processedAt: serverTimestamp(),
-                    processedBy: currentUser.uid
-                });
-                
-                loadApplications();
-                
-            } catch (error) {
-                console.error('Ошибка отклонения:', error);
-            }
-        };
+                if (avatarImg) {
+                    avatarImg.src = logoUrl;
+                    avatarImg.style.opacity = '1';
+                }
 
-        // Предпросмотр логотипа
+                // Обновляем логотип в профилях участников
+                if (clubData.members && clubData.members.length > 0) {
+                    for (const memberId of clubData.members) {
+                        await updateDoc(doc(db, 'fighters', memberId), {
+                            clubLogo: logoUrl
+                        });
+                    }
+                }
+
+                alert('✅ Логотип обновлён!');
+
+            } catch (error) {
+                console.error('Ошибка загрузки логотипа:', error);
+                alert('Ошибка загрузки логотипа: ' + error.message);
+                const avatarImg = document.getElementById('clubAvatarImg');
+                if (avatarImg) avatarImg.style.opacity = '1';
+            }
+
+            e.target.value = '';
+        });
+
+        // Предпросмотр логотипа в модалке
         document.getElementById('editClubLogoInput')?.addEventListener('change', function(e) {
             const file = e.target.files[0];
             if (file) {
@@ -1696,40 +2650,25 @@
             }
         });
 
-        // Загрузка логотипа по клику
-        document.getElementById('clubLogoInput')?.addEventListener('change', async function(e) {
-            const file = e.target.files[0];
-            if (!file) return;
-            
-            if (userRole !== 'owner') return;
-            
-            try {
-                const logoElement = document.querySelector('.club-logo');
-                if (logoElement) {
-                    logoElement.innerHTML = '<div class="loading-spinner"></div>';
-                }
-                
-                const logoUrl = await uploadClubLogo(file);
-                
-                await updateDoc(doc(db, 'clubs', clubId), {
-                    logo: logoUrl,
-                    updatedAt: serverTimestamp()
+        // ===== ЗАКРЫТИЕ МОДАЛОК ПО ESC =====
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                document.querySelectorAll('.modal-club.show').forEach(modal => {
+                    modal.classList.remove('show');
                 });
-                
-                clubData.logo = logoUrl;
-                
-                renderClubPage();
-                
-                alert('✅ Логотип обновлён!');
-                
-            } catch (error) {
-                console.error('Ошибка загрузки логотипа:', error);
-                alert('Ошибка загрузки логотипа: ' + error.message);
-                renderClubPage();
             }
-            
-            e.target.value = '';
         });
+
+        // ===== ЗАКРЫТИЕ МОДАЛОК ПО КЛИКУ НА ФОН =====
+        document.querySelectorAll('.modal-club').forEach(modal => {
+            modal.addEventListener('click', function(e) {
+                if (e.target === this) {
+                    this.classList.remove('show');
+                }
+            });
+        });
+
+        console.log('🏛️ Страница клуба загружена, роль:', userRole);
     </script>
 </body>
 </html>

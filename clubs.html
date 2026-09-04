@@ -124,49 +124,77 @@
             padding: 1.5rem 24px;
         }
 
-        /* ===== ВКЛАДКИ ===== */
-        .club-tabs {
-            display: flex;
+        /* ===== ПЕРЕКЛЮЧАТЕЛЬ (скрыт по умолчанию) ===== */
+        .club-switcher {
+            display: none;
             gap: 8px;
             margin-bottom: 20px;
+            background: rgba(15,15,15,0.5);
+            backdrop-filter: blur(8px);
+            border-radius: 16px;
+            padding: 4px;
+            border: 1px solid rgba(251,191,36,0.1);
         }
 
-        .club-tab {
+        .club-switcher.visible {
+            display: flex;
+        }
+
+        .club-switch-btn {
             flex: 1;
             padding: 12px 20px;
-            background: rgba(15,15,15,0.7);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(251,191,36,0.15);
-            border-radius: 16px;
+            border: none;
+            border-radius: 12px;
+            background: transparent;
             color: #888;
             font-family: 'Inter', sans-serif;
-            font-weight: 700;
-            font-size: 0.9rem;
+            font-weight: 600;
+            font-size: 0.85rem;
             cursor: pointer;
             transition: all 0.3s ease;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 10px;
-            min-height: 50px;
+            gap: 8px;
             text-decoration: none;
+            min-height: 44px;
         }
 
-        .club-tab:hover {
-            border-color: rgba(251,191,36,0.3);
+        .club-switch-btn i {
+            font-size: 1rem;
+            transition: transform 0.2s ease;
+        }
+
+        .club-switch-btn:hover {
             color: #fff;
-            transform: translateY(-2px);
+            background: rgba(255,255,255,0.05);
         }
 
-        .club-tab.active {
-            background: #fbbf24;
-            color: #000;
-            border-color: #fbbf24;
-            box-shadow: 0 4px 20px rgba(251, 191, 36, 0.3);
+        .club-switch-btn:hover i {
+            transform: scale(1.1);
         }
 
-        .club-tab i {
-            font-size: 1.2rem;
+        .club-switch-btn.active {
+            color: #fbbf24;
+            background: rgba(251,191,36,0.12);
+            box-shadow: 0 0 20px rgba(251,191,36,0.05);
+        }
+
+        .club-switch-btn.active i {
+            color: #fbbf24;
+        }
+
+        .club-switch-badge {
+            background: rgba(251,191,36,0.12);
+            color: #fbbf24;
+            font-size: 0.55rem;
+            padding: 2px 10px;
+            border-radius: 12px;
+            font-weight: 700;
+            max-width: 100px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         /* ===== СЧЕТЧИКИ ===== */
@@ -216,19 +244,35 @@
             color: #888;
         }
 
-        .compact-stat .stat-arrow {
-            font-size: 0.7rem;
-            color: #666;
-            flex-shrink: 0;
+        .compact-stat .stat-btn {
+            font-size: 0.6rem;
+            font-weight: 700;
+            color: #fbbf24;
+            background: rgba(251,191,36,0.1);
+            border: 1px solid rgba(251,191,36,0.15);
+            padding: 4px 12px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: 'Inter', sans-serif;
+            white-space: nowrap;
+        }
+
+        .compact-stat .stat-btn:hover {
+            background: rgba(251,191,36,0.2);
+            transform: scale(1.05);
         }
 
         /* ===== ПОИСК ===== */
         .search-bar {
+            display: flex;
+            gap: 10px;
             margin-bottom: 10px;
+            align-items: center;
         }
 
         .search-input {
-            width: 100%;
+            flex: 1;
             padding: 10px 16px;
             background: #1a1a1a;
             border: 1px solid rgba(251,191,36,0.3);
@@ -243,6 +287,34 @@
             outline: none;
             border-color: #fbbf24;
             box-shadow: 0 0 15px rgba(251,191,36,0.2);
+        }
+
+        .btn-shuffle {
+            padding: 8px 14px;
+            background: rgba(251,191,36,0.08);
+            border: 1px solid rgba(251,191,36,0.15);
+            color: #fbbf24;
+            border-radius: 40px;
+            font-size: 0.7rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: 'Inter', sans-serif;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            white-space: nowrap;
+            flex-shrink: 0;
+            min-height: 38px;
+        }
+
+        .btn-shuffle:hover {
+            background: rgba(251,191,36,0.15);
+            border-color: rgba(251,191,36,0.3);
+            transform: translateY(-2px);
+        }
+
+        .btn-shuffle:active {
+            transform: scale(0.95);
         }
 
         .filters-row {
@@ -270,6 +342,11 @@
             border-color: #fbbf24;
         }
 
+        .filter-select option {
+            background: #1a1a1a;
+            color: #fff;
+        }
+
         /* ===== СПИСОК КЛУБОВ ===== */
         .clubs-list {
             display: flex;
@@ -289,6 +366,13 @@
             transition: all 0.2s ease;
             min-height: 70px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            animation: fadeInUp 0.3s ease;
+        }
+
+        .club-card-horizontal:hover {
+            border-color: rgba(251,191,36,0.4);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 25px rgba(0,0,0,0.4);
         }
 
         .club-card-horizontal:active {
@@ -372,6 +456,24 @@
             margin-right: 2px;
         }
 
+        .club-card-horizontal .card-members {
+            font-size: 0.6rem;
+            color: #888;
+            display: flex;
+            align-items: center;
+            gap: 3px;
+        }
+
+        .club-card-horizontal .card-members i {
+            color: #fbbf24;
+            font-size: 0.5rem;
+        }
+
+        .club-card-horizontal .card-members .member-count {
+            color: #fbbf24;
+            font-weight: 700;
+        }
+
         .club-card-horizontal .card-status {
             font-size: 0.5rem;
             padding: 1px 8px;
@@ -438,6 +540,7 @@
             }
         }
 
+        /* ===== АДАПТИВ ===== */
         @media (max-width: 768px) {
             .container { padding: 1rem 16px; }
             .navbar { padding: 10px 16px; }
@@ -466,28 +569,57 @@
                 width: 100%;
                 text-align: center;
             }
-            
-            .club-tab {
-                padding: 10px 16px;
-                font-size: 0.8rem;
-                min-height: 44px;
+
+            .club-switcher {
+                gap: 4px;
+                padding: 3px;
+                border-radius: 14px;
+                margin-bottom: 16px;
             }
-            
-            .club-tab i {
-                font-size: 1rem;
+
+            .club-switch-btn {
+                padding: 10px 14px;
+                font-size: 0.75rem;
+                min-height: 38px;
+                border-radius: 10px;
+            }
+
+            .club-switch-btn i {
+                font-size: 0.85rem;
+            }
+
+            .club-switch-badge {
+                font-size: 0.5rem;
+                padding: 1px 8px;
+                max-width: 70px;
+            }
+
+            .search-bar {
+                flex-direction: row;
+            }
+
+            .btn-shuffle {
+                font-size: 0.65rem;
+                padding: 6px 12px;
+                min-height: 34px;
             }
         }
 
         @media (max-width: 480px) {
             .container { padding: 0.8rem 10px; }
             
-            .club-tab {
-                padding: 8px 12px;
-                font-size: 0.7rem;
-                gap: 6px;
-                min-height: 40px;
+            .club-switch-btn {
+                padding: 8px 10px;
+                font-size: 0.65rem;
+                min-height: 34px;
+                gap: 5px;
+                border-radius: 8px;
             }
-            
+
+            .club-switch-btn i {
+                font-size: 0.75rem;
+            }
+
             .club-card-horizontal {
                 padding: 10px;
                 gap: 10px;
@@ -521,6 +653,34 @@
             .compact-stat .stat-label {
                 font-size: 0.5rem;
             }
+
+            .filters-row {
+                flex-direction: column;
+            }
+
+            .filter-select {
+                min-width: unset;
+            }
+
+            .search-bar {
+                flex-direction: column;
+            }
+
+            .btn-shuffle {
+                align-self: flex-end;
+                font-size: 0.6rem;
+                padding: 5px 12px;
+                min-height: 30px;
+            }
+        }
+
+        @media (max-width: 380px) {
+            .club-switch-btn span:not(.club-switch-badge) {
+                display: none;
+            }
+            .club-switch-btn i {
+                font-size: 1rem;
+            }
         }
     </style>
 </head>
@@ -535,10 +695,8 @@
 
     <main>
         <div class="container">
-            <!-- ВКЛАДКИ -->
-            <div class="club-tabs" id="clubTabs">
-                <!-- Заполняется через JS -->
-            </div>
+            <!-- ПЕРЕКЛЮЧАТЕЛЬ (скрыт по умолчанию, показывается через JS) -->
+            <div class="club-switcher" id="clubSwitcher"></div>
 
             <!-- СЧЕТЧИКИ -->
             <div class="compact-stats">
@@ -549,19 +707,22 @@
                         <div class="stat-label">Клубов</div>
                     </div>
                 </div>
-                <div class="compact-stat" onclick="window.location.href='tournaments.html'">
-                    <i class="fas fa-trophy"></i>
+                <div class="compact-stat" id="createClubBtn" style="cursor: pointer;">
+                    <i class="fas fa-plus-circle"></i>
                     <div class="stat-info">
-                        <div class="stat-value" id="totalTournamentsCount">0</div>
-                        <div class="stat-label">Турниров</div>
+                        <div class="stat-value" style="font-size: 0.85rem; color: #fbbf24;">Создать клуб</div>
+                        <div class="stat-label">Стань основателем</div>
                     </div>
-                    <i class="fas fa-chevron-right stat-arrow"></i>
+                    <button class="stat-btn" onclick="event.stopPropagation(); alert('🚧 Функция создания клуба скоро появится!')">
+                        <i class="fas fa-arrow-right"></i>
+                    </button>
                 </div>
             </div>
 
-            <!-- ПОИСК -->
+            <!-- ПОИСК + ПЕРЕМЕШАТЬ -->
             <div class="search-bar">
                 <input type="text" class="search-input" id="searchInput" placeholder="🔍 Поиск клубов...">
+                <button class="btn-shuffle" id="shuffleBtn"><i class="fas fa-random"></i> Перемешать</button>
             </div>
             
             <!-- ФИЛЬТРЫ -->
@@ -571,10 +732,9 @@
                 </select>
                 <select class="filter-select" id="sportFilter">
                     <option value="">Все виды</option>
-                    <option value="MMA">MMA</option>
-                    <option value="Бокс">Бокс</option>
-                    <option value="БЖЖ">БЖЖ</option>
-                    <option value="Борьба">Борьба</option>
+                    <option value="Бокс">🥊 Бокс</option>
+                    <option value="Борьба">🤼 Борьба</option>
+                    <option value="ММА">🥋 ММА</option>
                 </select>
             </div>
 
@@ -604,8 +764,7 @@
             collection, 
             getDocs, 
             query, 
-            where, 
-            orderBy,
+            where,
             doc,
             getDoc
         } from "firebase/firestore";
@@ -626,58 +785,44 @@
 
         let currentUser = null;
         let myClubId = null;
+        let myClubName = null;
         let allClubs = [];
 
-        onAuthStateChanged(auth, async (user) => {
-            currentUser = user;
+        // ===== РЕНДЕР ПЕРЕКЛЮЧАТЕЛЯ =====
+        function renderSwitcher() {
+            const switcher = document.getElementById('clubSwitcher');
             
-            if (user) {
-                try {
-                    const fighterDoc = await getDoc(doc(db, 'fighters', user.uid));
-                    if (fighterDoc.exists()) {
-                        myClubId = fighterDoc.data().clubId || null;
-                    }
-                } catch (err) {
-                    console.error('Ошибка проверки клуба:', err);
-                }
-            }
-            
-            renderTabs();
-            loadClubs();
-            loadStats();
-        });
-
-        function renderTabs() {
-            const tabsContainer = document.getElementById('clubTabs');
-            
-            if (myClubId) {
-                tabsContainer.innerHTML = `
-                    <a href="club-profile.html?id=${myClubId}" class="club-tab">
+            if (myClubId && myClubName) {
+                switcher.innerHTML = `
+                    <a href="club-profile.html?id=${myClubId}" class="club-switch-btn">
                         <i class="fas fa-shield-alt"></i> Мой клуб
+                        <span class="club-switch-badge">${myClubName}</span>
                     </a>
-                    <button class="club-tab active">
-                        <i class="fas fa-search"></i> Искать клубы
+                    <button class="club-switch-btn active">
+                        <i class="fas fa-search"></i> Клубы
                     </button>
                 `;
+                switcher.classList.add('visible');
             } else {
-                tabsContainer.innerHTML = '';
+                switcher.innerHTML = '';
+                switcher.classList.remove('visible');
             }
         }
 
+        // ===== ЗАГРУЗКА СТАТИСТИКИ =====
         async function loadStats() {
             try {
                 const clubsSnap = await getDocs(query(
                     collection(db, 'clubs'),
-                    where('status', '==', 'approved'),
-                    where('isActive', '==', true)
+                    where('status', '==', 'approved')
                 ));
                 document.getElementById('totalClubsCount').textContent = clubsSnap.size;
-                document.getElementById('totalTournamentsCount').textContent = '0';
             } catch (error) {
                 console.error('Ошибка загрузки статистики:', error);
             }
         }
 
+        // ===== ЗАГРУЗКА КЛУБОВ =====
         async function loadClubs() {
             const clubsList = document.getElementById('clubsList');
             const cityFilter = document.getElementById('cityFilter');
@@ -685,9 +830,7 @@
             try {
                 const q = query(
                     collection(db, 'clubs'),
-                    where('status', '==', 'approved'),
-                    where('isActive', '==', true),
-                    orderBy('clubFRS', 'desc')
+                    where('status', '==', 'approved')
                 );
                 
                 const snapshot = await getDocs(q);
@@ -700,15 +843,18 @@
                     if (club.city) cities.add(club.city);
                 });
                 
+                // Заполняем фильтр городов
                 cityFilter.innerHTML = '<option value="">Все города</option>';
-                cities.forEach(city => {
+                const sortedCities = Array.from(cities).sort();
+                sortedCities.forEach(city => {
                     const option = document.createElement('option');
                     option.value = city;
                     option.textContent = city;
                     cityFilter.appendChild(option);
                 });
                 
-                displayClubs(allClubs);
+                // Перемешиваем и показываем
+                shuffleClubs();
                 
             } catch (error) {
                 console.error('Ошибка загрузки клубов:', error);
@@ -716,6 +862,22 @@
             }
         }
 
+        // ===== ПЕРЕМЕШИВАНИЕ =====
+        function shuffleArray(array) {
+            const shuffled = [...array];
+            for (let i = shuffled.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+            }
+            return shuffled;
+        }
+
+        function shuffleClubs() {
+            const shuffled = shuffleArray(allClubs);
+            displayClubs(shuffled);
+        }
+
+        // ===== ОТОБРАЖЕНИЕ КЛУБОВ =====
         function displayClubs(clubs) {
             const clubsList = document.getElementById('clubsList');
             
@@ -726,9 +888,10 @@
             
             clubsList.innerHTML = '';
             
-            clubs.forEach(club => {
+            clubs.forEach((club, index) => {
                 const card = document.createElement('div');
                 card.className = 'club-card-horizontal';
+                card.style.animationDelay = `${index * 0.05}s`;
                 card.onclick = () => {
                     window.location.href = `club-profile.html?id=${club.id}`;
                 };
@@ -738,19 +901,30 @@
                 const statusText = club.joinPolicy === 'open' ? 'Открытый' : 
                                   club.joinPolicy === 'request' ? 'По заявке' : 'Закрытый';
                 
+                const memberCount = club.memberCount || 0;
+                const maxMembers = club.maxMembers || 50;
+                
+                // Проверяем, есть ли логотип у клуба
+                const hasLogo = club.logo && club.logo.trim() !== '';
+                
                 card.innerHTML = `
                     <div class="card-logo">
-                        ${club.logo ? `<img src="${club.logo}" alt="${club.name}">` : club.name.charAt(0)}
+                        ${hasLogo ? `<img src="${club.logo}" alt="${club.name}">` : club.name.charAt(0)}
                     </div>
                     <div class="card-info">
                         <div class="card-name">${club.name || 'Клуб'}</div>
                         <div class="card-details">
                             <span><i class="fas fa-map-marker-alt"></i> ${club.city || '—'}</span>
-                            <span><i class="fas fa-user-friends"></i> ${club.memberCount || 0}</span>
+                            <span><i class="fas fa-user-tie"></i> ${club.ownerName || '—'}</span>
                         </div>
                     </div>
                     <div class="card-right">
                         <div class="card-frs"><i class="fas fa-star"></i>${club.clubFRS || 0}</div>
+                        <div class="card-members">
+                            <i class="fas fa-users"></i>
+                            <span class="member-count">${memberCount}</span>
+                            <span style="color:#555;">/ ${maxMembers}</span>
+                        </div>
                         <div class="card-status ${statusClass}">${statusText}</div>
                     </div>
                 `;
@@ -759,12 +933,9 @@
             });
         }
 
-        document.getElementById('searchInput').addEventListener('input', filterClubs);
-        document.getElementById('cityFilter').addEventListener('change', filterClubs);
-        document.getElementById('sportFilter').addEventListener('change', filterClubs);
-
+        // ===== ФИЛЬТРАЦИЯ =====
         function filterClubs() {
-            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase().trim();
             const city = document.getElementById('cityFilter').value;
             const sport = document.getElementById('sportFilter').value;
             
@@ -777,6 +948,47 @@
             
             displayClubs(filtered);
         }
+
+        // ===== ИНИЦИАЛИЗАЦИЯ =====
+        // Сначала показываем загрузку
+        document.getElementById('clubsList').innerHTML = `
+            <div class="loading"><div class="loading-spinner"></div> Загрузка клубов...</div>
+        `;
+
+        // Потом проверяем пользователя
+        onAuthStateChanged(auth, async (user) => {
+            currentUser = user;
+            
+            // 1. ОПРЕДЕЛЯЕМ РОЛЬ ПОЛЬЗОВАТЕЛЯ (есть ли клуб)
+            if (user) {
+                try {
+                    const fighterDoc = await getDoc(doc(db, 'fighters', user.uid));
+                    if (fighterDoc.exists()) {
+                        myClubId = fighterDoc.data().clubId || null;
+                        if (myClubId) {
+                            const clubDoc = await getDoc(doc(db, 'clubs', myClubId));
+                            if (clubDoc.exists()) {
+                                myClubName = clubDoc.data().name || 'Мой клуб';
+                            }
+                        }
+                    }
+                } catch (err) {
+                    console.error('Ошибка проверки клуба:', err);
+                }
+            }
+            
+            // 2. РЕНДЕРИМ ПЕРЕКЛЮЧАТЕЛЬ (с данными или без)
+            renderSwitcher();
+            
+            // 3. ЗАГРУЖАЕМ КЛУБЫ И СТАТИСТИКУ
+            await Promise.all([loadClubs(), loadStats()]);
+        });
+
+        // ===== СОБЫТИЯ =====
+        document.getElementById('searchInput').addEventListener('input', filterClubs);
+        document.getElementById('cityFilter').addEventListener('change', filterClubs);
+        document.getElementById('sportFilter').addEventListener('change', filterClubs);
+        document.getElementById('shuffleBtn').addEventListener('click', shuffleClubs);
     </script>
 </body>
 </html>
