@@ -12,7 +12,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="theme-color" content="#fbbf24">
-    <meta name="description" content="Чаты PRORANK — общайся с соперниками после принятых вызовов">
+    <meta name="description" content="Чаты PRORANK — общайся с соперниками и клубом">
     <title>Чаты | PRORANK</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
@@ -358,6 +358,16 @@
         position: relative;
     }
 
+    .chat-item.club-chat {
+        border-color: rgba(251,191,36,0.25);
+        background: rgba(251,191,36,0.04);
+    }
+
+    .chat-item.club-chat:hover {
+        border-color: rgba(251,191,36,0.4);
+        background: rgba(251,191,36,0.08);
+    }
+
     .chat-item.pinned {
         border-color: rgba(251,191,36,0.4);
         background: rgba(251,191,36,0.05);
@@ -439,6 +449,22 @@
 
     .chat-name .premium-icon {
         font-size: 0.7rem;
+    }
+
+    .club-badge {
+        font-size: 0.5rem;
+        background: rgba(251,191,36,0.12);
+        color: #fbbf24;
+        padding: 1px 8px;
+        border-radius: 10px;
+        font-weight: 700;
+        letter-spacing: 0.3px;
+    }
+
+    .club-members-count {
+        font-size: 0.6rem;
+        color: #666;
+        margin-left: 2px;
     }
 
     .chat-league-icon {
@@ -1077,6 +1103,11 @@
         .new-chat-btn i {
             font-size: 0.6rem;
         }
+
+        .club-badge {
+            font-size: 0.45rem;
+            padding: 0px 6px;
+        }
     }
 
     ::-webkit-scrollbar {
@@ -1134,7 +1165,7 @@
     <main class="container">
         <div class="page-header">
             <h1><i class="fas fa-comments"></i> Мои чаты</h1>
-            <p>Общайся с соперниками и договаривайся о спаррингах</p>
+            <p>Общайся с соперниками и клубом</p>
         </div>
 
         <div class="search-container">
@@ -1204,7 +1235,7 @@
         import { 
             getFirestore, 
             collection, getDocs, getDoc, 
-            query, where, 
+            query, where, orderBy, limit,
             doc, updateDoc, deleteDoc, setDoc,
             writeBatch, 
             onSnapshot
@@ -1250,6 +1281,103 @@
             return `./league-icons/${leagueMap[leagueName] || 'bronze.png'}`;
         }
 
+        // ===== ПОЛУЧЕНИЕ ЧАТА КЛУБА =====
+        async function getClubChat() {
+            if (!currentUser) return null;
+            
+            try {
+                // Проверяем, есть ли у пользователя клуб
+                const fighterDoc = await getDoc(doc(db, "fighters", currentUser.uid));
+                if (!fighterDoc.exists()) return null;
+                
+                const fighterData = fighterDoc.data();
+                const clubId = fighterData.clubId;
+                if (!clubId) return null;
+                
+                // Получаем данные клуба
+                const clubDoc = await getDoc(doc(db, "clubs", clubId));
+                if (!clubDoc.exists()) return null;
+                
+                const clubData = clubDoc.data();
+                
+                // Проверяем, что пользователь всё ещё участник
+                const isMember = clubData.members && clubData.members.includes(currentUser.uid);
+                const isOwner = clubData.ownerId === currentUser.uid;
+                if (!isMember && !isOwner) return null;
+                
+                // Получаем последнее сообщение из чата клуба
+                let lastMessage = 'Нет сообщений';
+                let lastMessageTime = null;
+                let unreadCount = 0;
+                let lastMessageAuthor = null;
+                let isMyMessage = false;
+                
+                try {
+                    const messagesRef = collection(db, "club_messages");
+                    const q = query(
+                        messagesRef,
+                        where("clubId", "==", clubId),
+                        orderBy("createdAt", "desc"),
+                        limit(1)
+                    );
+                    const snapshot = await getDocs(q);
+                    if (!snapshot.empty) {
+                        const msg = snapshot.docs[0].data();
+                        lastMessage = msg.text || '🎤 Голосовое сообщение';
+                        lastMessageTime = msg.createdAt?.toDate() || null;
+                        lastMessageAuthor = msg.from || '';
+                        isMyMessage = msg.from === currentUser.uid;
+                        
+                        // Считаем непрочитанные (отправленные не текущим пользователем)
+                        const allMessages = await getDocs(query(
+                            messagesRef,
+                            where("clubId", "==", clubId)
+                        ));
+                        unreadCount = allMessages.docs.filter(d => {
+                            const data = d.data();
+                            return data.from !== currentUser.uid;
+                        }).length;
+                    }
+                } catch (err) {
+                    console.error('Ошибка загрузки сообщений клуба:', err);
+                }
+                
+                let preview = escapeHtml(lastMessage);
+                if (isMyMessage) {
+                    preview = `<span class="my-message">Вы: </span>${preview}`;
+                }
+                
+                return {
+                    chatId: `club_${clubId}`,
+                    isClubChat: true,
+                    clubId: clubId,
+                    clubName: clubData.name || 'Клуб',
+                    clubLogo: clubData.logo || '',
+                    clubMembers: clubData.memberCount || 0,
+                    otherName: clubData.name || 'Клуб',
+                    otherAvatar: clubData.logo || '',
+                    otherFrs: clubData.clubFRS || 0,
+                    otherPremium: false,
+                    otherLeague: { name: 'КЛУБ', icon: 'fa-users', color: '#fbbf24' },
+                    leagueIconPath: '',
+                    isOnline: false,
+                    lastMessage: preview,
+                    lastMessageTime: lastMessageTime,
+                    timeStr: lastMessageTime ? formatTime(lastMessageTime) : '',
+                    isToday: lastMessageTime ? new Date().getDate() === lastMessageTime.getDate() : false,
+                    isMyMessage: isMyMessage,
+                    unreadCount: unreadCount,
+                    isPinned: true,
+                    isBlocked: false,
+                    dateGroup: lastMessageTime ? getDateGroup(lastMessageTime) : 'Ранее',
+                    raw: {}
+                };
+            } catch (err) {
+                console.error('Ошибка получения чата клуба:', err);
+                return null;
+            }
+        }
+
         // ===== МОДАЛЬНОЕ ОКНО ПОДТВЕРЖДЕНИЯ =====
         let modalResolve = null;
 
@@ -1269,7 +1397,7 @@
         }
         
         // ===== ФУНКЦИЯ showActionMenu - МЕНЮ РЯДОМ С КНОПКОЙ =====
-        function showActionMenu(event, chatId, otherId, isPinned, isBlocked) {
+        function showActionMenu(event, chatId, otherId, isPinned, isBlocked, isClubChat) {
             document.querySelectorAll('.action-menu-overlay, .action-menu').forEach(el => el.remove());
 
             const overlay = document.createElement('div');
@@ -1283,28 +1411,23 @@
             
             const menuWidth = 220;
             const menuHeight = 250;
-            const gap = 1; // ОТСТУП МЕЖДУ КНОПКОЙ И МЕНЮ
+            const gap = 1;
             
-            // ПОЗИЦИОНИРОВАНИЕ - ВПРАВО ОТ КНОПКИ
             let left = rect.right + gap;
             let top = rect.top;
             
-            // Если не помещается справа - показываем слева
             if (left + menuWidth > window.innerWidth - 1) {
                 left = rect.left - menuWidth - gap;
             }
             
-            // Если не помещается снизу - поднимаем
             if (top + menuHeight > window.innerHeight - 10) {
                 top = rect.bottom - menuHeight;
             }
             
-            // Если не помещается сверху - опускаем
             if (top < 5) {
                 top = 5;
             }
             
-            // Корректировка чтобы меню не выходило за границы экрана
             if (left < 5) left = 5;
             if (left + menuWidth > window.innerWidth - 5) {
                 left = window.innerWidth - menuWidth - 5;
@@ -1315,7 +1438,6 @@
             menu.style.position = 'fixed';
             menu.style.zIndex = '9999';
             
-            // АНИМАЦИЯ - определяем направление
             const isRight = left > rect.right;
             const isDown = top > rect.top;
             
@@ -1332,27 +1454,42 @@
             const pinLabel = isPinned ? 'Открепить чат' : 'Закрепить чат';
             const pinIcon = isPinned ? 'fa-thumbtack' : 'fa-thumbtack';
             
-            menu.innerHTML = `
-                <button class="action-menu-item pin-action" data-action="pin">
-                    <i class="fas ${pinIcon}"></i>
-                    <span class="item-label">${pinLabel}</span>
-                </button>
-                <div class="action-menu-divider"></div>
-                <button class="action-menu-item warning" data-action="clear">
-                    <i class="fas fa-eraser"></i>
-                    <span class="item-label">Очистить историю</span>
-                </button>
-                ${!isBlocked ? `
-                    <button class="action-menu-item danger" data-action="block">
-                        <i class="fas fa-ban"></i>
-                        <span class="item-label">Заблокировать</span>
+            // Для чата клуба — другие пункты меню
+            if (isClubChat) {
+                menu.innerHTML = `
+                    <button class="action-menu-item" data-action="open">
+                        <i class="fas fa-users"></i>
+                        <span class="item-label">Открыть чат клуба</span>
                     </button>
-                ` : ''}
-                <button class="action-menu-item danger" data-action="delete">
-                    <i class="fas fa-trash"></i>
-                    <span class="item-label">Удалить чат</span>
-                </button>
-            `;
+                    <div class="action-menu-divider"></div>
+                    <button class="action-menu-item warning" data-action="clear">
+                        <i class="fas fa-eraser"></i>
+                        <span class="item-label">Очистить историю</span>
+                    </button>
+                `;
+            } else {
+                menu.innerHTML = `
+                    <button class="action-menu-item pin-action" data-action="pin">
+                        <i class="fas ${pinIcon}"></i>
+                        <span class="item-label">${pinLabel}</span>
+                    </button>
+                    <div class="action-menu-divider"></div>
+                    <button class="action-menu-item warning" data-action="clear">
+                        <i class="fas fa-eraser"></i>
+                        <span class="item-label">Очистить историю</span>
+                    </button>
+                    ${!isBlocked ? `
+                        <button class="action-menu-item danger" data-action="block">
+                            <i class="fas fa-ban"></i>
+                            <span class="item-label">Заблокировать</span>
+                        </button>
+                    ` : ''}
+                    <button class="action-menu-item danger" data-action="delete">
+                        <i class="fas fa-trash"></i>
+                        <span class="item-label">Удалить чат</span>
+                    </button>
+                `;
+            }
             
             document.body.appendChild(overlay);
             document.body.appendChild(menu);
@@ -1372,7 +1509,8 @@
             };
             document.addEventListener('keydown', closeOnEsc);
             
-            menu.querySelector('[data-action="pin"]').addEventListener('click', (e) => {
+            // Обработчики для кнопок
+            menu.querySelector('[data-action="pin"]')?.addEventListener('click', (e) => {
                 e.stopPropagation();
                 togglePinChat(chatId, isPinned);
                 overlay.remove();
@@ -1380,9 +1518,9 @@
                 document.removeEventListener('keydown', closeOnEsc);
             });
             
-            menu.querySelector('[data-action="clear"]').addEventListener('click', (e) => {
+            menu.querySelector('[data-action="clear"]')?.addEventListener('click', (e) => {
                 e.stopPropagation();
-                clearChatHistory(chatId);
+                clearChatHistory(chatId, isClubChat);
                 overlay.remove();
                 menu.remove();
                 document.removeEventListener('keydown', closeOnEsc);
@@ -1396,9 +1534,17 @@
                 document.removeEventListener('keydown', closeOnEsc);
             });
             
-            menu.querySelector('[data-action="delete"]').addEventListener('click', (e) => {
+            menu.querySelector('[data-action="delete"]')?.addEventListener('click', (e) => {
                 e.stopPropagation();
                 deleteChat(chatId);
+                overlay.remove();
+                menu.remove();
+                document.removeEventListener('keydown', closeOnEsc);
+            });
+
+            menu.querySelector('[data-action="open"]')?.addEventListener('click', (e) => {
+                e.stopPropagation();
+                window.location.href = `club-chat.html?id=${otherId}`;
                 overlay.remove();
                 menu.remove();
                 document.removeEventListener('keydown', closeOnEsc);
@@ -1419,22 +1565,33 @@
             }
         }
 
-        async function clearChatHistory(chatId) {
+        async function clearChatHistory(chatId, isClubChat = false) {
             if (!currentUser || !chatId) return;
             const confirmed = await showModal('Очистить историю?', 'Все сообщения будут удалены, чат останется.', 'warning');
             if (!confirmed) return;
             try {
-                const messagesRef = collection(db, "chats", chatId, "messages");
-                const snapshot = await getDocs(messagesRef);
-                const batch = writeBatch(db);
-                snapshot.forEach(doc => batch.delete(doc.ref));
-                await batch.commit();
-                await updateDoc(doc(db, "chats", chatId), {
-                    lastMessage: '',
-                    lastMessageTime: null,
-                    lastMessageAuthor: null
-                });
-                showNotification('✅ История очищена', 'success');
+                if (isClubChat) {
+                    // Для чата клуба — удаляем все сообщения из club_messages
+                    const messagesRef = collection(db, "club_messages");
+                    const q = query(messagesRef, where("clubId", "==", chatId));
+                    const snapshot = await getDocs(q);
+                    const batch = writeBatch(db);
+                    snapshot.forEach(doc => batch.delete(doc.ref));
+                    await batch.commit();
+                    showNotification('✅ История чата клуба очищена', 'success');
+                } else {
+                    const messagesRef = collection(db, "chats", chatId, "messages");
+                    const snapshot = await getDocs(messagesRef);
+                    const batch = writeBatch(db);
+                    snapshot.forEach(doc => batch.delete(doc.ref));
+                    await batch.commit();
+                    await updateDoc(doc(db, "chats", chatId), {
+                        lastMessage: '',
+                        lastMessageTime: null,
+                        lastMessageAuthor: null
+                    });
+                    showNotification('✅ История очищена', 'success');
+                }
             } catch (err) {
                 console.error('❌ Ошибка очистки:', err);
                 showNotification('Не удалось очистить историю', 'error');
@@ -1635,6 +1792,20 @@
                 const container = document.getElementById('chatsList');
                 
                 if (snapshot.empty) {
+                    // Проверяем, есть ли чат клуба
+                    const clubChat = await getClubChat();
+                    if (clubChat) {
+                        // Показываем только чат клуба
+                        const chats = [clubChat];
+                        allChatsData = chats;
+                        document.getElementById('chatsCount').textContent = chats.length;
+                        renderChats(chats, searchTerm);
+                        
+                        // Подписываемся на сообщения клуба
+                        subscribeToClubMessages();
+                        return;
+                    }
+                    
                     container.innerHTML = `
                         <div class="empty-state">
                             <span class="icon-wrap"><i class="fas fa-comments"></i></span>
@@ -1727,11 +1898,31 @@
                         isPinned,
                         isBlocked,
                         dateGroup,
+                        isClubChat: false,
                         raw: chat
                     });
                 }
 
+                // === ДОБАВЛЯЕМ ЧАТ КЛУБА ===
+                const clubChat = await getClubChat();
+                if (clubChat) {
+                    // Проверяем, нет ли уже такого чата в списке (по clubId)
+                    const exists = chats.some(c => c.clubId && c.clubId === clubChat.clubId);
+                    if (!exists) {
+                        chats.unshift(clubChat); // Добавляем в начало списка
+                    } else {
+                        // Обновляем существующий
+                        const index = chats.findIndex(c => c.clubId && c.clubId === clubChat.clubId);
+                        if (index !== -1) {
+                            chats[index] = { ...chats[index], ...clubChat };
+                        }
+                    }
+                }
+
                 chats.sort((a, b) => {
+                    // Чаты клуба всегда сверху
+                    if (a.isClubChat && !b.isClubChat) return -1;
+                    if (!a.isClubChat && b.isClubChat) return 1;
                     if (a.isPinned && !b.isPinned) return -1;
                     if (!a.isPinned && b.isPinned) return 1;
                     if (a.lastMessageTime && b.lastMessageTime) {
@@ -1743,96 +1934,10 @@
                 allChatsData = chats;
                 document.getElementById('chatsCount').textContent = chats.length;
 
-                const search = searchTerm.toLowerCase().trim();
-                let filtered = chats;
-                if (search) {
-                    filtered = chats.filter(c => c.otherName.toLowerCase().includes(search));
-                }
+                renderChats(chats, searchTerm);
 
-                let html = '';
-                let currentGroup = '';
-                let hasItems = false;
-
-                filtered.forEach((chat, index) => {
-                    const group = chat.dateGroup;
-                    if (group !== currentGroup) {
-                        currentGroup = group;
-                        html += `<div class="chat-group-label">${group}</div>`;
-                    }
-                    hasItems = true;
-                    
-                    const pinIcon = chat.isPinned ? 'fa-thumbtack' : '';
-                    const pinClass = chat.isPinned ? 'pinned' : '';
-                    const blockedClass = chat.isBlocked ? 'blocked' : '';
-                    
-                    html += `
-                        <div class="chat-item ${pinClass} ${blockedClass}" data-chat-id="${chat.chatId}" data-other-id="${chat.otherId}" data-pinned="${chat.isPinned}" style="animation-delay: ${(index % 10) * 0.03}s;">
-                            <div class="chat-avatar-wrap">
-                                <img src="${chat.otherAvatar}" class="chat-avatar" onerror="this.src='Avatar.png'">
-                                <div class="chat-online-dot ${chat.isOnline ? 'show' : ''}"></div>
-                            </div>
-                            <div class="chat-info">
-                                <div class="chat-name-row">
-                                    <span class="chat-name">
-                                        ${escapeHtml(chat.otherName)}
-                                        ${chat.otherPremium ? '<span class="premium-icon">👑</span>' : ''}
-                                    </span>
-                                    <img src="${chat.leagueIconPath}" class="chat-league-icon" alt="${chat.otherLeague.name}">
-                                    ${chat.isPinned ? '<i class="fas fa-thumbtack" style="color:#fbbf24;font-size:0.7rem;"></i>' : ''}
-                                </div>
-                                <div class="chat-last-message">${chat.lastMessage}</div>
-                            </div>
-                            <div class="chat-right">
-                                <div class="chat-time ${chat.isToday ? 'today' : ''}">${chat.timeStr}</div>
-                                ${chat.unreadCount > 0 ? `<span class="unread-badge">${chat.unreadCount > 99 ? '99+' : chat.unreadCount}</span>` : ''}
-                            </div>
-                            <button class="chat-more-btn" data-action="more">
-                                <i class="fas fa-ellipsis-v"></i>
-                            </button>
-                        </div>
-                    `;
-                });
-
-                if (!hasItems && search) {
-                    html = `
-                        <div class="empty-state" style="padding:30px 20px;">
-                            <span class="icon-wrap"><i class="fas fa-search"></i></span>
-                            <h3>Ничего не найдено</h3>
-                            <p>Попробуйте изменить запрос поиска</p>
-                        </div>
-                    `;
-                }
-
-                container.innerHTML = html;
-
-                // Обработчики
-                container.querySelectorAll('.chat-item').forEach(item => {
-                    const chatId = item.dataset.chatId;
-                    const otherId = item.dataset.otherId;
-                    const isPinned = item.dataset.pinned === 'true';
-
-                    // Клик по чату
-                    item.addEventListener('click', async (e) => {
-                        if (e.target.closest('.chat-more-btn')) return;
-                        try {
-                            const chatRef = doc(db, "chats", chatId);
-                            const updateData = {};
-                            updateData[`unreadCounts.${currentUser.uid}`] = 0;
-                            await updateDoc(chatRef, updateData);
-                        } catch (err) {}
-                        window.location.href = `chat.html?id=${chatId}`;
-                    });
-
-                    // Кнопка три точки - показать меню
-                    const moreBtn = item.querySelector('.chat-more-btn');
-                    if (moreBtn) {
-                        moreBtn.addEventListener('click', (e) => {
-                            e.stopPropagation();
-                            const isBlocked = item.classList.contains('blocked');
-                            showActionMenu(e, chatId, otherId, isPinned, isBlocked);
-                        });
-                    }
-                });
+                // === ПОДПИСКА НА СООБЩЕНИЯ КЛУБА В РЕАЛЬНОМ ВРЕМЕНИ ===
+                subscribeToClubMessages();
 
             }, (error) => {
                 console.error('Ошибка загрузки чатов:', error);
@@ -1844,6 +1949,217 @@
                         <p>Попробуйте обновить страницу</p>
                     </div>
                 `;
+            });
+        }
+
+        /// ===== ПОДПИСКА НА СООБЩЕНИЯ КЛУБА В РЕАЛЬНОМ ВРЕМЕНИ =====
+        let unsubscribeClubMessages = null;
+
+        function subscribeToClubMessages() {
+            if (!currentUser) return;
+            
+            // Отписываемся от старой подписки
+            if (unsubscribeClubMessages) {
+                unsubscribeClubMessages();
+                unsubscribeClubMessages = null;
+            }
+            
+            // Проверяем, есть ли у пользователя клуб
+            getDoc(doc(db, "fighters", currentUser.uid)).then((fighterDoc) => {
+                if (!fighterDoc.exists()) return;
+                const clubId = fighterDoc.data().clubId;
+                if (!clubId) return;
+                
+                // Подписываемся на сообщения клуба
+                const q = query(
+                    collection(db, "club_messages"),
+                    where("clubId", "==", clubId),
+                    orderBy("createdAt", "desc"),
+                    limit(1)
+                );
+                
+                unsubscribeClubMessages = onSnapshot(q, (snapshot) => {
+                    if (snapshot.empty) return;
+                    
+                    const docSnap = snapshot.docs[0];
+                    const msg = docSnap.data();
+                    const lastMessage = msg.text || '🎤 Голосовое сообщение';
+                    const lastMessageTime = msg.createdAt?.toDate() || new Date();
+                    
+                    // 1. Обновляем данные в allChatsData
+                    const clubIndex = allChatsData.findIndex(c => c.isClubChat === true);
+                    if (clubIndex !== -1) {
+                        const isMyMessage = msg.from === currentUser.uid;
+                        let preview = escapeHtml(lastMessage);
+                        if (isMyMessage) {
+                            preview = `<span class="my-message">Вы: </span>${preview}`;
+                        }
+                        
+                        allChatsData[clubIndex].lastMessage = preview;
+                        allChatsData[clubIndex].lastMessageTime = lastMessageTime;
+                        allChatsData[clubIndex].timeStr = formatTime(lastMessageTime);
+                        allChatsData[clubIndex].isToday = new Date().getDate() === lastMessageTime.getDate();
+                        allChatsData[clubIndex].isMyMessage = isMyMessage;
+                        
+                        // Считаем непрочитанные
+                        if (msg.from !== currentUser.uid) {
+                            allChatsData[clubIndex].unreadCount = (allChatsData[clubIndex].unreadCount || 0) + 1;
+                        }
+                        
+                        // 2. Обновляем визуал
+                        const clubChatItem = document.querySelector(`.chat-item[data-is-club="true"]`);
+                        if (clubChatItem) {
+                            const msgEl = clubChatItem.querySelector('.chat-last-message');
+                            const timeEl = clubChatItem.querySelector('.chat-time');
+                            const badgeEl = clubChatItem.querySelector('.unread-badge');
+                            
+                            if (msgEl) {
+                                msgEl.innerHTML = preview;
+                            }
+                            
+                            if (timeEl) {
+                                const timeStr = formatTime(lastMessageTime);
+                                const isToday = new Date().getDate() === lastMessageTime.getDate();
+                                timeEl.textContent = timeStr;
+                                timeEl.classList.toggle('today', isToday);
+                            }
+                            
+                            if (badgeEl && msg.from !== currentUser.uid) {
+                                const currentCount = parseInt(badgeEl.textContent) || 0;
+                                badgeEl.textContent = currentCount + 1;
+                                badgeEl.style.display = 'inline-block';
+                            }
+                        }
+                    } else {
+                        // Если чат клуба ещё не в списке — перезагружаем
+                        loadChatsRealtime();
+                    }
+                }, (err) => {
+                    console.warn('Ошибка подписки на сообщения клуба:', err);
+                });
+            }).catch(err => {
+                console.warn('Ошибка проверки клуба:', err);
+            });
+        }
+
+
+
+        // ===== ОТОБРАЖЕНИЕ ЧАТОВ =====
+        function renderChats(chats, searchTerm = '') {
+            const container = document.getElementById('chatsList');
+            const search = searchTerm.toLowerCase().trim();
+            let filtered = chats;
+            if (search) {
+                filtered = chats.filter(c => c.otherName.toLowerCase().includes(search));
+            }
+
+            let html = '';
+            let currentGroup = '';
+            let hasItems = false;
+
+            filtered.forEach((chat, index) => {
+                const group = chat.dateGroup;
+                if (group !== currentGroup) {
+                    currentGroup = group;
+                    html += `<div class="chat-group-label">${group}</div>`;
+                }
+                hasItems = true;
+                
+                const pinIcon = chat.isPinned ? 'fa-thumbtack' : '';
+                const pinClass = chat.isPinned ? 'pinned' : '';
+                const blockedClass = chat.isBlocked ? 'blocked' : '';
+                const clubClass = chat.isClubChat ? 'club-chat' : '';
+                
+                // Для чата клуба показываем количество участников
+                const clubMembersInfo = chat.isClubChat ? `<span class="club-members-count">👥 ${chat.clubMembers || 0}</span>` : '';
+                const clubBadge = chat.isClubChat ? `<span class="club-badge">КЛУБ</span>` : '';
+                
+                // Для чата клуба показываем аватар клуба
+                const avatarSrc = chat.isClubChat ? (chat.clubLogo || 'Avatar.png') : (chat.otherAvatar || 'Avatar.png');
+                
+                html += `
+                    <div class="chat-item ${pinClass} ${blockedClass} ${clubClass}" 
+                        data-chat-id="${chat.chatId}" 
+                        data-other-id="${chat.isClubChat ? chat.clubId : chat.otherId}" 
+                        data-pinned="${chat.isPinned}" 
+                        data-is-club="${chat.isClubChat || false}"
+                        style="animation-delay: ${(index % 10) * 0.03}s;">
+                        <div class="chat-avatar-wrap">
+                            <img src="${avatarSrc}" class="chat-avatar" onerror="this.src='Avatar.png'">
+                            ${!chat.isClubChat ? `<div class="chat-online-dot ${chat.isOnline ? 'show' : ''}"></div>` : ''}
+                        </div>
+                        <div class="chat-info">
+                            <div class="chat-name-row">
+                                <span class="chat-name">
+                                    ${escapeHtml(chat.otherName)}
+                                    ${chat.otherPremium ? '<span class="premium-icon">👑</span>' : ''}
+                                    ${clubBadge}
+                                </span>
+                                ${!chat.isClubChat ? `<img src="${chat.leagueIconPath}" class="chat-league-icon" alt="${chat.otherLeague.name}">` : ''}
+                                ${chat.isPinned ? '<i class="fas fa-thumbtack" style="color:#fbbf24;font-size:0.7rem;"></i>' : ''}
+                                ${clubMembersInfo}
+                            </div>
+                            <div class="chat-last-message">${chat.lastMessage}</div>
+                        </div>
+                        <div class="chat-right">
+                            <div class="chat-time ${chat.isToday ? 'today' : ''}">${chat.timeStr}</div>
+                            ${chat.unreadCount > 0 ? `<span class="unread-badge">${chat.unreadCount > 99 ? '99+' : chat.unreadCount}</span>` : ''}
+                        </div>
+                        <button class="chat-more-btn" data-action="more">
+                            <i class="fas fa-ellipsis-v"></i>
+                        </button>
+                    </div>
+                `;
+            });
+
+            if (!hasItems && search) {
+                html = `
+                    <div class="empty-state" style="padding:30px 20px;">
+                        <span class="icon-wrap"><i class="fas fa-search"></i></span>
+                        <h3>Ничего не найдено</h3>
+                        <p>Попробуйте изменить запрос поиска</p>
+                    </div>
+                `;
+            }
+
+            container.innerHTML = html;
+
+            // Обработчики
+            container.querySelectorAll('.chat-item').forEach(item => {
+                const chatId = item.dataset.chatId;
+                const otherId = item.dataset.otherId;
+                const isPinned = item.dataset.pinned === 'true';
+                const isClub = item.dataset.isClub === 'true';
+
+                // Клик по чату
+                item.addEventListener('click', async (e) => {
+                    if (e.target.closest('.chat-more-btn')) return;
+                    
+                    // Если это чат клуба
+                    if (isClub) {
+                        window.location.href = `club-chat.html?id=${otherId}`;
+                        return;
+                    }
+                    
+                    // Обычный чат
+                    try {
+                        const chatRef = doc(db, "chats", chatId);
+                        const updateData = {};
+                        updateData[`unreadCounts.${currentUser.uid}`] = 0;
+                        await updateDoc(chatRef, updateData);
+                    } catch (err) {}
+                    window.location.href = `chat.html?id=${chatId}`;
+                });
+
+                // Кнопка три точки - показать меню
+                const moreBtn = item.querySelector('.chat-more-btn');
+                if (moreBtn) {
+                    moreBtn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        const isBlocked = item.classList.contains('blocked');
+                        showActionMenu(e, chatId, otherId, isPinned, isBlocked, isClub);
+                    });
+                }
             });
         }
 
@@ -1883,9 +2199,14 @@
                 setTimeout(updateHeaderBalance, 1000);
                 loadChatsRealtime();
             } else {
+                // Отписываемся от всех подписок
                 if (unsubscribeChats) {
                     unsubscribeChats();
                     unsubscribeChats = null;
+                }
+                if (unsubscribeClubMessages) {
+                    unsubscribeClubMessages();
+                    unsubscribeClubMessages = null;
                 }
                 const balanceDiv = document.getElementById('balanceIndicator');
                 if (balanceDiv) balanceDiv.style.display = 'none';
@@ -1924,7 +2245,7 @@
             });
         }
 
-        console.log('✅ Чаты загружены с меню через три точки');
+        console.log('✅ Чаты загружены с интеграцией чата клуба');
     </script>
 
     <!-- ===== МОДАЛЬНОЕ ОКНО (внизу для доступа) ===== -->
