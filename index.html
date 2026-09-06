@@ -1068,6 +1068,24 @@
             </div>
         </div>
         
+        <!-- ===== БАННЕР ОЖИДАНИЯ ===== -->
+        <div id="pendingBanner" style="display:none; background: rgba(251,191,36,0.05); border: 1px solid rgba(251,191,36,0.15); border-radius: 24px; padding: 40px 24px; text-align: center; margin: 40px auto; max-width: 500px;">
+            <div style="font-size: 3.5rem; margin-bottom: 12px;">⏳</div>
+            <h3 style="color: #fbbf24; font-size: 1.3rem; margin-bottom: 8px;">Ваша заявка на рассмотрении</h3>
+            <p style="color: #888; margin-bottom: 4px;">
+                Вы отправили заявку на регистрацию как <strong id="pendingRoleText" style="color: #fbbf24;">Клуб</strong>
+            </p>
+            <p style="color: #666; font-size: 0.8rem; margin-bottom: 20px;">
+                Обычно это занимает до 24 часов
+            </p>
+            <button id="pendingBtn" style="padding: 12px 32px; border-radius: 40px; background: #fbbf24; color: #000; border: none; font-weight: 700; font-size: 0.9rem; cursor: pointer; font-family: 'Inter', sans-serif; transition: all 0.2s ease;">
+                <i class="fas fa-arrow-right"></i> Проверить статус заявки
+            </button>
+            <button id="pendingLogoutBtn" style="display:block; margin-top: 12px; background: transparent; border: none; color: #555; cursor: pointer; font-size: 0.75rem; font-family: 'Inter', sans-serif;">
+                Выйти из аккаунта
+            </button>
+        </div>
+
         <section class="hero">
             <h1>Стань лучшим <br>в своём городе</h1>
             <p>Честный рейтинг, вызовы на спарринг и признание среди любителей ММА, бокса и борьбы. Присоединяйся к комьюнити!</p>
@@ -1531,23 +1549,92 @@
             return String(str).replace(/[&<>]/g, m => m === '&' ? '&amp;' : m === '<' ? '&lt;' : '&gt;');
         }
 
+        async function checkPendingStatus(user) {
+            if (!user) return null;
+            const uid = user.uid;
+            
+            try {
+                // 1. Проверяем клубы
+                const clubDoc = await getDoc(doc(db, "clubs", uid));
+                if (clubDoc.exists() && clubDoc.data().status === 'pending') {
+                    return { status: 'pending', role: 'Клуб' };
+                }
+                
+                // 2. Проверяем организации
+                const orgRequests = await getDocs(query(
+                    collection(db, "organization_requests"),
+                    where("userId", "==", uid),
+                    where("status", "==", "pending")
+                ));
+                if (!orgRequests.empty) {
+                    return { status: 'pending', role: 'Организация' };
+                }
+                
+                // 3. Проверяем партнёров
+                const partnerRequests = await getDocs(query(
+                    collection(db, "partner_requests"),
+                    where("userId", "==", uid),
+                    where("status", "==", "pending")
+                ));
+                if (!partnerRequests.empty) {
+                    return { status: 'pending', role: 'Партнёр' };
+                }
+                
+                return null;
+            } catch (err) {
+                console.error('Ошибка проверки статуса:', err);
+                return null;
+            }
+        }
+
         // Обновленный обработчик авторизации
-        onAuthStateChanged(auth, (user) => {
+        onAuthStateChanged(auth, async (user) => {
             const pathSelector = document.getElementById('pathSelector');
             const activityFeed = document.getElementById('activityFeed');
             const heroSection = document.querySelector('.hero');
+            const pendingBanner = document.getElementById('pendingBanner');
+            const userDashboard = document.getElementById('userDashboard');
             
-            if (user && pathSelector) {
-                pathSelector.style.display = 'none';
+            if (user) {
+                // Проверяем статус заявки
+                const pendingStatus = await checkPendingStatus(user);
+                
+                if (pendingStatus) {
+                    // ===== СТАТУС ОЖИДАНИЯ =====
+                    // Скрываем всё
+                    if (pathSelector) pathSelector.style.display = 'none';
+                    if (heroSection) heroSection.style.display = 'none';
+                    if (userDashboard) userDashboard.style.display = 'none';
+                    if (activityFeed) activityFeed.style.display = 'none';
+                    
+                    // Показываем баннер ожидания
+                    if (pendingBanner) {
+                        pendingBanner.style.display = 'block';
+                        document.getElementById('pendingRoleText').textContent = pendingStatus.role;
+                        document.getElementById('pendingBtn').onclick = () => {
+                            window.location.href = 'waiting.html';
+                        };
+                    }
+                    return;
+                }
+                
+                // ===== ОБЫЧНЫЙ ПОЛЬЗОВАТЕЛЬ =====
+                if (pathSelector) pathSelector.style.display = 'none';
                 if (heroSection) heroSection.style.display = 'none';
+                if (pendingBanner) pendingBanner.style.display = 'none';
+                if (userDashboard) userDashboard.style.display = 'block';
+                if (activityFeed) activityFeed.style.display = 'block';
+                
                 loadUserDashboard(user.uid);
                 loadActivityFeed(user.uid);
                 setTimeout(updateHeaderBalance, 1000);
-            } else if (pathSelector) {
-                pathSelector.style.display = 'flex';
+                
+            } else {
+                // ===== НЕАВТОРИЗОВАННЫЙ =====
+                if (pathSelector) pathSelector.style.display = 'flex';
                 if (heroSection) heroSection.style.display = 'block';
-                const dashboardDiv = document.getElementById('userDashboard');
-                if (dashboardDiv) dashboardDiv.style.display = 'none';
+                if (pendingBanner) pendingBanner.style.display = 'none';
+                if (userDashboard) userDashboard.style.display = 'none';
                 if (activityFeed) activityFeed.style.display = 'none';
             }
         });

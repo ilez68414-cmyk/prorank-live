@@ -1251,6 +1251,12 @@
                     <span class="badge green" id="clubsBadge">0</span>
                 </div>
 
+                <div class="nav-item" data-section="organizations">
+                        <span class="icon"><i class="fas fa-building"></i></span>
+                        <span>Организации</span>
+                        <span class="badge green" id="orgsBadge">0</span>
+                </div>
+
                 <div class="nav-section">Финансы</div>
                 
                 <div class="nav-item" data-section="commissions">
@@ -1452,6 +1458,35 @@
                         <div id="clubRequestsList">
                             <div style="text-align:center; padding:20px; color:#666;"><div class="loading-spinner"></div> Загрузка...</div>
                         </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ===== ОРГАНИЗАЦИИ ===== -->
+            <div class="section-content" id="section-organizations">
+                <div class="page-header">
+                    <div>
+                        <h1><i class="fas fa-building"></i>Организации</h1>
+                        <div class="subtitle">Управление организациями и заявками на регистрацию</div>
+                    </div>
+                </div>
+
+                <div class="tabs">
+                    <button class="tab active" data-org-tab="approved"><i class="fas fa-check-circle"></i> Активные (<span id="orgApprovedCount">0</span>)</button>
+                    <button class="tab" data-org-tab="pending"><i class="fas fa-clock"></i> Заявки (<span id="orgPendingCount">0</span>)</button>
+                </div>
+
+                <div id="org-approved">
+                    <div class="admin-form">
+                        <h3><i class="fas fa-building"></i> Активные организации</h3>
+                        <div id="orgList"><div class="loading-spinner"></div> Загрузка...</div>
+                    </div>
+                </div>
+
+                <div id="org-pending" style="display:none;">
+                    <div class="admin-form">
+                        <h3><i class="fas fa-envelope"></i> Заявки на регистрацию организаций</h3>
+                        <div id="orgRequestsList"><div class="loading-spinner"></div> Загрузка...</div>
                     </div>
                 </div>
             </div>
@@ -1872,6 +1907,8 @@
                 loadRequests(),
                 loadClubs(),
                 loadClubRequests(),
+                loadOrganizations(),        
+                loadOrganizationRequests(), 
                 loadOrdersForCommission(),
                 loadCommissions(),
                 loadDigitalProducts(),
@@ -2138,24 +2175,64 @@
         }
 
         window.approveRequest = async (requestId) => {
-            if (!confirm('Одобрить заявку?')) return;
+            if (!confirm('Одобрить заявку на партнёрство?')) return;
             try {
-                await updateDoc(doc(db, "partner_requests", requestId), { status: 'approved', approvedAt: serverTimestamp() });
-                await logAction('approve_request', requestId, 'Одобрил заявку');
+                // 1. Получаем данные заявки
+                const requestDoc = await getDoc(doc(db, "partner_requests", requestId));
+                const requestData = requestDoc.data();
+                
+                // 2. Проверяем, не создан ли уже партнёр
+                if (requestData.partnerId) {
+                    alert('Партнёр уже создан');
+                    return;
+                }
+                
+                // 3. Создаём партнёра
+                const partnerRef = doc(collection(db, "partners"));
+                await setDoc(partnerRef, {
+                    name: requestData.storeName || 'Магазин',
+                    email: requestData.contactEmail,
+                    storeUrl: requestData.storeUrl || '',
+                    storeDescription: requestData.storeDescription || '',
+                    contactName: requestData.contactName || '',
+                    contactEmail: requestData.contactEmail,
+                    contactTelegram: requestData.contactTelegram || null,
+                    orgType: requestData.orgType || '',
+                    inn: requestData.inn || '',
+                    legalAddress: requestData.legalAddress || '',
+                    bankDetails: requestData.bankDetails || '',
+                    yookassaShopId: requestData.yookassaShopId || '',
+                    status: 'approved',
+                    approvedAt: serverTimestamp(),
+                    createdAt: requestData.createdAt || serverTimestamp(),
+                    userId: requestData.userId || null
+                });
+                
+                // 4. Обновляем заявку
+                await updateDoc(doc(db, "partner_requests", requestId), { 
+                    status: 'approved', 
+                    approvedAt: serverTimestamp(),
+                    partnerId: partnerRef.id
+                });
+                
+                await logAction('approve_partner', partnerRef.id, `Одобрил партнёра "${requestData.storeName}"`);
                 loadRequests();
                 loadPartners();
                 loadStats();
-                alert('✅ Заявка одобрена!');
-            } catch (e) { alert('Ошибка: ' + e.message); }
+                alert('✅ Партнёр одобрен!');
+            } catch (e) { 
+                alert('Ошибка: ' + e.message); 
+            }
         };
 
         window.rejectRequest = async (requestId) => {
-            if (!confirm('Отклонить заявку?')) return;
+            if (!confirm('Отклонить заявку на партнёрство? Документ будет удалён.')) return;
             try {
-                await updateDoc(doc(db, "partner_requests", requestId), { status: 'rejected' });
-                await logAction('reject_request', requestId, 'Отклонил заявку');
+                // Удаляем заявку полностью
+                await deleteDoc(doc(db, "partner_requests", requestId));
+                await logAction('reject_request', requestId, 'Отклонил и удалил заявку на партнёрство');
                 loadRequests();
-                alert('❌ Заявка отклонена');
+                alert('❌ Заявка отклонена и удалена');
             } catch (e) { alert('Ошибка: ' + e.message); }
         };
 
@@ -2305,15 +2382,14 @@
         };
 
         window.rejectClub = async (clubId) => {
-            if (!confirm('Отклонить заявку на создание клуба?')) return;
+            if (!confirm('Отклонить заявку на создание клуба? Документ будет удалён.')) return;
             try {
-                await updateDoc(doc(db, "clubs", clubId), { 
-                    status: 'rejected',
-                    updatedAt: serverTimestamp() 
-                });
-                await logAction('reject_club', clubId, 'Отклонил заявку на создание клуба');
+                // Удаляем клуб полностью
+                await deleteDoc(doc(db, "clubs", clubId));
+                await logAction('reject_club', clubId, 'Отклонил и удалил заявку на создание клуба');
                 loadClubRequests();
-                alert('❌ Заявка отклонена');
+                loadStats();
+                alert('❌ Заявка отклонена и удалена');
             } catch (e) { alert('Ошибка: ' + e.message); }
         };
 
@@ -2344,6 +2420,191 @@
                     'none';
             });
         });
+
+        // ===== ВКЛАДКИ В ОРГАНИЗАЦИЯХ =====
+        document.querySelectorAll('[data-org-tab]').forEach(tab => {
+            tab.addEventListener('click', function() {
+                document.querySelectorAll('[data-org-tab]').forEach(t => t.classList.remove('active'));
+                this.classList.add('active');
+                const tabName = this.dataset.orgTab;
+                document.getElementById('org-approved').style.display = tabName === 'approved' ? 'block' : 'none';
+                document.getElementById('org-pending').style.display = tabName === 'pending' ? 'block' : 'none';
+            });
+        });
+
+        // ============================================================
+        // ОРГАНИЗАЦИИ
+        // ============================================================
+        let allOrganizations = [];
+        let allOrganizationRequests = [];
+
+        async function loadOrganizations() {
+            try {
+                const snapshot = await getDocs(query(collection(db, "organizations"), where("status", "==", "approved")));
+                allOrganizations = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                renderOrganizations();
+                document.getElementById('orgApprovedCount').textContent = allOrganizations.length;
+            } catch (e) {
+                console.error('Организации:', e);
+            }
+        }
+
+        async function loadOrganizationRequests() {
+            try {
+                const snapshot = await getDocs(query(collection(db, "organization_requests"), where("status", "==", "pending")));
+                allOrganizationRequests = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                renderOrganizationRequests();
+                document.getElementById('orgPendingCount').textContent = allOrganizationRequests.length;
+            } catch (e) {
+                console.error('Заявки организаций:', e);
+            }
+        }
+
+        function renderOrganizations() {
+            const container = document.getElementById('orgList');
+            if (!container) {
+                console.warn('orgList не найден');
+                return;
+            }
+            if (!allOrganizations.length) {
+                container.innerHTML = '<div style="text-align:center; padding:20px; color:#666;">Нет активных организаций</div>';
+                return;
+            }
+            
+            let html = '<div class="table-wrap"><table><thead><tr><th>Название</th><th>Город</th><th>Контакт</th><th>ИНН</th><th>Статус</th><th>Действия</th></tr></thead><tbody>';
+            
+            allOrganizations.forEach(org => {
+                const name = org.name || 'Организация';
+                const city = org.city || '—';
+                const contact = org.contactPerson || '—';
+                const inn = org.inn || '—';
+                
+                html += `
+                    <tr>
+                        <td><strong>${escapeHtml(name)}</strong></td>
+                        <td>${escapeHtml(city)}</td>
+                        <td>${escapeHtml(contact)}</td>
+                        <td>${escapeHtml(inn)}</td>
+                        <td>
+                            ${org.isActive ? '<span class="status-badge active">✅ Активна</span>' : '<span class="status-badge inactive">🔒 Заблокирована</span>'}
+                        </td>
+                        <td>
+                            <div class="actions">
+                                ${org.isActive ? 
+                                    `<button class="btn btn-danger btn-sm" onclick="window.banOrganization('${org.id}')" title="Заблокировать"><i class="fas fa-ban"></i></button>` : 
+                                    `<button class="btn btn-success btn-sm" onclick="window.unbanOrganization('${org.id}')" title="Разблокировать"><i class="fas fa-check"></i></button>`
+                                }
+                                <button class="btn btn-danger btn-sm" onclick="window.deleteOrganization('${org.id}')" title="Удалить"><i class="fas fa-trash"></i></button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            });
+            
+            html += '</tbody></table></div>';
+            container.innerHTML = html;
+        }
+
+        function renderOrganizationRequests() {
+            const container = document.getElementById('orgRequestsList');
+            if (!container) {
+                console.warn('orgRequestsList не найден');
+                return;
+            }
+            if (!allOrganizationRequests.length) {
+                container.innerHTML = '<div style="text-align:center; padding:20px; color:#666;">Нет заявок от организаций</div>';
+                return;
+            }
+            
+            let html = '';
+            allOrganizationRequests.forEach(org => {
+                const date = org.createdAt?.toDate?.()?.toLocaleString() || '—';
+                const orgName = org.orgName || 'Новая организация';
+                const orgCity = org.orgCity || '—';
+                const orgContact = org.orgContact || '—';
+                const orgPhone = org.orgPhone || '—';
+                const orgAddress = org.orgAddress || '—';
+                const orgSports = org.orgSports ? org.orgSports.join(', ') : '—';
+                const orgType = org.orgType || '—';
+                const orgInn = org.orgInn || '—';
+                
+                html += `
+                    <div class="request-card">
+                        <div class="request-info">
+                            <div class="name"><i class="fas fa-building"></i>${escapeHtml(orgName)}</div>
+                            <div class="desc">📍 ${escapeHtml(orgCity)} • 👤 ${escapeHtml(orgContact)}</div>
+                            <div class="desc">📞 ${escapeHtml(orgPhone)} • 🏠 ${escapeHtml(orgAddress)}</div>
+                            <div class="desc">🥊 ${escapeHtml(orgSports)}</div>
+                            <div class="desc">🏢 ${escapeHtml(orgType)} • ИНН: ${escapeHtml(orgInn)}</div>
+                            <div class="meta"><i class="far fa-calendar-alt"></i> ${escapeHtml(date)}</div>
+                        </div>
+                        <div class="request-actions">
+                            <button class="btn btn-success btn-sm" onclick="window.approveOrganization('${org.id}')"><i class="fas fa-check"></i> Одобрить</button>
+                            <button class="btn btn-danger btn-sm" onclick="window.rejectOrganization('${org.id}')"><i class="fas fa-times"></i> Отклонить</button>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html;
+        }
+
+        // ===== ДЕЙСТВИЯ С ОРГАНИЗАЦИЯМИ =====
+        window.approveOrganization = async (requestId) => {
+            if (!confirm('Одобрить заявку организации?')) return;
+            try {
+                const requestDoc = await getDoc(doc(db, "organization_requests", requestId));
+                const orgData = requestDoc.data();
+                
+                // Создаём организацию
+                const orgRef = doc(collection(db, "organizations"));
+                await setDoc(orgRef, {
+                    name: orgData.orgName || 'Организация',
+                    city: orgData.orgCity || '',
+                    address: orgData.orgAddress || '',
+                    phone: orgData.orgPhone || '',
+                    contactPerson: orgData.orgContact || '',
+                    sports: orgData.orgSports || [],
+                    description: orgData.orgDescription || '',
+                    orgType: orgData.orgType || '',
+                    inn: orgData.orgInn || '',
+                    legalAddress: orgData.orgLegalAddress || '',
+                    bankDetails: orgData.orgBankDetails || '',
+                    ownerId: orgData.userId || null,
+                    email: orgData.userEmail || '',
+                    status: 'approved',
+                    isActive: true,
+                    createdAt: serverTimestamp(),
+                    updatedAt: serverTimestamp()
+                });
+                
+                // 🔥 ГЛАВНОЕ: СОХРАНЯЕМ ID ОРГАНИЗАЦИИ В ЗАЯВКЕ
+                await updateDoc(doc(db, "organization_requests", requestId), { 
+                    status: 'approved', 
+                    approvedAt: serverTimestamp(),
+                    organizationId: orgRef.id  // ← ЭТО КЛЮЧЕВОЕ ИЗМЕНЕНИЕ
+                });
+                
+                await logAction('approve_organization', orgRef.id, `Одобрил организацию "${orgData.orgName}"`);
+                loadOrganizationRequests();
+                loadOrganizations();
+                loadStats();
+                alert('✅ Организация одобрена!');
+            } catch (e) { 
+                alert('Ошибка: ' + e.message); 
+            }
+        };
+
+       window.rejectOrganization = async (requestId) => {
+            if (!confirm('Отклонить заявку организации? Документ будет удалён.')) return;
+            try {
+                // Удаляем заявку полностью
+                await deleteDoc(doc(db, "organization_requests", requestId));
+                await logAction('reject_organization', requestId, 'Отклонил и удалил заявку организации');
+                loadOrganizationRequests();
+                alert('❌ Заявка отклонена и удалена');
+            } catch (e) { alert('Ошибка: ' + e.message); }
+        };
 
         // ============================================================
         // ЗАКАЗЫ (для комиссий)

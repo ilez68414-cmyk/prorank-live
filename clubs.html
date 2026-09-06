@@ -738,6 +738,97 @@
                 height: 30px !important;
             }
         }
+        /* ===== КНОПКА "СОЗДАТЬ КЛУБ" ===== */
+        #createClubBtn {
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        #createClubBtn.locked {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        #createClubBtn.locked .stat-btn {
+            background: rgba(100,100,120,0.1);
+            border-color: rgba(100,100,120,0.15);
+            color: #555;
+            cursor: not-allowed;
+        }
+
+        #createClubBtn.locked .stat-btn:hover {
+            transform: none;
+        }
+
+        #createClubBtn.locked #createClubIcon {
+            color: #555;
+        }
+
+        #createClubBtn .lock-icon {
+            display: none;
+            font-size: 0.7rem;
+            color: #555;
+            margin-left: 4px;
+        }
+
+        #createClubBtn.locked .lock-icon {
+            display: inline;
+        }
+
+        #createClubBtn .frs-requirement {
+            display: none;
+            font-size: 0.55rem;
+            color: #555;
+            font-weight: 400;
+        }
+
+        #createClubBtn.locked .frs-requirement {
+            display: inline;
+        }
+
+        #createClubBtn:not(.locked) .stat-btn {
+            background: rgba(251,191,36,0.12);
+            border-color: rgba(251,191,36,0.2);
+            color: #fbbf24;
+        }
+
+        #createClubBtn:not(.locked) .stat-btn:hover {
+            background: rgba(251,191,36,0.2);
+            transform: scale(1.05);
+        }
+
+        #createClubBtn:not(.locked):hover {
+            border-color: rgba(251,191,36,0.3);
+            transform: translateY(-2px);
+        }
+
+        #createClubBtn .stat-value .frs-count {
+            color: #fbbf24;
+            font-weight: 800;
+        }
+
+        #createClubBtn.locked .stat-value .frs-count {
+            color: #555;
+        }
+
+        /* ===== АДАПТИВ ===== */
+        @media (max-width: 480px) {
+            #createClubBtn .stat-value {
+                font-size: 0.7rem !important;
+            }
+            
+            #createClubBtn .stat-label {
+                font-size: 0.45rem !important;
+            }
+            
+            #createClubBtn .lock-icon {
+                font-size: 0.6rem;
+            }
+            
+            #createClubBtn .frs-requirement {
+                font-size: 0.5rem;
+            }
+        }
     </style>
 </head>
 <body>
@@ -763,15 +854,21 @@
                         <div class="stat-label">Клубов</div>
                     </div>
                 </div>
-                <div class="compact-stat" id="createClubBtn" style="cursor: pointer;">
-                    <i class="fas fa-plus-circle"></i>
+                
+                <!-- ===== НОВАЯ КНОПКА "СОЗДАТЬ КЛУБ" ===== -->
+                <div class="compact-stat" id="createClubBtn">
+                    <i class="fas fa-plus-circle" id="createClubIcon"></i>
                     <div class="stat-info">
-                        <div class="stat-value" style="font-size: 0.85rem; color: #fbbf24;">Создать клуб</div>
-                        <div class="stat-label">Стань основателем</div>
+                        <div class="stat-value" id="createClubText" style="font-size: 0.85rem; color: #fbbf24;">
+                            Создать клуб
+                        </div>
+                        <div class="stat-label" id="createClubSubtext">
+                            Основать свой клуб
+                        </div>
                     </div>
-                    <button class="stat-btn" onclick="event.stopPropagation(); alert('🚧 Функция создания клуба скоро появится!')">
+                    <div class="stat-btn" id="createClubAction">
                         <i class="fas fa-arrow-right"></i>
-                    </button>
+                    </div>
                 </div>
             </div>
 
@@ -813,7 +910,7 @@
         }
     </script>
     <script type="module" src="header.js?v=3"></script>
-    <script type="module">
+        <script type="module">
         import { initializeApp } from "firebase/app";
         import { 
             getFirestore, 
@@ -843,6 +940,20 @@
         let myClubId = null;
         let myClubName = null;
         let allClubs = [];
+        let currentUserFRS = 0;
+
+        // ===== УВЕДОМЛЕНИЕ =====
+        function showNotification(message, type = 'info') {
+            const container = document.getElementById('errorContainer');
+            if (!container) return;
+            const colors = { success: '#22c55e', error: '#ef4444', warning: '#f59e0b', info: '#fbbf24' };
+            container.style.display = 'block';
+            container.style.background = colors[type] || colors.info;
+            container.style.color = '#000';
+            container.textContent = message;
+            clearTimeout(container._timeout);
+            container._timeout = setTimeout(() => { container.style.display = 'none'; }, 3000);
+        }
 
         // ===== РЕНДЕР ПЕРЕКЛЮЧАТЕЛЯ =====
         function renderSwitcher() {
@@ -875,6 +986,91 @@
                 document.getElementById('totalClubsCount').textContent = clubsSnap.size;
             } catch (error) {
                 console.error('Ошибка загрузки статистики:', error);
+            }
+        }
+
+        // ===== ПОЛУЧЕНИЕ FRS ПОЛЬЗОВАТЕЛЯ =====
+        async function getUserFRS() {
+            if (!currentUser) return 0;
+            
+            try {
+                const fighterDoc = await getDoc(doc(db, "fighters", currentUser.uid));
+                if (fighterDoc.exists()) {
+                    currentUserFRS = fighterDoc.data().frs || 0;
+                    return currentUserFRS;
+                }
+            } catch (err) {
+                console.error('Ошибка получения FRS:', err);
+            }
+            return 0;
+        }
+
+        // ===== ОБНОВЛЕНИЕ КНОПКИ "СОЗДАТЬ КЛУБ" =====
+        function updateCreateClubButton() {
+            const btn = document.getElementById('createClubBtn');
+            const text = document.getElementById('createClubText');
+            const subtext = document.getElementById('createClubSubtext');
+            const icon = document.getElementById('createClubIcon');
+            const action = document.getElementById('createClubAction');
+            
+            // Если пользователь не авторизован
+            if (!currentUser) {
+                btn.classList.add('locked');
+                text.innerHTML = 'Создать клуб <span class="lock-icon"><i class="fas fa-lock"></i></span>';
+                subtext.textContent = 'Войдите, чтобы создать клуб';
+                icon.className = 'fas fa-plus-circle';
+                action.innerHTML = '<i class="fas fa-arrow-right"></i>';
+                
+                btn.onclick = (e) => {
+                    e.stopPropagation();
+                    window.location.href = 'login.html';
+                };
+                return;
+            }
+            
+            // Проверяем, есть ли у пользователя уже клуб
+            if (myClubId) {
+                btn.classList.add('locked');
+                text.innerHTML = 'Вы уже в клубе';
+                subtext.textContent = 'Покините клуб, чтобы создать свой';
+                icon.className = 'fas fa-check-circle';
+                action.innerHTML = '<i class="fas fa-check"></i>';
+                
+                btn.onclick = () => {
+                    showNotification('Вы уже состоите в клубе. Покините его, чтобы создать свой.', 'warning');
+                };
+                return;
+            }
+            
+            // Проверяем FRS
+            const userFRS = currentUserFRS || 0;
+            const canCreate = userFRS >= 5000;
+            
+            if (canCreate) {
+                // Может создать клуб
+                btn.classList.remove('locked');
+                text.innerHTML = 'Создать клуб';
+                subtext.textContent = 'Основать свой клуб';
+                icon.className = 'fas fa-plus-circle';
+                action.innerHTML = '<i class="fas fa-arrow-right"></i>';
+                
+                btn.onclick = (e) => {
+                    e.stopPropagation();
+                    window.location.href = 'create-club.html';
+                };
+            } else {
+                // Не может создать клуб
+                btn.classList.add('locked');
+                const remaining = 5000 - userFRS;
+                text.innerHTML = `Создать клуб <span class="lock-icon"><i class="fas fa-lock"></i></span>`;
+                subtext.innerHTML = `Нужно <span class="frs-count">5000 FRS</span> (осталось ${remaining})`;
+                icon.className = 'fas fa-plus-circle';
+                action.innerHTML = '<i class="fas fa-lock"></i>';
+                
+                btn.onclick = (e) => {
+                    e.stopPropagation();
+                    showNotification(`Для создания клуба нужно 5000 FRS. У вас ${userFRS}`, 'warning');
+                };
             }
         }
 
@@ -911,6 +1107,9 @@
                 
                 // Перемешиваем и показываем
                 shuffleClubs();
+                
+                // Обновляем кнопку создания клуба
+                updateCreateClubButton();
                 
             } catch (error) {
                 console.error('Ошибка загрузки клубов:', error);
@@ -953,14 +1152,13 @@
                 };
                 
                 const statusClass = club.joinPolicy === 'open' ? 'open' : 
-                                   club.joinPolicy === 'request' ? 'request' : 'closed';
+                                club.joinPolicy === 'request' ? 'request' : 'closed';
                 const statusText = club.joinPolicy === 'open' ? 'Открытый' : 
-                                  club.joinPolicy === 'request' ? 'По заявке' : 'Закрытый';
+                                club.joinPolicy === 'request' ? 'По заявке' : 'Закрытый';
                 
                 const memberCount = club.memberCount || 0;
                 const maxMembers = club.maxMembers || 50;
                 
-                // Проверяем, есть ли логотип у клуба
                 const hasLogo = club.logo && club.logo.trim() !== '';
                 
                 card.innerHTML = `
@@ -1027,10 +1225,14 @@
                                 myClubName = clubDoc.data().name || 'Мой клуб';
                             }
                         }
+                        // Получаем FRS пользователя
+                        await getUserFRS();
                     }
                 } catch (err) {
                     console.error('Ошибка проверки клуба:', err);
                 }
+            } else {
+                currentUserFRS = 0;
             }
             
             // 2. РЕНДЕРИМ ПЕРЕКЛЮЧАТЕЛЬ (с данными или без)
@@ -1038,6 +1240,9 @@
             
             // 3. ЗАГРУЖАЕМ КЛУБЫ И СТАТИСТИКУ
             await Promise.all([loadClubs(), loadStats()]);
+            
+            // 4. ОБНОВЛЯЕМ КНОПКУ (на всякий случай)
+            updateCreateClubButton();
         });
 
         // ===== СОБЫТИЯ =====

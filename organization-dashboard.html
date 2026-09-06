@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Кабинет организации | PRORANK</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700;14..32,800;14..32,900&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: radial-gradient(ellipse at 30% 40%, rgba(251, 191, 36, 0.15) 0%, transparent 60%),
+                        radial-gradient(ellipse at 70% 80%, rgba(251, 191, 36, 0.08) 0%, transparent 50%),
+                        linear-gradient(135deg, #1a1a1a 0%, #0f0f0f 40%, #1a1a1a 100%);
+            background-attachment: fixed;
+            color: #fff;
+            line-height: 1.4;
+            min-height: 100vh;
+        }
+
+        .gold-top {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(90deg, #fbbf24, #ffdd88, #fbbf24, #b8860b);
+            z-index: 1001;
+        }
+
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 32px;
+            background: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(16px);
+            border-bottom: 1px solid rgba(251, 191, 36, 0.25);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: 800;
+            cursor: pointer;
+            background: linear-gradient(135deg, #ffffff, #fbbf24);
+            background-clip: text;
+            color: transparent;
+        }
+
+        .logo span {
+            background: linear-gradient(135deg, #fbbf24, #ffdd77);
+            background-clip: text;
+            color: transparent;
+        }
+
+        .menu-toggle {
+            display: none;
+            background: rgba(251,191,36,0.1);
+            border: 1px solid #fbbf24;
+            color: #fbbf24;
+            font-size: 1.6rem;
+            cursor: pointer;
+            padding: 8px 14px;
+            border-radius: 12px;
+            min-height: 44px;
+            min-width: 44px;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 6px;
+            background: rgba(15,15,15,0.7);
+            backdrop-filter: blur(12px);
+            padding: 5px 14px;
+            border-radius: 60px;
+            border: 1px solid rgba(251,191,36,0.2);
+        }
+
+        .nav-links a {
+            color: #ddd;
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 500;
+            padding: 8px 18px;
+            border-radius: 40px;
+            transition: all 0.2s ease;
+        }
+
+        .nav-links a i {
+            margin-right: 8px;
+            color: #fbbf24;
+        }
+
+        .nav-links a:hover {
+            color: #fbbf24;
+            background: rgba(251,191,36,0.1);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem 24px;
+        }
+
+        /* ===== ДАШБОРД ===== */
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 16px;
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid rgba(251,191,36,0.15);
+        }
+
+        .dashboard-header h1 {
+            font-size: 1.8rem;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .dashboard-header h1 i {
+            color: #fbbf24;
+        }
+
+        .dashboard-header .subtitle {
+            color: #888;
+            font-size: 0.9rem;
+        }
+
+        .org-info-card {
+            background: rgba(15,15,15,0.7);
+            backdrop-filter: blur(12px);
+            border-radius: 24px;
+            padding: 24px;
+            border: 1px solid rgba(251,191,36,0.15);
+            margin-bottom: 24px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 24px;
+            align-items: center;
+        }
+
+        .org-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #fbbf24, #f59e0b);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            font-weight: 700;
+            color: #000;
+            flex-shrink: 0;
+        }
+
+        .org-info {
+            flex: 1;
+        }
+
+        .org-info .name {
+            font-size: 1.4rem;
+            font-weight: 700;
+        }
+
+        .org-info .details {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px 20px;
+            margin-top: 6px;
+            color: #888;
+            font-size: 0.85rem;
+        }
+
+        .org-info .details span {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .org-info .details i {
+            color: #fbbf24;
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 16px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 700;
+        }
+
+        .status-badge.active {
+            background: rgba(16,185,129,0.12);
+            color: #10b981;
+            border: 1px solid rgba(16,185,129,0.2);
+        }
+
+        /* ===== СТАТИСТИКА ===== */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .stat-card {
+            background: rgba(15,15,15,0.7);
+            backdrop-filter: blur(12px);
+            border-radius: 16px;
+            padding: 20px;
+            border: 1px solid rgba(251,191,36,0.1);
+            text-align: center;
+            transition: all 0.2s ease;
+        }
+
+        .stat-card:hover {
+            border-color: rgba(251,191,36,0.25);
+            transform: translateY(-2px);
+        }
+
+        .stat-card .stat-value {
+            font-size: 2rem;
+            font-weight: 800;
+            color: #fbbf24;
+        }
+
+        .stat-card .stat-label {
+            font-size: 0.7rem;
+            color: #888;
+            margin-top: 4px;
+        }
+
+        .stat-card .stat-icon {
+            font-size: 1.5rem;
+            color: #fbbf24;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        /* ===== ПАНЕЛИ ===== */
+        .panel {
+            background: rgba(15,15,15,0.7);
+            backdrop-filter: blur(12px);
+            border-radius: 20px;
+            padding: 20px 24px;
+            border: 1px solid rgba(251,191,36,0.1);
+            margin-bottom: 20px;
+        }
+
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .panel-header h3 {
+            font-size: 1rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .panel-header h3 i {
+            color: #fbbf24;
+        }
+
+        .btn {
+            padding: 8px 20px;
+            border: none;
+            border-radius: 40px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: 'Inter', sans-serif;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.85rem;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #fbbf24, #f59e0b);
+            color: #000;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(251,191,36,0.3);
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 1px solid rgba(255,255,255,0.1);
+            color: #888;
+        }
+
+        .btn-outline:hover {
+            background: rgba(255,255,255,0.04);
+            color: #fff;
+        }
+
+        .btn-danger {
+            background: rgba(239,68,68,0.12);
+            border: 1px solid rgba(239,68,68,0.2);
+            color: #ef4444;
+        }
+
+        .btn-danger:hover {
+            background: rgba(239,68,68,0.2);
+        }
+
+        .btn-sm {
+            padding: 6px 14px;
+            font-size: 0.75rem;
+        }
+
+        /* ===== ТУРНИРЫ (плейсхолдер) ===== */
+        .tournaments-placeholder {
+            text-align: center;
+            padding: 40px 20px;
+            color: #666;
+        }
+
+        .tournaments-placeholder i {
+            font-size: 3rem;
+            color: #333;
+            display: block;
+            margin-bottom: 12px;
+        }
+
+        .tournaments-placeholder h4 {
+            color: #888;
+            margin-bottom: 4px;
+        }
+
+        .tournaments-placeholder p {
+            font-size: 0.85rem;
+        }
+
+        /* ===== АДАПТИВ ===== */
+        @media (max-width: 768px) {
+            .container { padding: 1rem 16px; }
+            .navbar { padding: 10px 16px; }
+            .menu-toggle { display: block; }
+            
+            .nav-links {
+                display: none;
+                flex-direction: column;
+                position: absolute;
+                top: 68px;
+                left: 18px;
+                right: 18px;
+                background: #0f0f0f;
+                border-radius: 24px;
+                padding: 20px;
+                gap: 10px;
+                border: 1px solid rgba(251,191,36,0.3);
+                z-index: 1000;
+            }
+            
+            .nav-links.show {
+                display: flex;
+            }
+            
+            .nav-links a {
+                width: 100%;
+                text-align: center;
+            }
+
+            .dashboard-header h1 {
+                font-size: 1.4rem;
+            }
+
+            .org-info-card {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .org-info .details {
+                justify-content: center;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .panel {
+                padding: 16px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="gold-top"></div>
+
+    <header class="navbar">
+        <div class="logo" onclick="window.location='index.html'">PRO<span>RANK</span></div>
+        <button class="menu-toggle" id="menuToggle"><i class="fas fa-bars"></i></button>
+        <nav class="nav-links" id="navLinks"></nav>
+    </header>
+
+    <main>
+        <div class="container">
+            <!-- ===== ШАПКА ===== -->
+            <div class="dashboard-header">
+                <div>
+                    <h1><i class="fas fa-building"></i> <span id="orgName">Кабинет организации</span></h1>
+                    <div class="subtitle" id="orgSubtitle">Управление турнирами и сезонами</div>
+                </div>
+                <button class="btn btn-primary" id="createTournamentBtn" disabled>
+                    <i class="fas fa-plus"></i> Создать турнир
+                </button>
+            </div>
+
+            <!-- ===== ИНФО ОБ ОРГАНИЗАЦИИ ===== -->
+            <div class="org-info-card" id="orgInfoCard">
+                <div class="org-avatar" id="orgAvatar">🏢</div>
+                <div class="org-info">
+                    <div class="name" id="orgNameDisplay">Загрузка...</div>
+                    <div class="details">
+                        <span><i class="fas fa-map-marker-alt"></i> <span id="orgCity">—</span></span>
+                        <span><i class="fas fa-phone"></i> <span id="orgPhone">—</span></span>
+                        <span><i class="fas fa-fist-raised"></i> <span id="orgSports">—</span></span>
+                        <span><span class="status-badge active"><i class="fas fa-circle"></i> Активна</span></span>
+                    </div>
+                </div>
+                <button class="btn btn-outline btn-sm" id="editOrgBtn">
+                    <i class="fas fa-edit"></i> Редактировать
+                </button>
+            </div>
+
+            <!-- ===== СТАТИСТИКА ===== -->
+            <div class="stats-grid" id="statsGrid">
+                <div class="stat-card">
+                    <span class="stat-icon"><i class="fas fa-trophy"></i></span>
+                    <div class="stat-value" id="statTournaments">0</div>
+                    <div class="stat-label">Турниров</div>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-icon"><i class="fas fa-users"></i></span>
+                    <div class="stat-value" id="statFighters">0</div>
+                    <div class="stat-label">Бойцов</div>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-icon"><i class="fas fa-ruble-sign"></i></span>
+                    <div class="stat-value" id="statRevenue">0 ₽</div>
+                    <div class="stat-label">Доход</div>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-icon"><i class="fas fa-calendar-alt"></i></span>
+                    <div class="stat-value" id="statSeasons">0</div>
+                    <div class="stat-label">Сезонов</div>
+                </div>
+            </div>
+
+            <!-- ===== ТУРНИРЫ ===== -->
+            <div class="panel">
+                <div class="panel-header">
+                    <h3><i class="fas fa-trophy"></i> Мои турниры</h3>
+                    <button class="btn btn-primary btn-sm" id="createTournamentBtn2" disabled>
+                        <i class="fas fa-plus"></i> Создать
+                    </button>
+                </div>
+                <div class="tournaments-placeholder">
+                    <i class="fas fa-trophy"></i>
+                    <h4>Скоро здесь будут турниры</h4>
+                    <p>Функция создания турниров появится в ближайшее время</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div id="mobileBottomNavContainer"></div>
+
+    <script type="importmap">
+        {
+            "imports": {
+                "firebase/app": "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js",
+                "firebase/firestore": "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js",
+                "firebase/auth": "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js"
+            }
+        }
+    </script>
+    <script type="module" src="header.js"></script>
+    <script type="module">
+    import { initializeApp } from "firebase/app";
+    import { getFirestore, doc, getDoc, collection, query, where, getDocs } from "firebase/firestore";
+    import { getAuth, onAuthStateChanged } from "firebase/auth";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyDUGYJY7pX7q02MS5SACMIIQXpjpQ97mPw",
+        authDomain: "proranklive.firebaseapp.com",
+        projectId: "proranklive",
+        storageBucket: "proranklive.firebasestorage.app",
+        messagingSenderId: "716836144015",
+        appId: "1:716836144015:web:f1575147750608d0f881fa"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
+
+    console.log('🔍 DEBUG: ============================================');
+    console.log('🔍 DEBUG: organization-dashboard.html загружен');
+    console.log('🔍 DEBUG: Полный URL:', window.location.href);
+    console.log('🔍 DEBUG: ============================================');
+
+    async function loadOrganizationData(orgId) {
+        console.log('🔍 DEBUG: ===== НАЧАЛО ЗАГРУЗКИ ОРГАНИЗАЦИИ =====');
+        console.log('🔍 DEBUG: Получен ID:', orgId);
+        
+        try {
+            // Сначала проверим — может это ID заявки?
+            console.log('🔍 DEBUG: Проверяем, не заявка ли это...');
+            const requestDoc = await getDoc(doc(db, "organization_requests", orgId));
+            
+            if (requestDoc.exists()) {
+                const requestData = requestDoc.data();
+                console.log('🔍 DEBUG: ЭТО ЗАЯВКА! ID заявки:', orgId);
+                console.log('🔍 DEBUG: Данные заявки:', requestData);
+                console.log('🔍 DEBUG: organizationId в заявке:', requestData.organizationId);
+                console.log('🔍 DEBUG: status заявки:', requestData.status);
+                
+                if (requestData.organizationId) {
+                    console.log('✅ DEBUG: Нашли organizationId в заявке:', requestData.organizationId);
+                    orgId = requestData.organizationId;
+                } else {
+                    console.error('❌ DEBUG: В заявке НЕТ organizationId!');
+                    console.error('❌ DEBUG: Значит, админка не сохранила его при одобрении');
+                    
+                    // Попробуем найти организацию по другим полям
+                    console.log('🔍 DEBUG: Ищем организацию по email...');
+                    const orgByEmail = await getDocs(query(
+                        collection(db, "organizations"),
+                        where("email", "==", requestData.userEmail || "")
+                    ));
+                    
+                    if (!orgByEmail.empty) {
+                        const foundOrg = orgByEmail.docs[0];
+                        console.log('✅ DEBUG: Нашли организацию по email:', foundOrg.id);
+                        orgId = foundOrg.id;
+                    } else {
+                        console.log('🔍 DEBUG: По email не нашли, ищем по name...');
+                        const orgByName = await getDocs(query(
+                            collection(db, "organizations"),
+                            where("name", "==", requestData.orgName || "")
+                        ));
+                        
+                        if (!orgByName.empty) {
+                            const foundOrg = orgByName.docs[0];
+                            console.log('✅ DEBUG: Нашли организацию по name:', foundOrg.id);
+                            orgId = foundOrg.id;
+                        } else {
+                            console.error('❌ DEBUG: Организация не найдена ни по email, ни по name');
+                            document.getElementById('orgNameDisplay').textContent = 'Организация не найдена';
+                            document.getElementById('orgSubtitle').textContent = 'Заявка одобрена, но организация не создана';
+                            return;
+                        }
+                    }
+                }
+            } else {
+                console.log('🔍 DEBUG: Это не заявка, пробуем как ID организации...');
+            }
+            
+            // Теперь загружаем организацию по найденному ID
+            console.log('🔍 DEBUG: Загружаем организацию с ID:', orgId);
+            const orgDoc = await getDoc(doc(db, "organizations", orgId));
+            
+            if (!orgDoc.exists()) {
+                console.error('❌ DEBUG: Организация НЕ НАЙДЕНА в коллекции "organizations"');
+                console.error('❌ DEBUG: ID:', orgId);
+                
+                // Выведем все организации для отладки
+                console.log('🔍 DEBUG: Выводим все организации...');
+                const allOrgs = await getDocs(collection(db, "organizations"));
+                console.log('🔍 DEBUG: Всего организаций:', allOrgs.size);
+                allOrgs.forEach(doc => {
+                    console.log('🔍 DEBUG: Организация:', doc.id, doc.data());
+                });
+                
+                document.getElementById('orgNameDisplay').textContent = 'Организация не найдена';
+                document.getElementById('orgSubtitle').textContent = 'Проверьте консоль для отладки';
+                return;
+            }
+
+            const data = orgDoc.data();
+            console.log('✅ DEBUG: Организация найдена!');
+            console.log('✅ DEBUG: ID документа:', orgDoc.id);
+            console.log('✅ DEBUG: Данные:', data);
+            
+            displayOrganizationData(data);
+
+        } catch (err) {
+            console.error('❌ DEBUG: Ошибка загрузки:', err);
+            document.getElementById('orgNameDisplay').textContent = 'Ошибка загрузки';
+            document.getElementById('orgSubtitle').textContent = err.message;
+        }
+    }
+
+    function displayOrganizationData(data) {
+        console.log('🔍 DEBUG: ===== ОТОБРАЖЕНИЕ ДАННЫХ =====');
+        
+        document.getElementById('orgNameDisplay').textContent = data.name || 'Без названия';
+        document.getElementById('orgCity').textContent = data.city || '—';
+        document.getElementById('orgPhone').textContent = data.phone || '—';
+        document.getElementById('orgSports').textContent = data.sports ? data.sports.join(', ') : '—';
+        document.getElementById('orgName').textContent = data.name || 'Кабинет организации';
+        document.getElementById('orgSubtitle').textContent = 'Управление турнирами и сезонами';
+        
+        if (data.name) {
+            const firstLetter = data.name.charAt(0).toUpperCase();
+            document.getElementById('orgAvatar').textContent = firstLetter;
+        }
+
+        document.getElementById('statTournaments').textContent = '0';
+        document.getElementById('statFighters').textContent = '0';
+        document.getElementById('statRevenue').textContent = '0 ₽';
+        document.getElementById('statSeasons').textContent = '0';
+        
+        document.getElementById('createTournamentBtn').disabled = false;
+        document.getElementById('createTournamentBtn2').disabled = false;
+        
+        console.log('✅ DEBUG: Данные успешно отображены');
+    }
+
+    onAuthStateChanged(auth, async (user) => {
+        console.log('🔍 DEBUG: ===== ПРОВЕРКА АВТОРИЗАЦИИ =====');
+        
+        if (!user) {
+            console.log('❌ DEBUG: Пользователь не авторизован');
+            window.location.href = 'login.html';
+            return;
+        }
+
+        console.log('✅ DEBUG: Пользователь авторизован:', user.uid);
+        console.log('🔍 DEBUG: Email:', user.email);
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const orgId = urlParams.get('id');
+        
+        console.log('🔍 DEBUG: ID из URL:', orgId);
+
+        if (!orgId) {
+            console.log('🔍 DEBUG: Нет ID в URL, ищем по userId...');
+            
+            const orgRequests = await getDocs(query(
+                collection(db, "organization_requests"),
+                where("userId", "==", user.uid),
+                where("status", "==", "approved")
+            ));
+
+            console.log('🔍 DEBUG: Найдено заявок:', orgRequests.size);
+
+            if (!orgRequests.empty) {
+                const requestDoc = orgRequests.docs[0];
+                const request = requestDoc.data();
+                
+                console.log('🔍 DEBUG: ID заявки:', requestDoc.id);
+                console.log('🔍 DEBUG: Данные заявки:', request);
+                console.log('🔍 DEBUG: organizationId:', request.organizationId);
+                
+                const id = request.organizationId || requestDoc.id;
+                window.history.replaceState(null, '', `?id=${id}`);
+                loadOrganizationData(id);
+                return;
+            }
+
+            console.error('❌ DEBUG: Заявка не найдена');
+            document.getElementById('orgNameDisplay').textContent = 'Организация не найдена';
+            return;
+        }
+
+        loadOrganizationData(orgId);
+    });
+
+    document.getElementById('createTournamentBtn')?.addEventListener('click', () => {
+        alert('🚧 Функция создания турниров скоро появится!');
+    });
+
+    document.getElementById('createTournamentBtn2')?.addEventListener('click', () => {
+        alert('🚧 Функция создания турниров скоро появится!');
+    });
+
+    document.getElementById('editOrgBtn')?.addEventListener('click', () => {
+        alert('🚧 Функция редактирования скоро появится!');
+    });
+
+    console.log('✅ DEBUG: Скрипт полностью загружен');
+</script>
+</body>
+</html>
