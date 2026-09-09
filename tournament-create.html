@@ -1,0 +1,857 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <link rel="manifest" href="/prorank-live/manifest.json">
+    <link rel="apple-touch-icon" href="/prorank-live/icons/icon-192.png">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="PRORANK">
+    <meta name="theme-color" content="#fbbf24">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Создание турнира | PRORANK</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700;14..32,800;14..32,900&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: radial-gradient(ellipse at 30% 40%, rgba(251, 191, 36, 0.15) 0%, transparent 60%),
+                        radial-gradient(ellipse at 70% 80%, rgba(251, 191, 36, 0.08) 0%, transparent 50%),
+                        linear-gradient(135deg, #1a1a1a 0%, #0f0f0f 40%, #1a1a1a 100%);
+            background-attachment: fixed;
+            color: #fff;
+            line-height: 1.4;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .gold-top {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(90deg, #fbbf24, #ffdd88, #fbbf24, #b8860b);
+            z-index: 1001;
+        }
+
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 32px;
+            background: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(16px);
+            border-bottom: 1px solid rgba(251, 191, 36, 0.25);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: 800;
+            cursor: pointer;
+            background: linear-gradient(135deg, #ffffff, #fbbf24);
+            background-clip: text;
+            color: transparent;
+        }
+
+        .logo span {
+            background: linear-gradient(135deg, #fbbf24, #ffdd77);
+            background-clip: text;
+            color: transparent;
+        }
+
+        .menu-toggle {
+            display: none;
+            background: rgba(251,191,36,0.1);
+            border: 1px solid #fbbf24;
+            color: #fbbf24;
+            font-size: 1.6rem;
+            cursor: pointer;
+            padding: 8px 14px;
+            border-radius: 12px;
+            min-height: 44px;
+            min-width: 44px;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 6px;
+            background: rgba(15,15,15,0.7);
+            backdrop-filter: blur(12px);
+            padding: 5px 14px;
+            border-radius: 60px;
+            border: 1px solid rgba(251,191,36,0.2);
+        }
+
+        .nav-links a {
+            color: #ddd;
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 500;
+            padding: 8px 18px;
+            border-radius: 40px;
+            transition: all 0.2s ease;
+        }
+
+        .nav-links a i {
+            margin-right: 8px;
+            color: #fbbf24;
+        }
+
+        .nav-links a:hover {
+            color: #fbbf24;
+            background: rgba(251,191,36,0.1);
+        }
+
+        .container {
+            max-width: 700px;
+            margin: 2rem auto;
+            padding: 0 24px;
+            width: 100%;
+            flex: 1;
+        }
+
+        /* ===== ХЛЕБНЫЕ КРОШКИ ===== */
+        .breadcrumbs {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 20px;
+            font-size: 0.75rem;
+            color: #888;
+        }
+
+        .breadcrumbs a {
+            color: #888;
+            text-decoration: none;
+            transition: color 0.2s ease;
+        }
+
+        .breadcrumbs a:hover {
+            color: #fbbf24;
+        }
+
+        .breadcrumbs i {
+            font-size: 0.6rem;
+            color: #555;
+        }
+
+        .breadcrumbs .current {
+            color: #fbbf24;
+            font-weight: 600;
+        }
+
+        /* ===== КАРТОЧКА ФОРМЫ ===== */
+        .form-card {
+            background: rgba(15,15,15,0.7);
+            backdrop-filter: blur(12px);
+            border-radius: 28px;
+            padding: 32px;
+            border: 1px solid rgba(251,191,36,0.15);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+        }
+
+        .form-header {
+            margin-bottom: 28px;
+            text-align: center;
+        }
+
+        .form-header .icon-circle {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, rgba(251,191,36,0.15), rgba(251,191,36,0.05));
+            border: 1px solid rgba(251,191,36,0.25);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 16px;
+            font-size: 1.8rem;
+            color: #fbbf24;
+        }
+
+        .form-header h1 {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: #fff;
+            margin-bottom: 6px;
+        }
+
+        .form-header p {
+            font-size: 0.8rem;
+            color: #888;
+        }
+
+        .form-section {
+            margin-bottom: 28px;
+        }
+
+        .form-section-title {
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: #fbbf24;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .form-section-title i {
+            font-size: 0.85rem;
+        }
+
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.75rem;
+            color: #aaa;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .form-group label .required {
+            color: #fbbf24;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px 16px;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 12px;
+            color: #fff;
+            font-size: 0.85rem;
+            font-family: 'Inter', sans-serif;
+            transition: all 0.2s ease;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: rgba(251,191,36,0.35);
+            background: rgba(255,255,255,0.06);
+            box-shadow: 0 0 0 3px rgba(251,191,36,0.05);
+        }
+
+        .form-group input::placeholder,
+        .form-group textarea::placeholder {
+            color: #555;
+        }
+
+        .form-group select {
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23888' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 16px center;
+            cursor: pointer;
+        }
+
+        .form-group select option {
+            background: #1a1a1a;
+            color: #fff;
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .form-group .field-hint {
+            font-size: 0.65rem;
+            color: #666;
+            margin-top: 6px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        /* ===== ВАЛИДАЦИЯ ===== */
+        .form-group.error input,
+        .form-group.error select,
+        .form-group.error textarea {
+            border-color: rgba(239,68,68,0.5);
+        }
+
+        .form-group .error-message {
+            font-size: 0.65rem;
+            color: #ef4444;
+            margin-top: 6px;
+            display: none;
+        }
+
+        .form-group.error .error-message {
+            display: block;
+        }
+
+        /* ===== ПРЕДПРОСМОТР ===== */
+        .preview-banner {
+            background: linear-gradient(135deg, rgba(251,191,36,0.08), rgba(15,15,15,0.5));
+            border: 1px solid rgba(251,191,36,0.15);
+            border-radius: 16px;
+            padding: 16px;
+            margin-bottom: 28px;
+        }
+
+        .preview-banner .preview-label {
+            font-size: 0.6rem;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            margin-bottom: 8px;
+        }
+
+        .preview-banner .preview-name {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 8px;
+        }
+
+        .preview-banner .preview-details {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            font-size: 0.7rem;
+            color: #aaa;
+        }
+
+        .preview-banner .preview-details span {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .preview-banner .preview-details i {
+            color: #fbbf24;
+            font-size: 0.65rem;
+        }
+
+        /* ===== КНОПКИ ===== */
+        .form-actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 8px;
+        }
+
+        .btn {
+            font-family: 'Inter', sans-serif;
+            font-weight: 600;
+            font-size: 0.8rem;
+            border: none;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 12px 20px;
+            border-radius: 40px;
+            min-height: 44px;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+            text-decoration: none;
+        }
+
+        .btn:active {
+            transform: scale(0.97);
+        }
+
+        .btn-primary {
+            background: #fbbf24;
+            color: #0a0a0a;
+            flex: 1;
+        }
+
+        .btn-primary:hover {
+            background: #ffd94d;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(251, 191, 36, 0.25);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-secondary {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            color: #aaa;
+        }
+
+        .btn-secondary:hover {
+            color: #fff;
+            border-color: rgba(255,255,255,0.2);
+        }
+
+        /* ===== ЗАГРУЗКА ===== */
+        .loading-spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(0,0,0,0.2);
+            border-top-color: #0a0a0a;
+            border-radius: 50%;
+            animation: spin 0.6s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* ===== АДАПТИВ ===== */
+        @media (max-width: 768px) {
+            .container { padding: 0 16px; }
+            .navbar { padding: 12px 18px; }
+            .menu-toggle { display: block; }
+
+            .nav-links {
+                display: none;
+                flex-direction: column;
+                position: absolute;
+                top: 68px;
+                left: 18px;
+                right: 18px;
+                background: #0f0f0f;
+                border-radius: 24px;
+                padding: 20px;
+                gap: 10px;
+                border: 1px solid rgba(251,191,36,0.3);
+            }
+
+            .nav-links.show { display: flex; }
+
+            .form-card {
+                padding: 24px 18px;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+                gap: 0;
+            }
+
+            .form-actions {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .form-card {
+                padding: 20px 14px;
+                border-radius: 20px;
+            }
+
+            .form-header h1 {
+                font-size: 1.3rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="gold-top"></div>
+
+    <header class="navbar">
+        <div class="logo" onclick="window.location='index.html'">PRO<span>RANK</span></div>
+        <button class="menu-toggle" id="menuToggle"><i class="fas fa-bars"></i></button>
+        <nav class="nav-links" id="navLinks"></nav>
+    </header>
+
+    <main>
+        <div class="container">
+            <!-- ХЛЕБНЫЕ КРОШКИ -->
+            <div class="breadcrumbs">
+                <a href="organization-dashboard.html">Дашборд</a>
+                <i class="fas fa-chevron-right"></i>
+                <span class="current">Создание турнира</span>
+            </div>
+
+            <!-- ФОРМА -->
+            <div class="form-card">
+                <div class="form-header">
+                    <div class="icon-circle">
+                        <i class="fas fa-trophy"></i>
+                    </div>
+                    <h1>Создание турнира</h1>
+                    <p>Заполните информацию о турнире для публикации</p>
+                </div>
+
+                <!-- ПРЕДПРОСМОТР -->
+                <div class="preview-banner" id="previewBanner" style="display: none;">
+                    <div class="preview-label">Предпросмотр</div>
+                    <div class="preview-name" id="previewName">—</div>
+                    <div class="preview-details">
+                        <span><i class="fas fa-calendar-alt"></i> <span id="previewDate">—</span></span>
+                        <span><i class="fas fa-map-marker-alt"></i> <span id="previewCity">—</span></span>
+                        <span><i class="fas fa-fist-raised"></i> <span id="previewSport">—</span></span>
+                        <span><i class="fas fa-ruble-sign"></i> <span id="previewFee">0</span> ₽</span>
+                    </div>
+                </div>
+
+                <!-- ОСНОВНАЯ ИНФОРМАЦИЯ -->
+                <div class="form-section">
+                    <div class="form-section-title">
+                        <i class="fas fa-info-circle"></i> Основная информация
+                    </div>
+
+                    <div class="form-group" id="nameGroup">
+                        <label>Название турнира <span class="required">*</span></label>
+                        <input type="text" id="tournamentName" placeholder="Например: Кубок Москвы 2024" maxlength="100">
+                        <div class="error-message">Введите название турнира</div>
+                    </div>
+
+                    <div class="form-group" id="sportGroup">
+                        <label>Вид спорта <span class="required">*</span></label>
+                        <select id="tournamentSport">
+                            <option value="">Выберите вид спорта...</option>
+                            <option value="Бокс">Бокс</option>
+                            <option value="ММА">ММА</option>
+                            <option value="Борьба">Борьба</option>
+                        </select>
+                        <div class="error-message">Выберите вид спорта</div>
+                    </div>
+
+                    <div class="form-group" id="descriptionGroup">
+                        <label>Описание</label>
+                        <textarea id="tournamentDescription" placeholder="Опишите турнир: правила, категории, призы..." maxlength="500"></textarea>
+                        <div class="field-hint">Максимум 500 символов</div>
+                    </div>
+                </div>
+
+                <!-- ДАТА И МЕСТО -->
+                <div class="form-section">
+                    <div class="form-section-title">
+                        <i class="fas fa-map-pin"></i> Дата и место
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group" id="dateGroup">
+                            <label>Дата проведения <span class="required">*</span></label>
+                            <input type="date" id="tournamentDate">
+                            <div class="error-message">Выберите дату</div>
+                        </div>
+
+                        <div class="form-group" id="deadlineGroup">
+                            <label>Окончание набора <span class="required">*</span></label>
+                            <input type="date" id="registrationDeadline">
+                            <div class="error-message">Выберите дату</div>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group" id="cityGroup">
+                            <label>Город <span class="required">*</span></label>
+                            <input type="text" id="tournamentCity" placeholder="Москва" maxlength="50">
+                            <div class="error-message">Введите город</div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Адрес</label>
+                            <input type="text" id="tournamentAddress" placeholder="ул. Спортивная, 5" maxlength="100">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- НАСТРОЙКИ УЧАСТИЯ -->
+                <div class="form-section">
+                    <div class="form-section-title">
+                        <i class="fas fa-users-cog"></i> Настройки участия
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Взнос (₽)</label>
+                            <input type="number" id="tournamentFee" value="0" min="0" step="100">
+                            <div class="field-hint">0 — бесплатное участие</div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Максимум участников</label>
+                            <input type="number" id="tournamentMaxParticipants" value="16" min="2" max="128">
+                            <div class="field-hint">От 2 до 128</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- КНОПКИ -->
+                <div class="form-actions">
+                    <button class="btn btn-secondary" onclick="window.location.href='organization-dashboard.html'">
+                        <i class="fas fa-arrow-left"></i> Назад
+                    </button>
+                    <button class="btn btn-primary" id="createBtn">
+                        <i class="fas fa-plus"></i> Создать турнир
+                    </button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div id="mobileBottomNavContainer"></div>
+
+    <script type="importmap">
+        {
+            "imports": {
+                "firebase/app": "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js",
+                "firebase/firestore": "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js",
+                "firebase/auth": "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js"
+            }
+        }
+    </script>
+    <script type="module" src="header.js"></script>
+            <script type="module">
+        import { initializeApp } from "firebase/app";
+        import { getFirestore, doc, getDoc, collection, query, where, getDocs, addDoc, serverTimestamp } from "firebase/firestore";
+        import { getAuth, onAuthStateChanged } from "firebase/auth";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDUGYJY7pX7q02MS5SACMIIQXpjpQ97mPw",
+            authDomain: "proranklive.firebaseapp.com",
+            projectId: "proranklive",
+            storageBucket: "proranklive.firebasestorage.app",
+            messagingSenderId: "716836144015",
+            appId: "1:716836144015:web:f1575147750608d0f881fa"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+
+        let currentOrgId = null;
+        let currentOrgData = null;
+        let currentUserId = null;
+
+        // ===== ЭЛЕМЕНТЫ ФОРМЫ =====
+        const nameInput = document.getElementById('tournamentName');
+        const sportSelect = document.getElementById('tournamentSport');
+        const dateInput = document.getElementById('tournamentDate');
+        const deadlineInput = document.getElementById('registrationDeadline');
+        const cityInput = document.getElementById('tournamentCity');
+        const feeInput = document.getElementById('tournamentFee');
+
+        // ===== ПРЕДПРОСМОТР =====
+        function updatePreview() {
+            const banner = document.getElementById('previewBanner');
+            const hasAnyValue = nameInput.value || sportSelect.value || dateInput.value || cityInput.value;
+
+            if (!hasAnyValue) {
+                banner.style.display = 'none';
+                return;
+            }
+
+            banner.style.display = 'block';
+            document.getElementById('previewName').textContent = nameInput.value || 'Название турнира';
+            document.getElementById('previewDate').textContent = dateInput.value ? new Date(dateInput.value + 'T00:00:00').toLocaleDateString('ru-RU') : '—';
+            document.getElementById('previewCity').textContent = cityInput.value || '—';
+            document.getElementById('previewSport').textContent = sportSelect.value || '—';
+            document.getElementById('previewFee').textContent = feeInput.value || '0';
+        }
+
+        [nameInput, sportSelect, dateInput, deadlineInput, cityInput, feeInput].forEach(el => {
+            el.addEventListener('input', updatePreview);
+            el.addEventListener('change', updatePreview);
+        });
+
+        // ===== ВАЛИДАЦИЯ (Безопасная работа с датами через строки) =====
+        function validateField(fieldId, condition) {
+            const group = document.getElementById(fieldId);
+            if (!condition) {
+                group.classList.add('error');
+                return false;
+            }
+            group.classList.remove('error');
+            return true;
+        }
+
+        function validateForm() {
+            let isValid = true;
+            const todayStr = new Date().toISOString().split('T')[0]; // Формат "YYYY-MM-DD"
+
+            isValid = validateField('nameGroup', nameInput.value.trim().length > 0) && isValid;
+            isValid = validateField('sportGroup', sportSelect.value !== '') && isValid;
+            isValid = validateField('dateGroup', dateInput.value !== '') && isValid;
+            isValid = validateField('deadlineGroup', deadlineInput.value !== '') && isValid;
+            isValid = validateField('cityGroup', cityInput.value.trim().length > 0) && isValid;
+
+            // Сравнение строк дат работает идеально и не зависит от часовых поясов
+            if (dateInput.value && dateInput.value < todayStr) {
+                validateField('dateGroup', false);
+                document.querySelector('#dateGroup .error-message').textContent = 'Дата должна быть в будущем';
+                isValid = false;
+            } else if (dateInput.value) {
+                document.querySelector('#dateGroup .error-message').textContent = 'Выберите дату';
+            }
+
+            if (deadlineInput.value && deadlineInput.value > dateInput.value) {
+                validateField('deadlineGroup', false);
+                document.querySelector('#deadlineGroup .error-message').textContent = 'Не позже даты турнира';
+                isValid = false;
+            } else if (deadlineInput.value) {
+                document.querySelector('#deadlineGroup .error-message').textContent = 'Выберите дату';
+            }
+
+            return isValid;
+        }
+
+        // Очистка ошибок при вводе
+        ['tournamentName', 'tournamentSport', 'tournamentDate', 'registrationDeadline', 'tournamentCity'].forEach(id => {
+            const element = document.getElementById(id);
+            const clearError = () => {
+                const groupId = id === 'tournamentName' ? 'nameGroup' : 
+                                id === 'tournamentSport' ? 'sportGroup' : 
+                                id === 'tournamentDate' ? 'dateGroup' : 
+                                id === 'registrationDeadline' ? 'deadlineGroup' : 'cityGroup';
+                document.getElementById(groupId).classList.remove('error');
+            };
+            element.addEventListener('input', clearError);
+            element.addEventListener('change', clearError);
+        });
+
+        // ===== ЗАГРУЗКА ДАННЫХ ОРГАНИЗАЦИИ =====
+        async function loadOrganizationData(orgId) {
+            try {
+                // Проверяем заявку
+                const requestDoc = await getDoc(doc(db, "organization_requests", orgId));
+                if (requestDoc.exists()) {
+                    const requestData = requestDoc.data();
+                    if (requestData.organizationId) {
+                        orgId = requestData.organizationId;
+                    }
+                }
+
+                const orgDoc = await getDoc(doc(db, "organizations", orgId));
+                if (!orgDoc.exists()) {
+                    alert('Организация не найдена или не одобрена');
+                    window.location.href = 'organization-dashboard.html';
+                    return;
+                }
+
+                currentOrgId = orgDoc.id;
+                currentOrgData = orgDoc.data();
+
+                // Предзаполняем город из данных организации
+                if (currentOrgData.city) {
+                    cityInput.value = currentOrgData.city;
+                    updatePreview();
+                }
+            } catch (err) {
+                console.error('Ошибка загрузки:', err);
+                alert('Ошибка загрузки данных: ' + err.message);
+            }
+        }
+
+        // ===== СОЗДАНИЕ ТУРНИРА =====
+        document.getElementById('createBtn').addEventListener('click', async () => {
+            if (!validateForm()) {
+                // Прокрутка к первой ошибке для удобства на мобильных
+                const firstError = document.querySelector('.form-group.error');
+                if (firstError) firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                return;
+            }
+
+            if (!currentOrgId) {
+                alert('Ошибка: организация не определена');
+                return;
+            }
+
+            const createBtn = document.getElementById('createBtn');
+            const originalContent = createBtn.innerHTML;
+            createBtn.disabled = true;
+            createBtn.innerHTML = '<span class="loading-spinner"></span> Создание...';
+
+            const tournamentData = {
+                name: nameInput.value.trim(),
+                sport: sportSelect.value,
+                date: dateInput.value,
+                registrationDeadline: deadlineInput.value,
+                city: cityInput.value.trim(),
+                address: document.getElementById('tournamentAddress').value.trim(),
+                description: document.getElementById('tournamentDescription').value.trim(),
+                entryFee: parseFloat(feeInput.value) || 0,
+                maxParticipants: parseInt(document.getElementById('tournamentMaxParticipants').value) || 16,
+                organizationId: currentOrgId,
+                organizationName: currentOrgData?.name || 'Организация',
+                createdByUserId: currentUserId, // Добавили для надежности
+                status: 'registration',
+                participants: [], // Массив для хранения ID участников (нормально работает до ~150 чел)
+                participantCount: 0,
+                createdAt: serverTimestamp(),
+                updatedAt: serverTimestamp()
+            };
+
+            try {
+                const docRef = await addDoc(collection(db, "tournaments"), tournamentData);
+                
+                createBtn.disabled = false;
+                createBtn.innerHTML = originalContent;
+                
+                // Успешный редирект
+                window.location.href = `tournament-details.html?id=${docRef.id}`;
+            } catch (err) {
+                console.error('Ошибка создания:', err);
+                createBtn.disabled = false;
+                createBtn.innerHTML = originalContent;
+                alert('❌ Ошибка создания: ' + err.message);
+            }
+        });
+
+        // ===== АВТОРИЗАЦИЯ =====
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            currentUserId = user.uid; // Сохраняем ID текущего пользователя
+
+            const urlParams = new URLSearchParams(window.location.search);
+            let orgId = urlParams.get('id');
+
+            if (!orgId) {
+                const orgRequests = await getDocs(query(
+                    collection(db, "organization_requests"),
+                    where("userId", "==", user.uid),
+                    where("status", "==", "approved")
+                ));
+                if (!orgRequests.empty) {
+                    const request = orgRequests.docs[0].data();
+                    orgId = request.organizationId || orgRequests.docs[0].id;
+                    window.history.replaceState(null, '', `?id=${orgId}`);
+                }
+            }
+
+            if (orgId) {
+                loadOrganizationData(orgId);
+            } else {
+                alert('У вас нет активной организации');
+                window.location.href = 'organization-dashboard.html';
+            }
+        });
+    </script>
+</body>
+</html>

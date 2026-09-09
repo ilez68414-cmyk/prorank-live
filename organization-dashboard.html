@@ -1,19 +1,21 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
+    <link rel="manifest" href="/prorank-live/manifest.json">
+    <link rel="apple-touch-icon" href="/prorank-live/icons/icon-192.png">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="PRORANK">
+    <meta name="theme-color" content="#fbbf24">
+    <meta name="mobile-web-app-capable" content="yes">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Кабинет организации | PRORANK</title>
+    <title>Кабинет организатора | PRORANK</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700;14..32,800;14..32,900&display=swap" rel="stylesheet">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
             background: radial-gradient(ellipse at 30% 40%, rgba(251, 191, 36, 0.15) 0%, transparent 60%),
@@ -23,402 +25,194 @@
             color: #fff;
             line-height: 1.4;
             min-height: 100vh;
-        }
-
-        .gold-top {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 3px;
-            background: linear-gradient(90deg, #fbbf24, #ffdd88, #fbbf24, #b8860b);
-            z-index: 1001;
-        }
-
-        .navbar {
             display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 16px 32px;
-            background: rgba(0, 0, 0, 0.75);
-            backdrop-filter: blur(16px);
-            border-bottom: 1px solid rgba(251, 191, 36, 0.25);
-            position: sticky;
-            top: 0;
-            z-index: 1000;
+            flex-direction: column;
         }
+        .gold-top { position: fixed; top: 0; left: 0; width: 100%; height: 3px; background: linear-gradient(90deg, #fbbf24, #ffdd88, #fbbf24, #b8860b); z-index: 1001; }
+        .navbar { display: flex; justify-content: space-between; align-items: center; padding: 16px 32px; background: rgba(0, 0, 0, 0.75); backdrop-filter: blur(16px); border-bottom: 1px solid rgba(251, 191, 36, 0.25); position: sticky; top: 0; z-index: 1000; }
+        .logo { font-size: 1.8rem; font-weight: 800; cursor: pointer; background: linear-gradient(135deg, #ffffff, #fbbf24); background-clip: text; color: transparent; }
+        .logo span { background: linear-gradient(135deg, #fbbf24, #ffdd77); background-clip: text; color: transparent; }
+        .menu-toggle { display: none; background: rgba(251,191,36,0.1); border: 1px solid #fbbf24; color: #fbbf24; font-size: 1.6rem; cursor: pointer; padding: 8px 14px; border-radius: 12px; min-height: 44px; min-width: 44px; }
+        .nav-links { display: flex; gap: 6px; background: rgba(15,15,15,0.7); backdrop-filter: blur(12px); padding: 5px 14px; border-radius: 60px; border: 1px solid rgba(251,191,36,0.2); }
+        .nav-links a { color: #ddd; text-decoration: none; font-size: 0.9rem; font-weight: 500; padding: 8px 18px; border-radius: 40px; transition: all 0.2s ease; }
+        .nav-links a i { margin-right: 8px; color: #fbbf24; }
+        .nav-links a:hover { color: #fbbf24; background: rgba(251,191,36,0.1); }
+        .container { max-width: 1200px; margin: 2rem auto; padding: 0 24px; width: 100%; }
 
-        .logo {
-            font-size: 1.8rem;
-            font-weight: 800;
-            cursor: pointer;
-            background: linear-gradient(135deg, #ffffff, #fbbf24);
-            background-clip: text;
-            color: transparent;
-        }
+        /* ===== КАРТОЧКА ОРГАНИЗАТОРА ===== */
+        .org-card { background: rgba(15,15,15,0.7); backdrop-filter: blur(12px); border-radius: 24px; padding: 20px 24px; margin-bottom: 20px; border: 1px solid rgba(251,191,36,0.15); box-shadow: 0 8px 32px rgba(0,0,0,0.3); }
+        .org-top { display: flex; gap: 16px; align-items: center; flex-wrap: wrap; }
+        .org-avatar { width: 56px; height: 56px; border-radius: 50%; background: linear-gradient(135deg, #fbbf24, #f59e0b); display: flex; align-items: center; justify-content: center; font-size: 22px; font-weight: 700; color: #000; flex-shrink: 0; border: 2px solid #fbbf24; box-shadow: 0 0 20px rgba(251,191,36,0.15); }
+        .org-info { flex: 1; min-width: 200px; }
+        .org-name-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 4px; }
+        .org-name { font-size: 1.2rem; font-weight: 700; color: #fff; }
+        .status-badge { display: inline-flex; align-items: center; gap: 4px; background: rgba(16,185,129,0.12); color: #10b981; font-size: 0.55rem; font-weight: 700; padding: 3px 10px; border-radius: 30px; border: 1px solid rgba(16,185,129,0.2); height: 22px; text-transform: uppercase; letter-spacing: 0.3px; }
+        .status-badge i { font-size: 0.45rem; }
+        .org-details-row { display: flex; flex-wrap: wrap; gap: 4px 14px; }
+        .org-details-row span { font-size: 0.7rem; color: #999; display: inline-flex; align-items: center; gap: 4px; }
+        .org-details-row i { color: #fbbf24; font-size: 0.65rem; width: 14px; text-align: center; }
+        .org-actions { display: flex; gap: 8px; flex-shrink: 0; }
 
-        .logo span {
-            background: linear-gradient(135deg, #fbbf24, #ffdd77);
-            background-clip: text;
-            color: transparent;
-        }
+        /* ===== КНОПКИ ===== */
+        .btn { font-family: 'Inter', sans-serif; font-weight: 600; font-size: 0.7rem; border: none; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 8px 16px; border-radius: 40px; min-height: 36px; transition: all 0.2s ease; white-space: nowrap; text-decoration: none; }
+        .btn:active { transform: scale(0.96); }
+        .btn-primary { background: #fbbf24; color: #0a0a0a; }
+        .btn-primary:hover { background: #ffd94d; transform: translateY(-2px); box-shadow: 0 4px 15px rgba(251, 191, 36, 0.25); }
+        .btn-icon { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #aaa; padding: 8px 12px; min-height: 36px; }
+        .btn-icon:hover { color: #fbbf24; border-color: rgba(251,191,36,0.3); }
+        .btn-outline { background: transparent; border: 1px solid rgba(251, 191, 36, 0.4); color: #fbbf24; padding: 8px 14px; font-size: 0.7rem; }
 
-        .menu-toggle {
-            display: none;
-            background: rgba(251,191,36,0.1);
-            border: 1px solid #fbbf24;
-            color: #fbbf24;
-            font-size: 1.6rem;
-            cursor: pointer;
-            padding: 8px 14px;
-            border-radius: 12px;
-            min-height: 44px;
-            min-width: 44px;
-        }
+        /* ===== ВКЛАДКИ ===== */
+        .profile-tabs { display: flex; gap: 4px; background: rgba(15,15,15,0.5); backdrop-filter: blur(8px); border-radius: 16px; padding: 4px; margin-bottom: 20px; border: 1px solid rgba(251,191,36,0.1); }
+        .tab-btn { flex: 1; padding: 10px 16px; border: none; background: transparent; color: #888; font-family: 'Inter', sans-serif; font-weight: 600; font-size: 0.85rem; border-radius: 12px; cursor: pointer; transition: all 0.3s ease; display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; }
+        .tab-btn i { font-size: 1rem; }
+        .tab-btn:hover { color: #fff; background: rgba(255,255,255,0.05); }
+        .tab-btn.active { color: #fbbf24; background: rgba(251,191,36,0.12); }
 
-        .nav-links {
-            display: flex;
-            gap: 6px;
-            background: rgba(15,15,15,0.7);
-            backdrop-filter: blur(12px);
-            padding: 5px 14px;
-            border-radius: 60px;
-            border: 1px solid rgba(251,191,36,0.2);
-        }
+        /* ===== ФИНАНСОВЫЕ КАРТОЧКИ ===== */
+        .finance-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 20px; }
+        .finance-card { background: rgba(15,15,15,0.7); backdrop-filter: blur(12px); border-radius: 20px; padding: 16px; border: 1px solid rgba(251,191,36,0.1); display: flex; flex-direction: column; gap: 6px; transition: transform 0.2s; }
+        .finance-card:hover { transform: translateY(-2px); border-color: rgba(251,191,36,0.25); }
+        .finance-label { font-size: 0.65rem; color: #888; display: flex; align-items: center; gap: 6px; text-transform: uppercase; letter-spacing: 0.3px; }
+        .finance-label i { color: #fbbf24; font-size: 0.8rem; }
+        .finance-value { font-size: 1.4rem; font-weight: 800; color: #fff; }
+        .finance-value.gold { color: #fbbf24; }
+        .finance-value.green { color: #10b981; }
+        .finance-value.blue { color: #60a5fa; }
+        .finance-sub { font-size: 0.6rem; color: #666; }
 
-        .nav-links a {
-            color: #ddd;
-            text-decoration: none;
-            font-size: 0.9rem;
-            font-weight: 500;
-            padding: 8px 18px;
-            border-radius: 40px;
-            transition: all 0.2s ease;
-        }
+        /* ===== АЛЕРТЫ ===== */
+        .alerts-panel { background: rgba(15,15,15,0.7); backdrop-filter: blur(12px); border-radius: 20px; padding: 16px 20px; margin-bottom: 20px; border: 1px solid rgba(251,191,36,0.1); }
+        .alerts-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+        .alerts-header h3 { font-size: 0.85rem; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+        .alerts-header h3 i { color: #f59e0b; }
+        .alert-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 12px; cursor: pointer; transition: all 0.2s ease; margin-bottom: 6px; border: 1px solid transparent; }
+        .alert-item:hover { background: rgba(251,191,36,0.05); border-color: rgba(251,191,36,0.15); }
+        .alert-icon { width: 32px; height: 32px; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 0.8rem; }
+        .alert-icon.warning { background: rgba(251,191,36,0.12); color: #fbbf24; }
+        .alert-icon.danger { background: rgba(239,68,68,0.12); color: #ef4444; }
+        .alert-icon.info { background: rgba(59,130,246,0.12); color: #60a5fa; }
+        .alert-text { flex: 1; font-size: 0.75rem; color: #ccc; }
+        .alert-arrow { color: #666; font-size: 0.7rem; }
 
-        .nav-links a i {
-            margin-right: 8px;
-            color: #fbbf24;
-        }
+        /* ===== ПУСТОЕ СОСТОЯНИЕ (PREMIUM) ===== */
+        .empty-state { text-align: center; padding: 32px 20px; color: #666; }
+        .empty-state i { font-size: 2.5rem; color: #333; margin-bottom: 12px; display: block; }
+        .empty-state p { font-size: 0.85rem; margin-bottom: 16px; }
+        .empty-state .btn { margin: 0 auto; }
 
-        .nav-links a:hover {
-            color: #fbbf24;
-            background: rgba(251,191,36,0.1);
-        }
+        /* ===== БЛИЖАЙШИЙ ТУРНИР ===== */
+        .featured-tournament { background: linear-gradient(135deg, rgba(251,191,36,0.08), rgba(15,15,15,0.7)); border: 1px solid rgba(251,191,36,0.25); border-radius: 24px; padding: 24px; margin-bottom: 20px; cursor: pointer; transition: all 0.3s ease; }
+        .featured-tournament:hover { border-color: rgba(251,191,36,0.45); box-shadow: 0 8px 32px rgba(251,191,36,0.1); }
+        .featured-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px; flex-wrap: wrap; gap: 10px; }
+        .featured-name { font-size: 1.2rem; font-weight: 800; color: #fff; }
+        .featured-info { display: flex; flex-wrap: wrap; gap: 12px; font-size: 0.75rem; color: #aaa; margin-bottom: 16px; }
+        .featured-info span { display: flex; align-items: center; gap: 6px; }
+        .featured-info i { color: #fbbf24; font-size: 0.7rem; }
+        .progress-bar { height: 6px; background: #2a2a2a; border-radius: 10px; overflow: hidden; margin-bottom: 8px; }
+        .progress-fill { height: 100%; background: linear-gradient(90deg, #fbbf24, #ffdd77); border-radius: 10px; transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1); }
+        .progress-text { display: flex; justify-content: space-between; font-size: 0.7rem; color: #888; }
 
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 2rem 24px;
-        }
+        /* ===== АКТИВНЫЕ ТУРНИРЫ ===== */
+        .panel { background: rgba(15,15,15,0.7); backdrop-filter: blur(8px); border-radius: 20px; padding: 20px; margin-bottom: 20px; border: 1px solid rgba(251,191,36,0.1); }
+        .panel-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 10px; }
+        .panel-header h3 { font-size: 0.9rem; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+        .panel-header h3 i { color: #fbbf24; }
+        .tournament-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; }
+        .tournament-card { background: rgba(20,20,25,0.8); border: 1px solid rgba(251,191,36,0.1); border-radius: 16px; padding: 14px; cursor: pointer; transition: all 0.2s ease; }
+        .tournament-card:hover { border-color: rgba(251,191,36,0.35); transform: translateY(-2px); }
+        .tournament-card .t-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
+        .tournament-card .t-name { font-weight: 700; font-size: 0.85rem; color: #fff; }
+        .tournament-card .t-info { display: flex; flex-direction: column; gap: 4px; font-size: 0.65rem; color: #888; }
+        .tournament-card .t-info span { display: flex; align-items: center; gap: 6px; }
+        .tournament-card .t-info i { color: #fbbf24; width: 14px; font-size: 0.6rem; }
+        .tournament-card .t-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 10px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.05); font-size: 0.65rem; color: #888; }
 
-        /* ===== ДАШБОРД ===== */
-        .dashboard-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 16px;
-            margin-bottom: 24px;
-            padding-bottom: 16px;
-            border-bottom: 1px solid rgba(251,191,36,0.15);
-        }
+        /* ===== АНАЛИТИКА ===== */
+        .analytics-filters { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+        .filter-btn { padding: 8px 16px; border-radius: 30px; border: 1px solid rgba(251,191,36,0.2); background: transparent; color: #888; font-family: 'Inter', sans-serif; font-size: 0.7rem; font-weight: 600; cursor: pointer; transition: all 0.2s ease; }
+        .filter-btn:hover { color: #fff; border-color: rgba(251,191,36,0.4); }
+        .filter-btn.active { background: rgba(251,191,36,0.12); color: #fbbf24; border-color: rgba(251,191,36,0.4); }
+        .chart-container { background: rgba(15,15,15,0.7); border-radius: 20px; padding: 20px; margin-bottom: 16px; border: 1px solid rgba(251,191,36,0.1); }
+        .chart-container h4 { font-size: 0.8rem; font-weight: 700; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+        .chart-container h4 i { color: #fbbf24; }
+        .chart-wrapper { position: relative; width: 100%; height: 250px; }
+        .chart-wrapper canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
+        .analytics-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 16px; }
+        .analytics-stat { background: rgba(15,15,15,0.7); border-radius: 16px; padding: 14px; text-align: center; border: 1px solid rgba(251,191,36,0.1); }
+        .analytics-stat .value { font-size: 1.3rem; font-weight: 800; color: #fbbf24; }
+        .analytics-stat .label { font-size: 0.6rem; color: #888; margin-top: 4px; }
+        .analytics-table { background: rgba(15,15,15,0.7); border-radius: 20px; padding: 20px; border: 1px solid rgba(251,191,36,0.1); overflow-x: auto; }
+        .analytics-table h4 { font-size: 0.8rem; font-weight: 700; margin-bottom: 12px; }
+        table { width: 100%; border-collapse: collapse; font-size: 0.7rem; }
+        th { text-align: left; padding: 10px 8px; color: #888; font-weight: 600; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        td { padding: 10px 8px; border-bottom: 1px solid rgba(255,255,255,0.05); color: #ccc; }
+        tr:hover td { background: rgba(251,191,36,0.03); cursor: pointer; }
 
-        .dashboard-header h1 {
-            font-size: 1.8rem;
-            font-weight: 800;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
+        /* ===== МОДАЛКА ===== */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.75); backdrop-filter: blur(6px); z-index: 2000; display: none; align-items: center; justify-content: center; padding: 20px; opacity: 0; transition: opacity 0.3s ease; }
+        .modal-overlay.show { display: flex; opacity: 1; }
+        .modal { background: linear-gradient(135deg, #1a1a1a 0%, #0a0a0a 100%); border: 1px solid rgba(251,191,36,0.2); border-radius: 24px; padding: 28px; width: 100%; max-width: 500px; max-height: 90vh; overflow-y: auto; transform: translateY(20px); transition: transform 0.3s ease; }
+        .modal-overlay.show .modal { transform: translateY(0); }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .modal-header h3 { font-size: 1.1rem; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+        .modal-header h3 i { color: #fbbf24; }
+        .modal-close { background: transparent; border: none; color: #888; font-size: 1.2rem; cursor: pointer; padding: 4px; }
+        .modal-close:hover { color: #fff; }
+        .form-group { margin-bottom: 16px; }
+        .form-group label { display: block; font-size: 0.75rem; color: #aaa; margin-bottom: 6px; font-weight: 500; }
+        .form-group input, .form-group textarea { width: 100%; padding: 10px 14px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.06); border-radius: 12px; color: #fff; font-size: 0.85rem; font-family: 'Inter', sans-serif; transition: border-color 0.2s ease; }
+        .form-group input:focus, .form-group textarea:focus { outline: none; border-color: rgba(251,191,36,0.25); }
+        .form-group textarea { resize: vertical; min-height: 80px; }
 
-        .dashboard-header h1 i {
-            color: #fbbf24;
-        }
+        /* ===== SKELETON LOADER (PREMIUM) ===== */
+        .skeleton { background: linear-gradient(90deg, rgba(255,255,255,0.03) 25%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.03) 75%); background-size: 200% 100%; animation: skeleton-loading 1.5s infinite; border-radius: 8px; }
+        @keyframes skeleton-loading { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+        .skeleton-text { height: 14px; margin-bottom: 8px; }
+        .skeleton-title { height: 24px; width: 60%; margin-bottom: 16px; }
+        .skeleton-card { height: 100px; border-radius: 20px; margin-bottom: 12px; }
 
-        .dashboard-header .subtitle {
-            color: #888;
-            font-size: 0.9rem;
-        }
-
-        .org-info-card {
-            background: rgba(15,15,15,0.7);
-            backdrop-filter: blur(12px);
-            border-radius: 24px;
-            padding: 24px;
-            border: 1px solid rgba(251,191,36,0.15);
-            margin-bottom: 24px;
-            display: flex;
-            flex-wrap: wrap;
-            gap: 24px;
-            align-items: center;
-        }
-
-        .org-avatar {
-            width: 80px;
-            height: 80px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, #fbbf24, #f59e0b);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 32px;
-            font-weight: 700;
-            color: #000;
-            flex-shrink: 0;
-        }
-
-        .org-info {
-            flex: 1;
-        }
-
-        .org-info .name {
-            font-size: 1.4rem;
-            font-weight: 700;
-        }
-
-        .org-info .details {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px 20px;
-            margin-top: 6px;
-            color: #888;
-            font-size: 0.85rem;
-        }
-
-        .org-info .details span {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .org-info .details i {
-            color: #fbbf24;
-        }
-
-        .status-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            padding: 4px 16px;
-            border-radius: 20px;
-            font-size: 0.7rem;
-            font-weight: 700;
-        }
-
-        .status-badge.active {
-            background: rgba(16,185,129,0.12);
-            color: #10b981;
-            border: 1px solid rgba(16,185,129,0.2);
-        }
-
-        /* ===== СТАТИСТИКА ===== */
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-            gap: 16px;
-            margin-bottom: 24px;
-        }
-
-        .stat-card {
-            background: rgba(15,15,15,0.7);
-            backdrop-filter: blur(12px);
-            border-radius: 16px;
-            padding: 20px;
-            border: 1px solid rgba(251,191,36,0.1);
-            text-align: center;
-            transition: all 0.2s ease;
-        }
-
-        .stat-card:hover {
-            border-color: rgba(251,191,36,0.25);
-            transform: translateY(-2px);
-        }
-
-        .stat-card .stat-value {
-            font-size: 2rem;
-            font-weight: 800;
-            color: #fbbf24;
-        }
-
-        .stat-card .stat-label {
-            font-size: 0.7rem;
-            color: #888;
-            margin-top: 4px;
-        }
-
-        .stat-card .stat-icon {
-            font-size: 1.5rem;
-            color: #fbbf24;
-            margin-bottom: 8px;
-            display: block;
-        }
-
-        /* ===== ПАНЕЛИ ===== */
-        .panel {
-            background: rgba(15,15,15,0.7);
-            backdrop-filter: blur(12px);
-            border-radius: 20px;
-            padding: 20px 24px;
-            border: 1px solid rgba(251,191,36,0.1);
-            margin-bottom: 20px;
-        }
-
-        .panel-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 16px;
-            flex-wrap: wrap;
-            gap: 12px;
-        }
-
-        .panel-header h3 {
-            font-size: 1rem;
-            font-weight: 700;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .panel-header h3 i {
-            color: #fbbf24;
-        }
-
-        .btn {
-            padding: 8px 20px;
-            border: none;
-            border-radius: 40px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            font-family: 'Inter', sans-serif;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 0.85rem;
-        }
-
-        .btn-primary {
-            background: linear-gradient(135deg, #fbbf24, #f59e0b);
-            color: #000;
-        }
-
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 20px rgba(251,191,36,0.3);
-        }
-
-        .btn-outline {
-            background: transparent;
-            border: 1px solid rgba(255,255,255,0.1);
-            color: #888;
-        }
-
-        .btn-outline:hover {
-            background: rgba(255,255,255,0.04);
-            color: #fff;
-        }
-
-        .btn-danger {
-            background: rgba(239,68,68,0.12);
-            border: 1px solid rgba(239,68,68,0.2);
-            color: #ef4444;
-        }
-
-        .btn-danger:hover {
-            background: rgba(239,68,68,0.2);
-        }
-
-        .btn-sm {
-            padding: 6px 14px;
-            font-size: 0.75rem;
-        }
-
-        /* ===== ТУРНИРЫ (плейсхолдер) ===== */
-        .tournaments-placeholder {
-            text-align: center;
-            padding: 40px 20px;
-            color: #666;
-        }
-
-        .tournaments-placeholder i {
-            font-size: 3rem;
-            color: #333;
-            display: block;
-            margin-bottom: 12px;
-        }
-
-        .tournaments-placeholder h4 {
-            color: #888;
-            margin-bottom: 4px;
-        }
-
-        .tournaments-placeholder p {
-            font-size: 0.85rem;
-        }
+        /* ===== TOAST NOTIFICATIONS (PREMIUM) ===== */
+        .toast-container { position: fixed; top: 20px; right: 20px; z-index: 3000; display: flex; flex-direction: column; gap: 10px; }
+        .toast { background: rgba(15,15,15,0.95); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 14px 20px; display: flex; align-items: center; gap: 12px; min-width: 280px; box-shadow: 0 10px 40px rgba(0,0,0,0.5); transform: translateX(120%); transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .toast.show { transform: translateX(0); }
+        .toast.success { border-left: 4px solid #10b981; }
+        .toast.error { border-left: 4px solid #ef4444; }
+        .toast.info { border-left: 4px solid #60a5fa; }
+        .toast i { font-size: 1.2rem; }
+        .toast.success i { color: #10b981; }
+        .toast.error i { color: #ef4444; }
+        .toast.info i { color: #60a5fa; }
+        .toast-message { font-size: 0.85rem; font-weight: 500; color: #fff; }
 
         /* ===== АДАПТИВ ===== */
         @media (max-width: 768px) {
-            .container { padding: 1rem 16px; }
-            .navbar { padding: 10px 16px; }
+            .container { padding: 0 16px; }
+            .navbar { padding: 12px 18px; }
             .menu-toggle { display: block; }
-            
-            .nav-links {
-                display: none;
-                flex-direction: column;
-                position: absolute;
-                top: 68px;
-                left: 18px;
-                right: 18px;
-                background: #0f0f0f;
-                border-radius: 24px;
-                padding: 20px;
-                gap: 10px;
-                border: 1px solid rgba(251,191,36,0.3);
-                z-index: 1000;
-            }
-            
-            .nav-links.show {
-                display: flex;
-            }
-            
-            .nav-links a {
-                width: 100%;
-                text-align: center;
-            }
-
-            .dashboard-header h1 {
-                font-size: 1.4rem;
-            }
-
-            .org-info-card {
-                flex-direction: column;
-                text-align: center;
-            }
-
-            .org-info .details {
-                justify-content: center;
-            }
-
-            .stats-grid {
-                grid-template-columns: 1fr 1fr;
-            }
-
-            .panel {
-                padding: 16px;
-            }
+            .nav-links { display: none; flex-direction: column; position: absolute; top: 68px; left: 18px; right: 18px; background: #0f0f0f; border-radius: 24px; padding: 20px; gap: 10px; border: 1px solid rgba(251,191,36,0.3); }
+            .nav-links.show { display: flex; }
+            .finance-grid { grid-template-columns: 1fr 1fr; }
+            .analytics-stats { grid-template-columns: 1fr 1fr; }
+            .tournament-grid { grid-template-columns: 1fr; }
+            .org-actions { width: 100%; }
+            .org-actions .btn { flex: 1; }
+            .toast-container { top: auto; bottom: 20px; right: 16px; left: 16px; }
+            .toast { min-width: auto; width: 100%; }
         }
-
         @media (max-width: 480px) {
-            .stats-grid {
-                grid-template-columns: 1fr;
-            }
+            .finance-grid { grid-template-columns: 1fr; }
+            .analytics-stats { grid-template-columns: 1fr; }
+            .featured-tournament { padding: 16px; }
+            .featured-name { font-size: 1rem; }
         }
     </style>
 </head>
 <body>
     <div class="gold-top"></div>
+    
+    <!-- TOAST CONTAINER -->
+    <div class="toast-container" id="toastContainer"></div>
 
     <header class="navbar">
         <div class="logo" onclick="window.location='index.html'">PRO<span>RANK</span></div>
@@ -428,74 +222,162 @@
 
     <main>
         <div class="container">
-            <!-- ===== ШАПКА ===== -->
-            <div class="dashboard-header">
-                <div>
-                    <h1><i class="fas fa-building"></i> <span id="orgName">Кабинет организации</span></h1>
-                    <div class="subtitle" id="orgSubtitle">Управление турнирами и сезонами</div>
-                </div>
-                <button class="btn btn-primary" id="createTournamentBtn" disabled>
-                    <i class="fas fa-plus"></i> Создать турнир
-                </button>
+            <!-- КАРТОЧКА ОРГАНИЗАТОРА -->
+            <div class="org-card" id="orgCardSkeleton">
+                <div class="skeleton skeleton-title" style="width: 40%;"></div>
+                <div class="skeleton skeleton-text" style="width: 70%;"></div>
             </div>
-
-            <!-- ===== ИНФО ОБ ОРГАНИЗАЦИИ ===== -->
-            <div class="org-info-card" id="orgInfoCard">
-                <div class="org-avatar" id="orgAvatar">🏢</div>
-                <div class="org-info">
-                    <div class="name" id="orgNameDisplay">Загрузка...</div>
-                    <div class="details">
-                        <span><i class="fas fa-map-marker-alt"></i> <span id="orgCity">—</span></span>
-                        <span><i class="fas fa-phone"></i> <span id="orgPhone">—</span></span>
-                        <span><i class="fas fa-fist-raised"></i> <span id="orgSports">—</span></span>
-                        <span><span class="status-badge active"><i class="fas fa-circle"></i> Активна</span></span>
+            <div class="org-card" id="orgCardReal" style="display: none;">
+                <div class="org-top">
+                    <div class="org-avatar" id="orgAvatar">🏢</div>
+                    <div class="org-info">
+                        <div class="org-name-row">
+                            <span class="org-name" id="orgName">Загрузка...</span>
+                            <span class="status-badge"><i class="fas fa-circle"></i> Активна</span>
+                        </div>
+                        <div class="org-details-row">
+                            <span><i class="fas fa-map-marker-alt"></i> <span id="orgCity">—</span></span>
+                            <span><i class="fas fa-phone"></i> <span id="orgPhone">—</span></span>
+                            <span><i class="fas fa-fist-raised"></i> <span id="orgSports">—</span></span>
+                        </div>
+                    </div>
+                    <div class="org-actions">
+                        <button class="btn btn-icon" id="settingsBtn" title="Настройки организации"><i class="fas fa-cog"></i></button>
+                        <button class="btn btn-primary" onclick="window.location.href='tournament-create.html'"><i class="fas fa-plus"></i> Создать турнир</button>
                     </div>
                 </div>
-                <button class="btn btn-outline btn-sm" id="editOrgBtn">
-                    <i class="fas fa-edit"></i> Редактировать
-                </button>
             </div>
 
-            <!-- ===== СТАТИСТИКА ===== -->
-            <div class="stats-grid" id="statsGrid">
-                <div class="stat-card">
-                    <span class="stat-icon"><i class="fas fa-trophy"></i></span>
-                    <div class="stat-value" id="statTournaments">0</div>
-                    <div class="stat-label">Турниров</div>
+            <!-- ВКЛАДКИ -->
+            <div class="profile-tabs">
+                <button class="tab-btn active" data-tab="overview"><i class="fas fa-chart-pie"></i> <span>Обзор</span></button>
+                <button class="tab-btn" data-tab="analytics"><i class="fas fa-chart-line"></i> <span>Аналитика</span></button>
+            </div>
+
+            <!-- ВКЛАДКА: ОБЗОР -->
+            <div id="tab-overview">
+                <!-- ФИНАНСОВАЯ СВОДКА -->
+                <div class="finance-grid" id="financeSkeleton">
+                    <div class="skeleton skeleton-card"></div>
+                    <div class="skeleton skeleton-card"></div>
+                    <div class="skeleton skeleton-card"></div>
+                    <div class="skeleton skeleton-card"></div>
                 </div>
-                <div class="stat-card">
-                    <span class="stat-icon"><i class="fas fa-users"></i></span>
-                    <div class="stat-value" id="statFighters">0</div>
-                    <div class="stat-label">Бойцов</div>
+                <div class="finance-grid" id="financeReal" style="display: none;">
+                    <div class="finance-card">
+                        <div class="finance-label"><i class="fas fa-wallet"></i> Всего собрано</div>
+                        <div class="finance-value gold" id="finTotal">0 ₽</div>
+                        <div class="finance-sub">за все турниры</div>
+                    </div>
+                    <div class="finance-card">
+                        <div class="finance-label"><i class="fas fa-hand-holding-usd"></i> Мои (80%)</div>
+                        <div class="finance-value green" id="finMine">0 ₽</div>
+                        <div class="finance-sub">доход организатора</div>
+                    </div>
+                    <div class="finance-card">
+                        <div class="finance-label"><i class="fas fa-building"></i> PRORANK (20%)</div>
+                        <div class="finance-value blue" id="finProrank">0 ₽</div>
+                        <div class="finance-sub">комиссия платформы</div>
+                    </div>
+                    <div class="finance-card">
+                        <div class="finance-label"><i class="fas fa-users"></i> Участники</div>
+                        <div class="finance-value" id="finParticipants">0</div>
+                        <div class="finance-sub">всего участников</div>
+                    </div>
                 </div>
-                <div class="stat-card">
-                    <span class="stat-icon"><i class="fas fa-ruble-sign"></i></span>
-                    <div class="stat-value" id="statRevenue">0 ₽</div>
-                    <div class="stat-label">Доход</div>
+
+                <!-- АЛЕРТЫ -->
+                <div class="alerts-panel" id="alertsPanel" style="display: none;">
+                    <div class="alerts-header">
+                        <h3><i class="fas fa-bell"></i> Требует внимания</h3>
+                    </div>
+                    <div id="alertsContainer"></div>
                 </div>
-                <div class="stat-card">
-                    <span class="stat-icon"><i class="fas fa-calendar-alt"></i></span>
-                    <div class="stat-value" id="statSeasons">0</div>
-                    <div class="stat-label">Сезонов</div>
+
+                <!-- БЛИЖАЙШИЙ ТУРНИР -->
+                <div id="featuredTournament"></div>
+
+                <!-- АКТИВНЫЕ ТУРНИРЫ -->
+                <div class="panel">
+                    <div class="panel-header">
+                        <h3><i class="fas fa-trophy"></i> Активные турниры</h3>
+                        <button class="btn btn-outline" onclick="window.location.href='my-tournaments.html'">Все турниры <i class="fas fa-arrow-right"></i></button>
+                    </div>
+                    <div id="activeTournaments">
+                        <div class="empty-state">
+                            <i class="fas fa-trophy"></i>
+                            <p>У вас пока нет активных турниров</p>
+                            <button class="btn btn-primary" onclick="window.location.href='tournament-create.html'"><i class="fas fa-plus"></i> Создать первый турнир</button>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <!-- ===== ТУРНИРЫ ===== -->
-            <div class="panel">
-                <div class="panel-header">
-                    <h3><i class="fas fa-trophy"></i> Мои турниры</h3>
-                    <button class="btn btn-primary btn-sm" id="createTournamentBtn2" disabled>
-                        <i class="fas fa-plus"></i> Создать
-                    </button>
+            <!-- ВКЛАДКА: АНАЛИТИКА -->
+            <div id="tab-analytics" style="display: none;">
+                <div class="analytics-filters">
+                    <button class="filter-btn active" data-period="30">30 дней</button>
+                    <button class="filter-btn" data-period="90">90 дней</button>
+                    <button class="filter-btn" data-period="all">Весь сезон</button>
                 </div>
-                <div class="tournaments-placeholder">
-                    <i class="fas fa-trophy"></i>
-                    <h4>Скоро здесь будут турниры</h4>
-                    <p>Функция создания турниров появится в ближайшее время</p>
+
+                <div class="chart-container">
+                    <h4><i class="fas fa-chart-line"></i> Доход по турнирам</h4>
+                    <div class="chart-wrapper"><canvas id="incomeChart"></canvas></div>
+                </div>
+
+                <div class="chart-container">
+                    <h4><i class="fas fa-chart-bar"></i> Участники по турнирам</h4>
+                    <div class="chart-wrapper"><canvas id="participantsChart"></canvas></div>
+                </div>
+
+                <div class="analytics-stats">
+                    <div class="analytics-stat"><div class="value" id="anTournaments">0</div><div class="label">Турниров</div></div>
+                    <div class="analytics-stat"><div class="value" id="anAvgFill">0%</div><div class="label">Средний набор</div></div>
+                    <div class="analytics-stat"><div class="value" id="anIncome">0 ₽</div><div class="label">Доход (80%)</div></div>
+                    <div class="analytics-stat"><div class="value" id="anCommission">0 ₽</div><div class="label">Комиссия PRORANK</div></div>
+                </div>
+
+                <div class="analytics-table">
+                    <h4>Турниры за период</h4>
+                    <div id="analyticsTable">
+                        <div class="empty-state"><i class="fas fa-chart-bar"></i><p>Нет данных за выбранный период</p></div>
+                    </div>
                 </div>
             </div>
         </div>
     </main>
+
+    <!-- МОДАЛКА НАСТРОЕК -->
+    <div class="modal-overlay" id="settingsModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3><i class="fas fa-cog"></i> Настройки организации</h3>
+                <button class="modal-close" id="closeSettingsModal"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="form-group">
+                <label>Название организации *</label>
+                <input type="text" id="editOrgName" placeholder="Название">
+            </div>
+            <div class="form-group">
+                <label>Город</label>
+                <input type="text" id="editOrgCity" placeholder="Город">
+            </div>
+            <div class="form-group">
+                <label>Телефон</label>
+                <input type="text" id="editOrgPhone" placeholder="+7 (___) ___-__-__">
+            </div>
+            <div class="form-group">
+                <label>Виды спорта (через запятую)</label>
+                <input type="text" id="editOrgSports" placeholder="Бокс, ММА, Борьба">
+            </div>
+            <div class="form-group">
+                <label>Описание</label>
+                <textarea id="editOrgDesc" placeholder="Краткое описание организации"></textarea>
+            </div>
+            <button class="btn btn-primary" id="saveSettingsBtn" style="width: 100%; justify-content: center;"><i class="fas fa-save"></i> Сохранить изменения</button>
+        </div>
+    </div>
 
     <div id="mobileBottomNavContainer"></div>
 
@@ -510,209 +392,514 @@
     </script>
     <script type="module" src="header.js"></script>
     <script type="module">
-    import { initializeApp } from "firebase/app";
-    import { getFirestore, doc, getDoc, collection, query, where, getDocs } from "firebase/firestore";
-    import { getAuth, onAuthStateChanged } from "firebase/auth";
+        import { initializeApp } from "firebase/app";
+        import { getFirestore, doc, getDoc, updateDoc, collection, query, where, getDocs, orderBy } from "firebase/firestore";
+        import { getAuth, onAuthStateChanged } from "firebase/auth";
 
-    const firebaseConfig = {
-        apiKey: "AIzaSyDUGYJY7pX7q02MS5SACMIIQXpjpQ97mPw",
-        authDomain: "proranklive.firebaseapp.com",
-        projectId: "proranklive",
-        storageBucket: "proranklive.firebasestorage.app",
-        messagingSenderId: "716836144015",
-        appId: "1:716836144015:web:f1575147750608d0f881fa"
-    };
+        const firebaseConfig = {
+            apiKey: "AIzaSyDUGYJY7pX7q02MS5SACMIIQXpjpQ97mPw",
+            authDomain: "proranklive.firebaseapp.com",
+            projectId: "proranklive",
+            storageBucket: "proranklive.firebasestorage.app",
+            messagingSenderId: "716836144015",
+            appId: "1:716836144015:web:f1575147750608d0f881fa"
+        };
 
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-    const auth = getAuth(app);
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
 
-    console.log('🔍 DEBUG: ============================================');
-    console.log('🔍 DEBUG: organization-dashboard.html загружен');
-    console.log('🔍 DEBUG: Полный URL:', window.location.href);
-    console.log('🔍 DEBUG: ============================================');
+        let currentOrgId = null;
+        let currentOrgData = null;
+        let allTournaments = [];
+        let currentPeriod = 30;
 
-    async function loadOrganizationData(orgId) {
-        console.log('🔍 DEBUG: ===== НАЧАЛО ЗАГРУЗКИ ОРГАНИЗАЦИИ =====');
-        console.log('🔍 DEBUG: Получен ID:', orgId);
-        
-        try {
-            // Сначала проверим — может это ID заявки?
-            console.log('🔍 DEBUG: Проверяем, не заявка ли это...');
-            const requestDoc = await getDoc(doc(db, "organization_requests", orgId));
+        // ===== TOAST NOTIFICATIONS =====
+        window.showToast = function(message, type = 'info') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            const icons = { success: 'fa-check-circle', error: 'fa-exclamation-circle', info: 'fa-info-circle' };
+            toast.innerHTML = `<i class="fas ${icons[type]}"></i><span class="toast-message">${message}</span>`;
+            container.appendChild(toast);
             
-            if (requestDoc.exists()) {
-                const requestData = requestDoc.data();
-                console.log('🔍 DEBUG: ЭТО ЗАЯВКА! ID заявки:', orgId);
-                console.log('🔍 DEBUG: Данные заявки:', requestData);
-                console.log('🔍 DEBUG: organizationId в заявке:', requestData.organizationId);
-                console.log('🔍 DEBUG: status заявки:', requestData.status);
+            // Анимация появления
+            requestAnimationFrame(() => toast.classList.add('show'));
+            
+            // Автоудаление
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => toast.remove(), 400);
+            }, 3500);
+        };
+
+        // ===== ПЕРЕКЛЮЧЕНИЕ ВКЛАДОК =====
+        window.switchTab = function(tabName) {
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelector(`.tab-btn[data-tab="${tabName}"]`)?.classList.add('active');
+            document.querySelectorAll('[id^="tab-"]').forEach(content => content.style.display = 'none');
+            document.getElementById(`tab-${tabName}`).style.display = 'block';
+            
+            if (tabName === 'analytics') {
+                setTimeout(() => renderAnalytics(), 100);
+            }
+        };
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', () => switchTab(btn.dataset.tab));
+        });
+
+        // ===== МОДАЛКА =====
+        const settingsModal = document.getElementById('settingsModal');
+        document.getElementById('settingsBtn')?.addEventListener('click', () => settingsModal.classList.add('show'));
+        document.getElementById('closeSettingsModal')?.addEventListener('click', () => settingsModal.classList.remove('show'));
+        settingsModal?.addEventListener('click', (e) => { if (e.target === e.currentTarget) settingsModal.classList.remove('show'); });
+
+        // ===== СОХРАНЕНИЕ НАСТРОЕК =====
+        document.getElementById('saveSettingsBtn')?.addEventListener('click', async () => {
+            if (!currentOrgId) return showToast('Организация не найдена', 'error');
+            const name = document.getElementById('editOrgName').value.trim();
+            if (!name) return showToast('Название обязательно', 'error');
+
+            const sportsText = document.getElementById('editOrgSports').value.trim();
+            const sports = sportsText ? sportsText.split(',').map(s => s.trim()).filter(s => s) : [];
+
+            try {
+                await updateDoc(doc(db, "organizations", currentOrgId), {
+                    name, city: document.getElementById('editOrgCity').value.trim(),
+                    phone: document.getElementById('editOrgPhone').value.trim(), sports,
+                    description: document.getElementById('editOrgDesc').value.trim(),
+                    updatedAt: new Date().toISOString()
+                });
+                showToast('✅ Настройки успешно сохранены!', 'success');
+                settingsModal.classList.remove('show');
+                loadOrganizationData(currentOrgId);
+            } catch (err) {
+                showToast('❌ Ошибка сохранения: ' + err.message, 'error');
+            }
+        });
+
+        // ===== ФИЛЬТРЫ АНАЛИТИКИ =====
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentPeriod = btn.dataset.period === 'all' ? 'all' : parseInt(btn.dataset.period);
+                renderAnalytics();
+            });
+        });
+
+        // ===== ЗАГРУЗКА ДАННЫХ =====
+        async function loadOrganizationData(orgId) {
+            try {
+                const requestDoc = await getDoc(doc(db, "organization_requests", orgId));
+                if (requestDoc.exists() && requestDoc.data().organizationId) {
+                    orgId = requestDoc.data().organizationId;
+                }
+
+                const orgDoc = await getDoc(doc(db, "organizations", orgId));
+                if (!orgDoc.exists()) {
+                    showToast('Организация не найдена', 'error');
+                    return;
+                }
+
+                currentOrgId = orgDoc.id;
+                currentOrgData = orgDoc.data();
+
+                // Скрываем скелетон, показываем реальные данные
+                document.getElementById('orgCardSkeleton').style.display = 'none';
+                document.getElementById('orgCardReal').style.display = 'block';
+
+                document.getElementById('orgName').textContent = currentOrgData.name || 'Организация';
+                document.getElementById('orgCity').textContent = currentOrgData.city || '—';
+                document.getElementById('orgPhone').textContent = currentOrgData.phone || '—';
+                document.getElementById('orgSports').textContent = currentOrgData.sports ? currentOrgData.sports.join(', ') : '—';
                 
-                if (requestData.organizationId) {
-                    console.log('✅ DEBUG: Нашли organizationId в заявке:', requestData.organizationId);
-                    orgId = requestData.organizationId;
-                } else {
-                    console.error('❌ DEBUG: В заявке НЕТ organizationId!');
-                    console.error('❌ DEBUG: Значит, админка не сохранила его при одобрении');
-                    
-                    // Попробуем найти организацию по другим полям
-                    console.log('🔍 DEBUG: Ищем организацию по email...');
-                    const orgByEmail = await getDocs(query(
-                        collection(db, "organizations"),
-                        where("email", "==", requestData.userEmail || "")
-                    ));
-                    
-                    if (!orgByEmail.empty) {
-                        const foundOrg = orgByEmail.docs[0];
-                        console.log('✅ DEBUG: Нашли организацию по email:', foundOrg.id);
-                        orgId = foundOrg.id;
-                    } else {
-                        console.log('🔍 DEBUG: По email не нашли, ищем по name...');
-                        const orgByName = await getDocs(query(
-                            collection(db, "organizations"),
-                            where("name", "==", requestData.orgName || "")
-                        ));
-                        
-                        if (!orgByName.empty) {
-                            const foundOrg = orgByName.docs[0];
-                            console.log('✅ DEBUG: Нашли организацию по name:', foundOrg.id);
-                            orgId = foundOrg.id;
-                        } else {
-                            console.error('❌ DEBUG: Организация не найдена ни по email, ни по name');
-                            document.getElementById('orgNameDisplay').textContent = 'Организация не найдена';
-                            document.getElementById('orgSubtitle').textContent = 'Заявка одобрена, но организация не создана';
-                            return;
-                        }
+                if (currentOrgData.name) {
+                    document.getElementById('orgAvatar').textContent = currentOrgData.name.charAt(0).toUpperCase();
+                }
+
+                // Заполняем форму настроек
+                document.getElementById('editOrgName').value = currentOrgData.name || '';
+                document.getElementById('editOrgCity').value = currentOrgData.city || '';
+                document.getElementById('editOrgPhone').value = currentOrgData.phone || '';
+                document.getElementById('editOrgSports').value = currentOrgData.sports ? currentOrgData.sports.join(', ') : '';
+                document.getElementById('editOrgDesc').value = currentOrgData.description || '';
+
+                await loadTournaments();
+            } catch (err) {
+                console.error('Ошибка:', err);
+                showToast('Ошибка загрузки данных', 'error');
+            }
+        }
+
+        async function loadTournaments() {
+            if (!currentOrgId) return;
+            try {
+                const q = query(collection(db, "tournaments"), where("organizationId", "==", currentOrgId), orderBy("date", "asc"));
+                const snapshot = await getDocs(q);
+                allTournaments = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+                // Скрываем скелетон финансов
+                document.getElementById('financeSkeleton').style.display = 'none';
+                document.getElementById('financeReal').style.display = 'grid';
+
+                renderFinance();
+                await loadAlerts();
+                renderFeatured();
+                renderActiveTournaments();
+            } catch (err) {
+                console.error('Ошибка:', err);
+            }
+        }
+
+        async function loadAlerts() {
+            if (!currentOrgId) return;
+            const alerts = [];
+            const now = new Date();
+            now.setHours(0, 0, 0, 0);
+
+            try {
+                const registrationsQuery = query(collection(db, "tournament_registrations"), where("organizationId", "==", currentOrgId), where("status", "==", "pending"));
+                const regSnapshot = await getDocs(registrationsQuery);
+                
+                if (!regSnapshot.empty) {
+                    const tournamentId = regSnapshot.docs[0].data().tournamentId;
+                    const tName = allTournaments.find(t => t.id === tournamentId)?.name || 'Турнир';
+                    alerts.push({
+                        type: 'warning', icon: 'fa-user-clock',
+                        text: `${regSnapshot.size} заявок ждут подтверждения в «${tName}»`,
+                        link: `tournament-details.html?id=${tournamentId}&tab=requests`
+                    });
+                }
+            } catch (err) { /* Игнорируем, если коллекции еще нет */ }
+
+            const threeDaysFromNow = new Date(now);
+            threeDaysFromNow.setDate(threeDaysFromNow.getDate() + 3);
+
+            allTournaments.forEach(t => {
+                if (t.status === 'registration' && t.registrationDeadline) {
+                    const deadline = new Date(t.registrationDeadline + 'T00:00:00');
+                    if (deadline >= now && deadline <= threeDaysFromNow) {
+                        alerts.push({ type: 'danger', icon: 'fa-clock', text: `«${t.name}»: набор закроется ${new Date(t.registrationDeadline + 'T00:00:00').toLocaleDateString('ru-RU')}`, link: `tournament-details.html?id=${t.id}` });
                     }
                 }
+                if (t.status === 'registration' && t.maxParticipants) {
+                    const fillRate = (t.participantCount || 0) / t.maxParticipants;
+                    if (fillRate >= 0.8) {
+                        alerts.push({ type: 'info', icon: 'fa-users', text: `«${t.name}»: заполнен на ${Math.round(fillRate * 100)}%`, link: `tournament-details.html?id=${t.id}` });
+                    }
+                }
+            });
+
+            if (alerts.length > 0) {
+                document.getElementById('alertsPanel').style.display = 'block';
+                const container = document.getElementById('alertsContainer');
+                container.innerHTML = alerts.map(alert => `
+                    <div class="alert-item" onclick="window.location.href='${alert.link}'">
+                        <div class="alert-icon ${alert.type}"><i class="fas ${alert.icon}"></i></div>
+                        <div class="alert-text">${alert.text}</div>
+                        <div class="alert-arrow"><i class="fas fa-chevron-right"></i></div>
+                    </div>
+                `).join('');
+            }
+        }
+
+        function renderFinance() {
+            const totalCollected = allTournaments.reduce((sum, t) => sum + ((t.participantCount || 0) * (t.entryFee || 0)), 0);
+            // ИСПРАВЛЕНО: 80% организатору, 20% платформе
+            const mine = totalCollected * 0.8;
+            const prorank = totalCollected * 0.2;
+            const totalParticipants = allTournaments.reduce((sum, t) => sum + (t.participantCount || 0), 0);
+
+            document.getElementById('finTotal').textContent = `${Math.round(totalCollected).toLocaleString('ru-RU')} ₽`;
+            document.getElementById('finMine').textContent = `${Math.round(mine).toLocaleString('ru-RU')} ₽`;
+            document.getElementById('finProrank').textContent = `${Math.round(prorank).toLocaleString('ru-RU')} ₽`;
+            document.getElementById('finParticipants').textContent = totalParticipants;
+        }
+
+        function renderFeatured() {
+            const container = document.getElementById('featuredTournament');
+            const now = new Date();
+            const upcoming = allTournaments.filter(t => t.status === 'registration' && new Date(t.date + 'T00:00:00') >= now).sort((a, b) => new Date(a.date) - new Date(b.date))[0];
+
+            if (!upcoming) { container.innerHTML = ''; return; }
+
+            const progress = upcoming.maxParticipants ? Math.round((upcoming.participantCount || 0) / upcoming.maxParticipants * 100) : 0;
+            container.innerHTML = `
+                <div class="featured-tournament" onclick="window.location.href='tournament-details.html?id=${upcoming.id}'">
+                    <div class="featured-header">
+                        <div class="featured-name">🏆 ${upcoming.name}</div>
+                        <span class="status-badge"><i class="fas fa-circle"></i> Идёт набор</span>
+                    </div>
+                    <div class="featured-info">
+                        <span><i class="fas fa-calendar-alt"></i> ${new Date(upcoming.date + 'T00:00:00').toLocaleDateString('ru-RU')}</span>
+                        <span><i class="fas fa-map-marker-alt"></i> ${upcoming.city || '—'}</span>
+                        <span><i class="fas fa-fist-raised"></i> ${upcoming.sport || '—'}</span>
+                        <span><i class="fas fa-ruble-sign"></i> ${upcoming.entryFee || 0} ₽</span>
+                    </div>
+                    <div class="progress-bar"><div class="progress-fill" style="width: ${progress}%;"></div></div>
+                    <div class="progress-text">
+                        <span>${upcoming.participantCount || 0} / ${upcoming.maxParticipants || 0} участников</span>
+                        <span>До ${new Date(upcoming.registrationDeadline + 'T00:00:00').toLocaleDateString('ru-RU')}</span>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderActiveTournaments() {
+            const container = document.getElementById('activeTournaments');
+            const active = allTournaments.filter(t => t.status === 'registration').slice(0, 3);
+
+            if (!active.length) {
+                container.innerHTML = `<div class="empty-state"><i class="fas fa-trophy"></i><p>У вас пока нет активных турниров</p><button class="btn btn-primary" onclick="window.location.href='tournament-create.html'"><i class="fas fa-plus"></i> Создать первый турнир</button></div>`;
+                return;
+            }
+
+            container.innerHTML = `<div class="tournament-grid">${active.map(t => {
+                const progress = t.maxParticipants ? Math.round((t.participantCount || 0) / t.maxParticipants * 100) : 0;
+                return `
+                    <div class="tournament-card" onclick="window.location.href='tournament-details.html?id=${t.id}'">
+                        <div class="t-header"><div class="t-name">${t.name}</div></div>
+                        <div class="t-info">
+                            <span><i class="fas fa-calendar-alt"></i> ${new Date(t.date + 'T00:00:00').toLocaleDateString('ru-RU')}</span>
+                            <span><i class="fas fa-users"></i> ${t.participantCount || 0} участников</span>
+                        </div>
+                        <div class="progress-bar" style="margin-top: 8px;"><div class="progress-fill" style="width: ${progress}%;"></div></div>
+                        <div class="t-footer"><span>${progress}% заполнено</span><span>${t.entryFee || 0} ₽</span></div>
+                    </div>
+                `;
+            }).join('')}</div>`;
+        }
+
+        function getFilteredTournaments() {
+            if (currentPeriod === 'all') return allTournaments;
+            const now = new Date();
+            return allTournaments.filter(t => {
+                const tournamentDate = new Date(t.date + 'T00:00:00');
+                const diffDays = (now - tournamentDate) / (1000 * 60 * 60 * 24);
+                return diffDays >= 0 && diffDays <= currentPeriod;
+            });
+        }
+
+        function renderAnalytics() {
+            const filtered = getFilteredTournaments();
+            const totalCollected = filtered.reduce((sum, t) => sum + ((t.participantCount || 0) * (t.entryFee || 0)), 0);
+            const avgFill = filtered.length ? Math.round(filtered.reduce((sum, t) => sum + (t.maxParticipants ? (t.participantCount || 0) / t.maxParticipants : 0), 0) / filtered.length * 100) : 0;
+
+            document.getElementById('anTournaments').textContent = filtered.length;
+            document.getElementById('anAvgFill').textContent = `${avgFill}%`;
+            document.getElementById('anIncome').textContent = `${Math.round(totalCollected * 0.8).toLocaleString('ru-RU')} ₽`;
+            document.getElementById('anCommission').textContent = `${Math.round(totalCollected * 0.2).toLocaleString('ru-RU')} ₽`;
+
+            const tableContainer = document.getElementById('analyticsTable');
+            if (!filtered.length) {
+                tableContainer.innerHTML = `<div class="empty-state"><i class="fas fa-chart-bar"></i><p>Нет данных за выбранный период</p></div>`;
             } else {
-                console.log('🔍 DEBUG: Это не заявка, пробуем как ID организации...');
+                tableContainer.innerHTML = `
+                    <table>
+                        <thead><tr><th>Название</th><th>Участники</th><th>Доход (80%)</th><th>Статус</th></tr></thead>
+                        <tbody>${filtered.map(t => `
+                            <tr onclick="window.location.href='tournament-details.html?id=${t.id}'">
+                                <td>${t.name}</td>
+                                <td>${t.participantCount || 0}/${t.maxParticipants || '—'}</td>
+                                <td>${Math.round((t.participantCount || 0) * (t.entryFee || 0) * 0.8).toLocaleString('ru-RU')} ₽</td>
+                                <td>${t.status === 'registration' ? 'Набор' : t.status === 'active' ? 'Идёт' : 'Завершён'}</td>
+                            </tr>
+                        `).join('')}</tbody>
+                    </table>
+                `;
             }
-            
-            // Теперь загружаем организацию по найденному ID
-            console.log('🔍 DEBUG: Загружаем организацию с ID:', orgId);
-            const orgDoc = await getDoc(doc(db, "organizations", orgId));
-            
-            if (!orgDoc.exists()) {
-                console.error('❌ DEBUG: Организация НЕ НАЙДЕНА в коллекции "organizations"');
-                console.error('❌ DEBUG: ID:', orgId);
-                
-                // Выведем все организации для отладки
-                console.log('🔍 DEBUG: Выводим все организации...');
-                const allOrgs = await getDocs(collection(db, "organizations"));
-                console.log('🔍 DEBUG: Всего организаций:', allOrgs.size);
-                allOrgs.forEach(doc => {
-                    console.log('🔍 DEBUG: Организация:', doc.id, doc.data());
+            drawIncomeChart(filtered);
+            drawParticipantsChart(filtered);
+        }
+
+        // ===== УЛУЧШЕННЫЕ ГРАФИКИ (Плавные линии, градиенты) =====
+        function drawIncomeChart(tournaments) {
+            const canvas = document.getElementById('incomeChart');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            const wrapper = canvas.parentElement;
+            const width = wrapper.clientWidth;
+            const height = wrapper.clientHeight;
+
+            canvas.width = width * window.devicePixelRatio;
+            canvas.height = height * window.devicePixelRatio;
+            canvas.style.width = width + 'px';
+            canvas.style.height = height + 'px';
+            ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+            ctx.clearRect(0, 0, width, height);
+
+            if (!tournaments.length) {
+                ctx.fillStyle = '#666'; ctx.font = '12px Inter'; ctx.textAlign = 'center';
+                ctx.fillText('Нет данных для отображения', width / 2, height / 2);
+                return;
+            }
+
+            const padding = { top: 30, right: 20, bottom: 30, left: 50 };
+            const chartWidth = width - padding.left - padding.right;
+            const chartHeight = height - padding.top - padding.bottom;
+            const maxIncome = Math.max(...tournaments.map(t => (t.participantCount || 0) * (t.entryFee || 0)), 1000);
+            const stepX = chartWidth / Math.max(tournaments.length - 1, 1);
+
+            // Сетка
+            ctx.strokeStyle = 'rgba(255,255,255,0.06)'; ctx.fillStyle = '#888'; ctx.font = '10px Inter'; ctx.textAlign = 'right';
+            for (let i = 0; i <= 4; i++) {
+                const y = padding.top + chartHeight - (i / 4) * chartHeight;
+                ctx.beginPath(); ctx.moveTo(padding.left, y); ctx.lineTo(width - padding.right, y); ctx.stroke();
+                ctx.fillText(`${Math.round((i / 4) * maxIncome).toLocaleString('ru-RU')}`, padding.left - 8, y + 3);
+            }
+
+            const drawSmoothLine = (data, color, fillColor) => {
+                ctx.beginPath();
+                data.forEach((value, index) => {
+                    const x = padding.left + index * stepX;
+                    const y = padding.top + chartHeight - (value / maxIncome) * chartHeight;
+                    if (index === 0) ctx.moveTo(x, y);
+                    else {
+                        const prevX = padding.left + (index - 1) * stepX;
+                        const prevY = padding.top + chartHeight - (data[index - 1] / maxIncome) * chartHeight;
+                        const cp1x = prevX + (x - prevX) / 2;
+                        const cp1y = prevY;
+                        const cp2x = prevX + (x - prevX) / 2;
+                        const cp2y = y;
+                        ctx.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, x, y);
+                    }
                 });
-                
-                document.getElementById('orgNameDisplay').textContent = 'Организация не найдена';
-                document.getElementById('orgSubtitle').textContent = 'Проверьте консоль для отладки';
+                ctx.strokeStyle = color; ctx.lineWidth = 2.5; ctx.lineJoin = 'round'; ctx.stroke();
+
+                // Градиент под линией
+                if (fillColor) {
+                    ctx.lineTo(padding.left + (data.length - 1) * stepX, padding.top + chartHeight);
+                    ctx.lineTo(padding.left, padding.top + chartHeight);
+                    ctx.closePath();
+                    const gradient = ctx.createLinearGradient(0, padding.top, 0, padding.top + chartHeight);
+                    gradient.addColorStop(0, fillColor);
+                    gradient.addColorStop(1, 'rgba(0,0,0,0)');
+                    ctx.fillStyle = gradient;
+                    ctx.fill();
+                }
+
+                // Точки
+                data.forEach((value, index) => {
+                    const x = padding.left + index * stepX;
+                    const y = padding.top + chartHeight - (value / maxIncome) * chartHeight;
+                    ctx.beginPath(); ctx.arc(x, y, 4, 0, Math.PI * 2);
+                    ctx.fillStyle = '#1a1a1a'; ctx.fill();
+                    ctx.strokeStyle = color; ctx.lineWidth = 2; ctx.stroke();
+                });
+            };
+
+            const incomeData = tournaments.map(t => (t.participantCount || 0) * (t.entryFee || 0) * 0.8);
+            const prorankData = tournaments.map(t => (t.participantCount || 0) * (t.entryFee || 0) * 0.2);
+
+            drawSmoothLine(prorankData, '#60a5fa', 'rgba(96, 165, 250, 0.1)');
+            drawSmoothLine(incomeData, '#fbbf24', 'rgba(251, 191, 36, 0.15)');
+
+            // Подписи X и Легенда
+            ctx.textAlign = 'center'; ctx.fillStyle = '#888'; ctx.font = '10px Inter';
+            tournaments.forEach((t, index) => {
+                const x = padding.left + index * stepX;
+                ctx.fillText(t.date ? t.date.slice(5) : 'N/A', x, height - padding.bottom + 15);
+            });
+            ctx.textAlign = 'left'; ctx.font = '11px Inter';
+            ctx.fillStyle = '#fbbf24'; ctx.fillRect(padding.left, 8, 10, 3); ctx.fillText('Мои (80%)', padding.left + 14, 12);
+            ctx.fillStyle = '#60a5fa'; ctx.fillRect(padding.left + 90, 8, 10, 3); ctx.fillText('PRORANK (20%)', padding.left + 104, 12);
+        }
+
+        function drawParticipantsChart(tournaments) {
+            const canvas = document.getElementById('participantsChart');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            const wrapper = canvas.parentElement;
+            const width = wrapper.clientWidth;
+            const height = wrapper.clientHeight;
+
+            canvas.width = width * window.devicePixelRatio;
+            canvas.height = height * window.devicePixelRatio;
+            canvas.style.width = width + 'px';
+            canvas.style.height = height + 'px';
+            ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+            ctx.clearRect(0, 0, width, height);
+
+            if (!tournaments.length) {
+                ctx.fillStyle = '#666'; ctx.font = '12px Inter'; ctx.textAlign = 'center';
+                ctx.fillText('Нет данных для отображения', width / 2, height / 2);
                 return;
             }
 
-            const data = orgDoc.data();
-            console.log('✅ DEBUG: Организация найдена!');
-            console.log('✅ DEBUG: ID документа:', orgDoc.id);
-            console.log('✅ DEBUG: Данные:', data);
-            
-            displayOrganizationData(data);
+            const padding = { top: 30, right: 20, bottom: 30, left: 40 };
+            const chartWidth = width - padding.left - padding.right;
+            const chartHeight = height - padding.top - padding.bottom;
+            const maxParticipants = Math.max(...tournaments.map(t => t.participantCount || 0), 10);
+            const gap = chartWidth / tournaments.length;
+            const barWidth = Math.min(40, gap * 0.6);
 
-        } catch (err) {
-            console.error('❌ DEBUG: Ошибка загрузки:', err);
-            document.getElementById('orgNameDisplay').textContent = 'Ошибка загрузки';
-            document.getElementById('orgSubtitle').textContent = err.message;
-        }
-    }
-
-    function displayOrganizationData(data) {
-        console.log('🔍 DEBUG: ===== ОТОБРАЖЕНИЕ ДАННЫХ =====');
-        
-        document.getElementById('orgNameDisplay').textContent = data.name || 'Без названия';
-        document.getElementById('orgCity').textContent = data.city || '—';
-        document.getElementById('orgPhone').textContent = data.phone || '—';
-        document.getElementById('orgSports').textContent = data.sports ? data.sports.join(', ') : '—';
-        document.getElementById('orgName').textContent = data.name || 'Кабинет организации';
-        document.getElementById('orgSubtitle').textContent = 'Управление турнирами и сезонами';
-        
-        if (data.name) {
-            const firstLetter = data.name.charAt(0).toUpperCase();
-            document.getElementById('orgAvatar').textContent = firstLetter;
-        }
-
-        document.getElementById('statTournaments').textContent = '0';
-        document.getElementById('statFighters').textContent = '0';
-        document.getElementById('statRevenue').textContent = '0 ₽';
-        document.getElementById('statSeasons').textContent = '0';
-        
-        document.getElementById('createTournamentBtn').disabled = false;
-        document.getElementById('createTournamentBtn2').disabled = false;
-        
-        console.log('✅ DEBUG: Данные успешно отображены');
-    }
-
-    onAuthStateChanged(auth, async (user) => {
-        console.log('🔍 DEBUG: ===== ПРОВЕРКА АВТОРИЗАЦИИ =====');
-        
-        if (!user) {
-            console.log('❌ DEBUG: Пользователь не авторизован');
-            window.location.href = 'login.html';
-            return;
-        }
-
-        console.log('✅ DEBUG: Пользователь авторизован:', user.uid);
-        console.log('🔍 DEBUG: Email:', user.email);
-
-        const urlParams = new URLSearchParams(window.location.search);
-        const orgId = urlParams.get('id');
-        
-        console.log('🔍 DEBUG: ID из URL:', orgId);
-
-        if (!orgId) {
-            console.log('🔍 DEBUG: Нет ID в URL, ищем по userId...');
-            
-            const orgRequests = await getDocs(query(
-                collection(db, "organization_requests"),
-                where("userId", "==", user.uid),
-                where("status", "==", "approved")
-            ));
-
-            console.log('🔍 DEBUG: Найдено заявок:', orgRequests.size);
-
-            if (!orgRequests.empty) {
-                const requestDoc = orgRequests.docs[0];
-                const request = requestDoc.data();
-                
-                console.log('🔍 DEBUG: ID заявки:', requestDoc.id);
-                console.log('🔍 DEBUG: Данные заявки:', request);
-                console.log('🔍 DEBUG: organizationId:', request.organizationId);
-                
-                const id = request.organizationId || requestDoc.id;
-                window.history.replaceState(null, '', `?id=${id}`);
-                loadOrganizationData(id);
-                return;
+            ctx.strokeStyle = 'rgba(255,255,255,0.06)'; ctx.fillStyle = '#888'; ctx.font = '10px Inter'; ctx.textAlign = 'right';
+            for (let i = 0; i <= 4; i++) {
+                const y = padding.top + chartHeight - (i / 4) * chartHeight;
+                ctx.beginPath(); ctx.moveTo(padding.left, y); ctx.lineTo(width - padding.right, y); ctx.stroke();
+                ctx.fillText(`${Math.round((i / 4) * maxParticipants)}`, padding.left - 8, y + 3);
             }
 
-            console.error('❌ DEBUG: Заявка не найдена');
-            document.getElementById('orgNameDisplay').textContent = 'Организация не найдена';
-            return;
+            tournaments.forEach((t, index) => {
+                const x = padding.left + index * gap + (gap - barWidth) / 2;
+                const barHeight = ((t.participantCount || 0) / maxParticipants) * chartHeight;
+                const y = padding.top + chartHeight - barHeight;
+
+                const gradient = ctx.createLinearGradient(x, y, x, padding.top + chartHeight);
+                gradient.addColorStop(0, '#fbbf24');
+                gradient.addColorStop(1, 'rgba(251,191,36,0.2)');
+
+                ctx.fillStyle = gradient;
+                ctx.beginPath();
+                // Скругленные верхние углы столбца
+                const radius = 4;
+                ctx.moveTo(x, padding.top + chartHeight);
+                ctx.lineTo(x, y + radius);
+                ctx.quadraticCurveTo(x, y, x + radius, y);
+                ctx.lineTo(x + barWidth - radius, y);
+                ctx.quadraticCurveTo(x + barWidth, y, x + barWidth, y + radius);
+                ctx.lineTo(x + barWidth, padding.top + chartHeight);
+                ctx.fill();
+
+                ctx.fillStyle = '#fff'; ctx.textAlign = 'center'; ctx.font = '10px Inter';
+                if (t.participantCount > 0) ctx.fillText(t.participantCount, x + barWidth / 2, y - 8);
+            });
+
+            ctx.textAlign = 'center'; ctx.fillStyle = '#888'; ctx.font = '10px Inter';
+            tournaments.forEach((t, index) => {
+                const x = padding.left + index * gap + gap / 2;
+                ctx.fillText(t.date ? t.date.slice(5) : 'N/A', x, height - padding.bottom + 15);
+            });
         }
 
-        loadOrganizationData(orgId);
-    });
+        // ===== АВТОРИЗАЦИЯ =====
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) { window.location.href = 'login.html'; return; }
 
-    document.getElementById('createTournamentBtn')?.addEventListener('click', () => {
-        alert('🚧 Функция создания турниров скоро появится!');
-    });
+            const urlParams = new URLSearchParams(window.location.search);
+            let orgId = urlParams.get('id');
 
-    document.getElementById('createTournamentBtn2')?.addEventListener('click', () => {
-        alert('🚧 Функция создания турниров скоро появится!');
-    });
+            if (!orgId) {
+                const orgRequests = await getDocs(query(collection(db, "organization_requests"), where("userId", "==", user.uid), where("status", "==", "approved")));
+                if (!orgRequests.empty) {
+                    const request = orgRequests.docs[0].data();
+                    orgId = request.organizationId || orgRequests.docs[0].id;
+                    window.history.replaceState(null, '', `?id=${orgId}`);
+                }
+            }
 
-    document.getElementById('editOrgBtn')?.addEventListener('click', () => {
-        alert('🚧 Функция редактирования скоро появится!');
-    });
+            if (orgId) {
+                loadOrganizationData(orgId);
+            } else {
+                showToast('У вас нет активной организации', 'error');
+                setTimeout(() => window.location.href = 'organization-dashboard.html', 1500);
+            }
+        });
 
-    console.log('✅ DEBUG: Скрипт полностью загружен');
-</script>
+        window.addEventListener('resize', () => {
+            if (document.getElementById('tab-analytics').style.display === 'block') renderAnalytics();
+        });
+    </script>
 </body>
 </html>

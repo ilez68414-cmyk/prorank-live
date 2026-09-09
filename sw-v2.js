@@ -32,6 +32,10 @@ const STATIC_FILES = [
   '/prorank-live/offline.html',
 
   '/prorank-live/organization-dashboard.html',
+  '/prorank-live/my-tournaments.html',
+  '/prorank-live/tournament-create.html',
+  '/prorank-live/tournament-details.html',
+  '/prorank-live/tournaments.html',
 
   '/prorank-live/partner-analytics.html',
   '/prorank-live/partner-dashboard.html',

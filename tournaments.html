@@ -1,0 +1,868 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Турниры | PRORANK</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700;14..32,800;14..32,900&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: radial-gradient(ellipse at 30% 40%, rgba(251, 191, 36, 0.15) 0%, transparent 60%),
+                        radial-gradient(ellipse at 70% 80%, rgba(251, 191, 36, 0.08) 0%, transparent 50%),
+                        linear-gradient(135deg, #1a1a1a 0%, #0f0f0f 40%, #1a1a1a 100%);
+            background-attachment: fixed;
+            color: #fff;
+            line-height: 1.4;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .gold-top {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(90deg, #fbbf24, #ffdd88, #fbbf24, #b8860b);
+            z-index: 1001;
+        }
+
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 32px;
+            background: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(16px);
+            border-bottom: 1px solid rgba(251, 191, 36, 0.25);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: 800;
+            cursor: pointer;
+            background: linear-gradient(135deg, #ffffff, #fbbf24);
+            background-clip: text;
+            color: transparent;
+        }
+
+        .logo span {
+            background: linear-gradient(135deg, #fbbf24, #ffdd77);
+            background-clip: text;
+            color: transparent;
+        }
+
+        .menu-toggle {
+            display: none;
+            background: rgba(251,191,36,0.1);
+            border: 1px solid #fbbf24;
+            color: #fbbf24;
+            font-size: 1.6rem;
+            cursor: pointer;
+            padding: 8px 14px;
+            border-radius: 12px;
+            min-height: 44px;
+            min-width: 44px;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 6px;
+            background: rgba(15,15,15,0.7);
+            backdrop-filter: blur(12px);
+            padding: 5px 14px;
+            border-radius: 60px;
+            border: 1px solid rgba(251,191,36,0.2);
+        }
+
+        .nav-links a {
+            color: #ddd;
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 500;
+            padding: 8px 18px;
+            border-radius: 40px;
+            transition: all 0.2s ease;
+        }
+
+        .nav-links a i {
+            margin-right: 8px;
+            color: #fbbf24;
+        }
+
+        .nav-links a:hover {
+            color: #fbbf24;
+            background: rgba(251,191,36,0.1);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 24px;
+            width: 100%;
+            flex: 1;
+        }
+
+        /* ===== ШАПКА ===== */
+        .page-header {
+            margin-bottom: 24px;
+        }
+
+        .page-title {
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: #fff;
+        }
+
+        .page-title span {
+            color: #fbbf24;
+        }
+
+        .page-subtitle {
+            font-size: 0.85rem;
+            color: #888;
+            margin-top: 4px;
+        }
+
+        /* ===== ФИЛЬТРЫ ===== */
+        .filters-row {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .sport-filters {
+            display: flex;
+            gap: 4px;
+            background: rgba(15,15,15,0.5);
+            border-radius: 16px;
+            padding: 4px;
+            border: 1px solid rgba(251,191,36,0.1);
+        }
+
+        .sport-btn {
+            padding: 8px 16px;
+            border: none;
+            background: transparent;
+            color: #888;
+            font-family: 'Inter', sans-serif;
+            font-weight: 600;
+            font-size: 0.75rem;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-height: 36px;
+            white-space: nowrap;
+        }
+
+        .sport-btn:hover {
+            color: #fff;
+        }
+
+        .sport-btn.active {
+            color: #fbbf24;
+            background: rgba(251,191,36,0.12);
+        }
+
+        .search-box {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(15,15,15,0.5);
+            border: 1px solid rgba(251,191,36,0.15);
+            border-radius: 16px;
+            padding: 0 14px;
+            min-height: 44px;
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .search-box i {
+            color: #888;
+            font-size: 0.8rem;
+        }
+
+        .search-box input {
+            background: transparent;
+            border: none;
+            color: #fff;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.8rem;
+            width: 100%;
+            outline: none;
+        }
+
+        .search-box input::placeholder {
+            color: #555;
+        }
+
+        /* ===== СЕТКА ===== */
+        .tournament-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 16px;
+        }
+
+        .tournament-card {
+            background: rgba(15,15,15,0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(251,191,36,0.1);
+            border-radius: 20px;
+            padding: 20px;
+            transition: all 0.25s ease;
+        }
+
+        .tournament-card:hover {
+            border-color: rgba(251,191,36,0.35);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+        }
+
+        .tournament-card .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 12px;
+            gap: 10px;
+        }
+
+        .tournament-card .tournament-name {
+            font-weight: 700;
+            font-size: 0.95rem;
+            color: #fff;
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 0.55rem;
+            font-weight: 700;
+            padding: 3px 10px;
+            border-radius: 30px;
+            height: 22px;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        .status-badge i {
+            font-size: 0.45rem;
+        }
+
+        .status-badge.registration {
+            background: rgba(251,191,36,0.12);
+            color: #fbbf24;
+            border: 1px solid rgba(251,191,36,0.2);
+        }
+
+        .status-badge.active {
+            background: rgba(16,185,129,0.12);
+            color: #10b981;
+            border: 1px solid rgba(16,185,129,0.2);
+        }
+
+        .status-badge.completed {
+            background: rgba(59,130,246,0.12);
+            color: #60a5fa;
+            border: 1px solid rgba(59,130,246,0.2);
+        }
+
+        .tournament-card .card-info {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            margin-bottom: 14px;
+        }
+
+        .tournament-card .info-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.7rem;
+            color: #888;
+        }
+
+        .tournament-card .info-item i {
+            color: #fbbf24;
+            width: 14px;
+            font-size: 0.65rem;
+            text-align: center;
+        }
+
+        .progress-bar {
+            height: 5px;
+            background: #2a2a2a;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 6px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #fbbf24, #ffdd77);
+            border-radius: 10px;
+        }
+
+        .progress-text {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.65rem;
+            color: #666;
+            margin-bottom: 12px;
+        }
+
+        .card-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 12px;
+            border-top: 1px solid rgba(255,255,255,0.05);
+            gap: 10px;
+        }
+
+        .card-footer .fee {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: #fbbf24;
+        }
+
+        .btn {
+            font-family: 'Inter', sans-serif;
+            font-weight: 600;
+            font-size: 0.7rem;
+            border: none;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            padding: 8px 16px;
+            border-radius: 40px;
+            min-height: 36px;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+            text-decoration: none;
+        }
+
+        .btn:active {
+            transform: scale(0.96);
+        }
+
+        .btn-primary {
+            background: #fbbf24;
+            color: #0a0a0a;
+        }
+
+        .btn-primary:hover {
+            background: #ffd94d;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(251, 191, 36, 0.25);
+        }
+
+        .btn-disabled {
+            background: rgba(255,255,255,0.05);
+            color: #555;
+            cursor: not-allowed;
+        }
+
+        /* ===== ПУСТОЕ СОСТОЯНИЕ ===== */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #666;
+        }
+
+        .empty-state i {
+            font-size: 3rem;
+            color: #333;
+            display: block;
+            margin-bottom: 16px;
+        }
+
+        .empty-state h3 {
+            color: #888;
+            margin-bottom: 8px;
+            font-size: 1rem;
+        }
+
+        /* ===== ЗАГРУЗКА ===== */
+        .loading-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #666;
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 32px;
+            height: 32px;
+            border: 3px solid rgba(251,191,36,0.1);
+            border-top-color: #fbbf24;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin-bottom: 16px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* ===== TOAST NOTIFICATIONS ===== */
+        .toast-container { position: fixed; top: 20px; right: 20px; z-index: 3000; display: flex; flex-direction: column; gap: 10px; pointer-events: none; }
+        .toast { background: rgba(15,15,15,0.95); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 14px 20px; display: flex; align-items: center; gap: 12px; min-width: 280px; box-shadow: 0 10px 40px rgba(0,0,0,0.5); transform: translateX(120%); transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); pointer-events: auto; }
+        .toast.show { transform: translateX(0); }
+        .toast.success { border-left: 4px solid #10b981; }
+        .toast.error { border-left: 4px solid #ef4444; }
+        .toast.info { border-left: 4px solid #60a5fa; }
+        .toast i { font-size: 1.2rem; }
+        .toast.success i { color: #10b981; }
+        .toast.error i { color: #ef4444; }
+        .toast.info i { color: #60a5fa; }
+        .toast-message { font-size: 0.85rem; font-weight: 500; color: #fff; }
+        @media (max-width: 768px) {
+            .toast-container { top: auto; bottom: 20px; right: 16px; left: 16px; }
+            .toast { min-width: auto; width: 100%; }
+        }
+
+        .btn-manage {
+            background: #fbbf24;
+            color: #0a0a0a;
+            padding: 8px 16px;
+            font-size: 0.7rem;
+            border-radius: 40px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: 'Inter', sans-serif;
+            font-weight: 600;
+            min-height: 36px;
+            border: none;
+        }
+        .btn-manage:hover {
+            background: #ffd94d;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(251, 191, 36, 0.25);
+        }
+        .btn-view {
+            background: transparent;
+            border: 1px solid rgba(251, 191, 36, 0.4);
+            color: #fbbf24;
+            padding: 8px 16px;
+            font-size: 0.7rem;
+            border-radius: 40px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: 'Inter', sans-serif;
+            font-weight: 600;
+            min-height: 36px;
+        }
+        .btn-view:hover {
+            background: rgba(251,191,36,0.08);
+        }
+
+        /* ===== АДАПТИВ ===== */
+        @media (max-width: 768px) {
+            .container { padding: 0 16px; }
+            .navbar { padding: 12px 18px; }
+            .menu-toggle { display: block; }
+
+            .nav-links {
+                display: none;
+                flex-direction: column;
+                position: absolute;
+                top: 68px;
+                left: 18px;
+                right: 18px;
+                background: #0f0f0f;
+                border-radius: 24px;
+                padding: 20px;
+                gap: 10px;
+                border: 1px solid rgba(251,191,36,0.3);
+            }
+
+            .nav-links.show { display: flex; }
+
+            .page-title {
+                font-size: 1.4rem;
+            }
+
+            .filters-row {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .sport-filters {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+
+            .tournament-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .sport-btn {
+                font-size: 0.65rem;
+                padding: 6px 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="gold-top"></div>
+
+    <header class="navbar">
+        <div class="logo" onclick="window.location='index.html'">PRO<span>RANK</span></div>
+        <button class="menu-toggle" id="menuToggle"><i class="fas fa-bars"></i></button>
+        <nav class="nav-links" id="navLinks"></nav>
+    </header>
+
+    <main>
+        <div class="container">
+            <!-- ШАПКА -->
+            <div class="page-header">
+                <div class="page-title">Тур<span>ниры</span></div>
+                <div class="page-subtitle">Найдите турнир и примите участие</div>
+            </div>
+
+            <!-- ФИЛЬТРЫ -->
+            <div class="filters-row">
+                <div class="sport-filters" id="sportFilters">
+                    <button class="sport-btn active" data-sport="all">Все</button>
+                    <button class="sport-btn" data-sport="Бокс">Бокс</button>
+                    <button class="sport-btn" data-sport="ММА">ММА</button>
+                    <button class="sport-btn" data-sport="Борьба">Борьба</button>
+                </div>
+                <div class="search-box">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="searchInput" placeholder="Поиск по названию или городу...">
+                </div>
+            </div>
+
+            <!-- СПИСОК -->
+            <div id="tournamentsList">
+                <div class="loading-state">
+                    <div class="loading-spinner"></div>
+                    Загрузка турниров...
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div id="mobileBottomNavContainer"></div>
+
+    <script type="importmap">
+        {
+            "imports": {
+                "firebase/app": "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js",
+                "firebase/firestore": "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js",
+                "firebase/auth": "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js"
+            }
+        }
+    </script>
+    <script type="module" src="header.js"></script>
+        <script type="module">
+        import { initializeApp } from "firebase/app";
+        import { getFirestore, collection, query, where, getDocs, addDoc, serverTimestamp, doc, getDoc } from "firebase/firestore";
+        import { getAuth, onAuthStateChanged } from "firebase/auth";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDUGYJY7pX7q02MS5SACMIIQXpjpQ97mPw",
+            authDomain: "proranklive.firebaseapp.com",
+            projectId: "proranklive",
+            storageBucket: "proranklive.firebasestorage.app",
+            messagingSenderId: "716836144015",
+            appId: "1:716836144015:web:f1575147750608d0f881fa"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+
+        let allTournaments = [];
+        let currentSport = 'all';
+        let searchQuery = '';
+        let currentUser = null;
+        let currentFighterData = null;
+        let myOrgId = null;
+        let userRole = 'guest'; // 'organizer' | 'fighter' | 'guest'
+
+        // Форматирование даты
+        const formatDate = (dateStr) => {
+            if (!dateStr) return '—';
+            return new Date(dateStr + 'T00:00:00').toLocaleDateString('ru-RU');
+        };
+
+        // Toast уведомления
+        window.showToast = function(message, type = 'info') {
+            let container = document.getElementById('toastContainer');
+            if (!container) {
+                container = document.createElement('div');
+                container.id = 'toastContainer';
+                container.className = 'toast-container';
+                document.body.appendChild(container);
+            }
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            const icons = { success: 'fa-check-circle', error: 'fa-exclamation-circle', info: 'fa-info-circle' };
+            toast.innerHTML = `<i class="fas ${icons[type]}"></i><span class="toast-message">${message}</span>`;
+            container.appendChild(toast);
+            
+            requestAnimationFrame(() => toast.classList.add('show'));
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => toast.remove(), 400);
+            }, 3500);
+        };
+
+        // ===== ФИЛЬТРЫ =====
+        document.querySelectorAll('.sport-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.sport-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentSport = btn.dataset.sport;
+                renderTournaments();
+            });
+        });
+
+        // ===== ПОИСК =====
+        document.getElementById('searchInput').addEventListener('input', (e) => {
+            searchQuery = e.target.value.toLowerCase().trim();
+            renderTournaments();
+        });
+
+        // ===== ЗАГРУЗКА ТУРНИРОВ =====
+        async function loadTournaments() {
+            try {
+                const q = query(
+                    collection(db, "tournaments"),
+                    where("status", "in", ["registration", "active"])
+                );
+                const snapshot = await getDocs(q);
+                allTournaments = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+                allTournaments.sort((a, b) => new Date(a.date + 'T00:00:00') - new Date(b.date + 'T00:00:00'));
+                renderTournaments();
+            } catch (err) {
+                console.error('Ошибка:', err);
+                document.getElementById('tournamentsList').innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <h3>Ошибка загрузки</h3>
+                        <p>Проверьте подключение к интернету</p>
+                    </div>
+                `;
+            }
+        }
+
+                function renderTournaments() {
+            const container = document.getElementById('tournamentsList');
+            let filtered = allTournaments;
+
+            if (currentSport !== 'all') {
+                filtered = filtered.filter(t => t.sport === currentSport);
+            }
+
+            if (searchQuery) {
+                filtered = filtered.filter(t => 
+                    (t.name && t.name.toLowerCase().includes(searchQuery)) ||
+                    (t.city && t.city.toLowerCase().includes(searchQuery))
+                );
+            }
+
+            if (!filtered.length) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-trophy"></i>
+                        <h3>${allTournaments.length ? 'Ничего не найдено' : 'Нет доступных турниров'}</h3>
+                        <p>${allTournaments.length ? 'Попробуйте изменить фильтры' : 'Скоро появятся новые турниры'}</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = `<div class="tournament-grid">${filtered.map(t => {
+                const progress = t.maxParticipants ? Math.round((t.participantCount || 0) / t.maxParticipants * 100) : 0;
+                const isFull = (t.participantCount || 0) >= (t.maxParticipants || 0);
+                const statusLabels = { registration: 'Набор', active: 'Идёт', completed: 'Завершён', cancelled: 'Отменён' };
+                const statusLabel = statusLabels[t.status] || t.status;
+
+                // Определяем, является ли текущий юзер ВЛАДЕЛЬЦЕМ этого турнира
+                const isOwner = userRole === 'organizer' && myOrgId && t.organizationId === myOrgId;
+                const isOtherOrganizer = userRole === 'organizer' && !isOwner;
+
+                // Формируем нужную кнопку в зависимости от роли
+                let actionBtn = '';
+                if (isOwner) {
+                    actionBtn = `<button class="btn-manage" onclick="event.stopPropagation(); window.location.href='tournament-details.html?id=${t.id}'"><i class="fas fa-cog"></i> Управление</button>`;
+                } else if (isOtherOrganizer || !currentUser) {
+                    actionBtn = `<button class="btn-view" onclick="event.stopPropagation(); window.location.href='tournament-details.html?id=${t.id}'"><i class="fas fa-eye"></i> Просмотр</button>`;
+                } else if (t.status === 'registration' && !isFull) {
+                    actionBtn = `<button class="btn btn-primary" onclick="event.stopPropagation(); registerForTournament('${t.id}')"><i class="fas fa-sign-in-alt"></i> Записаться</button>`;
+                } else if (t.status === 'registration' && isFull) {
+                    actionBtn = `<button class="btn btn-disabled" disabled><i class="fas fa-ban"></i> Мест нет</button>`;
+                } else if (t.status === 'active') {
+                    actionBtn = `<button class="btn btn-disabled" disabled><i class="fas fa-clock"></i> Идёт</button>`;
+                } else {
+                    actionBtn = `<button class="btn-view" onclick="event.stopPropagation(); window.location.href='tournament-details.html?id=${t.id}'"><i class="fas fa-eye"></i> Просмотр</button>`;
+                }
+
+                return `
+                    <div class="tournament-card" onclick="window.location.href='tournament-details.html?id=${t.id}'" style="cursor: pointer;">
+                        <div class="card-header">
+                            <div class="tournament-name">${t.name}</div>
+                            <span class="status-badge ${t.status}">
+                                <i class="fas fa-circle"></i> ${statusLabel}
+                            </span>
+                        </div>
+                        <div class="card-info">
+                            <div class="info-item"><i class="fas fa-calendar-alt"></i> ${formatDate(t.date)}</div>
+                            <div class="info-item"><i class="fas fa-map-marker-alt"></i> ${t.city || '—'}</div>
+                            <div class="info-item"><i class="fas fa-fist-raised"></i> ${t.sport || '—'}</div>
+                            <div class="info-item"><i class="fas fa-building"></i> ${t.organizationName || 'Организатор'}</div>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: ${progress}%;"></div>
+                        </div>
+                        <div class="progress-text">
+                            <span>${t.participantCount || 0} / ${t.maxParticipants || 0} участников</span>
+                            <span>${progress}%</span>
+                        </div>
+                        <div class="card-footer" onclick="event.stopPropagation();">
+                            <div class="fee">${t.entryFee || 0} ₽</div>
+                            ${actionBtn}
+                        </div>
+                    </div>
+                `;
+            }).join('')}</div>`;
+        }
+
+        // ===== ЗАПИСЬ НА ТУРНИР =====
+        window.registerForTournament = async function(tournamentId) {
+            if (!currentUser) {
+                showToast('Сначала войдите в аккаунт', 'info');
+                setTimeout(() => window.location.href = 'login.html', 1000);
+                return;
+            }
+
+            const btn = event.target.closest('button');
+            const originalText = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+
+            try {
+                const existingQuery = query(
+                    collection(db, "tournament_registrations"),
+                    where("tournamentId", "==", tournamentId),
+                    where("fighterId", "==", currentUser.uid)
+                );
+                const existingSnap = await getDocs(existingQuery);
+
+                if (!existingSnap.empty) {
+                    showToast('Вы уже подали заявку на этот турнир', 'info');
+                    btn.disabled = false;
+                    btn.innerHTML = originalText;
+                    setTimeout(() => window.location.href = `tournament-details.html?id=${tournamentId}`, 1000);
+                    return;
+                }
+
+                const tournament = allTournaments.find(t => t.id === tournamentId);
+                if (!tournament) throw new Error('Турнир не найден');
+
+                await addDoc(collection(db, "tournament_registrations"), {
+                    tournamentId,
+                    organizationId: tournament.organizationId,
+                    fighterId: currentUser.uid,
+                    fighterName: currentFighterData?.name || 'Боец',
+                    fighterWeight: currentFighterData?.weight || '',
+                    fighterClub: currentFighterData?.clubName || '',
+                    status: 'pending',
+                    paymentStatus: 'pending',
+                    paymentAmount: tournament.entryFee || 0,
+                    createdAt: serverTimestamp()
+                });
+
+                showToast('✅ Заявка успешно отправлена!', 'success');
+                
+                // Редирект на страницу деталей турнира через 1.5 секунды
+                setTimeout(() => {
+                    window.location.href = `tournament-details.html?id=${tournamentId}`;
+                }, 1500);
+
+            } catch (err) {
+                console.error('Ошибка записи:', err);
+                showToast('Ошибка: ' + err.message, 'error');
+                btn.disabled = false;
+                btn.innerHTML = originalText;
+            }
+        };
+
+        // ===== ЗАГРУЗКА ДАННЫХ БОЙЦА =====
+        async function loadFighterData(userId) {
+            try {
+                const fighterDoc = await getDoc(doc(db, "fighters", userId));
+                if (fighterDoc.exists()) {
+                    currentFighterData = fighterDoc.data();
+                    if (currentFighterData.clubId) {
+                        const clubDoc = await getDoc(doc(db, "clubs", currentFighterData.clubId));
+                        if (clubDoc.exists()) {
+                            currentFighterData.clubName = clubDoc.data().name;
+                        }
+                    }
+                }
+            } catch (err) {
+                console.error('Ошибка загрузки бойца:', err);
+            }
+        }
+
+                // ===== ОПРЕДЕЛЕНИЕ РОЛИ =====
+        async function determineUserRole(userId) {
+            try {
+                const orgRequests = await getDocs(query(
+                    collection(db, "organization_requests"),
+                    where("userId", "==", userId),
+                    where("status", "==", "approved")
+                ));
+                if (!orgRequests.empty) {
+                    const req = orgRequests.docs[0].data();
+                    userRole = 'organizer';
+                    myOrgId = req.organizationId || orgRequests.docs[0].id;
+                    return;
+                }
+            } catch (err) { console.error('Ошибка определения роли:', err); }
+            userRole = 'fighter';
+        }
+
+        // ===== АВТОРИЗАЦИЯ =====
+        onAuthStateChanged(auth, async (user) => {
+            currentUser = user;
+            
+            if (user) {
+                await determineUserRole(user.uid);
+                await loadFighterData(user.uid);
+            } else {
+                userRole = 'guest';
+            }
+            
+            loadTournaments();
+        });
+    </script>
+</body>
+</html>
