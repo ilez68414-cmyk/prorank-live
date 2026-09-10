@@ -1058,6 +1058,85 @@
     // ================================================================
     let toastTimeout = null;
 
+    // ================================================================
+    // УНИВЕРСАЛЬНЫЙ РЕДИРЕКТ ПОСЛЕ ВХОДА
+    // ================================================================
+    async function handleLoginRedirect(uid) {
+        try {
+            // 1. ПРОВЕРКА СТАТУСОВ "ОЖИДАНИЕ" или "ОТКАЗ" (чтобы не пустить дальше)
+            
+            // Клуб
+            const clubDoc = await getDoc(doc(db, "clubs", uid));
+            if (clubDoc.exists()) {
+                const club = clubDoc.data();
+                if (club.status === 'pending' || club.status === 'rejected') {
+                    window.location.href = 'waiting.html';
+                    return;
+                }
+            }
+
+            // Организация
+            const orgRequests = await getDocs(query(collection(db, "organization_requests"), where("userId", "==", uid)));
+            if (!orgRequests.empty) {
+                const request = orgRequests.docs[0].data();
+                if (request.status === 'pending' || request.status === 'rejected') {
+                    window.location.href = 'waiting.html';
+                    return;
+                }
+            }
+
+            // Партнёр
+            const partnerRequests = await getDocs(query(collection(db, "partner_requests"), where("userId", "==", uid)));
+            if (!partnerRequests.empty) {
+                const request = partnerRequests.docs[0].data();
+                if (request.status === 'pending' || request.status === 'rejected') {
+                    window.location.href = 'waiting.html';
+                    return;
+                }
+            }
+
+            // 2. ПРОВЕРКА УСПЕШНЫХ РОЛЕЙ ПО ПРИОРИТЕТУ
+
+            // Приоритет 1: Организация
+            if (!orgRequests.empty && orgRequests.docs[0].data().status === 'approved') {
+                const req = orgRequests.docs[0].data();
+                window.location.href = `organization-dashboard.html?id=${req.organizationId || orgRequests.docs[0].id}`;
+                return;
+            }
+
+            // Приоритет 2: Партнёр
+            if (!partnerRequests.empty && partnerRequests.docs[0].data().status === 'approved') {
+                window.location.href = 'partner-dashboard.html';
+                return;
+            }
+
+            // Приоритет 3: Владелец клуба (строго владелец, а не просто участник!)
+            if (clubDoc.exists() && clubDoc.data().status === 'approved' && clubDoc.data().ownerId === uid) {
+                window.location.href = `club-profile.html?id=${uid}`;
+                return;
+            }
+
+            // Приоритет 4: Боец (Дефолтный вариант для всех остальных)
+            const fighterDoc = await getDoc(doc(db, "fighters", uid));
+            if (fighterDoc.exists()) {
+                // МЫ УБРАЛИ ПРОВЕРКУ fighter.clubId ОТСЮДА!
+                // Боец всегда попадает в свой профиль, а оттуда уже может перейти в клуб.
+                window.location.href = `profile.html?id=${uid}`;
+                return;
+            }
+
+            // 3. ЕСЛИ ВООБЩЕ НИЧЕГО НЕ НАЙДЕНО (битый аккаунт)
+            await signOut(auth);
+            showToast('❌ Аккаунт не найден', 'error');
+            window.location.href = 'login.html';
+
+        } catch (err) {
+            console.error('Ошибка редиректа:', err);
+            await signOut(auth);
+            window.location.href = 'login.html';
+        }
+    }
+
     function showToast(message, type = 'info', duration = 3000) {
         const toast = document.getElementById('toast');
         toast.textContent = message;
@@ -1477,7 +1556,7 @@
         }
     });
 
-    // ================================================================
+        // ================================================================
     // ВХОД (FIREBASE)
     // ================================================================
     btnLogin.addEventListener('click', async () => {
@@ -1492,100 +1571,22 @@
             showToast('❌ Введите корректный email', 'error');
             return;
         }
-        if (password.length < 6) {
-            showToast('❌ Пароль должен быть не менее 6 символов', 'error');
-            return;
-        }
 
         try {
+            btnLogin.disabled = true;
+            btnLogin.innerHTML = '<div class="loading-spinner"></div> Вход...';
+
             const userCred = await signInWithEmailAndPassword(auth, email, password);
-            currentUser = userCred.user;
-            const uid = currentUser.uid;
-
-            // ===== 1. СНАЧАЛА ПРОВЕРЯЕМ ЗАЯВКИ =====
-
-            // Проверяем клубы (pending/rejected)
-            const clubDoc = await getDoc(doc(db, "clubs", uid));
-            if (clubDoc.exists()) {
-                const club = clubDoc.data();
-                if (club.status === 'pending' || club.status === 'rejected') {
-                    window.location.href = 'waiting.html';
-                    return;
-                }
-                if (club.status === 'approved') {
-                    window.location.href = `club-profile.html?id=${uid}`;
-                    return;
-                }
-            }
-
-            // Проверяем организации
-            const orgRequests = await getDocs(query(
-                collection(db, "organization_requests"),
-                where("userId", "==", uid)
-            ));
-
-            if (!orgRequests.empty) {
-                const request = orgRequests.docs[0].data();
-                if (request.status === 'pending' || request.status === 'rejected') {
-                    window.location.href = 'waiting.html';
-                    return;
-                }
-                if (request.status === 'approved') {
-                    // 🔥 ИСПОЛЬЗУЕМ organizationId ИЗ ЗАЯВКИ
-                    const orgId = request.organizationId || orgRequests.docs[0].id;
-                    window.location.href = `organization-dashboard.html?id=${orgId}`;
-                    return;
-                }
-            }
-
-            // Проверяем партнёров (pending/rejected)
-            const partnerRequests = await getDocs(query(
-                collection(db, "partner_requests"),
-                where("userId", "==", uid)
-            ));
             
-            if (!partnerRequests.empty) {
-                const request = partnerRequests.docs[0].data();
-                if (request.status === 'pending' || request.status === 'rejected') {
-                    window.location.href = 'waiting.html';
-                    return;
-                }
-                if (request.status === 'approved') {
-                    window.location.href = 'partner-dashboard.html';
-                    return;
-                }
-            }
-
-            // ===== 2. ПОТОМ ПРОВЕРЯЕМ БОЙЦА (ОДОБРЕННЫЙ) =====
-            const fighterDoc = await getDoc(doc(db, "fighters", uid));
-            if (fighterDoc.exists()) {
-                const fighter = fighterDoc.data();
-                
-                if (fighter.clubId) {
-                    window.location.href = `club-profile.html?id=${fighter.clubId}`;
-                    return;
-                }
-                
-                if (fighter.isPartner) {
-                    window.location.href = 'partner-dashboard.html';
-                    return;
-                }
-                
-                window.location.href = `profile.html?id=${uid}`;
-                return;
-            }
-
-            // ===== 3. ЕСЛИ НИЧЕГО НЕ НАШЛИ =====
-            await signOut(auth);
-            showToast('❌ Аккаунт не найден', 'error');
+            // Вызываем нашу универсальную функцию редиректа
+            await handleLoginRedirect(userCred.user.uid);
 
         } catch (err) {
             console.error('Login error:', err);
-            if (err.code === 'auth/user-not-found') {
-                showToast('❌ Пользователь не найден. Возможно, ваша заявка ещё не одобрена.', 'error');
-            } else if (err.code === 'auth/wrong-password') {
-                showToast('❌ Неверный пароль', 'error');
-            } else if (err.code === 'auth/invalid-credential') {
+            btnLogin.disabled = false;
+            btnLogin.innerHTML = '<i class="fas fa-sign-in-alt"></i> Войти';
+            
+            if (err.code === 'auth/user-not-found' || err.code === 'auth/invalid-credential' || err.code === 'auth/wrong-password') {
                 showToast('❌ Неверный email или пароль', 'error');
             } else if (err.code === 'auth/too-many-requests') {
                 showToast('❌ Слишком много попыток. Попробуйте позже.', 'error');
@@ -1921,84 +1922,13 @@
         btnRegister.innerHTML = '<i class="fas fa-user-plus"></i> Зарегистрироваться';
     }
 
-    // ================================================================
-    // ПРОВЕРКА АВТОРИЗАЦИИ
+        // ================================================================
+    // ПРОВЕРКА АВТОРИЗАЦИИ (при обновлении страницы)
     // ================================================================
     onAuthStateChanged(auth, async (user) => {
         if (user) {
-            const uid = user.uid;
-            
-            // ===== 1. ПРОВЕРЯЕМ ЗАЯВКИ =====
-            
-            // Клуб
-            const clubDoc = await getDoc(doc(db, "clubs", uid));
-            if (clubDoc.exists()) {
-                const club = clubDoc.data();
-                if (club.status === 'pending' || club.status === 'rejected') {
-                    window.location.href = 'waiting.html';
-                    return;
-                }
-                if (club.status === 'approved') {
-                    window.location.href = `club-profile.html?id=${uid}`;
-                    return;
-                }
-            }
-            
-            // Организация
-            const orgRequests = await getDocs(query(
-                collection(db, "organization_requests"),
-                where("userId", "==", uid)
-            ));
-            if (!orgRequests.empty) {
-                const request = orgRequests.docs[0].data();
-                if (request.status === 'pending' || request.status === 'rejected') {
-                    window.location.href = 'waiting.html';
-                    return;
-                }
-                if (request.status === 'approved') {
-                    // 🔥 ИСПОЛЬЗУЕМ organizationId ИЗ ЗАЯВКИ
-                    const orgId = request.organizationId || orgRequests.docs[0].id;
-                    window.location.href = `organization-dashboard.html?id=${orgId}`;
-                    return;
-                }
-            }
-            
-            // Партнёр
-            const partnerRequests = await getDocs(query(
-                collection(db, "partner_requests"),
-                where("userId", "==", uid)
-            ));
-            if (!partnerRequests.empty) {
-                const request = partnerRequests.docs[0].data();
-                if (request.status === 'pending' || request.status === 'rejected') {
-                    window.location.href = 'waiting.html';
-                    return;
-                }
-                if (request.status === 'approved') {
-                    window.location.href = 'partner-dashboard.html';
-                    return;
-                }
-            }
-            
-            // ===== 2. ПРОВЕРЯЕМ БОЙЦА =====
-            const fighterDoc = await getDoc(doc(db, "fighters", uid));
-            if (fighterDoc.exists()) {
-                const fighter = fighterDoc.data();
-                if (fighter.isPartner) {
-                    window.location.href = 'partner-dashboard.html';
-                    return;
-                }
-                if (fighter.clubId) {
-                    window.location.href = `club-profile.html?id=${fighter.clubId}`;
-                    return;
-                }
-                window.location.href = `profile.html?id=${uid}`;
-                return;
-            }
-            
-            // Если ничего не найдено — выходим
-            await signOut(auth);
-            window.location.href = 'login.html';
+            // Если пользователь уже вошел, просто направляем его по правильной роли
+            await handleLoginRedirect(user.uid);
         }
     });
 

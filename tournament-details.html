@@ -16,20 +16,9 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700;14..32,800;14..32,900&display=swap" rel="stylesheet">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            background: radial-gradient(ellipse at 30% 40%, rgba(251, 191, 36, 0.15) 0%, transparent 60%),
-                        radial-gradient(ellipse at 70% 80%, rgba(251, 191, 36, 0.08) 0%, transparent 50%),
-                        linear-gradient(135deg, #1a1a1a 0%, #0f0f0f 40%, #1a1a1a 100%);
-            background-attachment: fixed;
-            color: #fff;
-            line-height: 1.4;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-        }
+        body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; background: radial-gradient(ellipse at 30% 40%, rgba(251,191,36,0.15) 0%, transparent 60%), radial-gradient(ellipse at 70% 80%, rgba(251,191,36,0.08) 0%, transparent 50%), linear-gradient(135deg, #1a1a1a 0%, #0f0f0f 40%, #1a1a1a 100%); background-attachment: fixed; color: #fff; line-height: 1.4; min-height: 100vh; display: flex; flex-direction: column; }
         .gold-top { position: fixed; top: 0; left: 0; width: 100%; height: 3px; background: linear-gradient(90deg, #fbbf24, #ffdd88, #fbbf24, #b8860b); z-index: 1001; }
-        .navbar { display: flex; justify-content: space-between; align-items: center; padding: 16px 32px; background: rgba(0, 0, 0, 0.75); backdrop-filter: blur(16px); border-bottom: 1px solid rgba(251, 191, 36, 0.25); position: sticky; top: 0; z-index: 1000; }
+        .navbar { display: flex; justify-content: space-between; align-items: center; padding: 16px 32px; background: rgba(0,0,0,0.75); backdrop-filter: blur(16px); border-bottom: 1px solid rgba(251,191,36,0.25); position: sticky; top: 0; z-index: 1000; }
         .logo { font-size: 1.8rem; font-weight: 800; cursor: pointer; background: linear-gradient(135deg, #ffffff, #fbbf24); background-clip: text; color: transparent; }
         .logo span { background: linear-gradient(135deg, #fbbf24, #ffdd77); background-clip: text; color: transparent; }
         .menu-toggle { display: none; background: rgba(251,191,36,0.1); border: 1px solid #fbbf24; color: #fbbf24; font-size: 1.6rem; cursor: pointer; padding: 8px 14px; border-radius: 12px; min-height: 44px; min-width: 44px; }
@@ -38,96 +27,50 @@
         .nav-links a i { margin-right: 8px; color: #fbbf24; }
         .nav-links a:hover { color: #fbbf24; background: rgba(251,191,36,0.1); }
         .container { max-width: 1000px; margin: 2rem auto; padding: 0 24px; width: 100%; flex: 1; }
-
-        /* ===== ХЛЕБНЫЕ КРОШКИ ===== */
         .breadcrumbs { display: flex; align-items: center; gap: 8px; margin-bottom: 20px; font-size: 0.75rem; color: #888; flex-wrap: wrap; }
-        .breadcrumbs a { color: #888; text-decoration: none; transition: color 0.2s ease; }
+        .breadcrumbs a { color: #888; text-decoration: none; }
         .breadcrumbs a:hover { color: #fbbf24; }
         .breadcrumbs i { font-size: 0.6rem; color: #555; }
         .breadcrumbs .current { color: #fbbf24; font-weight: 600; }
-
-        /* ===== ШАПКА ТУРНИРА ===== */
         .tournament-header { background: rgba(15,15,15,0.7); backdrop-filter: blur(12px); border-radius: 24px; padding: 24px; margin-bottom: 20px; border: 1px solid rgba(251,191,36,0.15); }
         .tournament-header .top-row { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px; flex-wrap: wrap; gap: 12px; }
         .tournament-header .name { font-size: 1.4rem; font-weight: 800; color: #fff; }
         .status-badge { display: inline-flex; align-items: center; gap: 4px; font-size: 0.55rem; font-weight: 700; padding: 3px 10px; border-radius: 30px; height: 22px; text-transform: uppercase; letter-spacing: 0.3px; white-space: nowrap; }
         .status-badge i { font-size: 0.45rem; }
         .status-badge.registration { background: rgba(251,191,36,0.12); color: #fbbf24; border: 1px solid rgba(251,191,36,0.2); }
+        .status-badge.scheduled { background: rgba(139,92,246,0.12); color: #a78bfa; border: 1px solid rgba(139,92,246,0.2); }
         .status-badge.active { background: rgba(16,185,129,0.12); color: #10b981; border: 1px solid rgba(16,185,129,0.2); }
         .status-badge.completed { background: rgba(59,130,246,0.12); color: #60a5fa; border: 1px solid rgba(59,130,246,0.2); }
-        .status-badge.cancelled { background: rgba(239,68,68,0.12); color: #ef4444; border: 1px solid rgba(239,68,68,0.2); }
         .tournament-header .details { display: flex; flex-wrap: wrap; gap: 16px; font-size: 0.75rem; color: #aaa; }
         .tournament-header .details span { display: flex; align-items: center; gap: 6px; }
         .tournament-header .details i { color: #fbbf24; font-size: 0.7rem; }
         .header-actions { display: flex; gap: 8px; flex-wrap: wrap; }
-
         .btn { font-family: 'Inter', sans-serif; font-weight: 600; font-size: 0.7rem; border: none; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 8px 16px; border-radius: 40px; min-height: 36px; transition: all 0.2s ease; white-space: nowrap; text-decoration: none; }
         .btn:active { transform: scale(0.96); }
         .btn-primary { background: #fbbf24; color: #0a0a0a; }
         .btn-primary:hover { background: #ffd94d; }
-        .btn-outline { background: transparent; border: 1px solid rgba(251, 191, 36, 0.4); color: #fbbf24; padding: 8px 14px; }
+        .btn-outline { background: transparent; border: 1px solid rgba(251,191,36,0.4); color: #fbbf24; padding: 8px 14px; }
         .btn-large { padding: 14px 28px; font-size: 0.9rem; min-height: 50px; width: 100%; }
         .btn-danger { background: rgba(239,68,68,0.15); border: 1px solid rgba(239,68,68,0.3); color: #ef4444; }
         .btn-success { background: rgba(16,185,129,0.15); border: 1px solid rgba(16,185,129,0.3); color: #10b981; }
-
-        /* ===== ВКЛАДКИ ===== */
-        .tabs { 
-            display: flex; 
-            gap: 4px; 
-            background: rgba(15,15,15,0.5); 
-            border-radius: 16px; 
-            padding: 4px; 
-            margin-bottom: 20px; 
-            border: 1px solid rgba(251,191,36,0.1); 
-            overflow-x: auto; 
-            -webkit-overflow-scrolling: touch;
-            scrollbar-width: none;
-            -ms-overflow-style: none;
-        }
-        .tabs::-webkit-scrollbar { 
-            display: none; 
-        }
-        .tab-btn { 
-            flex: 0 0 auto; 
-            padding: 8px 12px; 
-            border: none; 
-            background: transparent; 
-            color: #888; 
-            font-family: 'Inter', sans-serif; 
-            font-weight: 600; 
-            font-size: 0.7rem; 
-            border-radius: 12px; 
-            cursor: pointer; 
-            transition: all 0.3s ease; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            gap: 6px; 
-            min-height: 38px; 
-            white-space: nowrap; 
-        }
-    .tab-btn:hover { color: #fff; }
-    .tab-btn.active { color: #fbbf24; background: rgba(251,191,36,0.12); }
-    .tab-btn .badge { background: rgba(0,0,0,0.2); padding: 2px 6px; border-radius: 20px; font-size: 0.6rem; font-weight: 700; }
-
-        /* ===== ПАНЕЛИ ===== */
+        .btn-sm { padding: 6px 12px; font-size: 0.65rem; min-height: 32px; }
+        .tabs { display: flex; gap: 4px; background: rgba(15,15,15,0.5); border-radius: 16px; padding: 4px; margin-bottom: 20px; border: 1px solid rgba(251,191,36,0.1); overflow-x: auto; scrollbar-width: none; }
+        .tabs::-webkit-scrollbar { display: none; }
+        .tab-btn { flex: 0 0 auto; padding: 8px 12px; border: none; background: transparent; color: #888; font-family: 'Inter', sans-serif; font-weight: 600; font-size: 0.7rem; border-radius: 12px; cursor: pointer; transition: all 0.3s ease; display: flex; align-items: center; justify-content: center; gap: 6px; min-height: 38px; white-space: nowrap; }
+        .tab-btn:hover { color: #fff; }
+        .tab-btn.active { color: #fbbf24; background: rgba(251,191,36,0.12); }
+        .tab-btn .badge { background: rgba(0,0,0,0.2); padding: 2px 6px; border-radius: 20px; font-size: 0.6rem; font-weight: 700; }
         .panel { background: rgba(15,15,15,0.7); backdrop-filter: blur(8px); border-radius: 20px; padding: 20px; margin-bottom: 20px; border: 1px solid rgba(251,191,36,0.1); }
         .panel-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 10px; }
         .panel-header h3 { font-size: 0.9rem; font-weight: 700; display: flex; align-items: center; gap: 8px; }
         .panel-header h3 i { color: #fbbf24; }
-
-        /* ===== СТАТИСТИКА ===== */
-        .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 20px; }
+        .stats-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 12px; margin-bottom: 20px; }
         .stat-card { background: rgba(15,15,15,0.7); border-radius: 16px; padding: 16px; text-align: center; border: 1px solid rgba(251,191,36,0.1); }
         .stat-card .value { font-size: 1.3rem; font-weight: 800; color: #fbbf24; }
         .stat-card .label { font-size: 0.6rem; color: #888; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.3px; }
-
-        /* ===== ПРОГРЕСС ===== */
         .progress-bar { height: 6px; background: #2a2a2a; border-radius: 10px; overflow: hidden; margin-bottom: 8px; }
         .progress-fill { height: 100%; background: linear-gradient(90deg, #fbbf24, #ffdd77); border-radius: 10px; }
         .progress-text { display: flex; justify-content: space-between; font-size: 0.7rem; color: #888; }
-
-        /* ===== ЗАЯВКИ (ОРГАНИЗАТОР) ===== */
         .request-card { background: rgba(20,20,25,0.8); border: 1px solid rgba(251,191,36,0.1); border-radius: 14px; padding: 14px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
         .request-card .fighter-info { flex: 1; min-width: 180px; }
         .request-card .fighter-name { font-weight: 700; font-size: 0.85rem; color: #fff; }
@@ -135,59 +78,73 @@
         .request-actions { display: flex; gap: 6px; }
         .btn-approve { background: rgba(16,185,129,0.15); border: 1px solid rgba(16,185,129,0.3); color: #10b981; padding: 6px 12px; font-size: 0.65rem; border-radius: 20px; cursor: pointer; font-family: 'Inter', sans-serif; font-weight: 600; min-height: 30px; }
         .btn-reject { background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.2); color: #ef4444; padding: 6px 12px; font-size: 0.65rem; border-radius: 20px; cursor: pointer; font-family: 'Inter', sans-serif; font-weight: 600; min-height: 30px; }
-
-        /* ===== УЧАСТНИКИ ===== */
         .participant-card { background: rgba(20,20,25,0.8); border: 1px solid rgba(251,191,36,0.08); border-radius: 12px; padding: 12px; display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
         .participant-avatar { width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg, #fbbf24, #f59e0b); display: flex; align-items: center; justify-content: center; font-weight: 700; color: #000; font-size: 0.8rem; flex-shrink: 0; }
         .participant-name { font-weight: 600; font-size: 0.8rem; color: #fff; }
         .participant-club { font-size: 0.65rem; color: #888; }
-
-        /* ===== БЛОК МОЕЙ ЗАЯВКИ (БОЕЦ) ===== */
-        .my-registration-panel {
-            background: linear-gradient(135deg, rgba(251,191,36,0.08), rgba(15,15,15,0.7));
-            border: 1px solid rgba(251,191,36,0.25);
-            border-radius: 24px;
-            padding: 24px;
-            margin-bottom: 20px;
-        }
-        .my-reg-status {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            margin-bottom: 16px;
-        }
-        .status-icon {
-            width: 48px; height: 48px;
-            border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 1.2rem;
-            flex-shrink: 0;
-        }
+        .my-registration-panel { background: linear-gradient(135deg, rgba(251,191,36,0.08), rgba(15,15,15,0.7)); border: 1px solid rgba(251,191,36,0.25); border-radius: 24px; padding: 24px; margin-bottom: 20px; }
+        .my-reg-status { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+        .status-icon { width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; flex-shrink: 0; }
         .status-icon.pending { background: rgba(251,191,36,0.15); color: #fbbf24; }
         .status-icon.approved { background: rgba(16,185,129,0.15); color: #10b981; }
         .status-icon.rejected { background: rgba(239,68,68,0.15); color: #ef4444; }
-        .status-icon.none { background: rgba(100,116,139,0.15); color: #64748b; }
         .status-text { flex: 1; }
         .status-title { font-size: 1rem; font-weight: 700; color: #fff; margin-bottom: 2px; }
         .status-subtitle { font-size: 0.75rem; color: #aaa; }
-
-        /* ===== ОПИСАНИЕ ТУРНИРА (БОЕЦ) ===== */
         .description-panel { background: rgba(15,15,15,0.5); border-radius: 16px; padding: 16px; margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.05); }
         .description-panel p { font-size: 0.85rem; color: #ccc; line-height: 1.6; }
         .organizer-row { display: flex; align-items: center; gap: 10px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.05); margin-top: 12px; }
         .organizer-row .avatar { width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, #fbbf24, #f59e0b); display: flex; align-items: center; justify-content: center; font-weight: 700; color: #000; font-size: 0.8rem; }
         .organizer-row .info { font-size: 0.75rem; color: #888; }
         .organizer-row .info strong { color: #fff; display: block; }
-
-        /* ===== ПУСТОЕ СОСТОЯНИЕ ===== */
         .empty-state { text-align: center; padding: 40px 20px; color: #666; }
         .empty-state i { font-size: 2.5rem; color: #333; display: block; margin-bottom: 12px; }
         .empty-state h3 { color: #888; margin-bottom: 8px; font-size: 0.95rem; }
         .empty-state p { font-size: 0.8rem; }
-
-        /* ===== TOAST ===== */
+        .category-filters { display: flex; gap: 6px; margin-bottom: 16px; overflow-x: auto; scrollbar-width: none; padding-bottom: 4px; }
+        .category-filters::-webkit-scrollbar { display: none; }
+        .cat-filter-btn { padding: 6px 14px; border-radius: 20px; border: 1px solid rgba(251,191,36,0.15); background: transparent; color: #888; font-family: 'Inter', sans-serif; font-size: 0.65rem; font-weight: 600; cursor: pointer; transition: all 0.2s; white-space: nowrap; }
+        .cat-filter-btn:hover { color: #fff; border-color: rgba(251,191,36,0.3); }
+        .cat-filter-btn.active { background: rgba(251,191,36,0.12); color: #fbbf24; border-color: rgba(251,191,36,0.4); }
+        .bracket-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; overflow-x: auto; padding-bottom: 10px; }
+        .bracket-round { display: flex; flex-direction: column; gap: 12px; }
+        .round-title { font-size: 0.75rem; font-weight: 700; color: #fbbf24; text-transform: uppercase; letter-spacing: 0.5px; text-align: center; padding-bottom: 8px; border-bottom: 1px solid rgba(251,191,36,0.2); }
+        .match-card { background: rgba(20,20,25,0.9); border: 1px solid rgba(251,191,36,0.15); border-radius: 12px; padding: 12px; transition: all 0.2s ease; }
+        .match-card.clickable { cursor: pointer; }
+        .match-card.clickable:hover { border-color: rgba(251,191,36,0.4); transform: translateY(-2px); }
+        .match-card.completed { border-color: rgba(16,185,129,0.3); }
+        .match-card.bye { opacity: 0.5; }
+        .match-card.my-match { border-color: rgba(251,191,36,0.6); background: rgba(251,191,36,0.08); box-shadow: 0 0 20px rgba(251,191,36,0.1); }
+        .match-number { font-size: 0.6rem; color: #666; margin-bottom: 8px; text-align: center; }
+        .match-fighter { display: flex; align-items: center; gap: 8px; padding: 6px 8px; border-radius: 8px; margin-bottom: 4px; }
+        .match-fighter:last-child { margin-bottom: 0; }
+        .match-fighter.winner { background: rgba(16,185,129,0.1); }
+        .match-fighter.empty { opacity: 0.4; }
+        .match-fighter.me { background: rgba(251,191,36,0.15); border: 1px solid rgba(251,191,36,0.3); }
+        .match-fighter .fighter-avatar { width: 28px; height: 28px; border-radius: 50%; background: linear-gradient(135deg, #fbbf24, #f59e0b); display: flex; align-items: center; justify-content: center; font-weight: 700; color: #000; font-size: 0.7rem; flex-shrink: 0; }
+        .match-fighter .fighter-name { font-size: 0.75rem; font-weight: 600; color: #fff; flex: 1; }
+        .match-fighter.winner .fighter-name { color: #10b981; }
+        .match-fighter .winner-badge { font-size: 0.6rem; color: #10b981; }
+        .you-label { font-size: 0.55rem; font-weight: 800; color: #fbbf24; background: rgba(251,191,36,0.2); padding: 1px 6px; border-radius: 10px; text-transform: uppercase; }
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.75); backdrop-filter: blur(6px); z-index: 2000; display: none; align-items: center; justify-content: center; padding: 20px; }
+        .modal-overlay.show { display: flex; }
+        .modal { background: linear-gradient(135deg, #1a1a1a, #0a0a0a); border: 1px solid rgba(251,191,36,0.2); border-radius: 24px; padding: 28px; width: 100%; max-width: 500px; max-height: 90vh; overflow-y: auto; }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .modal-header h3 { font-size: 1.1rem; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+        .modal-header h3 i { color: #fbbf24; }
+        .modal-close { background: transparent; border: none; color: #888; font-size: 1.2rem; cursor: pointer; }
+        .modal-close:hover { color: #fff; }
+        .form-group { margin-bottom: 16px; }
+        .form-group label { display: block; font-size: 0.75rem; color: #aaa; margin-bottom: 6px; font-weight: 500; }
+        .form-group textarea { width: 100%; padding: 10px 14px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.06); border-radius: 12px; color: #fff; font-size: 0.85rem; font-family: 'Inter', sans-serif; resize: vertical; min-height: 80px; }
+        .form-group textarea:focus { outline: none; border-color: rgba(251,191,36,0.25); }
+        .winner-selection { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+        .winner-option { background: rgba(20,20,25,0.8); border: 2px solid rgba(251,191,36,0.1); border-radius: 16px; padding: 16px; cursor: pointer; transition: all 0.2s; text-align: center; }
+        .winner-option:hover { border-color: rgba(251,191,36,0.4); transform: translateY(-2px); }
+        .winner-option .avatar { width: 48px; height: 48px; border-radius: 50%; background: linear-gradient(135deg, #fbbf24, #f59e0b); display: flex; align-items: center; justify-content: center; font-weight: 700; color: #000; font-size: 1.2rem; margin: 0 auto 8px; }
+        .winner-option .name { font-size: 0.85rem; font-weight: 700; color: #fff; }
         .toast-container { position: fixed; top: 20px; right: 20px; z-index: 3000; display: flex; flex-direction: column; gap: 10px; pointer-events: none; }
-        .toast { background: rgba(15,15,15,0.95); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 14px 20px; display: flex; align-items: center; gap: 12px; min-width: 280px; box-shadow: 0 10px 40px rgba(0,0,0,0.5); transform: translateX(120%); transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); pointer-events: auto; }
+        .toast { background: rgba(15,15,15,0.95); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 14px 20px; display: flex; align-items: center; gap: 12px; min-width: 280px; box-shadow: 0 10px 40px rgba(0,0,0,0.5); transform: translateX(120%); transition: transform 0.4s cubic-bezier(0.175,0.885,0.32,1.275); pointer-events: auto; }
         .toast.show { transform: translateX(0); }
         .toast.success { border-left: 4px solid #10b981; }
         .toast.error { border-left: 4px solid #ef4444; }
@@ -197,683 +154,549 @@
         .toast.error i { color: #ef4444; }
         .toast.info i { color: #60a5fa; }
         .toast-message { font-size: 0.85rem; font-weight: 500; color: #fff; }
-
-        /* ===== СКЕЛЕТОН ===== */
-        .skeleton { background: linear-gradient(90deg, rgba(255,255,255,0.03) 25%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.03) 75%); background-size: 200% 100%; animation: skeleton-loading 1.5s infinite; border-radius: 8px; }
-        @keyframes skeleton-loading { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
-
-        /* ===== АДАПТИВ ===== */
+        .skeleton { background: linear-gradient(90deg, rgba(255,255,255,0.03) 25%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.03) 75%); background-size: 200% 100%; animation: skel 1.5s infinite; border-radius: 8px; }
+        @keyframes skel { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
         @media (max-width: 768px) {
-            .container { padding: 0 16px; }
-            .navbar { padding: 12px 18px; }
-            .menu-toggle { display: block; }
+            .container { padding: 0 16px; } .navbar { padding: 12px 18px; } .menu-toggle { display: block; }
             .nav-links { display: none; flex-direction: column; position: absolute; top: 68px; left: 18px; right: 18px; background: #0f0f0f; border-radius: 24px; padding: 20px; gap: 10px; border: 1px solid rgba(251,191,36,0.3); }
             .nav-links.show { display: flex; }
-            .stats-grid { grid-template-columns: 1fr 1fr; }
-            .tournament-header .name { font-size: 1.1rem; }
-            .tabs { overflow-x: auto; -webkit-overflow-scrolling: touch; }
-            .tab-btn { flex: 0 0 auto; min-width: 100px; }
-            .toast-container { top: auto; bottom: 20px; right: 16px; left: 16px; }
-            .toast { min-width: auto; width: 100%; }
+            .stats-grid { grid-template-columns: 1fr 1fr; } .tournament-header .name { font-size: 1.1rem; }
+            .toast-container { top: auto; bottom: 20px; right: 16px; left: 16px; } .toast { min-width: auto; width: 100%; }
+            .bracket-container { grid-template-columns: 1fr; } .winner-selection { grid-template-columns: 1fr; }
         }
-        @media (max-width: 480px) {
-            .stats-grid { grid-template-columns: 1fr; }
-            .header-actions { width: 100%; }
-            .header-actions .btn { flex: 1; }
-        }
+        @media (max-width: 480px) { .stats-grid { grid-template-columns: 1fr; } .header-actions { width: 100%; } .header-actions .btn { flex: 1; } }
     </style>
 </head>
 <body>
     <div class="gold-top"></div>
     <div class="toast-container" id="toastContainer"></div>
-
     <header class="navbar">
         <div class="logo" onclick="window.location='index.html'">PRO<span>RANK</span></div>
         <button class="menu-toggle" id="menuToggle"><i class="fas fa-bars"></i></button>
         <nav class="nav-links" id="navLinks"></nav>
     </header>
-
     <main>
         <div class="container">
-            <!-- ХЛЕБНЫЕ КРОШКИ (динамические) -->
             <div class="breadcrumbs" id="breadcrumbs"></div>
-
-            <!-- ШАПКА ТУРНИРА (общая) -->
-            <div class="tournament-header" id="tournamentHeader">
+            <div class="tournament-header">
                 <div class="top-row">
-                    <div class="name" id="tournamentName">
-                        <div class="skeleton" style="width: 250px; height: 24px;"></div>
-                    </div>
-                    <div class="header-actions" id="headerActions" style="display: none;">
-                        <button class="btn btn-outline" id="backBtn">
-                            <i class="fas fa-arrow-left"></i> <span id="backBtnText">Назад</span>
-                        </button>
-                        <button class="btn btn-primary" id="changeStatusBtn" style="display: none;">
-                            <i class="fas fa-play"></i> <span id="statusBtnText">Начать турнир</span>
-                        </button>
+                    <div class="name" id="tournamentName"><div class="skeleton" style="width:250px;height:24px;"></div></div>
+                    <div class="header-actions" id="headerActions" style="display:none;">
+                        <button class="btn btn-outline" id="backBtn"><i class="fas fa-arrow-left"></i> <span id="backBtnText">Назад</span></button>
+                        <button class="btn btn-primary" id="changeStatusBtn" style="display:none;"><i class="fas fa-play"></i> <span id="statusBtnText">Начать турнир</span></button>
                     </div>
                 </div>
                 <div class="details" id="tournamentDetails"></div>
             </div>
-
-            <!-- БЛОК: ИНТЕРФЕЙС ОРГАНИЗАТОРА -->
-            <div id="organizerInterface" style="display: none;">
-                <div class="tabs" id="tabsContainer">
-                    <button class="tab-btn active" data-tab="overview"><i class="fas fa-chart-pie"></i> Обзор</button>
-                    <button class="tab-btn" data-tab="requests"><i class="fas fa-user-clock"></i> Заявки <span class="badge" id="requestsBadge">0</span></button>
-                    <button class="tab-btn" data-tab="participants"><i class="fas fa-users"></i> Участники</button>
-                    <button class="tab-btn" data-tab="bracket"><i class="fas fa-sitemap"></i> Сетка</button>
-                    <button class="tab-btn" data-tab="results"><i class="fas fa-medal"></i> Результаты</button>
-                </div>
-
+            <div id="organizerInterface" style="display:none;">
+                <div class="tabs" id="tabsContainer"></div>
                 <div id="tab-overview">
                     <div class="stats-grid">
                         <div class="stat-card"><div class="value" id="statParticipants">0</div><div class="label">Участников</div></div>
                         <div class="stat-card"><div class="value" id="statCollected">0 ₽</div><div class="label">Собрано</div></div>
                         <div class="stat-card"><div class="value" id="statMine">0 ₽</div><div class="label">Мои (80%)</div></div>
-                        <div class="stat-card"><div class="value" id="statProrank">0 ₽</div><div class="label">PRORANK (20%)</div></div>
+                        <div class="stat-card"><div class="value" id="statCompleted">0</div><div class="label">Боёв проведено</div></div>
                     </div>
-                    <div class="panel">
-                        <div class="panel-header"><h3><i class="fas fa-chart-bar"></i> Прогресс набора</h3></div>
-                        <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width: 0%;"></div></div>
-                        <div class="progress-text">
-                            <span id="progressParticipants">0 / 0</span>
-                            <span id="progressPercent">0%</span>
-                        </div>
-                    </div>
+                    <div class="panel"><div class="panel-header"><h3><i class="fas fa-chart-bar"></i> Прогресс</h3></div><div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%;"></div></div><div class="progress-text"><span id="progressParticipants">0/0</span><span id="progressPercent">0%</span></div></div>
                 </div>
-
-                <div id="tab-requests" style="display: none;">
-                    <div class="panel">
-                        <div class="panel-header"><h3><i class="fas fa-user-clock"></i> Заявки на участие</h3></div>
-                        <div id="requestsList"><div class="empty-state"><i class="fas fa-spinner fa-spin"></i><h3>Загрузка...</h3></div></div>
-                    </div>
-                </div>
-
-                <div id="tab-participants" style="display: none;">
-                    <div class="panel">
-                        <div class="panel-header"><h3><i class="fas fa-users"></i> Подтверждённые участники</h3></div>
-                        <div id="participantsList"><div class="empty-state"><i class="fas fa-spinner fa-spin"></i><h3>Загрузка...</h3></div></div>
-                    </div>
-                </div>
-
-                <div id="tab-bracket" style="display: none;">
-                    <div class="panel">
-                        <div class="panel-header"><h3><i class="fas fa-sitemap"></i> Сетка боёв</h3></div>
-                        <div class="empty-state">
-                            <i class="fas fa-sitemap"></i>
-                            <h3>Сетка будет доступна после начала турнира</h3>
-                            <p>Нажмите "Начать турнир" вверху страницы</p>
-                        </div>
-                    </div>
-                </div>
-
-                <div id="tab-results" style="display: none;">
-                    <div class="panel">
-                        <div class="panel-header"><h3><i class="fas fa-medal"></i> Результаты боёв</h3></div>
-                        <div class="empty-state">
-                            <i class="fas fa-medal"></i>
-                            <h3>Результаты появятся после проведения боёв</h3>
-                            <p>Вносите результаты после каждого боя</p>
-                        </div>
-                    </div>
-                </div>
+                <div id="tab-requests" style="display:none;"><div class="panel"><div class="panel-header"><h3><i class="fas fa-user-clock"></i> Заявки</h3><button class="btn btn-outline btn-sm" id="exportCsvBtn"><i class="fas fa-file-csv"></i> CSV</button></div><div id="requestsList"></div></div></div>
+                <div id="tab-participants" style="display:none;"><div class="panel"><div class="panel-header"><h3><i class="fas fa-users"></i> Участники</h3><button class="btn btn-outline btn-sm" id="broadcastBtn"><i class="fas fa-bullhorn"></i> Рассылка</button></div><div id="participantsList"></div></div></div>
+                <div id="tab-bracket" style="display:none;"><div class="panel"><div class="panel-header"><h3><i class="fas fa-sitemap"></i> Сетка боёв</h3></div><div id="bracketCategoryFilters" class="category-filters"></div><div id="bracketContainer"></div></div></div>
+                <div id="tab-results" style="display:none;"><div class="panel"><div class="panel-header"><h3><i class="fas fa-medal"></i> Результаты</h3></div><div id="resultsContainer"></div></div></div>
             </div>
-
-            <!-- БЛОК: ИНТЕРФЕЙС БОЙЦА -->
-            <div id="fighterInterface" style="display: none;">
-                <!-- МОЯ ЗАЯВКА -->
-                <div class="my-registration-panel" id="myRegPanel" style="display: none;"></div>
-
-                <!-- ОПИСАНИЕ -->
-                <div class="description-panel" id="descriptionPanel" style="display: none;">
-                    <p id="tournamentDescription"></p>
-                    <div class="organizer-row" id="organizerRow"></div>
-                </div>
-
-                <!-- УЧАСТНИКИ (read-only) -->
-                <div class="panel">
-                    <div class="panel-header"><h3><i class="fas fa-users"></i> Участники турнира</h3></div>
-                    <div id="fighterParticipantsList"><div class="empty-state"><i class="fas fa-spinner fa-spin"></i><h3>Загрузка...</h3></div></div>
-                </div>
-
-                <!-- КНОПКА ЗАПИСИ -->
-                <div id="fighterActionsPanel" style="margin-bottom: 20px;"></div>
+            <div id="fighterInterface" style="display:none;">
+                <div class="my-registration-panel" id="myRegPanel" style="display:none;"></div>
+                <div class="description-panel" id="descriptionPanel" style="display:none;"><p id="tournamentDescription"></p><div class="organizer-row" id="organizerRow"></div></div>
+                <div class="tabs" id="fighterTabs"></div>
+                <div id="fighterTab-participants"><div class="panel"><div class="panel-header"><h3><i class="fas fa-users"></i> Участники</h3></div><div id="fighterParticipantsList"></div></div></div>
+                <div id="fighterTab-bracket" style="display:none;"><div class="panel"><div class="panel-header"><h3><i class="fas fa-sitemap"></i> Сетка турнира</h3></div><div id="fighterBracketFilters" class="category-filters"></div><div id="fighterBracketContainer"></div></div></div>
+                <div id="fighterTab-results" style="display:none;"><div class="panel"><div class="panel-header"><h3><i class="fas fa-medal"></i> Результаты</h3></div><div id="fighterResultsContainer"></div></div></div>
+                <div id="fighterActionsPanel" style="margin-bottom:20px;"></div>
             </div>
         </div>
     </main>
-
+    <div class="modal-overlay" id="resultModal"><div class="modal"><div class="modal-header"><h3><i class="fas fa-trophy"></i> Результат боя</h3><button class="modal-close" onclick="document.getElementById('resultModal').classList.remove('show')"><i class="fas fa-times"></i></button></div><div id="resultModalContent"></div></div></div>
+    <div class="modal-overlay" id="broadcastModal"><div class="modal"><div class="modal-header"><h3><i class="fas fa-bullhorn"></i> Рассылка</h3><button class="modal-close" onclick="document.getElementById('broadcastModal').classList.remove('show')"><i class="fas fa-times"></i></button></div><div class="form-group"><label>Сообщение</label><textarea id="broadcastMessage" placeholder="Турнир переносится..."></textarea></div><button class="btn btn-primary" id="sendBroadcastBtn" style="width:100%;justify-content:center;"><i class="fas fa-paper-plane"></i> Отправить</button></div></div>
     <div id="mobileBottomNavContainer"></div>
-
-    <script type="importmap">
-        {
-            "imports": {
-                "firebase/app": "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js",
-                "firebase/firestore": "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js",
-                "firebase/auth": "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js"
-            }
-        }
-    </script>
+    <script type="importmap">{"imports":{"firebase/app":"https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js","firebase/firestore":"https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js","firebase/auth":"https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js"}}</script>
     <script type="module" src="header.js"></script>
     <script type="module">
         import { initializeApp } from "firebase/app";
-        import { getFirestore, doc, getDoc, updateDoc, collection, query, where, getDocs, addDoc, deleteDoc, serverTimestamp, increment } from "firebase/firestore";
+        import { getFirestore, doc, getDoc, updateDoc, collection, query, where, getDocs, addDoc, deleteDoc, serverTimestamp, increment, writeBatch } from "firebase/firestore";
         import { getAuth, onAuthStateChanged } from "firebase/auth";
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyDUGYJY7pX7q02MS5SACMIIQXpjpQ97mPw",
-            authDomain: "proranklive.firebaseapp.com",
-            projectId: "proranklive",
-            storageBucket: "proranklive.firebasestorage.app",
-            messagingSenderId: "716836144015",
-            appId: "1:716836144015:web:f1575147750608d0f881fa"
-        };
-
+        const firebaseConfig = { apiKey:"AIzaSyDUGYJY7pX7q02MS5SACMIIQXpjpQ97mPw", authDomain:"proranklive.firebaseapp.com", projectId:"proranklive", storageBucket:"proranklive.firebasestorage.app", messagingSenderId:"716836144015", appId:"1:716836144015:web:f1575147750608d0f881fa" };
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
         const auth = getAuth(app);
 
-        let tournamentId = null;
-        let tournamentData = null;
-        let registrations = [];
-        let currentUser = null;
-        let currentFighterData = null;
-        let userRole = 'guest'; // 'organizer' | 'fighter' | 'guest'
-        let myOrgId = null;
-        let myRegistration = null;
+        const FRS_WIN = 100, FRS_WIN_FINISH = 150, FRS_LOSS = -50;
+        const WEIGHT_CLASSES = [
+            { name:"Наилегчайшая", range:"45–50 кг", min:45, max:50 },
+            { name:"Легчайшая", range:"51–56 кг", min:51, max:56 },
+            { name:"Полулёгкая", range:"57–61 кг", min:57, max:61 },
+            { name:"Лёгкая", range:"62–66 кг", min:62, max:66 },
+            { name:"1-я полусредняя", range:"67–71 кг", min:67, max:71 },
+            { name:"Полусредняя", range:"72–77 кг", min:72, max:77 },
+            { name:"1-я средняя", range:"78–83 кг", min:78, max:83 },
+            { name:"Средняя", range:"84–89 кг", min:84, max:89 },
+            { name:"Полутяжёлая", range:"90–99 кг", min:90, max:99 },
+            { name:"Тяжёлая", range:"100+ кг", min:100, max:999 }
+        ];
 
-        const formatDate = (dateStr) => {
-            if (!dateStr) return '—';
-            return new Date(dateStr + 'T00:00:00').toLocaleDateString('ru-RU');
+        let tournamentId=null, tournamentData=null, registrations=[], matches=[], currentUser=null, currentFighterData=null, userRole='guest', myOrgId=null, myRegistration=null, selectedCategory='all';
+
+        const formatDate = d => d ? new Date(d+'T00:00:00').toLocaleDateString('ru-RU') : '—';
+        const daysUntil = d => Math.ceil((new Date(d+'T00:00:00') - new Date()) / 86400000);
+
+        function getFighterWeightClass(weight, tournamentClasses) {
+            const w = parseFloat(weight);
+            if (isNaN(w)) return tournamentClasses?.[0] || null;
+            for (const wc of WEIGHT_CLASSES) {
+                if (w >= wc.min && w <= wc.max) {
+                    const full = `${wc.name} (${wc.range})`;
+                    if (!tournamentClasses || tournamentClasses.includes(full)) return full;
+                }
+            }
+            return tournamentClasses?.[0] || null;
+        }
+
+        window.showToast = function(msg, type='info') {
+            const c = document.getElementById('toastContainer'), t = document.createElement('div');
+            t.className = `toast ${type}`;
+            const ic = {success:'fa-check-circle',error:'fa-exclamation-circle',info:'fa-info-circle'};
+            t.innerHTML = `<i class="fas ${ic[type]}"></i><span class="toast-message">${msg}</span>`;
+            c.appendChild(t); requestAnimationFrame(()=>t.classList.add('show'));
+            setTimeout(()=>{t.classList.remove('show');setTimeout(()=>t.remove(),400);},3500);
         };
 
-        // ===== TOAST =====
-        window.showToast = function(message, type = 'info') {
-            const container = document.getElementById('toastContainer');
-            const toast = document.createElement('div');
-            toast.className = `toast ${type}`;
-            const icons = { success: 'fa-check-circle', error: 'fa-exclamation-circle', info: 'fa-info-circle' };
-            toast.innerHTML = `<i class="fas ${icons[type]}"></i><span class="toast-message">${message}</span>`;
-            container.appendChild(toast);
-            requestAnimationFrame(() => toast.classList.add('show'));
-            setTimeout(() => {
-                toast.classList.remove('show');
-                setTimeout(() => toast.remove(), 400);
-            }, 3500);
-        };
+        // ===== ПОЛУЧЕНИЕ ОРГАНИЗАЦИИ ПОЛЬЗОВАТЕЛЯ =====
+        async function getUserOrgId(userId) {
+            try {
+                // Способ 1: через organization_requests
+                const r1 = await getDocs(query(collection(db,"organization_requests"), where("userId","==",userId), where("status","==","approved")));
+                if (!r1.empty) {
+                    const d = r1.docs[0].data();
+                    return d.organizationId || r1.docs[0].id;
+                }
+                // Способ 2: через organizations (прямое поле userId)
+                const r2 = await getDocs(query(collection(db,"organizations"), where("userId","==",userId)));
+                if (!r2.empty) return r2.docs[0].id;
+            } catch(e) { console.error('getUserOrgId:', e); }
+            return null;
+        }
 
-        // ===== ВКЛАДКИ (ТОЛЬКО ОРГАНИЗАТОР) =====
-        document.querySelectorAll('.tab-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-                document.querySelectorAll('[id^="tab-"]').forEach(content => content.style.display = 'none');
-                document.getElementById(`tab-${btn.dataset.tab}`).style.display = 'block';
-            });
-        });
+        // ===== ПРОВЕРКА: ЯВЛЯЕТСЯ ЛИ ПОЛЬЗОВАТЕЛЬ ОРГАНИЗАТОРОМ ЭТОГО ТУРНИРА =====
+        function isUserOrganizerOfTournament(userId) {
+            if (!tournamentData) return false;
+            // Проверка 1: createdByUserId
+            if (tournamentData.createdByUserId === userId) return true;
+            // Проверка 2: organizationId турнира совпадает с организацией пользователя
+            if (myOrgId && tournamentData.organizationId === myOrgId) return true;
+            return false;
+        }
 
-        // ===== ЗАГРУЗКА ТУРНИРА =====
+        async function checkAutoGenerateBracket() {
+            if (!tournamentData || userRole !== 'organizer') return;
+            if (tournamentData.bracketGenerated) return;
+            if (tournamentData.status !== 'registration') return;
+            const days = daysUntil(tournamentData.date);
+            const approvedCount = registrations.filter(r => r.status === 'approved').length;
+            const isFull = tournamentData.maxParticipants && approvedCount >= tournamentData.maxParticipants;
+            if (days <= 3 || isFull) {
+                if (approvedCount >= 2) {
+                    await generateBracket();
+                    await updateDoc(doc(db,"tournaments",tournamentId), { status:'scheduled', bracketGenerated:true, updatedAt:new Date().toISOString() });
+                    tournamentData.status = 'scheduled';
+                    tournamentData.bracketGenerated = true;
+                    showToast('🏗️ Сетка сгенерирована автоматически!','success');
+                    renderHeader(); renderTabs(); renderBracket();
+                }
+            }
+        }
+
         async function loadTournament(id) {
             try {
-                const docSnap = await getDoc(doc(db, "tournaments", id));
-                if (!docSnap.exists()) {
-                    showToast('Турнир не найден', 'error');
-                    setTimeout(() => window.history.back(), 1500);
-                    return;
-                }
-                tournamentData = { id: docSnap.id, ...docSnap.data() };
-                tournamentId = id;
-                renderHeader();
-                await loadRegistrations();
-                await determineRoleAndRender();
-            } catch (err) {
-                console.error('Ошибка:', err);
-                showToast('Ошибка загрузки: ' + err.message, 'error');
-            }
+                const s = await getDoc(doc(db,"tournaments",id));
+                if (!s.exists()) { showToast('Турнир не найден','error'); setTimeout(()=>window.history.back(),1500); return; }
+                tournamentData = { id:s.id, ...s.data() }; tournamentId = id;
+            } catch(e) { showToast('Ошибка: '+e.message,'error'); }
         }
 
         function renderHeader() {
+            if (!tournamentData) return;
             document.getElementById('tournamentName').textContent = tournamentData.name;
             document.title = `${tournamentData.name} | PRORANK`;
-
-            const detailsHtml = `
+            document.getElementById('tournamentDetails').innerHTML = `
                 <span><i class="fas fa-calendar-alt"></i> ${formatDate(tournamentData.date)}</span>
-                <span><i class="fas fa-map-marker-alt"></i> ${tournamentData.city || '—'}</span>
-                <span><i class="fas fa-fist-raised"></i> ${tournamentData.sport || '—'}</span>
-                <span><i class="fas fa-ruble-sign"></i> ${tournamentData.entryFee || 0} ₽</span>
-                <span><i class="fas fa-users"></i> ${tournamentData.participantCount || 0} / ${tournamentData.maxParticipants || 0}</span>
+                <span><i class="fas fa-map-marker-alt"></i> ${tournamentData.city||'—'}</span>
+                <span><i class="fas fa-fist-raised"></i> ${tournamentData.sport||'—'}</span>
+                <span><i class="fas fa-ruble-sign"></i> ${tournamentData.entryFee||0} ₽</span>
+                <span><i class="fas fa-users"></i> ${tournamentData.participantCount||0}/${tournamentData.maxParticipants||0}</span>
             `;
-            document.getElementById('tournamentDetails').innerHTML = detailsHtml;
-
-            // Статус-бейдж
-            const topRow = document.querySelector('.top-row');
-            const oldBadge = topRow.querySelector('.status-badge');
-            if (oldBadge) oldBadge.remove();
-
-            const statusBadge = document.createElement('span');
-            const statusLabels = { registration: 'Идёт набор', active: 'Турнир идёт', completed: 'Завершён', cancelled: 'Отменён' };
-            statusBadge.className = `status-badge ${tournamentData.status || 'registration'}`;
-            statusBadge.innerHTML = `<i class="fas fa-circle"></i> ${statusLabels[tournamentData.status] || tournamentData.status}`;
-            topRow.appendChild(statusBadge);
-
-            // Кнопка "Назад"
-            const backBtn = document.getElementById('backBtn');
-            backBtn.onclick = () => window.history.back();
+            const tr = document.querySelector('.top-row');
+            tr.querySelector('.status-badge')?.remove();
+            const b = document.createElement('span');
+            const sl = {registration:'Идёт набор',scheduled:'Сетка готова',active:'Турнир идёт',completed:'Завершён'};
+            b.className = `status-badge ${tournamentData.status||'registration'}`;
+            b.innerHTML = `<i class="fas fa-circle"></i> ${sl[tournamentData.status]||tournamentData.status}`;
+            tr.appendChild(b);
             document.getElementById('headerActions').style.display = 'flex';
         }
 
-        // ===== ЗАГРУЗКА ЗАЯВОК =====
         async function loadRegistrations() {
             if (!tournamentId) return;
             try {
-                const q = query(collection(db, "tournament_registrations"), where("tournamentId", "==", tournamentId));
-                const snapshot = await getDocs(q);
-                registrations = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
-
-                if (currentUser) {
-                    myRegistration = registrations.find(r => r.fighterId === currentUser.uid) || null;
-                }
-
-                if (userRole === 'organizer') {
-                    renderRequests();
-                    renderParticipants();
-                } else {
-                    renderFighterParticipants();
-                }
-            } catch (err) {
-                console.error('Ошибка:', err);
-            }
+                const s = await getDocs(query(collection(db,"tournament_registrations"),where("tournamentId","==",tournamentId)));
+                registrations = s.docs.map(d=>({id:d.id,...d.data()}));
+                if (currentUser) myRegistration = registrations.find(r=>r.fighterId===currentUser.uid)||null;
+            } catch(e) { console.error(e); }
         }
 
-        // ===== ОПРЕДЕЛЕНИЕ РОЛИ И РЕНДЕР =====
-        async function determineRoleAndRender() {
-            // Хлебные крошки
-            const breadcrumbs = document.getElementById('breadcrumbs');
-            
-            if (userRole === 'organizer') {
-                document.getElementById('organizerInterface').style.display = 'block';
-                document.getElementById('fighterInterface').style.display = 'none';
-                breadcrumbs.innerHTML = `
-                    <a href="organization-dashboard.html?id=${myOrgId}">Дашборд</a>
-                    <i class="fas fa-chevron-right"></i>
-                    <a href="my-tournaments.html">Мои турниры</a>
-                    <i class="fas fa-chevron-right"></i>
-                    <span class="current">${tournamentData.name}</span>
-                `;
-                document.getElementById('backBtnText').textContent = 'К турнирам';
-                document.getElementById('backBtn').onclick = () => window.location.href = 'my-tournaments.html';
-                
-                // Кнопка смены статуса
-                const changeBtn = document.getElementById('changeStatusBtn');
-                changeBtn.style.display = 'inline-flex';
-                if (tournamentData.status === 'registration') {
-                    document.getElementById('statusBtnText').textContent = 'Начать турнир';
-                } else if (tournamentData.status === 'active') {
-                    document.getElementById('statusBtnText').textContent = 'Завершить турнир';
-                } else {
-                    changeBtn.style.display = 'none';
-                }
-                
-                updateStats();
-            } else {
-                document.getElementById('organizerInterface').style.display = 'none';
-                document.getElementById('fighterInterface').style.display = 'block';
-                breadcrumbs.innerHTML = `
-                    <a href="tournaments.html">Турниры</a>
-                    <i class="fas fa-chevron-right"></i>
-                    <span class="current">${tournamentData.name}</span>
-                `;
-                document.getElementById('backBtnText').textContent = 'К турнирам';
-                document.getElementById('backBtn').onclick = () => window.location.href = 'tournaments.html';
-                document.getElementById('changeStatusBtn').style.display = 'none';
-                
-                renderDescription();
-                renderMyRegistration();
-                renderFighterActions();
-            }
-            // После определения роли — перерисовываем данные в правильный интерфейс
-            if (userRole === 'organizer') {
-                renderRequests();
-                renderParticipants();
-                updateStats();
-            } else {
-                renderFighterParticipants();
-            }
-        }
-
-        // ===== ОРГАНИЗАТОР: СТАТИСТИКА =====
-        function updateStats() {
-            const pc = tournamentData.participantCount || 0;
-            const mp = tournamentData.maxParticipants || 0;
-            const fee = tournamentData.entryFee || 0;
-            const total = pc * fee;
-            const mine = total * 0.8;
-            const prorank = total * 0.2;
-            const progress = mp ? Math.round((pc / mp) * 100) : 0;
-
-            document.getElementById('statParticipants').textContent = pc;
-            document.getElementById('statCollected').textContent = `${Math.round(total).toLocaleString('ru-RU')} ₽`;
-            document.getElementById('statMine').textContent = `${Math.round(mine).toLocaleString('ru-RU')} ₽`;
-            document.getElementById('statProrank').textContent = `${Math.round(prorank).toLocaleString('ru-RU')} ₽`;
-
-            document.getElementById('progressFill').style.width = `${progress}%`;
-            document.getElementById('progressParticipants').textContent = `${pc} / ${mp}`;
-            document.getElementById('progressPercent').textContent = `${progress}%`;
-        }
-
-        // ===== ОРГАНИЗАТОР: ЗАЯВКИ =====
-        function renderRequests() {
-            const container = document.getElementById('requestsList');
-            const pending = registrations.filter(r => r.status === 'pending');
-            document.getElementById('requestsBadge').textContent = pending.length;
-
-            if (!pending.length) {
-                container.innerHTML = `<div class="empty-state"><i class="fas fa-check-circle" style="color: #10b981;"></i><h3>Нет ожидающих заявок</h3></div>`;
-                return;
-            }
-            container.innerHTML = pending.map(req => `
-                <div class="request-card">
-                    <div class="fighter-info">
-                        <div class="fighter-name">${req.fighterName || 'Боец'}</div>
-                        <div class="fighter-details">
-                            ${req.fighterWeight ? req.fighterWeight + ' кг' : ''}
-                            ${req.fighterClub ? `• ${req.fighterClub}` : ''}
-                        </div>
-                    </div>
-                    <div class="request-actions">
-                        <button class="btn-approve" onclick="approveRequest('${req.id}')"><i class="fas fa-check"></i> Принять</button>
-                        <button class="btn-reject" onclick="rejectRequest('${req.id}')"><i class="fas fa-times"></i> Отклонить</button>
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        function renderParticipants() {
-            const container = document.getElementById('participantsList');
-            const approved = registrations.filter(r => r.status === 'approved');
-            if (!approved.length) {
-                container.innerHTML = `<div class="empty-state"><i class="fas fa-users"></i><h3>Пока нет участников</h3></div>`;
-                return;
-            }
-            container.innerHTML = approved.map(req => `
-                <div class="participant-card">
-                    <div class="participant-avatar">${(req.fighterName || 'Б')[0].toUpperCase()}</div>
-                    <div>
-                        <div class="participant-name">${req.fighterName || 'Боец'}</div>
-                        <div class="participant-club">${req.fighterClub || 'Без клуба'}</div>
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        window.approveRequest = async function(requestId) {
-            try {
-                await updateDoc(doc(db, "tournament_registrations", requestId), {
-                    status: 'approved', processedAt: new Date().toISOString()
-                });
-                await updateDoc(doc(db, "tournaments", tournamentId), { participantCount: increment(1) });
-                tournamentData.participantCount = (tournamentData.participantCount || 0) + 1;
-                updateStats();
-                loadRegistrations();
-                showToast('✅ Боец принят в турнир', 'success');
-            } catch (err) { showToast('Ошибка: ' + err.message, 'error'); }
-        };
-
-        window.rejectRequest = async function(requestId) {
-            if (!confirm('Отклонить заявку?')) return;
-            try {
-                await updateDoc(doc(db, "tournament_registrations", requestId), {
-                    status: 'rejected', processedAt: new Date().toISOString()
-                });
-                loadRegistrations();
-                showToast('Заявка отклонена', 'info');
-            } catch (err) { showToast('Ошибка: ' + err.message, 'error'); }
-        };
-
-        // ===== ОРГАНИЗАТОР: СМЕНА СТАТУСА =====
-        document.getElementById('changeStatusBtn').addEventListener('click', async () => {
+        async function loadMatches() {
             if (!tournamentId) return;
-            let newStatus = '';
-            let confirmText = '';
-            if (tournamentData.status === 'registration') {
-                confirmText = 'Начать турнир? Новые заявки принимать будет нельзя.';
-                newStatus = 'active';
-            } else if (tournamentData.status === 'active') {
-                confirmText = 'Завершить турнир?';
-                newStatus = 'completed';
-            }
-            if (!confirm(confirmText)) return;
             try {
-                await updateDoc(doc(db, "tournaments", tournamentId), {
-                    status: newStatus, updatedAt: new Date().toISOString()
+                const s = await getDocs(collection(db,`tournaments/${tournamentId}/matches`));
+                matches = s.docs.map(d=>({id:d.id,...d.data()}));
+                matches.sort((a,b)=>a.round-b.round||a.matchNumber-b.matchNumber);
+            } catch(e) { console.error(e); }
+        }
+
+        function renderTabs() {
+            const isOrg = userRole === 'organizer';
+            const container = document.getElementById(isOrg ? 'tabsContainer' : 'fighterTabs');
+            const isCompleted = tournamentData.status === 'completed';
+            const isStarted = ['active','completed'].includes(tournamentData.status);
+            const isScheduled = tournamentData.status === 'scheduled';
+            let h = '';
+
+            if (isOrg) {
+                h += `<button class="tab-btn active" data-tab="overview"><i class="fas fa-chart-pie"></i> Обзор</button>`;
+                if (!isCompleted && !isScheduled) h += `<button class="tab-btn" data-tab="requests"><i class="fas fa-user-clock"></i> Заявки <span class="badge" id="requestsBadge">0</span></button>`;
+                h += `<button class="tab-btn" data-tab="participants"><i class="fas fa-users"></i> Участники</button>`;
+                // СЕТКА ПОКАЗЫВАЕМ ВСЕГДА для организатора
+                h += `<button class="tab-btn" data-tab="bracket"><i class="fas fa-sitemap"></i> Сетка</button>`;
+                h += `<button class="tab-btn" data-tab="results"><i class="fas fa-medal"></i> Результаты</button>`;
+            } else {
+                h += `<button class="tab-btn active" data-tab="participants"><i class="fas fa-users"></i> Участники</button>`;
+                if (isScheduled || isStarted) h += `<button class="tab-btn" data-tab="bracket"><i class="fas fa-sitemap"></i> Сетка</button>`;
+                if (isStarted) h += `<button class="tab-btn" data-tab="results"><i class="fas fa-medal"></i> Результаты</button>`;
+            }
+
+            container.innerHTML = h;
+            const prefix = isOrg ? 'tab' : 'fighterTab';
+            container.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    container.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+                    btn.classList.add('active');
+                    document.querySelectorAll(`[id^="${prefix}-"]`).forEach(c=>c.style.display='none');
+                    document.getElementById(`${prefix}-${btn.dataset.tab}`).style.display='block';
                 });
-                tournamentData.status = newStatus;
-                renderHeader();
-                determineRoleAndRender();
-                showToast('Статус обновлён', 'success');
-            } catch (err) { showToast('Ошибка: ' + err.message, 'error'); }
+            });
+        }
+
+        function renderOrganizerView() {
+            document.getElementById('organizerInterface').style.display='block';
+            document.getElementById('fighterInterface').style.display='none';
+            document.getElementById('breadcrumbs').innerHTML = `<a href="organization-dashboard.html?id=${myOrgId}">Дашборд</a><i class="fas fa-chevron-right"></i><a href="my-tournaments.html">Мои турниры</a><i class="fas fa-chevron-right"></i><span class="current">${tournamentData.name}</span>`;
+            document.getElementById('backBtn').onclick = ()=> window.history.length>1 ? window.history.back() : window.location.href=`organization-dashboard.html?id=${myOrgId}`;
+            const cb = document.getElementById('changeStatusBtn');
+            if (tournamentData.status==='registration') { cb.style.display='inline-flex'; document.getElementById('statusBtnText').textContent='Начать турнир'; }
+            else if (tournamentData.status==='scheduled') { cb.style.display='inline-flex'; document.getElementById('statusBtnText').textContent='🔥 Начать турнир'; }
+            else if (tournamentData.status==='active') { cb.style.display='inline-flex'; document.getElementById('statusBtnText').textContent='Завершить'; }
+            else cb.style.display='none';
+            renderTabs(); updateStats(); renderRequests(); renderParticipants(); renderBracket(); renderResults();
+        }
+
+        function renderFighterView() {
+            document.getElementById('organizerInterface').style.display='none';
+            document.getElementById('fighterInterface').style.display='block';
+            document.getElementById('breadcrumbs').innerHTML = `<a href="tournaments.html">Турниры</a><i class="fas fa-chevron-right"></i><span class="current">${tournamentData.name}</span>`;
+            document.getElementById('backBtn').onclick = ()=> window.history.length>1 ? window.history.back() : window.location.href='tournaments.html';
+            document.getElementById('changeStatusBtn').style.display='none';
+            renderTabs(); renderDescription(); renderMyRegistration(); renderFighterActions(); renderFighterParticipants(); renderFighterBracket(); renderFighterResults();
+        }
+
+        function updateStats() {
+            const pc=tournamentData.participantCount||0, mp=tournamentData.maxParticipants||0, fee=tournamentData.entryFee||0;
+            const tot=pc*fee, comp=matches.filter(m=>m.status==='completed').length;
+            document.getElementById('statParticipants').textContent=pc;
+            document.getElementById('statCollected').textContent=`${Math.round(tot).toLocaleString('ru-RU')} ₽`;
+            document.getElementById('statMine').textContent=`${Math.round(tot*0.8).toLocaleString('ru-RU')} ₽`;
+            document.getElementById('statCompleted').textContent=comp;
+            const pr=mp?Math.round(pc/mp*100):0;
+            document.getElementById('progressFill').style.width=`${pr}%`;
+            document.getElementById('progressParticipants').textContent=`${pc}/${mp}`;
+            document.getElementById('progressPercent').textContent=`${pr}%`;
+        }
+
+        function renderRequests() {
+            const c=document.getElementById('requestsList'), p=registrations.filter(r=>r.status==='pending');
+            const b=document.getElementById('requestsBadge'); if(b) b.textContent=p.length;
+            if(!p.length){c.innerHTML=`<div class="empty-state"><i class="fas fa-check-circle" style="color:#10b981;"></i><h3>Нет заявок</h3></div>`;return;}
+            c.innerHTML=p.map(r=>`<div class="request-card"><div class="fighter-info"><div class="fighter-name">${r.fighterName||'Боец'}</div><div class="fighter-details">${r.fighterWeight?r.fighterWeight+' кг':''} ${r.fighterClub?'• '+r.fighterClub:''}</div></div><div class="request-actions"><button class="btn-approve" onclick="approveRequest('${r.id}')"><i class="fas fa-check"></i></button><button class="btn-reject" onclick="rejectRequest('${r.id}')"><i class="fas fa-times"></i></button></div></div>`).join('');
+        }
+        function renderParticipants() { const c=document.getElementById('participantsList'),a=registrations.filter(r=>r.status==='approved'); if(!a.length){c.innerHTML=`<div class="empty-state"><i class="fas fa-users"></i><h3>Пока нет</h3></div>`;return;} c.innerHTML=a.map(r=>`<div class="participant-card"><div class="participant-avatar">${(r.fighterName||'Б')[0].toUpperCase()}</div><div><div class="participant-name">${r.fighterName||'Боец'}</div><div class="participant-club">${r.fighterClub||'Без клуба'} ${r.fighterWeight?'• '+r.fighterWeight+' кг':''}</div></div></div>`).join(''); }
+
+        window.approveRequest = async function(rid) {
+            try {
+                await updateDoc(doc(db,"tournament_registrations",rid),{status:'approved',processedAt:new Date().toISOString()});
+                await updateDoc(doc(db,"tournaments",tournamentId),{participantCount:increment(1)});
+                tournamentData.participantCount=(tournamentData.participantCount||0)+1;
+                updateStats(); loadRegistrations(); renderRequests(); renderParticipants(); showToast('✅ Принят','success');
+            } catch(e) { showToast('Ошибка','error'); }
+        };
+        window.rejectRequest = async function(rid) { if(!confirm('Отклонить?'))return; try{await updateDoc(doc(db,"tournament_registrations",rid),{status:'rejected',processedAt:new Date().toISOString()});loadRegistrations();renderRequests();showToast('Отклонено','info');}catch(e){showToast('Ошибка','error');} };
+
+        document.getElementById('changeStatusBtn').addEventListener('click', async ()=>{
+            if(!tournamentId)return;
+            if(tournamentData.status==='registration'||tournamentData.status==='scheduled'){
+                const ac=registrations.filter(r=>r.status==='approved').length;
+                if(ac<2){showToast('❌ Минимум 2 участника','error');return;}
+                if(!confirm('Начать турнир?'))return;
+                if(!tournamentData.bracketGenerated) await generateBracket();
+                await updateDoc(doc(db,"tournaments",tournamentId),{status:'active',startedAt:new Date().toISOString()});
+                tournamentData.status='active';
+            } else if(tournamentData.status==='active'){
+                if(!confirm('Завершить?'))return;
+                await updateDoc(doc(db,"tournaments",tournamentId),{status:'completed',completedAt:new Date().toISOString()});
+                tournamentData.status='completed';
+            }
+            renderHeader(); renderTabs(); 
+            if (userRole==='organizer') renderOrganizerView(); else renderFighterView();
+            showToast('✅ Статус обновлён','success');
         });
 
-        // ===== БОЕЦ: ОПИСАНИЕ =====
-        function renderDescription() {
-            const panel = document.getElementById('descriptionPanel');
-            const desc = tournamentData.description || 'Описание отсутствует.';
-            document.getElementById('tournamentDescription').textContent = desc;
-            const orgName = tournamentData.organizationName || 'Организатор';
-            document.getElementById('organizerRow').innerHTML = `
-                <div class="avatar">${orgName.charAt(0).toUpperCase()}</div>
-                <div class="info">
-                    <strong>${orgName}</strong>
-                    Организатор турнира
-                </div>
-            `;
-            panel.style.display = 'block';
-        }
-
-        // ===== БОЕЦ: МОЯ ЗАЯВКА =====
-        function renderMyRegistration() {
-            if (userRole === 'guest') return;
-            const panel = document.getElementById('myRegPanel');
-
-            if (!myRegistration) {
-                panel.style.display = 'none';
-                return;
-            }
-
-            panel.style.display = 'block';
-            let iconClass = '', title = '', subtitle = '';
-
-            if (myRegistration.status === 'pending') {
-                iconClass = 'pending';
-                title = 'Ваша заявка на рассмотрении';
-                subtitle = 'Организатор скоро проверит её и примет решение';
-            } else if (myRegistration.status === 'approved') {
-                iconClass = 'approved';
-                title = 'Вы участвуете в турнире!';
-                subtitle = 'Не забудьте прийти вовремя и взять экипировку';
-            } else if (myRegistration.status === 'rejected') {
-                iconClass = 'rejected';
-                title = 'Заявка отклонена';
-                subtitle = 'К сожалению, организатор не принял вашу заявку';
-            }
-
-            const icons = { pending: 'fa-hourglass-half', approved: 'fa-check', rejected: 'fa-times' };
-
-            panel.innerHTML = `
-                <div class="my-reg-status">
-                    <div class="status-icon ${iconClass}"><i class="fas ${icons[iconClass]}"></i></div>
-                    <div class="status-text">
-                        <div class="status-title">${title}</div>
-                        <div class="status-subtitle">${subtitle}</div>
-                    </div>
-                </div>
-                ${myRegistration.status === 'pending' ? `
-                    <button class="btn btn-danger" onclick="cancelMyRegistration('${myRegistration.id}')" style="width: 100%;">
-                        <i class="fas fa-times"></i> Отменить заявку
-                    </button>
-                ` : ''}
-            `;
-        }
-
-        window.cancelMyRegistration = async function(regId) {
-            if (!confirm('Отменить вашу заявку?')) return;
-            try {
-                await deleteDoc(doc(db, "tournament_registrations", regId));
-                myRegistration = null;
-                loadRegistrations();
-                renderMyRegistration();
-                renderFighterActions();
-                showToast('Заявка отменена', 'info');
-            } catch (err) { showToast('Ошибка: ' + err.message, 'error'); }
-        };
-
-        // ===== БОЕЦ: УЧАСТНИКИ (read-only) =====
-        function renderFighterParticipants() {
-            const container = document.getElementById('fighterParticipantsList');
-            const approved = registrations.filter(r => r.status === 'approved');
-            if (!approved.length) {
-                container.innerHTML = `<div class="empty-state"><i class="fas fa-users"></i><h3>Пока никто не записался</h3><p>Будьте первым!</p></div>`;
-                return;
-            }
-            container.innerHTML = approved.map(req => `
-                <div class="participant-card">
-                    <div class="participant-avatar">${(req.fighterName || 'Б')[0].toUpperCase()}</div>
-                    <div>
-                        <div class="participant-name">${req.fighterName || 'Боец'}</div>
-                        <div class="participant-club">${req.fighterClub || 'Без клуба'}</div>
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        // ===== БОЕЦ: КНОПКА ЗАПИСИ =====
-        function renderFighterActions() {
-            const panel = document.getElementById('fighterActionsPanel');
-            if (userRole === 'organizer') { panel.innerHTML = ''; return; }
-
-            const isFull = (tournamentData.participantCount || 0) >= (tournamentData.maxParticipants || 0);
-            const isRegistration = tournamentData.status === 'registration';
-            const isActive = tournamentData.status === 'active';
-            const isCompleted = tournamentData.status === 'completed';
-            const deadline = tournamentData.registrationDeadline ? new Date(tournamentData.registrationDeadline + 'T23:59:59') : null;
-            const deadlinePassed = deadline && new Date() > deadline;
-
-            let btnHtml = '';
-            if (!currentUser) {
-                btnHtml = `<button class="btn btn-primary btn-large" onclick="window.location.href='login.html'"><i class="fas fa-sign-in-alt"></i> Войдите, чтобы записаться</button>`;
-            } else if (!isRegistration) {
-                btnHtml = `<button class="btn btn-outline btn-large" disabled><i class="fas fa-clock"></i> ${isActive ? 'Турнир уже идёт' : isCompleted ? 'Турнир завершён' : 'Запись закрыта'}</button>`;
-            } else if (deadlinePassed) {
-                btnHtml = `<button class="btn btn-outline btn-large" disabled><i class="fas fa-clock"></i> Срок подачи заявок истёк</button>`;
-            } else if (isFull) {
-                btnHtml = `<button class="btn btn-outline btn-large" disabled><i class="fas fa-ban"></i> Свободных мест нет</button>`;
-            } else if (myRegistration) {
-                if (myRegistration.status === 'pending') {
-                    btnHtml = `<button class="btn btn-success btn-large" disabled><i class="fas fa-hourglass-half"></i> Заявка на рассмотрении</button>`;
-                } else if (myRegistration.status === 'approved') {
-                    btnHtml = `<button class="btn btn-success btn-large" disabled><i class="fas fa-check"></i> Вы уже участвуете</button>`;
-                } else if (myRegistration.status === 'rejected') {
-                    btnHtml = `<button class="btn btn-outline btn-large" disabled><i class="fas fa-times"></i> Заявка была отклонена</button>`;
-                }
+        async function generateBracket() {
+            const approved = registrations.filter(r=>r.status==='approved');
+            if(approved.length<2) return;
+            const classes = tournamentData.weightClasses || [];
+            const batch = writeBatch(db);
+            const mc = collection(db,`tournaments/${tournamentId}/matches`);
+            const groups = {};
+            if (classes.length > 0) {
+                classes.forEach(c => groups[c] = []);
+                approved.forEach(f => {
+                    const wc = getFighterWeightClass(f.fighterWeight, classes);
+                    if (wc && groups[wc]) groups[wc].push(f);
+                    else if (classes.length > 0) groups[classes[0]].push(f);
+                });
             } else {
-                btnHtml = `<button class="btn btn-primary btn-large" onclick="registerForTournament()"><i class="fas fa-sign-in-alt"></i> Записаться (${tournamentData.entryFee || 0} ₽)</button>`;
+                groups['Все'] = approved;
             }
-
-            panel.innerHTML = btnHtml;
+            for (const [cat, fighters] of Object.entries(groups)) {
+                if (fighters.length < 2) continue;
+                fighters.sort(()=>Math.random()-0.5);
+                const bs = Math.pow(2, Math.ceil(Math.log2(fighters.length)));
+                const rounds = Math.log2(bs);
+                for (let i=0; i<bs/2; i++) {
+                    const f1=fighters[i*2]||null, f2=fighters[i*2+1]||null;
+                    const ref=doc(mc);
+                    const mkF = f => f ? {id:f.fighterId,name:f.fighterName,club:f.fighterClub,weight:f.fighterWeight} : null;
+                    const bye = f1&&!f2 ? f1 : !f1&&f2 ? f2 : null;
+                    batch.set(ref, { tournamentId, weightClass:cat, round:1, matchNumber:i+1, fighter1:mkF(f1), fighter2:mkF(f2), winner: bye ? {id:bye.fighterId,name:bye.fighterName} : null, status: bye?'bye':'pending', createdAt:serverTimestamp() });
+                }
+                for (let r=2;r<=rounds;r++) {
+                    for (let m=0;m<bs/Math.pow(2,r);m++) {
+                        batch.set(doc(mc),{tournamentId,weightClass:cat,round:r,matchNumber:m+1,fighter1:null,fighter2:null,winner:null,status:'pending',createdAt:serverTimestamp()});
+                    }
+                }
+            }
+            await batch.commit();
+            await loadMatches();
+            showToast('✅ Сетка сгенерирована!','success');
         }
 
-        window.registerForTournament = async function() {
-            if (!currentUser) { window.location.href = 'login.html'; return; }
+        function getCategoriesInMatches() { return [...new Set(matches.map(m=>m.weightClass))].filter(Boolean); }
 
-            const existing = registrations.find(r => r.fighterId === currentUser.uid);
-            if (existing) {
-                showToast('Вы уже подавали заявку', 'info');
-                myRegistration = existing;
-                renderMyRegistration();
-                renderFighterActions();
-                return;
-            }
+        function renderCategoryFilters(containerId) {
+            const cats = getCategoriesInMatches();
+            const c = document.getElementById(containerId);
+            if (cats.length <= 1) { c.innerHTML=''; return; }
+            c.innerHTML = `<button class="cat-filter-btn ${selectedCategory==='all'?'active':''}" onclick="filterCategory('all')">Все</button>` +
+                cats.map(cat => `<button class="cat-filter-btn ${selectedCategory===cat?'active':''}" onclick="filterCategory('${cat.replace(/'/g,"\\'")}')">${cat}</button>`).join('');
+        }
 
-            try {
-                const newReg = {
-                    tournamentId,
-                    organizationId: tournamentData.organizationId,
-                    fighterId: currentUser.uid,
-                    fighterName: currentFighterData?.name || 'Боец',
-                    fighterWeight: currentFighterData?.weight || '',
-                    fighterClub: currentFighterData?.clubName || '',
-                    status: 'pending',
-                    paymentStatus: 'pending',
-                    paymentAmount: tournamentData.entryFee || 0,
-                    createdAt: serverTimestamp()
-                };
-
-                const docRef = await addDoc(collection(db, "tournament_registrations"), newReg);
-                myRegistration = { id: docRef.id, ...newReg };
-                loadRegistrations();
-                renderMyRegistration();
-                renderFighterActions();
-                showToast('✅ Заявка отправлена организатору!', 'success');
-            } catch (err) {
-                showToast('Ошибка: ' + err.message, 'error');
-            }
+        window.filterCategory = function(cat) {
+            selectedCategory = cat;
+            if (userRole==='organizer') { renderCategoryFilters('bracketCategoryFilters'); renderBracket(); }
+            else { renderCategoryFilters('fighterBracketFilters'); renderFighterBracket(); }
         };
 
-        // ===== ЗАГРУЗКА ДАННЫХ БОЙЦА =====
-        async function loadFighterData(userId) {
-            try {
-                const fighterDoc = await getDoc(doc(db, "fighters", userId));
-                if (fighterDoc.exists()) {
-                    currentFighterData = fighterDoc.data();
-                    if (currentFighterData.clubId) {
-                        const clubDoc = await getDoc(doc(db, "clubs", currentFighterData.clubId));
-                        if (clubDoc.exists()) currentFighterData.clubName = clubDoc.data().name;
-                    }
-                }
-            } catch (err) { console.error('Ошибка бойца:', err); }
+        function buildBracketHtml(containerMatches, clickable) {
+            if (!containerMatches.length) return `<div class="empty-state"><i class="fas fa-sitemap"></i><h3>Нет матчей в этой категории</h3></div>`;
+            const rounds=[...new Set(containerMatches.map(m=>m.round))].sort((a,b)=>a-b);
+            const tr=rounds.length;
+            const rn={}; rn[tr]='🏆 Финал'; if(tr>=2)rn[tr-1]='1/2 финала'; if(tr>=3)rn[tr-2]='1/4 финала'; if(tr>=4)rn[tr-3]='1/8 финала';
+            return `<div class="bracket-container">${rounds.map(r=>{
+                const rm=containerMatches.filter(m=>m.round===r);
+                return `<div class="bracket-round"><div class="round-title">${rn[r]||'Раунд '+r}</div>${rm.map(m=>{
+                    const isMy = currentUser&&(m.fighter1?.id===currentUser.uid||m.fighter2?.id===currentUser.uid);
+                    const canClick = clickable&&m.status==='pending'&&m.fighter1&&m.fighter2;
+                    return `<div class="match-card ${m.status} ${canClick?'clickable':''} ${isMy?'my-match':''}" ${canClick?`onclick="openResultModal('${m.id}')"`:''}>
+                        <div class="match-number">Матч ${m.matchNumber}${isMy?' • Ваш бой':''}</div>
+                        ${[m.fighter1,m.fighter2].map(f=>{
+                            const isW=m.winner&&f&&m.winner.id===f.id;
+                            const isMe=f?.id===currentUser?.uid;
+                            return `<div class="match-fighter ${!f?'empty':''} ${isW?'winner':''} ${isMe?'me':''}">
+                                <div class="fighter-avatar">${f?f.name[0].toUpperCase():'?'}</div>
+                                <div class="fighter-name">${f?f.name:'TBD'}</div>
+                                ${isMe?'<span class="you-label">ВЫ</span>':''}
+                                ${isW?'<div class="winner-badge"><i class="fas fa-trophy"></i></div>':''}
+                            </div>`;
+                        }).join('')}
+                    </div>`;
+                }).join('')}</div>`;
+            }).join('')}</div>`;
         }
 
-        // ===== ОПРЕДЕЛЕНИЕ РОЛИ ОРГАНИЗАТОРА =====
-        async function checkIsOrganizer(userId) {
-            try {
-                const orgRequests = await getDocs(query(
-                    collection(db, "organization_requests"),
-                    where("userId", "==", userId),
-                    where("status", "==", "approved")
-                ));
-                if (!orgRequests.empty) {
-                    const req = orgRequests.docs[0].data();
-                    myOrgId = req.organizationId || orgRequests.docs[0].id;
-                    // Является ли этот юзер владельцем организации данного турнира?
-                    if (tournamentData && tournamentData.organizationId === myOrgId) {
-                        return true;
-                    }
+        function renderBracket() {
+            const c = document.getElementById('bracketContainer');
+            
+            // Если сетка ещё не сгенерирована — показываем кнопку ручной генерации
+            if (!tournamentData.bracketGenerated && !matches.length) {
+                const approvedCount = registrations.filter(r => r.status === 'approved').length;
+                const days = daysUntil(tournamentData.date);
+                
+                let statusText = '';
+                if (approvedCount < 2) {
+                    statusText = `<p style="color:#ef4444;">Минимум 2 участника для генерации сетки (сейчас: ${approvedCount})</p>`;
+                } else if (days > 3) {
+                    statusText = `<p>Сетка будет сгенерирована автоматически за 3 дня до турнира</p><p style="color:#888;font-size:0.7rem;">Осталось дней: ${days}</p>`;
+                } else {
+                    statusText = `<p style="color:#10b981;">Готово к генерации! (${approvedCount} участников)</p>`;
                 }
-                return false;
-            } catch (err) {
-                console.error('Ошибка проверки роли:', err);
-                return false;
+                
+                c.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-sitemap"></i>
+                        <h3>Сетка ещё не сгенерирована</h3>
+                        ${statusText}
+                        ${approvedCount >= 2 ? `
+                            <button class="btn btn-primary" onclick="manualGenerateBracket()" style="margin-top:16px;">
+                                <i class="fas fa-random"></i> Сгенерировать сетку сейчас
+                            </button>
+                        ` : ''}
+                    </div>
+                `;
+                return;
             }
+            
+            if (!matches.length) {
+                c.innerHTML = `<div class="empty-state"><i class="fas fa-sitemap"></i><h3>Сетка пуста</h3></div>`;
+                return;
+            }
+            
+            renderCategoryFilters('bracketCategoryFilters');
+            const fm = selectedCategory === 'all' ? matches : matches.filter(m => m.weightClass === selectedCategory);
+            c.innerHTML = buildBracketHtml(fm, true);
         }
 
-        // ===== АВТОРИЗАЦИЯ =====
-        onAuthStateChanged(auth, async (user) => {
+        // Ручная генерация сетки по кнопке
+        window.manualGenerateBracket = async function() {
+            const approvedCount = registrations.filter(r => r.status === 'approved').length;
+            if (approvedCount < 2) {
+                showToast('❌ Нужно минимум 2 участника', 'error');
+                return;
+            }
+            if (!confirm('Сгенерировать сетку сейчас? После этого набор закроется.')) return;
+            
+            await generateBracket();
+            await updateDoc(doc(db, "tournaments", tournamentId), {
+                status: 'scheduled',
+                bracketGenerated: true,
+                updatedAt: new Date().toISOString()
+            });
+            tournamentData.status = 'scheduled';
+            tournamentData.bracketGenerated = true;
+            
+            renderHeader();
+            renderTabs();
+            renderBracket();
+            showToast('✅ Сетка сгенерирована!', 'success');
+        };
+
+        function renderFighterBracket() {
+            const c=document.getElementById('fighterBracketContainer');
+            if(!matches.length){c.innerHTML=`<div class="empty-state"><i class="fas fa-sitemap"></i><h3>Сетка появится за 3 дня до турнира</h3></div>`;return;}
+            renderCategoryFilters('fighterBracketFilters');
+            const fm = selectedCategory==='all' ? matches : matches.filter(m=>m.weightClass===selectedCategory);
+            c.innerHTML = buildBracketHtml(fm, false);
+        }
+
+        window.openResultModal = function(mid) {
+            const m=matches.find(x=>x.id===mid); if(!m||!m.fighter1||!m.fighter2)return;
+            document.getElementById('resultModalContent').innerHTML=`<p style="font-size:0.8rem;color:#888;margin-bottom:16px;">Выберите победителя:</p>
+                <div class="winner-selection">
+                    <div class="winner-option" onclick="selectWinner('${mid}','${m.fighter1.id}','${m.fighter1.name.replace(/'/g,"\\'")}')"><div class="avatar">${m.fighter1.name[0].toUpperCase()}</div><div class="name">${m.fighter1.name}</div><div style="font-size:0.65rem;color:#10b981;margin-top:6px;">+${FRS_WIN} FRS</div></div>
+                    <div class="winner-option" onclick="selectWinner('${mid}','${m.fighter2.id}','${m.fighter2.name.replace(/'/g,"\\'")}')"><div class="avatar">${m.fighter2.name[0].toUpperCase()}</div><div class="name">${m.fighter2.name}</div><div style="font-size:0.65rem;color:#10b981;margin-top:6px;">+${FRS_WIN} FRS</div></div>
+                </div>
+                <div style="font-size:0.7rem;color:#666;text-align:center;">Проигравшему: ${FRS_LOSS} FRS</div>`;
+            document.getElementById('resultModal').classList.add('show');
+        };
+
+        window.selectWinner = async function(mid,wid,wname) {
+            try {
+                const m=matches.find(x=>x.id===mid);
+                const lid=m.fighter1.id===wid?m.fighter2.id:m.fighter1.id;
+                await updateDoc(doc(db,`tournaments/${tournamentId}/matches`,mid),{winner:{id:wid,name:wname},status:'completed',completedAt:new Date().toISOString()});
+                try{await updateDoc(doc(db,"fighters",wid),{frs:increment(FRS_WIN),wins:increment(1),lastFightDate:new Date().toISOString()});}catch(e){}
+                try{await updateDoc(doc(db,"fighters",lid),{frs:increment(FRS_LOSS),losses:increment(1),lastFightDate:new Date().toISOString()});}catch(e){}
+                const nr=m.round+1, nm=Math.ceil(m.matchNumber/2), nx=matches.find(x=>x.round===nr&&x.matchNumber===nm);
+                if(nx){const sl=m.matchNumber%2===1?'fighter1':'fighter2';await updateDoc(doc(db,`tournaments/${tournamentId}/matches`,nx.id),{[sl]:{id:wid,name:wname}});}
+                document.getElementById('resultModal').classList.remove('show');
+                await loadMatches(); updateStats(); renderBracket(); renderResults();
+                showToast(`✅ ${wname} победил! (+${FRS_WIN} FRS)`,'success');
+            } catch(e){showToast('Ошибка','error');}
+        };
+
+        function renderResults() { const c=document.getElementById('resultsContainer'),cm=matches.filter(m=>m.status==='completed'); if(!cm.length){c.innerHTML=`<div class="empty-state"><i class="fas fa-medal"></i><h3>Пока нет боёв</h3></div>`;return;} c.innerHTML=cm.map(m=>`<div class="participant-card"><div class="participant-avatar"><i class="fas fa-trophy" style="color:#fbbf24;"></i></div><div style="flex:1;"><div class="participant-name">${m.winner.name}</div><div class="participant-club">${m.weightClass||''} • Раунд ${m.round}, матч ${m.matchNumber}</div><div style="font-size:0.65rem;color:#fbbf24;">+${FRS_WIN} FRS</div></div></div>`).join(''); }
+        function renderFighterResults() { const c=document.getElementById('fighterResultsContainer'),cm=matches.filter(m=>m.status==='completed'); if(!cm.length){c.innerHTML=`<div class="empty-state"><i class="fas fa-medal"></i><h3>Пока нет</h3></div>`;return;} const my=cm.filter(m=>m.fighter1?.id===currentUser?.uid||m.fighter2?.id===currentUser?.uid); if(!my.length){c.innerHTML=`<div class="empty-state"><i class="fas fa-medal"></i><h3>Пока нет ваших боёв</h3></div>`;return;} c.innerHTML=my.map(m=>{const w=m.winner?.id===currentUser?.uid;return `<div class="participant-card" style="border-color:${w?'rgba(16,185,129,0.3)':'rgba(239,68,68,0.3)'};"><div class="participant-avatar"><i class="fas ${w?'fa-trophy':'fa-times'}" style="color:${w?'#10b981':'#ef4444'};"></i></div><div style="flex:1;"><div class="participant-name">${w?'Победа':'Поражение'}</div><div class="participant-club">vs ${m.fighter1?.id===currentUser?.uid?m.fighter2?.name:m.fighter1?.name}</div><div style="font-size:0.65rem;color:${w?'#10b981':'#ef4444'};">${w?'+'+FRS_WIN:FRS_LOSS} FRS</div></div></div>`;}).join(''); }
+
+        document.getElementById('exportCsvBtn')?.addEventListener('click',()=>{const a=registrations.filter(r=>r.status==='approved');if(!a.length)return showToast('Нет данных','error');let csv=['Имя,Вес,Клуб'];a.forEach(r=>csv.push(`"${r.fighterName||''}","${r.fighterWeight||''}","${r.fighterClub||''}"`));const b=new Blob(['\uFEFF'+csv.join('\n')],{type:'text/csv;charset=utf-8;'});const l=document.createElement('a');l.href=URL.createObjectURL(b);l.download=`participants_${new Date().toISOString().slice(0,10)}.csv`;l.click();showToast('✅ Скачано','success');});
+        document.getElementById('broadcastBtn')?.addEventListener('click',()=>document.getElementById('broadcastModal').classList.add('show'));
+        document.getElementById('sendBroadcastBtn')?.addEventListener('click',async()=>{const msg=document.getElementById('broadcastMessage').value.trim();if(!msg)return showToast('Введите сообщение','error');try{await addDoc(collection(db,"notifications"),{tournamentId,type:'broadcast',message:msg,recipients:registrations.filter(r=>r.status==='approved').map(r=>r.fighterId),createdAt:serverTimestamp()});showToast('✅ Отправлено','success');document.getElementById('broadcastModal').classList.remove('show');document.getElementById('broadcastMessage').value='';}catch(e){showToast('Ошибка','error');}});
+
+        function renderDescription(){document.getElementById('tournamentDescription').textContent=tournamentData.description||'Описание отсутствует.';const n=tournamentData.organizationName||'Организатор';document.getElementById('organizerRow').innerHTML=`<div class="avatar">${n[0].toUpperCase()}</div><div class="info"><strong>${n}</strong>Организатор</div>`;document.getElementById('descriptionPanel').style.display='block';}
+        function renderMyRegistration(){if(userRole==='organizer')return;const p=document.getElementById('myRegPanel');if(!myRegistration){p.style.display='none';return;}p.style.display='block';const s=myRegistration.status;const ic={pending:'fa-hourglass-half',approved:'fa-check',rejected:'fa-times'};const ti={pending:'Заявка на рассмотрении',approved:'Вы участвуете!',rejected:'Заявка отклонена'};const su={pending:'Организатор скоро проверит',approved:tournamentData.status==='scheduled'?'Сетка готова! Проверьте соперника':tournamentData.status==='active'?'Проверьте сетку':'Не забудьте прийти',rejected:'Организатор не принял заявку'};p.innerHTML=`<div class="my-reg-status"><div class="status-icon ${s}"><i class="fas ${ic[s]}"></i></div><div class="status-text"><div class="status-title">${ti[s]}</div><div class="status-subtitle">${su[s]}</div></div></div>${s==='pending'?`<button class="btn btn-danger" onclick="cancelMyRegistration('${myRegistration.id}')" style="width:100%;"><i class="fas fa-times"></i> Отменить</button>`:''}`;}
+        window.cancelMyRegistration=async function(rid){if(!confirm('Отменить?'))return;try{await deleteDoc(doc(db,"tournament_registrations",rid));await updateDoc(doc(db,"tournaments",tournamentId),{participantCount:increment(-1)});myRegistration=null;loadRegistrations();renderMyRegistration();renderFighterActions();showToast('Отменено','info');}catch(e){showToast('Ошибка','error');}};
+        function renderFighterParticipants(){const c=document.getElementById('fighterParticipantsList'),a=registrations.filter(r=>r.status==='approved');if(!a.length){c.innerHTML=`<div class="empty-state"><i class="fas fa-users"></i><h3>Пока никто</h3></div>`;return;}c.innerHTML=a.map(r=>`<div class="participant-card"><div class="participant-avatar">${(r.fighterName||'Б')[0].toUpperCase()}</div><div><div class="participant-name">${r.fighterName||'Боец'}</div><div class="participant-club">${r.fighterClub||'Без клуба'}</div></div></div>`).join('');}
+        function renderFighterActions(){const p=document.getElementById('fighterActionsPanel');if(userRole==='organizer'){p.innerHTML='';return;}const isFull=(tournamentData.participantCount||0)>=(tournamentData.maxParticipants||0);const isReg=tournamentData.status==='registration';const dl=tournamentData.registrationDeadline?new Date(tournamentData.registrationDeadline+'T23:59:59'):null;let h='';if(!currentUser)h=`<button class="btn btn-primary btn-large" onclick="window.location.href='login.html'"><i class="fas fa-sign-in-alt"></i> Войдите</button>`;else if(!isReg)h=`<button class="btn btn-outline btn-large" disabled><i class="fas fa-clock"></i> ${tournamentData.status==='active'?'Идёт':tournamentData.status==='completed'?'Завершён':'Запись закрыта'}</button>`;else if(dl&&new Date()>dl)h=`<button class="btn btn-outline btn-large" disabled><i class="fas fa-clock"></i> Дедлайн прошёл</button>`;else if(isFull)h=`<button class="btn btn-outline btn-large" disabled><i class="fas fa-ban"></i> Мест нет</button>`;else if(myRegistration){if(myRegistration.status==='pending')h=`<button class="btn btn-success btn-large" disabled><i class="fas fa-hourglass-half"></i> На рассмотрении</button>`;else if(myRegistration.status==='approved')h=`<button class="btn btn-success btn-large" disabled><i class="fas fa-check"></i> Вы участвуете</button>`;else h=`<button class="btn btn-outline btn-large" disabled><i class="fas fa-times"></i> Отклонена</button>`;}else h=`<button class="btn btn-primary btn-large" onclick="registerForTournament()"><i class="fas fa-sign-in-alt"></i> Записаться (${tournamentData.entryFee||0} ₽)</button>`;p.innerHTML=h;}
+        window.registerForTournament=async function(){if(!currentUser){window.location.href='login.html';return;}if(registrations.find(r=>r.fighterId===currentUser.uid)){showToast('Уже подавали','info');return;}try{const ref=await addDoc(collection(db,"tournament_registrations"),{tournamentId,organizationId:tournamentData.organizationId,fighterId:currentUser.uid,fighterName:currentFighterData?.name||'Боец',fighterWeight:currentFighterData?.weight||'',fighterClub:currentFighterData?.clubName||'',status:'pending',paymentStatus:'pending',paymentAmount:tournamentData.entryFee||0,createdAt:serverTimestamp()});myRegistration={id:ref.id,fighterId:currentUser.uid,status:'pending'};loadRegistrations();renderMyRegistration();renderFighterActions();showToast('✅ Заявка отправлена!','success');}catch(e){showToast('Ошибка','error');}};
+
+        async function loadFighterData(uid){try{const f=await getDoc(doc(db,"fighters",uid));if(f.exists()){currentFighterData=f.data();if(currentFighterData.clubId){const c=await getDoc(doc(db,"clubs",currentFighterData.clubId));if(c.exists())currentFighterData.clubName=c.data().name;}}}catch(e){}}
+
+        // ===== ГЛАВНАЯ ЛОГИКА: ПОРЯДОК ВЫПОЛНЕНИЯ ИСПРАВЛЕН =====
+        onAuthStateChanged(auth, async(user)=>{
             currentUser = user;
-            const urlParams = new URLSearchParams(window.location.search);
-            const id = urlParams.get('id');
-            if (!id) { window.location.href = 'index.html'; return; }
+            const id = new URLSearchParams(window.location.search).get('id');
+            if(!id){window.location.href='index.html';return;}
 
+            // 1. СНАЧАЛА загружаем турнир (чтобы tournamentData был доступен)
             await loadTournament(id);
+            if (!tournamentData) return;
 
+            // 2. ПОТОМ определяем роль пользователя
             if (user) {
                 await loadFighterData(user.uid);
-                const isOrg = await checkIsOrganizer(user.uid);
-                userRole = isOrg ? 'organizer' : 'fighter';
+                myOrgId = await getUserOrgId(user.uid);
+                userRole = isUserOrganizerOfTournament(user.uid) ? 'organizer' : 'fighter';
             } else {
                 userRole = 'guest';
             }
 
-            await determineRoleAndRender();
+            // 3. ЗАТЕМ загружаем данные и рендерим
+            renderHeader();
+            await loadRegistrations();
+            await loadMatches();
+
+            // 4. Рендерим нужный интерфейс
+            if (userRole === 'organizer') {
+                renderOrganizerView();
+                await checkAutoGenerateBracket();
+            } else {
+                renderFighterView();
+            }
         });
     </script>
 </body>

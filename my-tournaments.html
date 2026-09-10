@@ -15,12 +15,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700;14..32,800;14..32,900&display=swap" rel="stylesheet">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
             background: radial-gradient(ellipse at 30% 40%, rgba(251, 191, 36, 0.15) 0%, transparent 60%),
@@ -33,549 +28,134 @@
             display: flex;
             flex-direction: column;
         }
+        .gold-top { position: fixed; top: 0; left: 0; width: 100%; height: 3px; background: linear-gradient(90deg, #fbbf24, #ffdd88, #fbbf24, #b8860b); z-index: 1001; }
+        .navbar { display: flex; justify-content: space-between; align-items: center; padding: 16px 32px; background: rgba(0, 0, 0, 0.75); backdrop-filter: blur(16px); border-bottom: 1px solid rgba(251, 191, 36, 0.25); position: sticky; top: 0; z-index: 1000; }
+        .logo { font-size: 1.8rem; font-weight: 800; cursor: pointer; background: linear-gradient(135deg, #ffffff, #fbbf24); background-clip: text; color: transparent; }
+        .logo span { background: linear-gradient(135deg, #fbbf24, #ffdd77); background-clip: text; color: transparent; }
+        .menu-toggle { display: none; background: rgba(251,191,36,0.1); border: 1px solid #fbbf24; color: #fbbf24; font-size: 1.6rem; cursor: pointer; padding: 8px 14px; border-radius: 12px; min-height: 44px; min-width: 44px; }
+        .nav-links { display: flex; gap: 6px; background: rgba(15,15,15,0.7); backdrop-filter: blur(12px); padding: 5px 14px; border-radius: 60px; border: 1px solid rgba(251,191,36,0.2); }
+        .nav-links a { color: #ddd; text-decoration: none; font-size: 0.9rem; font-weight: 500; padding: 8px 18px; border-radius: 40px; transition: all 0.2s ease; }
+        .nav-links a i { margin-right: 8px; color: #fbbf24; }
+        .nav-links a:hover { color: #fbbf24; background: rgba(251,191,36,0.1); }
+        .container { max-width: 1200px; margin: 2rem auto; padding: 0 24px; width: 100%; flex: 1; }
 
-        .gold-top {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 3px;
-            background: linear-gradient(90deg, #fbbf24, #ffdd88, #fbbf24, #b8860b);
-            z-index: 1001;
-        }
+        .breadcrumbs { display: flex; align-items: center; gap: 8px; margin-bottom: 20px; font-size: 0.75rem; color: #888; flex-wrap: wrap; }
+        .breadcrumbs a { color: #888; text-decoration: none; transition: color 0.2s ease; }
+        .breadcrumbs a:hover { color: #fbbf24; }
+        .breadcrumbs i { font-size: 0.6rem; color: #555; }
+        .breadcrumbs .current { color: #fbbf24; font-weight: 600; }
 
-        .navbar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 16px 32px;
-            background: rgba(0, 0, 0, 0.75);
-            backdrop-filter: blur(16px);
-            border-bottom: 1px solid rgba(251, 191, 36, 0.25);
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-        }
+        .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; flex-wrap: wrap; gap: 16px; }
+        .page-title { font-size: 1.8rem; font-weight: 800; color: #fff; }
+        .page-title span { color: #fbbf24; }
+        .page-subtitle { font-size: 0.85rem; color: #888; margin-top: 4px; }
 
-        .logo {
-            font-size: 1.8rem;
-            font-weight: 800;
-            cursor: pointer;
-            background: linear-gradient(135deg, #ffffff, #fbbf24);
-            background-clip: text;
-            color: transparent;
-        }
-
-        .logo span {
-            background: linear-gradient(135deg, #fbbf24, #ffdd77);
-            background-clip: text;
-            color: transparent;
-        }
-
-        .menu-toggle {
-            display: none;
-            background: rgba(251,191,36,0.1);
-            border: 1px solid #fbbf24;
-            color: #fbbf24;
-            font-size: 1.6rem;
-            cursor: pointer;
-            padding: 8px 14px;
-            border-radius: 12px;
-            min-height: 44px;
-            min-width: 44px;
-        }
-
-        .nav-links {
-            display: flex;
-            gap: 6px;
-            background: rgba(15,15,15,0.7);
-            backdrop-filter: blur(12px);
-            padding: 5px 14px;
-            border-radius: 60px;
-            border: 1px solid rgba(251,191,36,0.2);
-        }
-
-        .nav-links a {
-            color: #ddd;
-            text-decoration: none;
-            font-size: 0.9rem;
-            font-weight: 500;
-            padding: 8px 18px;
-            border-radius: 40px;
-            transition: all 0.2s ease;
-        }
-
-        .nav-links a i {
-            margin-right: 8px;
-            color: #fbbf24;
-        }
-
-        .nav-links a:hover {
-            color: #fbbf24;
-            background: rgba(251,191,36,0.1);
-        }
-
-        .container {
-            max-width: 1200px;
-            margin: 2rem auto;
-            padding: 0 24px;
-            width: 100%;
-            flex: 1;
-        }
-
-        /* ===== ХЛЕБНЫЕ КРОШКИ ===== */
-        .breadcrumbs {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            margin-bottom: 20px;
-            font-size: 0.75rem;
-            color: #888;
-        }
-
-        .breadcrumbs a {
-            color: #888;
-            text-decoration: none;
-            transition: color 0.2s ease;
-        }
-
-        .breadcrumbs a:hover {
-            color: #fbbf24;
-        }
-
-        .breadcrumbs i {
-            font-size: 0.6rem;
-            color: #555;
-        }
-
-        .breadcrumbs .current {
-            color: #fbbf24;
-            font-weight: 600;
-        }
-
-        /* ===== ШАПКА СТРАНИЦЫ ===== */
-        .page-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 24px;
-            flex-wrap: wrap;
-            gap: 16px;
-        }
-
-        .page-title {
-            font-size: 1.8rem;
-            font-weight: 800;
-            color: #fff;
-        }
-
-        .page-title span {
-            color: #fbbf24;
-        }
-
-        .page-subtitle {
-            font-size: 0.85rem;
-            color: #888;
-            margin-top: 4px;
-        }
-
-        .btn {
-            font-family: 'Inter', sans-serif;
-            font-weight: 600;
-            font-size: 0.75rem;
-            border: none;
-            cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            padding: 10px 20px;
-            border-radius: 40px;
-            min-height: 40px;
-            transition: all 0.2s ease;
-            white-space: nowrap;
-            text-decoration: none;
-        }
-
-        .btn:active {
-            transform: scale(0.96);
-        }
-
-        .btn-primary {
-            background: #fbbf24;
-            color: #0a0a0a;
-        }
-
-        .btn-primary:hover {
-            background: #ffd94d;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 15px rgba(251, 191, 36, 0.25);
-        }
-
-        .btn-outline {
-            background: transparent;
-            border: 1px solid rgba(251, 191, 36, 0.4);
-            color: #fbbf24;
-            padding: 8px 16px;
-            font-size: 0.7rem;
-        }
+        .btn { font-family: 'Inter', sans-serif; font-weight: 600; font-size: 0.75rem; border: none; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 10px 20px; border-radius: 40px; min-height: 40px; transition: all 0.2s ease; white-space: nowrap; text-decoration: none; }
+        .btn:active { transform: scale(0.96); }
+        .btn-primary { background: #fbbf24; color: #0a0a0a; }
+        .btn-primary:hover { background: #ffd94d; transform: translateY(-2px); box-shadow: 0 4px 15px rgba(251, 191, 36, 0.25); }
 
         /* ===== ФИЛЬТРЫ ===== */
-        .filters-row {
-            display: flex;
-            gap: 8px;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-            align-items: center;
-        }
+        .filters-row { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; align-items: center; }
+        .filter-tabs { display: flex; gap: 4px; background: rgba(15,15,15,0.5); backdrop-filter: blur(8px); border-radius: 16px; padding: 4px; border: 1px solid rgba(251,191,36,0.1); flex: 1; overflow-x: auto; scrollbar-width: none; }
+        .filter-tabs::-webkit-scrollbar { display: none; }
+        .filter-tab { flex: 0 0 auto; padding: 8px 14px; border: none; background: transparent; color: #888; font-family: 'Inter', sans-serif; font-weight: 600; font-size: 0.7rem; border-radius: 12px; cursor: pointer; transition: all 0.3s ease; display: flex; align-items: center; justify-content: center; gap: 6px; min-height: 38px; white-space: nowrap; }
+        .filter-tab:hover { color: #fff; background: rgba(255,255,255,0.05); }
+        .filter-tab.active { color: #fbbf24; background: rgba(251,191,36,0.12); }
+        .filter-tab .count { background: rgba(0,0,0,0.2); padding: 2px 8px; border-radius: 20px; font-size: 0.6rem; font-weight: 700; }
 
-        .filter-tabs {
-            display: flex;
-            gap: 4px;
-            background: rgba(15,15,15,0.5);
-            backdrop-filter: blur(8px);
-            border-radius: 16px;
-            padding: 4px;
-            border: 1px solid rgba(251,191,36,0.1);
-            flex: 1;
-        }
+        .search-box { display: flex; align-items: center; gap: 8px; background: rgba(15,15,15,0.5); border: 1px solid rgba(251,191,36,0.15); border-radius: 16px; padding: 0 14px; min-height: 44px; min-width: 240px; }
+        .search-box i { color: #888; font-size: 0.8rem; }
+        .search-box input { background: transparent; border: none; color: #fff; font-family: 'Inter', sans-serif; font-size: 0.8rem; width: 100%; outline: none; }
+        .search-box input::placeholder { color: #555; }
 
-        .filter-tab {
-            flex: 1;
-            padding: 8px 14px;
-            border: none;
-            background: transparent;
-            color: #888;
-            font-family: 'Inter', sans-serif;
-            font-weight: 600;
-            font-size: 0.75rem;
-            border-radius: 12px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-            min-height: 38px;
-            white-space: nowrap;
-        }
-
-        .filter-tab:hover {
-            color: #fff;
-            background: rgba(255,255,255,0.05);
-        }
-
-        .filter-tab.active {
-            color: #fbbf24;
-            background: rgba(251,191,36,0.12);
-        }
-
-        .filter-tab .count {
-            background: rgba(0,0,0,0.2);
-            padding: 2px 8px;
-            border-radius: 20px;
-            font-size: 0.65rem;
-            font-weight: 700;
-        }
-
-        .search-box {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            background: rgba(15,15,15,0.5);
-            border: 1px solid rgba(251,191,36,0.15);
-            border-radius: 16px;
-            padding: 0 14px;
-            min-height: 44px;
-            min-width: 240px;
-        }
-
-        .search-box i {
-            color: #888;
-            font-size: 0.8rem;
-        }
-
-        .search-box input {
-            background: transparent;
-            border: none;
-            color: #fff;
-            font-family: 'Inter', sans-serif;
-            font-size: 0.8rem;
-            width: 100%;
-            outline: none;
-        }
-
-        .search-box input::placeholder {
-            color: #555;
-        }
-
-        /* ===== СЕТКА ТУРНИРОВ ===== */
-        .tournament-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-            gap: 16px;
-        }
-
+        /* ===== СЕТКА КАРТОЧЕК ===== */
+        .tournament-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 16px; }
+        
         .tournament-card {
+            position: relative;
             background: rgba(15,15,15,0.7);
             backdrop-filter: blur(12px);
             border: 1px solid rgba(251,191,36,0.1);
             border-radius: 20px;
-            padding: 20px;
-            cursor: pointer;
-            transition: all 0.25s ease;
-        }
-
-        .tournament-card:hover {
-            border-color: rgba(251,191,36,0.35);
-            transform: translateY(-3px);
-            box-shadow: 0 8px 24px rgba(0,0,0,0.3);
-        }
-
-        .tournament-card .card-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 12px;
-            gap: 10px;
-        }
-
-        .tournament-card .tournament-name {
-            font-weight: 700;
-            font-size: 0.95rem;
-            color: #fff;
-        }
-
-        .status-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-            font-size: 0.55rem;
-            font-weight: 700;
-            padding: 3px 10px;
-            border-radius: 30px;
-            height: 22px;
-            text-transform: uppercase;
-            letter-spacing: 0.3px;
-            white-space: nowrap;
-            flex-shrink: 0;
-        }
-
-        .status-badge i {
-            font-size: 0.45rem;
-        }
-
-        .status-badge.registration {
-            background: rgba(251,191,36,0.12);
-            color: #fbbf24;
-            border: 1px solid rgba(251,191,36,0.2);
-        }
-
-        .status-badge.active {
-            background: rgba(16,185,129,0.12);
-            color: #10b981;
-            border: 1px solid rgba(16,185,129,0.2);
-        }
-
-        .status-badge.completed {
-            background: rgba(59,130,246,0.12);
-            color: #60a5fa;
-            border: 1px solid rgba(59,130,246,0.2);
-        }
-
-        .status-badge.cancelled {
-            background: rgba(239,68,68,0.12);
-            color: #ef4444;
-            border: 1px solid rgba(239,68,68,0.2);
-        }
-
-        .tournament-card .card-info {
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-            margin-bottom: 14px;
-        }
-
-        .tournament-card .info-item {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 0.7rem;
-            color: #888;
-        }
-
-        .tournament-card .info-item i {
-            color: #fbbf24;
-            width: 14px;
-            font-size: 0.65rem;
-            text-align: center;
-        }
-
-        .progress-bar {
-            height: 5px;
-            background: #2a2a2a;
-            border-radius: 10px;
             overflow: hidden;
-            margin-bottom: 6px;
-        }
-
-        .progress-fill {
-            height: 100%;
-            background: linear-gradient(90deg, #fbbf24, #ffdd77);
-            border-radius: 10px;
-            transition: width 0.3s ease;
-        }
-
-        .progress-text {
-            display: flex;
-            justify-content: space-between;
-            font-size: 0.65rem;
-            color: #666;
-            margin-bottom: 12px;
-        }
-
-        .card-footer {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding-top: 12px;
-            border-top: 1px solid rgba(255,255,255,0.05);
-        }
-
-        .card-footer .participants {
-            font-size: 0.7rem;
-            color: #888;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .card-footer .fee {
-            font-size: 0.8rem;
-            font-weight: 700;
-            color: #fbbf24;
-        }
-
-        .btn-manage {
-            background: rgba(251,191,36,0.1);
-            border: 1px solid rgba(251,191,36,0.2);
-            color: #fbbf24;
-            padding: 6px 14px;
-            font-size: 0.65rem;
-            border-radius: 30px;
+            transition: all 0.25s ease;
             cursor: pointer;
-            transition: all 0.2s ease;
-            font-family: 'Inter', sans-serif;
-            font-weight: 600;
-            min-height: 30px;
         }
+        .tournament-card:hover { border-color: rgba(251,191,36,0.35); transform: translateY(-3px); box-shadow: 0 8px 24px rgba(0,0,0,0.3); }
 
-        .btn-manage:hover {
-            background: rgba(251,191,36,0.2);
-        }
+        /* Обложка */
+        .card-cover { position: relative; width: 100%; height: 150px; background: linear-gradient(135deg, rgba(251,191,36,0.15), rgba(15,15,15,0.8)); overflow: hidden; }
+        .card-cover img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.4s ease; }
+        .tournament-card:hover .card-cover img { transform: scale(1.05); }
+        .card-cover::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 70%; background: linear-gradient(to top, rgba(15,15,15,0.95), transparent); pointer-events: none; }
+        .card-cover.no-image { display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, rgba(251,191,36,0.08), rgba(15,15,15,0.6)); }
+        .card-cover.no-image i { font-size: 3rem; color: rgba(251,191,36,0.2); }
 
-        /* ===== ПУСТОЕ СОСТОЯНИЕ ===== */
-        .empty-state {
-            text-align: center;
-            padding: 60px 20px;
-            color: #666;
-        }
+        /* Бейджи */
+        .card-cover-badges { position: absolute; top: 12px; left: 12px; right: 12px; display: flex; justify-content: space-between; align-items: flex-start; z-index: 2; }
+        .status-badge { display: inline-flex; align-items: center; gap: 4px; font-size: 0.55rem; font-weight: 700; padding: 3px 10px; border-radius: 30px; height: 22px; text-transform: uppercase; letter-spacing: 0.3px; white-space: nowrap; flex-shrink: 0; backdrop-filter: blur(8px); }
+        .status-badge i { font-size: 0.45rem; }
+        .status-badge.registration { background: rgba(251,191,36,0.15); color: #fbbf24; border: 1px solid rgba(251,191,36,0.3); }
+        .status-badge.active { background: rgba(16,185,129,0.15); color: #10b981; border: 1px solid rgba(16,185,129,0.3); }
+        .status-badge.completed { background: rgba(59,130,246,0.15); color: #60a5fa; border: 1px solid rgba(59,130,246,0.3); }
+        .status-badge.cancelled { background: rgba(239,68,68,0.15); color: #ef4444; border: 1px solid rgba(239,68,68,0.3); }
 
-        .empty-state i {
-            font-size: 3rem;
-            color: #333;
-            display: block;
-            margin-bottom: 16px;
-        }
+        .live-badge { display: inline-flex; align-items: center; gap: 4px; font-size: 0.55rem; font-weight: 700; padding: 3px 10px; border-radius: 30px; height: 22px; text-transform: uppercase; letter-spacing: 0.3px; background: rgba(239,68,68,0.15); color: #ef4444; border: 1px solid rgba(239,68,68,0.3); backdrop-filter: blur(8px); }
+        .live-badge .pulse { width: 6px; height: 6px; background: #ef4444; border-radius: 50%; animation: pulse 1.5s infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.5; transform: scale(1.3); } }
 
-        .empty-state h3 {
-            color: #888;
-            margin-bottom: 8px;
-            font-size: 1rem;
-        }
+        .winner-badge { position: absolute; bottom: 12px; left: 16px; right: 16px; z-index: 2; display: flex; align-items: center; gap: 8px; background: rgba(16,185,129,0.15); backdrop-filter: blur(8px); border: 1px solid rgba(16,185,129,0.3); border-radius: 12px; padding: 8px 12px; }
+        .winner-badge i { color: #fbbf24; font-size: 1rem; }
+        .winner-badge .winner-text { flex: 1; }
+        .winner-badge .winner-label { font-size: 0.6rem; color: #888; text-transform: uppercase; letter-spacing: 0.5px; }
+        .winner-badge .winner-name { font-size: 0.8rem; font-weight: 700; color: #fff; }
 
-        .empty-state p {
-            font-size: 0.8rem;
-            margin-bottom: 20px;
-        }
+        .card-body { padding: 16px 20px 20px; }
+        .tournament-card .card-header { margin-bottom: 12px; }
+        .tournament-card .tournament-name { font-weight: 700; font-size: 1rem; color: #fff; margin-bottom: 4px; }
 
-        /* ===== ЗАГРУЗКА ===== */
-        .loading-state {
-            text-align: center;
-            padding: 60px 20px;
-            color: #666;
-        }
+        .tournament-card .card-info { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 14px; font-size: 0.7rem; color: #aaa; }
+        .tournament-card .card-info span { display: flex; align-items: center; gap: 5px; }
+        .tournament-card .card-info i { color: #fbbf24; font-size: 0.65rem; }
 
-        .loading-spinner {
-            display: inline-block;
-            width: 32px;
-            height: 32px;
-            border: 3px solid rgba(251,191,36,0.1);
-            border-top-color: #fbbf24;
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-            margin-bottom: 16px;
-        }
+        /* Статистика боёв */
+        .matches-stats { display: flex; gap: 12px; margin-bottom: 14px; padding: 10px 12px; background: rgba(251,191,36,0.05); border-radius: 12px; border: 1px solid rgba(251,191,36,0.1); }
+        .matches-stats .stat { display: flex; align-items: center; gap: 6px; font-size: 0.7rem; color: #ccc; }
+        .matches-stats .stat i { color: #fbbf24; font-size: 0.75rem; }
+        .matches-stats .stat .value { font-weight: 700; color: #fff; }
 
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
+        .progress-bar { height: 5px; background: #2a2a2a; border-radius: 10px; overflow: hidden; margin-bottom: 6px; }
+        .progress-fill { height: 100%; background: linear-gradient(90deg, #fbbf24, #ffdd77); border-radius: 10px; transition: width 0.5s ease; }
+        .progress-text { display: flex; justify-content: space-between; font-size: 0.65rem; color: #666; margin-bottom: 12px; }
 
-        /* ===== АДАПТИВ ===== */
+        .card-footer { display: flex; justify-content: space-between; align-items: center; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.05); gap: 10px; }
+        .card-footer .fee { font-size: 0.85rem; font-weight: 700; color: #fbbf24; }
+        .btn-manage { background: #fbbf24; color: #0a0a0a; padding: 8px 16px; font-size: 0.7rem; border-radius: 40px; cursor: pointer; transition: all 0.2s ease; font-family: 'Inter', sans-serif; font-weight: 600; min-height: 36px; border: none; }
+        .btn-manage:hover { background: #ffd94d; transform: translateY(-2px); box-shadow: 0 4px 15px rgba(251, 191, 36, 0.25); }
+
+        .empty-state { text-align: center; padding: 60px 20px; color: #666; }
+        .empty-state i { font-size: 3rem; color: #333; display: block; margin-bottom: 16px; }
+        .empty-state h3 { color: #888; margin-bottom: 8px; font-size: 1rem; }
+        .empty-state p { font-size: 0.8rem; margin-bottom: 20px; }
+
+        .loading-state { text-align: center; padding: 60px 20px; color: #666; }
+        .loading-spinner { display: inline-block; width: 32px; height: 32px; border: 3px solid rgba(251,191,36,0.1); border-top-color: #fbbf24; border-radius: 50%; animation: spin 0.8s linear infinite; margin-bottom: 16px; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
         @media (max-width: 768px) {
             .container { padding: 0 16px; }
             .navbar { padding: 12px 18px; }
             .menu-toggle { display: block; }
-
-            .nav-links {
-                display: none;
-                flex-direction: column;
-                position: absolute;
-                top: 68px;
-                left: 18px;
-                right: 18px;
-                background: #0f0f0f;
-                border-radius: 24px;
-                padding: 20px;
-                gap: 10px;
-                border: 1px solid rgba(251,191,36,0.3);
-            }
-
+            .nav-links { display: none; flex-direction: column; position: absolute; top: 68px; left: 18px; right: 18px; background: #0f0f0f; border-radius: 24px; padding: 20px; gap: 10px; border: 1px solid rgba(251,191,36,0.3); }
             .nav-links.show { display: flex; }
-
-            .page-title {
-                font-size: 1.4rem;
-            }
-
-            .filters-row {
-                flex-direction: column;
-                align-items: stretch;
-            }
-
-            .search-box {
-                min-width: 100%;
-            }
-
-            .tournament-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .filter-tab {
-                font-size: 0.65rem;
-                padding: 6px 8px;
-            }
-        }
-
-        @media (max-width: 480px) {
-            .page-header {
-                flex-direction: column;
-                align-items: flex-start;
-            }
-
-            .page-header .btn {
-                width: 100%;
-                justify-content: center;
-            }
+            .page-title { font-size: 1.4rem; }
+            .filters-row { flex-direction: column; align-items: stretch; }
+            .search-box { min-width: 100%; }
+            .tournament-grid { grid-template-columns: 1fr; }
+            .page-header { flex-direction: column; align-items: flex-start; }
+            .page-header .btn { width: 100%; justify-content: center; }
+            .card-cover { height: 140px; }
         }
     </style>
 </head>
@@ -590,14 +170,12 @@
 
     <main>
         <div class="container">
-            <!-- ХЛЕБНЫЕ КРОШКИ -->
             <div class="breadcrumbs">
                 <a href="organization-dashboard.html">Дашборд</a>
                 <i class="fas fa-chevron-right"></i>
                 <span class="current">Мои турниры</span>
             </div>
 
-            <!-- ШАПКА -->
             <div class="page-header">
                 <div>
                     <div class="page-title">Мои <span>турниры</span></div>
@@ -608,21 +186,12 @@
                 </button>
             </div>
 
-            <!-- ФИЛЬТРЫ -->
             <div class="filters-row">
                 <div class="filter-tabs" id="filterTabs">
-                    <button class="filter-tab active" data-filter="all">
-                        Все <span class="count" id="countAll">0</span>
-                    </button>
-                    <button class="filter-tab" data-filter="registration">
-                        Набор <span class="count" id="countRegistration">0</span>
-                    </button>
-                    <button class="filter-tab" data-filter="active">
-                        Идут <span class="count" id="countActive">0</span>
-                    </button>
-                    <button class="filter-tab" data-filter="completed">
-                        Завершены <span class="count" id="countCompleted">0</span>
-                    </button>
+                    <button class="filter-tab active" data-filter="all">Все <span class="count" id="countAll">0</span></button>
+                    <button class="filter-tab" data-filter="registration">Набор <span class="count" id="countRegistration">0</span></button>
+                    <button class="filter-tab" data-filter="active">Идут <span class="count" id="countActive">0</span></button>
+                    <button class="filter-tab" data-filter="completed">Завершены <span class="count" id="countCompleted">0</span></button>
                 </div>
                 <div class="search-box">
                     <i class="fas fa-search"></i>
@@ -630,7 +199,6 @@
                 </div>
             </div>
 
-            <!-- СПИСОК ТУРНИРОВ -->
             <div id="tournamentsList">
                 <div class="loading-state">
                     <div class="loading-spinner"></div>
@@ -652,9 +220,9 @@
         }
     </script>
     <script type="module" src="header.js"></script>
-        <script type="module">
+    <script type="module">
         import { initializeApp } from "firebase/app";
-        import { getFirestore, doc, getDoc, collection, query, where, getDocs, orderBy } from "firebase/firestore";
+        import { getFirestore, doc, getDoc, collection, query, where, getDocs, orderBy, onSnapshot } from "firebase/firestore";
         import { getAuth, onAuthStateChanged } from "firebase/auth";
 
         const firebaseConfig = {
@@ -674,8 +242,8 @@
         let allTournaments = [];
         let currentFilter = 'all';
         let searchQuery = '';
+        let unsubscribeLive = null;
 
-        // Форматирование даты в читаемый вид (25.10.2024)
         const formatDate = (dateStr) => {
             if (!dateStr) return '—';
             return new Date(dateStr + 'T00:00:00').toLocaleDateString('ru-RU');
@@ -691,37 +259,77 @@
             });
         });
 
-        // ===== ПОИСК =====
         document.getElementById('searchInput').addEventListener('input', (e) => {
             searchQuery = e.target.value.toLowerCase().trim();
             renderTournaments();
         });
 
-        // ===== ЗАГРУЗКА ТУРНИРОВ =====
-        async function loadTournaments() {
+        // ===== ПОЛУЧЕНИЕ ПОБЕДИТЕЛЯ =====
+        async function getTournamentWinner(tournamentId) {
+            try {
+                const matchesSnap = await getDocs(collection(db, `tournaments/${tournamentId}/matches`));
+                const matches = matchesSnap.docs.map(d => d.data());
+                if (!matches.length) return null;
+                const maxRound = Math.max(...matches.map(m => m.round));
+                const finalMatch = matches.find(m => m.round === maxRound && m.status === 'completed');
+                return finalMatch?.winner || null;
+            } catch (err) {
+                console.error('Ошибка получения победителя:', err);
+                return null;
+            }
+        }
+
+        // ===== ПОЛУЧЕНИЕ СТАТИСТИКИ БОЁВ =====
+        async function getMatchesStats(tournamentId) {
+            try {
+                const matchesSnap = await getDocs(collection(db, `tournaments/${tournamentId}/matches`));
+                const matches = matchesSnap.docs.map(d => d.data());
+                const total = matches.length;
+                const completed = matches.filter(m => m.status === 'completed').length;
+                const pending = matches.filter(m => m.status === 'pending').length;
+                return { total, completed, pending };
+            } catch (err) {
+                console.error('Ошибка получения статистики:', err);
+                return { total: 0, completed: 0, pending: 0 };
+            }
+        }
+
+        // ===== LIVE-ОБНОВЛЕНИЕ =====
+        function subscribeToTournaments() {
+            if (unsubscribeLive) unsubscribeLive();
             if (!currentOrgId) return;
 
-            try {
-                const q = query(
-                    collection(db, "tournaments"),
-                    where("organizationId", "==", currentOrgId),
-                    orderBy("date", "asc")
-                );
-                const snapshot = await getDocs(q);
+            const q = query(
+                collection(db, "tournaments"),
+                where("organizationId", "==", currentOrgId),
+                orderBy("date", "asc")
+            );
+
+            unsubscribeLive = onSnapshot(q, async (snapshot) => {
                 allTournaments = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
+                // Асинхронно обогащаем данные (победители + статистика боёв)
+                await enrichTournamentsData();
                 updateCounts();
                 renderTournaments();
-            } catch (err) {
-                console.error('Ошибка:', err);
-                document.getElementById('tournamentsList').innerHTML = `
-                    <div class="empty-state">
-                        <i class="fas fa-exclamation-triangle"></i>
-                        <h3>Ошибка загрузки</h3>
-                        <p>Проверьте подключение или попробуйте позже</p>
-                    </div>
-                `;
-            }
+            }, (err) => {
+                console.error('Ошибка live-обновления:', err);
+            });
+        }
+
+        async function enrichTournamentsData() {
+            const promises = allTournaments.map(async (t) => {
+                // Получаем победителя для завершённых
+                if (t.status === 'completed' && !t.winner) {
+                    const winner = await getTournamentWinner(t.id);
+                    if (winner) t.winner = winner;
+                }
+                // Получаем статистику боёв для активных
+                if (t.status === 'active') {
+                    t.matchesStats = await getMatchesStats(t.id);
+                }
+            });
+            await Promise.all(promises);
         }
 
         function updateCounts() {
@@ -733,7 +341,6 @@
 
         function renderTournaments() {
             const container = document.getElementById('tournamentsList');
-
             let filtered = allTournaments;
 
             if (currentFilter !== 'all') {
@@ -758,49 +365,83 @@
 
             container.innerHTML = `<div class="tournament-grid">${filtered.map(t => {
                 const progress = t.maxParticipants ? Math.round((t.participantCount || 0) / t.maxParticipants * 100) : 0;
-                const statusLabels = {
-                    registration: 'Набор',
-                    active: 'Идёт',
-                    completed: 'Завершён',
-                    cancelled: 'Отменён'
-                };
-                const statusClass = t.status || 'registration';
+                const statusLabels = { registration: 'Набор', active: 'Идёт', completed: 'Завершён', cancelled: 'Отменён' };
                 const statusLabel = statusLabels[t.status] || t.status;
+
+                // Обложка
+                const coverHtml = t.imageUrl 
+                    ? `<div class="card-cover"><img src="${t.imageUrl}" alt="${t.name}" onerror="this.parentElement.classList.add('no-image'); this.outerHTML='<i class=\\'fas fa-trophy\\'></i>'"></div>`
+                    : `<div class="card-cover no-image"><i class="fas fa-trophy"></i></div>`;
+
+                // LIVE-бейдж для активных турниров
+                const liveBadgeHtml = t.status === 'active' ? `<div class="live-badge"><span class="pulse"></span> LIVE</div>` : '';
+
+                // Бейдж победителя
+                const winnerHtml = (t.status === 'completed' && t.winner) ? `
+                    <div class="winner-badge">
+                        <i class="fas fa-trophy"></i>
+                        <div class="winner-text">
+                            <div class="winner-label">Победитель</div>
+                            <div class="winner-name">${t.winner.name}</div>
+                        </div>
+                    </div>
+                ` : '';
+
+                // Статистика боёв для активных турниров
+                const matchesStatsHtml = (t.status === 'active' && t.matchesStats) ? `
+                    <div class="matches-stats">
+                        <div class="stat">
+                            <i class="fas fa-fist-raised"></i>
+                            <span>Боёв: <span class="value">${t.matchesStats.completed}/${t.matchesStats.total}</span></span>
+                        </div>
+                        <div class="stat">
+                            <i class="fas fa-hourglass-half"></i>
+                            <span>Ожидают: <span class="value">${t.matchesStats.pending}</span></span>
+                        </div>
+                    </div>
+                ` : '';
+
+                // Прогресс-бар (только для набора)
+                const progressHtml = t.status === 'registration' ? `
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: ${progress}%;"></div>
+                    </div>
+                    <div class="progress-text">
+                        <span>${t.participantCount || 0} / ${t.maxParticipants || 0} участников</span>
+                        <span>${progress}%</span>
+                    </div>
+                ` : '';
 
                 return `
                     <div class="tournament-card" onclick="window.location.href='tournament-details.html?id=${t.id}'">
-                        <div class="card-header">
-                            <div class="tournament-name">${t.name}</div>
-                            <span class="status-badge ${statusClass}">
-                                <i class="fas fa-circle"></i> ${statusLabel}
-                            </span>
-                        </div>
-                        <div class="card-info">
-                            <div class="info-item">
-                                <i class="fas fa-calendar-alt"></i> ${formatDate(t.date)}
+                        <div style="position: relative;">
+                            ${coverHtml}
+                            <div class="card-cover-badges">
+                                <span class="status-badge ${t.status}">
+                                    <i class="fas fa-circle"></i> ${statusLabel}
+                                </span>
+                                ${liveBadgeHtml}
                             </div>
-                            <div class="info-item">
-                                <i class="fas fa-map-marker-alt"></i> ${t.city || '—'}
-                            </div>
-                            <div class="info-item">
-                                <i class="fas fa-fist-raised"></i> ${t.sport || '—'}
-                            </div>
+                            ${winnerHtml}
                         </div>
-                        <div class="progress-bar">
-                            <div class="progress-fill" style="width: ${progress}%;"></div>
-                        </div>
-                        <div class="progress-text">
-                            <span>${t.participantCount || 0} / ${t.maxParticipants || 0} участников</span>
-                            <span>${progress}%</span>
-                        </div>
-                        <div class="card-footer">
-                            <div class="participants">
-                                <i class="fas fa-users"></i> ${t.participantCount || 0}
+                        <div class="card-body">
+                            <div class="card-header">
+                                <div class="tournament-name">${t.name}</div>
                             </div>
-                            <div class="fee">${t.entryFee || 0} ₽</div>
-                            <button class="btn-manage" onclick="event.stopPropagation(); window.location.href='tournament-details.html?id=${t.id}'">
-                                Управлять
-                            </button>
+                            <div class="card-info">
+                                <span><i class="fas fa-calendar-alt"></i> ${formatDate(t.date)}</span>
+                                <span><i class="fas fa-map-marker-alt"></i> ${t.city || '—'}</span>
+                                <span><i class="fas fa-fist-raised"></i> ${t.sport || '—'}</span>
+                                <span><i class="fas fa-users"></i> ${t.participantCount || 0} участников</span>
+                            </div>
+                            ${matchesStatsHtml}
+                            ${progressHtml}
+                            <div class="card-footer">
+                                <div class="fee">${t.entryFee || 0} ₽</div>
+                                <button class="btn-manage" onclick="event.stopPropagation(); window.location.href='tournament-details.html?id=${t.id}'">
+                                    <i class="fas fa-cog"></i> Управлять
+                                </button>
+                            </div>
                         </div>
                     </div>
                 `;
@@ -822,7 +463,7 @@
                 }
 
                 currentOrgId = orgDoc.id;
-                await loadTournaments();
+                subscribeToTournaments();
             } catch (err) {
                 console.error('Ошибка:', err);
             }
@@ -856,6 +497,10 @@
             } else {
                 window.location.href = 'organization-dashboard.html';
             }
+        });
+
+        window.addEventListener('beforeunload', () => {
+            if (unsubscribeLive) unsubscribeLive();
         });
     </script>
 </body>

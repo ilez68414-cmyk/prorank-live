@@ -15,12 +15,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700;14..32,800;14..32,900&display=swap" rel="stylesheet">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
             background: radial-gradient(ellipse at 30% 40%, rgba(251, 191, 36, 0.15) 0%, transparent 60%),
@@ -33,449 +28,217 @@
             display: flex;
             flex-direction: column;
         }
+        .gold-top { position: fixed; top: 0; left: 0; width: 100%; height: 3px; background: linear-gradient(90deg, #fbbf24, #ffdd88, #fbbf24, #b8860b); z-index: 1001; }
+        .navbar { display: flex; justify-content: space-between; align-items: center; padding: 16px 32px; background: rgba(0, 0, 0, 0.75); backdrop-filter: blur(16px); border-bottom: 1px solid rgba(251, 191, 36, 0.25); position: sticky; top: 0; z-index: 1000; }
+        .logo { font-size: 1.8rem; font-weight: 800; cursor: pointer; background: linear-gradient(135deg, #ffffff, #fbbf24); background-clip: text; color: transparent; }
+        .logo span { background: linear-gradient(135deg, #fbbf24, #ffdd77); background-clip: text; color: transparent; }
+        .menu-toggle { display: none; background: rgba(251,191,36,0.1); border: 1px solid #fbbf24; color: #fbbf24; font-size: 1.6rem; cursor: pointer; padding: 8px 14px; border-radius: 12px; min-height: 44px; min-width: 44px; }
+        .nav-links { display: flex; gap: 6px; background: rgba(15,15,15,0.7); backdrop-filter: blur(12px); padding: 5px 14px; border-radius: 60px; border: 1px solid rgba(251,191,36,0.2); }
+        .nav-links a { color: #ddd; text-decoration: none; font-size: 0.9rem; font-weight: 500; padding: 8px 18px; border-radius: 40px; transition: all 0.2s ease; }
+        .nav-links a i { margin-right: 8px; color: #fbbf24; }
+        .nav-links a:hover { color: #fbbf24; background: rgba(251,191,36,0.1); }
+        .container { max-width: 700px; margin: 2rem auto; padding: 0 24px; width: 100%; flex: 1; }
 
-        .gold-top {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 3px;
-            background: linear-gradient(90deg, #fbbf24, #ffdd88, #fbbf24, #b8860b);
-            z-index: 1001;
+        .breadcrumbs { display: flex; align-items: center; gap: 8px; margin-bottom: 20px; font-size: 0.75rem; color: #888; }
+        .breadcrumbs a { color: #888; text-decoration: none; transition: color 0.2s ease; }
+        .breadcrumbs a:hover { color: #fbbf24; }
+        .breadcrumbs i { font-size: 0.6rem; color: #555; }
+        .breadcrumbs .current { color: #fbbf24; font-weight: 600; }
+
+        .form-card { background: rgba(15,15,15,0.7); backdrop-filter: blur(12px); border-radius: 28px; padding: 32px; border: 1px solid rgba(251,191,36,0.15); box-shadow: 0 8px 32px rgba(0,0,0,0.3); }
+        .form-header { margin-bottom: 28px; text-align: center; }
+        .form-header .icon-circle { width: 64px; height: 64px; border-radius: 50%; background: linear-gradient(135deg, rgba(251,191,36,0.15), rgba(251,191,36,0.05)); border: 1px solid rgba(251,191,36,0.25); display: flex; align-items: center; justify-content: center; margin: 0 auto 16px; font-size: 1.8rem; color: #fbbf24; }
+        .form-header h1 { font-size: 1.5rem; font-weight: 800; color: #fff; margin-bottom: 6px; }
+        .form-header p { font-size: 0.8rem; color: #888; }
+
+        .form-section { margin-bottom: 28px; }
+        .form-section-title { font-size: 0.75rem; font-weight: 700; color: #fbbf24; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+        .form-section-title i { font-size: 0.85rem; }
+
+        .form-group { margin-bottom: 18px; }
+        .form-group label { display: block; font-size: 0.75rem; color: #aaa; margin-bottom: 8px; font-weight: 500; }
+        .form-group label .required { color: #fbbf24; }
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%; padding: 12px 16px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 12px; color: #fff; font-size: 0.85rem; font-family: 'Inter', sans-serif; transition: all 0.2s ease;
         }
-
-        .navbar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 16px 32px;
-            background: rgba(0, 0, 0, 0.75);
-            backdrop-filter: blur(16px);
-            border-bottom: 1px solid rgba(251, 191, 36, 0.25);
-            position: sticky;
-            top: 0;
-            z-index: 1000;
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+            outline: none; border-color: rgba(251,191,36,0.35); background: rgba(255,255,255,0.06); box-shadow: 0 0 0 3px rgba(251,191,36,0.05);
         }
+        .form-group input::placeholder, .form-group textarea::placeholder { color: #555; }
+        .form-group select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23888' d='M6 8L1 3h10z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 16px center; cursor: pointer; }
+        .form-group select option { background: #1a1a1a; color: #fff; }
+        .form-group textarea { resize: vertical; min-height: 100px; }
+        .form-group .field-hint { font-size: 0.65rem; color: #666; margin-top: 6px; }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
 
-        .logo {
-            font-size: 1.8rem;
-            font-weight: 800;
-            cursor: pointer;
-            background: linear-gradient(135deg, #ffffff, #fbbf24);
-            background-clip: text;
-            color: transparent;
-        }
+        .form-group.error input, .form-group.error select, .form-group.error textarea { border-color: rgba(239,68,68,0.5); }
+        .form-group .error-message { font-size: 0.65rem; color: #ef4444; margin-top: 6px; display: none; }
+        .form-group.error .error-message { display: block; }
 
-        .logo span {
-            background: linear-gradient(135deg, #fbbf24, #ffdd77);
-            background-clip: text;
-            color: transparent;
-        }
-
-        .menu-toggle {
-            display: none;
-            background: rgba(251,191,36,0.1);
-            border: 1px solid #fbbf24;
-            color: #fbbf24;
-            font-size: 1.6rem;
-            cursor: pointer;
-            padding: 8px 14px;
-            border-radius: 12px;
-            min-height: 44px;
-            min-width: 44px;
-        }
-
-        .nav-links {
-            display: flex;
-            gap: 6px;
-            background: rgba(15,15,15,0.7);
-            backdrop-filter: blur(12px);
-            padding: 5px 14px;
-            border-radius: 60px;
-            border: 1px solid rgba(251,191,36,0.2);
-        }
-
-        .nav-links a {
-            color: #ddd;
-            text-decoration: none;
-            font-size: 0.9rem;
-            font-weight: 500;
-            padding: 8px 18px;
-            border-radius: 40px;
-            transition: all 0.2s ease;
-        }
-
-        .nav-links a i {
-            margin-right: 8px;
-            color: #fbbf24;
-        }
-
-        .nav-links a:hover {
-            color: #fbbf24;
-            background: rgba(251,191,36,0.1);
-        }
-
-        .container {
-            max-width: 700px;
-            margin: 2rem auto;
-            padding: 0 24px;
-            width: 100%;
-            flex: 1;
-        }
-
-        /* ===== ХЛЕБНЫЕ КРОШКИ ===== */
-        .breadcrumbs {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            margin-bottom: 20px;
-            font-size: 0.75rem;
-            color: #888;
-        }
-
-        .breadcrumbs a {
-            color: #888;
-            text-decoration: none;
-            transition: color 0.2s ease;
-        }
-
-        .breadcrumbs a:hover {
-            color: #fbbf24;
-        }
-
-        .breadcrumbs i {
-            font-size: 0.6rem;
-            color: #555;
-        }
-
-        .breadcrumbs .current {
-            color: #fbbf24;
-            font-weight: 600;
-        }
-
-        /* ===== КАРТОЧКА ФОРМЫ ===== */
-        .form-card {
-            background: rgba(15,15,15,0.7);
-            backdrop-filter: blur(12px);
-            border-radius: 28px;
-            padding: 32px;
-            border: 1px solid rgba(251,191,36,0.15);
-            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
-        }
-
-        .form-header {
-            margin-bottom: 28px;
-            text-align: center;
-        }
-
-        .form-header .icon-circle {
-            width: 64px;
-            height: 64px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, rgba(251,191,36,0.15), rgba(251,191,36,0.05));
-            border: 1px solid rgba(251,191,36,0.25);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 16px;
-            font-size: 1.8rem;
-            color: #fbbf24;
-        }
-
-        .form-header h1 {
-            font-size: 1.5rem;
-            font-weight: 800;
-            color: #fff;
-            margin-bottom: 6px;
-        }
-
-        .form-header p {
-            font-size: 0.8rem;
-            color: #888;
-        }
-
-        .form-section {
-            margin-bottom: 28px;
-        }
-
-        .form-section-title {
-            font-size: 0.75rem;
-            font-weight: 700;
-            color: #fbbf24;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 16px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .form-section-title i {
-            font-size: 0.85rem;
-        }
-
-        .form-group {
-            margin-bottom: 18px;
-        }
-
-        .form-group label {
-            display: block;
-            font-size: 0.75rem;
-            color: #aaa;
-            margin-bottom: 8px;
-            font-weight: 500;
-        }
-
-        .form-group label .required {
-            color: #fbbf24;
-        }
-
-        .form-group input,
-        .form-group select,
-        .form-group textarea {
-            width: 100%;
-            padding: 12px 16px;
-            background: rgba(255,255,255,0.04);
-            border: 1px solid rgba(255,255,255,0.08);
-            border-radius: 12px;
-            color: #fff;
-            font-size: 0.85rem;
-            font-family: 'Inter', sans-serif;
-            transition: all 0.2s ease;
-        }
-
-        .form-group input:focus,
-        .form-group select:focus,
-        .form-group textarea:focus {
-            outline: none;
-            border-color: rgba(251,191,36,0.35);
-            background: rgba(255,255,255,0.06);
-            box-shadow: 0 0 0 3px rgba(251,191,36,0.05);
-        }
-
-        .form-group input::placeholder,
-        .form-group textarea::placeholder {
-            color: #555;
-        }
-
-        .form-group select {
-            appearance: none;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23888' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
-            background-repeat: no-repeat;
-            background-position: right 16px center;
-            cursor: pointer;
-        }
-
-        .form-group select option {
-            background: #1a1a1a;
-            color: #fff;
-        }
-
-        .form-group textarea {
-            resize: vertical;
-            min-height: 100px;
-        }
-
-        .form-group .field-hint {
-            font-size: 0.65rem;
-            color: #666;
-            margin-top: 6px;
-        }
-
-        .form-row {
+        /* ===== ЧЕКБОКСЫ ВЕСОВЫХ КАТЕГОРИЙ ===== */
+        .weight-classes-grid {
             display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 16px;
-        }
-
-        /* ===== ВАЛИДАЦИЯ ===== */
-        .form-group.error input,
-        .form-group.error select,
-        .form-group.error textarea {
-            border-color: rgba(239,68,68,0.5);
-        }
-
-        .form-group .error-message {
-            font-size: 0.65rem;
-            color: #ef4444;
-            margin-top: 6px;
-            display: none;
-        }
-
-        .form-group.error .error-message {
-            display: block;
-        }
-
-        /* ===== ПРЕДПРОСМОТР ===== */
-        .preview-banner {
-            background: linear-gradient(135deg, rgba(251,191,36,0.08), rgba(15,15,15,0.5));
-            border: 1px solid rgba(251,191,36,0.15);
-            border-radius: 16px;
-            padding: 16px;
-            margin-bottom: 28px;
-        }
-
-        .preview-banner .preview-label {
-            font-size: 0.6rem;
-            color: #888;
-            text-transform: uppercase;
-            letter-spacing: 0.3px;
-            margin-bottom: 8px;
-        }
-
-        .preview-banner .preview-name {
-            font-size: 1.1rem;
-            font-weight: 700;
-            color: #fff;
-            margin-bottom: 8px;
-        }
-
-        .preview-banner .preview-details {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 12px;
-            font-size: 0.7rem;
-            color: #aaa;
-        }
-
-        .preview-banner .preview-details span {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-
-        .preview-banner .preview-details i {
-            color: #fbbf24;
-            font-size: 0.65rem;
-        }
-
-        /* ===== КНОПКИ ===== */
-        .form-actions {
-            display: flex;
-            gap: 12px;
-            margin-top: 8px;
-        }
-
-        .btn {
-            font-family: 'Inter', sans-serif;
-            font-weight: 600;
-            font-size: 0.8rem;
-            border: none;
-            cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
             gap: 8px;
-            padding: 12px 20px;
-            border-radius: 40px;
-            min-height: 44px;
+        }
+        .weight-class-option {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 14px;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 10px;
+            cursor: pointer;
             transition: all 0.2s ease;
-            white-space: nowrap;
-            text-decoration: none;
+            font-size: 0.75rem;
+            color: #ccc;
         }
-
-        .btn:active {
-            transform: scale(0.97);
+        .weight-class-option:hover {
+            background: rgba(251,191,36,0.05);
+            border-color: rgba(251,191,36,0.2);
         }
-
-        .btn-primary {
-            background: #fbbf24;
-            color: #0a0a0a;
-            flex: 1;
+        .weight-class-option.selected {
+            background: rgba(251,191,36,0.1);
+            border-color: rgba(251,191,36,0.4);
+            color: #fbbf24;
         }
-
-        .btn-primary:hover {
-            background: #ffd94d;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 15px rgba(251, 191, 36, 0.25);
-        }
-
-        .btn-primary:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-            transform: none;
-        }
-
-        .btn-secondary {
-            background: rgba(255,255,255,0.05);
-            border: 1px solid rgba(255,255,255,0.1);
-            color: #aaa;
-        }
-
-        .btn-secondary:hover {
-            color: #fff;
-            border-color: rgba(255,255,255,0.2);
-        }
-
-        /* ===== ЗАГРУЗКА ===== */
-        .loading-spinner {
-            display: inline-block;
+        .weight-class-option input[type="checkbox"] {
             width: 16px;
             height: 16px;
-            border: 2px solid rgba(0,0,0,0.2);
-            border-top-color: #0a0a0a;
-            border-radius: 50%;
-            animation: spin 0.6s linear infinite;
+            accent-color: #fbbf24;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+        .weight-class-option .class-name {
+            flex: 1;
+            font-weight: 500;
+        }
+        .weight-class-option .class-range {
+            font-size: 0.65rem;
+            color: #666;
+        }
+        .weight-class-option.selected .class-range {
+            color: #fbbf24;
+            opacity: 0.7;
+        }
+        .selected-count {
+            display: inline-block;
+            margin-left: 8px;
+            padding: 2px 8px;
+            background: rgba(251,191,36,0.15);
+            color: #fbbf24;
+            border-radius: 20px;
+            font-size: 0.65rem;
+            font-weight: 700;
         }
 
-        @keyframes spin {
-            to { transform: rotate(360deg); }
+        /* ===== ЗАГРУЗКА ФОТО ===== */
+        .image-upload-area {
+            position: relative; width: 100%; height: 200px; border-radius: 16px;
+            border: 2px dashed rgba(251,191,36,0.25); background: rgba(255,255,255,0.02);
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            cursor: pointer; transition: all 0.3s ease; overflow: hidden;
         }
+        .image-upload-area:hover { border-color: rgba(251,191,36,0.5); background: rgba(251,191,36,0.03); }
+        .image-upload-area.has-image { border-style: solid; border-color: rgba(251,191,36,0.3); }
+        .image-upload-area.uploading { cursor: wait; border-color: rgba(96,165,250,0.5); }
+        .image-upload-area .upload-placeholder { text-align: center; z-index: 2; padding: 20px; }
+        .image-upload-area .upload-placeholder i { font-size: 2.5rem; color: #fbbf24; margin-bottom: 10px; display: block; }
+        .image-upload-area .upload-placeholder p { font-size: 0.8rem; color: #ccc; font-weight: 600; margin-bottom: 4px; }
+        .image-upload-area .upload-placeholder .hint { font-size: 0.65rem; color: #666; }
+        .image-upload-area .preview-img { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: 1; }
+        .image-upload-area .image-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(to bottom, rgba(0,0,0,0.3), rgba(0,0,0,0.6)); z-index: 2; display: none; }
+        .image-upload-area.has-image .image-overlay { display: block; }
+        .image-upload-area .change-label { position: absolute; bottom: 12px; left: 50%; transform: translateX(-50%); z-index: 3; color: #fff; font-size: 0.7rem; font-weight: 600; display: none; align-items: center; gap: 6px; }
+        .image-upload-area.has-image .change-label { display: flex; }
+        .image-upload-area .remove-img { position: absolute; top: 10px; right: 10px; z-index: 4; width: 32px; height: 32px; border-radius: 50%; background: rgba(239,68,68,0.9); border: none; color: #fff; font-size: 0.75rem; cursor: pointer; display: none; align-items: center; justify-content: center; transition: transform 0.2s; }
+        .image-upload-area .remove-img:hover { transform: scale(1.1); }
+        .image-upload-area.has-image .remove-img { display: flex; }
+        .upload-progress { position: absolute; bottom: 0; left: 0; width: 100%; height: 4px; background: rgba(0,0,0,0.3); z-index: 5; display: none; }
+        .upload-progress.show { display: block; }
+        .upload-progress-bar { height: 100%; background: linear-gradient(90deg, #fbbf24, #ffdd77); width: 0%; transition: width 0.3s ease; border-radius: 2px; }
+        .upload-progress-text { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 6; color: #fff; font-size: 0.85rem; font-weight: 700; display: none; text-shadow: 0 2px 8px rgba(0,0,0,0.8); }
+        .image-upload-area.uploading .upload-progress { display: block; }
+        .image-upload-area.uploading .upload-progress-text { display: block; }
+        .image-upload-area.uploading .upload-placeholder { display: none; }
+        #tournamentImageFile { display: none; }
 
-        /* ===== АДАПТИВ ===== */
+        /* ===== ШАБЛОНЫ ===== */
+        .templates-section { margin-bottom: 28px; }
+        .templates-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; }
+        .template-card { background: rgba(20,20,25,0.8); border: 1px solid rgba(251,191,36,0.1); border-radius: 14px; padding: 14px; cursor: pointer; transition: all 0.2s ease; position: relative; }
+        .template-card:hover { border-color: rgba(251,191,36,0.35); transform: translateY(-2px); }
+        .template-card .t-name { font-weight: 700; font-size: 0.8rem; color: #fff; margin-bottom: 6px; padding-right: 24px; }
+        .template-card .t-meta { font-size: 0.65rem; color: #888; display: flex; flex-direction: column; gap: 3px; }
+        .template-card .t-meta span { display: flex; align-items: center; gap: 5px; }
+        .template-card .t-meta i { color: #fbbf24; font-size: 0.6rem; width: 12px; }
+        .template-card .delete-template { position: absolute; top: 10px; right: 10px; background: none; border: none; color: #555; font-size: 0.7rem; cursor: pointer; padding: 2px; transition: color 0.2s; }
+        .template-card .delete-template:hover { color: #ef4444; }
+        .templates-empty { text-align: center; padding: 20px; color: #555; font-size: 0.75rem; }
+        .templates-empty i { font-size: 1.5rem; color: #333; display: block; margin-bottom: 8px; }
+
+        /* ===== ПРЕДПРОСМОТР ===== */
+        .preview-banner { background: linear-gradient(135deg, rgba(251,191,36,0.08), rgba(15,15,15,0.5)); border: 1px solid rgba(251,191,36,0.15); border-radius: 16px; padding: 16px; margin-bottom: 28px; }
+        .preview-banner .preview-label { font-size: 0.6rem; color: #888; text-transform: uppercase; letter-spacing: 0.3px; margin-bottom: 8px; }
+        .preview-banner .preview-name { font-size: 1.1rem; font-weight: 700; color: #fff; margin-bottom: 8px; }
+        .preview-banner .preview-details { display: flex; flex-wrap: wrap; gap: 12px; font-size: 0.7rem; color: #aaa; }
+        .preview-banner .preview-details span { display: flex; align-items: center; gap: 5px; }
+        .preview-banner .preview-details i { color: #fbbf24; font-size: 0.65rem; }
+
+        /* ===== КНОПКИ ===== */
+        .form-actions { display: flex; gap: 12px; margin-top: 8px; flex-wrap: wrap; }
+        .btn { font-family: 'Inter', sans-serif; font-weight: 600; font-size: 0.8rem; border: none; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 12px 20px; border-radius: 40px; min-height: 44px; transition: all 0.2s ease; white-space: nowrap; text-decoration: none; }
+        .btn:active { transform: scale(0.97); }
+        .btn-primary { background: #fbbf24; color: #0a0a0a; flex: 1; }
+        .btn-primary:hover { background: #ffd94d; transform: translateY(-2px); box-shadow: 0 4px 15px rgba(251, 191, 36, 0.25); }
+        .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+        .btn-secondary { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #aaa; }
+        .btn-secondary:hover { color: #fff; border-color: rgba(255,255,255,0.2); }
+        .btn-ghost { background: transparent; border: 1px solid rgba(251,191,36,0.2); color: #fbbf24; font-size: 0.75rem; padding: 10px 16px; }
+        .btn-ghost:hover { background: rgba(251,191,36,0.08); }
+
+        .loading-spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid rgba(0,0,0,0.2); border-top-color: #0a0a0a; border-radius: 50%; animation: spin 0.6s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* ===== TOAST ===== */
+        .toast-container { position: fixed; top: 20px; right: 20px; z-index: 3000; display: flex; flex-direction: column; gap: 10px; pointer-events: none; }
+        .toast { background: rgba(15,15,15,0.95); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 14px 20px; display: flex; align-items: center; gap: 12px; min-width: 280px; box-shadow: 0 10px 40px rgba(0,0,0,0.5); transform: translateX(120%); transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); pointer-events: auto; }
+        .toast.show { transform: translateX(0); }
+        .toast.success { border-left: 4px solid #10b981; }
+        .toast.error { border-left: 4px solid #ef4444; }
+        .toast.info { border-left: 4px solid #60a5fa; }
+        .toast i { font-size: 1.2rem; }
+        .toast.success i { color: #10b981; }
+        .toast.error i { color: #ef4444; }
+        .toast.info i { color: #60a5fa; }
+        .toast-message { font-size: 0.85rem; font-weight: 500; color: #fff; }
+
         @media (max-width: 768px) {
             .container { padding: 0 16px; }
             .navbar { padding: 12px 18px; }
             .menu-toggle { display: block; }
-
-            .nav-links {
-                display: none;
-                flex-direction: column;
-                position: absolute;
-                top: 68px;
-                left: 18px;
-                right: 18px;
-                background: #0f0f0f;
-                border-radius: 24px;
-                padding: 20px;
-                gap: 10px;
-                border: 1px solid rgba(251,191,36,0.3);
-            }
-
+            .nav-links { display: none; flex-direction: column; position: absolute; top: 68px; left: 18px; right: 18px; background: #0f0f0f; border-radius: 24px; padding: 20px; gap: 10px; border: 1px solid rgba(251,191,36,0.3); }
             .nav-links.show { display: flex; }
-
-            .form-card {
-                padding: 24px 18px;
-            }
-
-            .form-row {
-                grid-template-columns: 1fr;
-                gap: 0;
-            }
-
-            .form-actions {
-                flex-direction: column;
-            }
-
-            .btn {
-                width: 100%;
-            }
+            .form-card { padding: 24px 18px; }
+            .form-row { grid-template-columns: 1fr; gap: 0; }
+            .form-actions { flex-direction: column; }
+            .btn { width: 100%; }
+            .toast-container { top: auto; bottom: 20px; right: 16px; left: 16px; }
+            .toast { min-width: auto; width: 100%; }
+            .weight-classes-grid { grid-template-columns: 1fr; }
         }
-
         @media (max-width: 480px) {
-            .form-card {
-                padding: 20px 14px;
-                border-radius: 20px;
-            }
-
-            .form-header h1 {
-                font-size: 1.3rem;
-            }
+            .form-card { padding: 20px 14px; border-radius: 20px; }
+            .form-header h1 { font-size: 1.3rem; }
+            .templates-grid { grid-template-columns: 1fr; }
         }
     </style>
 </head>
 <body>
     <div class="gold-top"></div>
+    <div class="toast-container" id="toastContainer"></div>
 
     <header class="navbar">
         <div class="logo" onclick="window.location='index.html'">PRO<span>RANK</span></div>
@@ -485,21 +248,25 @@
 
     <main>
         <div class="container">
-            <!-- ХЛЕБНЫЕ КРОШКИ -->
             <div class="breadcrumbs">
                 <a href="organization-dashboard.html">Дашборд</a>
                 <i class="fas fa-chevron-right"></i>
                 <span class="current">Создание турнира</span>
             </div>
 
-            <!-- ФОРМА -->
             <div class="form-card">
                 <div class="form-header">
-                    <div class="icon-circle">
-                        <i class="fas fa-trophy"></i>
-                    </div>
+                    <div class="icon-circle"><i class="fas fa-trophy"></i></div>
                     <h1>Создание турнира</h1>
                     <p>Заполните информацию о турнире для публикации</p>
+                </div>
+
+                <!-- ШАБЛОНЫ -->
+                <div class="templates-section" id="templatesSection">
+                    <div class="form-section-title"><i class="fas fa-layer-group"></i> Мои шаблоны</div>
+                    <div id="templatesContainer">
+                        <div class="templates-empty"><i class="fas fa-spinner fa-spin"></i><p>Загрузка...</p></div>
+                    </div>
                 </div>
 
                 <!-- ПРЕДПРОСМОТР -->
@@ -516,9 +283,7 @@
 
                 <!-- ОСНОВНАЯ ИНФОРМАЦИЯ -->
                 <div class="form-section">
-                    <div class="form-section-title">
-                        <i class="fas fa-info-circle"></i> Основная информация
-                    </div>
+                    <div class="form-section-title"><i class="fas fa-info-circle"></i> Основная информация</div>
 
                     <div class="form-group" id="nameGroup">
                         <label>Название турнира <span class="required">*</span></label>
@@ -537,6 +302,40 @@
                         <div class="error-message">Выберите вид спорта</div>
                     </div>
 
+                    <!-- ВЕСОВЫЕ КАТЕГОРИИ -->
+                    <div class="form-group" id="weightClassesGroup">
+                        <label>
+                            Весовые категории <span class="required">*</span>
+                            <span class="selected-count" id="selectedCount">0 выбрано</span>
+                        </label>
+                        <div class="weight-classes-grid" id="weightClassesGrid">
+                            <!-- Заполняется через JS -->
+                        </div>
+                        <div class="field-hint">Выберите категории, в которых будет проводиться турнир. Бойцы будут распределены по сеткам категорий</div>
+                        <div class="error-message">Выберите хотя бы одну весовую категорию</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Обложка турнира</label>
+                        <div class="image-upload-area" id="imageUploadArea">
+                            <img class="preview-img" id="imagePreview" style="display: none;">
+                            <div class="image-overlay"></div>
+                            <button class="remove-img" id="removeImageBtn" type="button"><i class="fas fa-times"></i></button>
+                            <div class="upload-placeholder" id="uploadPlaceholder">
+                                <i class="fas fa-cloud-upload-alt"></i>
+                                <p>Нажмите, чтобы загрузить фото</p>
+                                <div class="hint">JPG, PNG. Макс. 5 МБ. Рекомендуется 1200×600</div>
+                            </div>
+                            <div class="upload-progress">
+                                <div class="upload-progress-bar" id="uploadProgressBar"></div>
+                            </div>
+                            <div class="upload-progress-text" id="uploadProgressText">Загрузка 0%</div>
+                            <div class="change-label"><i class="fas fa-camera"></i> Изменить фото</div>
+                        </div>
+                        <input type="file" id="tournamentImageFile" accept="image/jpeg,image/png,image/webp">
+                        <div class="field-hint">Фото будет отображаться на карточке турнира в каталоге</div>
+                    </div>
+
                     <div class="form-group" id="descriptionGroup">
                         <label>Описание</label>
                         <textarea id="tournamentDescription" placeholder="Опишите турнир: правила, категории, призы..." maxlength="500"></textarea>
@@ -546,31 +345,25 @@
 
                 <!-- ДАТА И МЕСТО -->
                 <div class="form-section">
-                    <div class="form-section-title">
-                        <i class="fas fa-map-pin"></i> Дата и место
-                    </div>
-
+                    <div class="form-section-title"><i class="fas fa-map-pin"></i> Дата и место</div>
                     <div class="form-row">
                         <div class="form-group" id="dateGroup">
                             <label>Дата проведения <span class="required">*</span></label>
                             <input type="date" id="tournamentDate">
                             <div class="error-message">Выберите дату</div>
                         </div>
-
                         <div class="form-group" id="deadlineGroup">
                             <label>Окончание набора <span class="required">*</span></label>
                             <input type="date" id="registrationDeadline">
                             <div class="error-message">Выберите дату</div>
                         </div>
                     </div>
-
                     <div class="form-row">
                         <div class="form-group" id="cityGroup">
                             <label>Город <span class="required">*</span></label>
                             <input type="text" id="tournamentCity" placeholder="Москва" maxlength="50">
                             <div class="error-message">Введите город</div>
                         </div>
-
                         <div class="form-group">
                             <label>Адрес</label>
                             <input type="text" id="tournamentAddress" placeholder="ул. Спортивная, 5" maxlength="100">
@@ -580,21 +373,17 @@
 
                 <!-- НАСТРОЙКИ УЧАСТИЯ -->
                 <div class="form-section">
-                    <div class="form-section-title">
-                        <i class="fas fa-users-cog"></i> Настройки участия
-                    </div>
-
+                    <div class="form-section-title"><i class="fas fa-users-cog"></i> Настройки участия</div>
                     <div class="form-row">
                         <div class="form-group">
                             <label>Взнос (₽)</label>
                             <input type="number" id="tournamentFee" value="0" min="0" step="100">
                             <div class="field-hint">0 — бесплатное участие</div>
                         </div>
-
                         <div class="form-group">
-                            <label>Максимум участников</label>
+                            <label>Максимум участников (на категорию)</label>
                             <input type="number" id="tournamentMaxParticipants" value="16" min="2" max="128">
-                            <div class="field-hint">От 2 до 128</div>
+                            <div class="field-hint">От 2 до 128 в каждой категории</div>
                         </div>
                     </div>
                 </div>
@@ -603,6 +392,9 @@
                 <div class="form-actions">
                     <button class="btn btn-secondary" onclick="window.location.href='organization-dashboard.html'">
                         <i class="fas fa-arrow-left"></i> Назад
+                    </button>
+                    <button class="btn btn-ghost" id="saveTemplateBtn">
+                        <i class="fas fa-bookmark"></i> Сохранить шаблон
                     </button>
                     <button class="btn btn-primary" id="createBtn">
                         <i class="fas fa-plus"></i> Создать турнир
@@ -624,9 +416,9 @@
         }
     </script>
     <script type="module" src="header.js"></script>
-            <script type="module">
+    <script type="module">
         import { initializeApp } from "firebase/app";
-        import { getFirestore, doc, getDoc, collection, query, where, getDocs, addDoc, serverTimestamp } from "firebase/firestore";
+        import { getFirestore, doc, getDoc, collection, query, where, getDocs, addDoc, deleteDoc, serverTimestamp } from "firebase/firestore";
         import { getAuth, onAuthStateChanged } from "firebase/auth";
 
         const firebaseConfig = {
@@ -642,28 +434,273 @@
         const db = getFirestore(app);
         const auth = getAuth(app);
 
+        // ===== ВЕСОВЫЕ КАТЕГОРИИ =====
+        const WEIGHT_CLASSES = [
+            { name: "Наилегчайшая", range: "45–50 кг", min: 45, max: 50 },
+            { name: "Легчайшая", range: "51–56 кг", min: 51, max: 56 },
+            { name: "Полулёгкая", range: "57–61 кг", min: 57, max: 61 },
+            { name: "Лёгкая", range: "62–66 кг", min: 62, max: 66 },
+            { name: "1-я полусредняя", range: "67–71 кг", min: 67, max: 71 },
+            { name: "Полусредняя", range: "72–77 кг", min: 72, max: 77 },
+            { name: "1-я средняя", range: "78–83 кг", min: 78, max: 83 },
+            { name: "Средняя", range: "84–89 кг", min: 84, max: 89 },
+            { name: "Полутяжёлая", range: "90–99 кг", min: 90, max: 99 },
+            { name: "Тяжёлая", range: "100+ кг", min: 100, max: 999 }
+        ];
+
+        let selectedWeightClasses = [];
+
+        // Инициализация чекбоксов весовых категорий
+        function initWeightClassesGrid() {
+            const grid = document.getElementById('weightClassesGrid');
+            grid.innerHTML = WEIGHT_CLASSES.map((wc, idx) => `
+                <label class="weight-class-option" data-index="${idx}">
+                    <input type="checkbox" value="${wc.name} (${wc.range})">
+                    <span class="class-name">${wc.name}</span>
+                    <span class="class-range">${wc.range}</span>
+                </label>
+            `).join('');
+
+            // Обработчики
+            grid.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+                cb.addEventListener('change', (e) => {
+                    const option = e.target.closest('.weight-class-option');
+                    if (e.target.checked) {
+                        option.classList.add('selected');
+                        selectedWeightClasses.push(e.target.value);
+                    } else {
+                        option.classList.remove('selected');
+                        selectedWeightClasses = selectedWeightClasses.filter(w => w !== e.target.value);
+                    }
+                    updateSelectedCount();
+                });
+            });
+        }
+
+        function updateSelectedCount() {
+            const countEl = document.getElementById('selectedCount');
+            countEl.textContent = `${selectedWeightClasses.length} выбрано`;
+            countEl.style.display = selectedWeightClasses.length > 0 ? 'inline-block' : 'none';
+        }
+
+        // ===== CLOUDINARY =====
+        const CLOUD_NAME = 'dbv7bfkgy';
+        const UPLOAD_PRESET = 'prorank_avatars';
+        const CLOUDINARY_URL = `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`;
+        const MAX_FILE_SIZE = 5 * 1024 * 1024;
+
         let currentOrgId = null;
         let currentOrgData = null;
         let currentUserId = null;
+        let uploadedImageUrl = '';
 
-        // ===== ЭЛЕМЕНТЫ ФОРМЫ =====
+        window.showToast = function(message, type = 'info') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            const icons = { success: 'fa-check-circle', error: 'fa-exclamation-circle', info: 'fa-info-circle' };
+            toast.innerHTML = `<i class="fas ${icons[type]}"></i><span class="toast-message">${message}</span>`;
+            container.appendChild(toast);
+            requestAnimationFrame(() => toast.classList.add('show'));
+            setTimeout(() => { toast.classList.remove('show'); setTimeout(() => toast.remove(), 400); }, 3500);
+        };
+
         const nameInput = document.getElementById('tournamentName');
         const sportSelect = document.getElementById('tournamentSport');
         const dateInput = document.getElementById('tournamentDate');
         const deadlineInput = document.getElementById('registrationDeadline');
         const cityInput = document.getElementById('tournamentCity');
         const feeInput = document.getElementById('tournamentFee');
+        const imageUploadArea = document.getElementById('imageUploadArea');
+        const imageFileInput = document.getElementById('tournamentImageFile');
+        const imagePreview = document.getElementById('imagePreview');
+        const removeImageBtn = document.getElementById('removeImageBtn');
+        const uploadProgressBar = document.getElementById('uploadProgressBar');
+        const uploadProgressText = document.getElementById('uploadProgressText');
+
+        // ===== ФОТО =====
+        imageUploadArea.addEventListener('click', () => {
+            if (!imageUploadArea.classList.contains('uploading')) imageFileInput.click();
+        });
+
+        removeImageBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            uploadedImageUrl = '';
+            imagePreview.style.display = 'none';
+            imagePreview.src = '';
+            imageUploadArea.classList.remove('has-image');
+            imageFileInput.value = '';
+        });
+
+        imageFileInput.addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
+                showToast('❌ Допустимы только JPG, PNG, WebP', 'error');
+                imageFileInput.value = '';
+                return;
+            }
+            if (file.size > MAX_FILE_SIZE) {
+                showToast('❌ Файл слишком большой (макс. 5 МБ)', 'error');
+                imageFileInput.value = '';
+                return;
+            }
+            await uploadToCloudinary(file);
+        });
+
+        async function uploadToCloudinary(file) {
+            imageUploadArea.classList.add('uploading');
+            uploadProgressBar.style.width = '0%';
+            uploadProgressText.textContent = 'Загрузка 0%';
+
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('upload_preset', UPLOAD_PRESET);
+
+            try {
+                let fakeProgress = 0;
+                const progressInterval = setInterval(() => {
+                    fakeProgress = Math.min(fakeProgress + Math.random() * 15, 90);
+                    uploadProgressBar.style.width = fakeProgress + '%';
+                    uploadProgressText.textContent = `Загрузка ${Math.round(fakeProgress)}%`;
+                }, 200);
+
+                const response = await fetch(CLOUDINARY_URL, { method: 'POST', body: formData });
+                clearInterval(progressInterval);
+
+                if (!response.ok) throw new Error('Ошибка загрузки');
+                const data = await response.json();
+                
+                uploadProgressBar.style.width = '100%';
+                uploadProgressText.textContent = 'Загрузка 100%';
+                uploadedImageUrl = data.secure_url;
+                imagePreview.src = uploadedImageUrl;
+                imagePreview.style.display = 'block';
+                imageUploadArea.classList.remove('uploading');
+                imageUploadArea.classList.add('has-image');
+                showToast('✅ Фото успешно загружено', 'success');
+                setTimeout(() => { uploadProgressBar.style.width = '0%'; }, 1000);
+            } catch (err) {
+                console.error('Ошибка:', err);
+                imageUploadArea.classList.remove('uploading');
+                uploadProgressBar.style.width = '0%';
+                showToast('❌ Ошибка загрузки фото', 'error');
+            }
+        }
+
+        // ===== ШАБЛОНЫ =====
+        async function loadTemplates() {
+            if (!currentUserId) return;
+            const container = document.getElementById('templatesContainer');
+            try {
+                const q = query(collection(db, "tournament_templates"), where("userId", "==", currentUserId));
+                const snap = await getDocs(q);
+                const templates = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+                if (!templates.length) {
+                    container.innerHTML = `<div class="templates-empty"><i class="fas fa-layer-group"></i><p>Нет сохранённых шаблонов</p></div>`;
+                    return;
+                }
+                container.innerHTML = `<div class="templates-grid">${templates.map(t => `
+                    <div class="template-card" onclick="applyTemplate('${t.id}')">
+                        <button class="delete-template" onclick="event.stopPropagation(); deleteTemplate('${t.id}')" title="Удалить"><i class="fas fa-trash"></i></button>
+                        <div class="t-name">${t.name}</div>
+                        <div class="t-meta">
+                            <span><i class="fas fa-fist-raised"></i> ${t.sport || '—'}</span>
+                            <span><i class="fas fa-weight-hanging"></i> ${(t.weightClasses || []).length} категорий</span>
+                            <span><i class="fas fa-ruble-sign"></i> ${t.entryFee || 0} ₽</span>
+                        </div>
+                    </div>
+                `).join('')}</div>`;
+            } catch (err) {
+                console.error('Ошибка шаблонов:', err);
+                container.innerHTML = `<div class="templates-empty"><i class="fas fa-layer-group"></i><p>Нет сохранённых шаблонов</p></div>`;
+            }
+        }
+
+        window.applyTemplate = async function(templateId) {
+            try {
+                const docSnap = await getDoc(doc(db, "tournament_templates", templateId));
+                if (!docSnap.exists()) return showToast('Шаблон не найден', 'error');
+                const t = docSnap.data();
+
+                nameInput.value = t.name || '';
+                sportSelect.value = t.sport || '';
+                cityInput.value = t.city || '';
+                document.getElementById('tournamentAddress').value = t.address || '';
+                document.getElementById('tournamentDescription').value = t.description || '';
+                feeInput.value = t.entryFee || 0;
+                document.getElementById('tournamentMaxParticipants').value = t.maxParticipants || 16;
+
+                // Восстанавливаем весовые категории
+                if (t.weightClasses && Array.isArray(t.weightClasses)) {
+                    selectedWeightClasses = [...t.weightClasses];
+                    document.querySelectorAll('#weightClassesGrid input[type="checkbox"]').forEach(cb => {
+                        if (selectedWeightClasses.includes(cb.value)) {
+                            cb.checked = true;
+                            cb.closest('.weight-class-option').classList.add('selected');
+                        } else {
+                            cb.checked = false;
+                            cb.closest('.weight-class-option').classList.remove('selected');
+                        }
+                    });
+                    updateSelectedCount();
+                }
+
+                if (t.imageUrl) {
+                    uploadedImageUrl = t.imageUrl;
+                    imagePreview.src = t.imageUrl;
+                    imagePreview.style.display = 'block';
+                    imageUploadArea.classList.add('has-image');
+                }
+
+                updatePreview();
+                showToast(`📋 Шаблон «${t.name}» применён`, 'success');
+                document.querySelector('.form-section').scrollIntoView({ behavior: 'smooth' });
+            } catch (err) {
+                showToast('Ошибка загрузки шаблона', 'error');
+            }
+        };
+
+        window.deleteTemplate = async function(templateId) {
+            if (!confirm('Удалить этот шаблон?')) return;
+            try {
+                await deleteDoc(doc(db, "tournament_templates", templateId));
+                showToast('Шаблон удалён', 'info');
+                loadTemplates();
+            } catch (err) { showToast('Ошибка удаления', 'error'); }
+        };
+
+        document.getElementById('saveTemplateBtn').addEventListener('click', async () => {
+            const name = nameInput.value.trim();
+            if (!name) return showToast('Сначала заполните название турнира', 'error');
+            if (!currentUserId || !currentOrgId) return showToast('Ошибка авторизации', 'error');
+            if (selectedWeightClasses.length === 0) return showToast('Выберите хотя бы одну весовую категорию', 'error');
+
+            try {
+                await addDoc(collection(db, "tournament_templates"), {
+                    userId: currentUserId,
+                    organizationId: currentOrgId,
+                    name,
+                    sport: sportSelect.value,
+                    city: cityInput.value.trim(),
+                    address: document.getElementById('tournamentAddress').value.trim(),
+                    description: document.getElementById('tournamentDescription').value.trim(),
+                    entryFee: parseFloat(feeInput.value) || 0,
+                    maxParticipants: parseInt(document.getElementById('tournamentMaxParticipants').value) || 16,
+                    weightClasses: selectedWeightClasses,
+                    imageUrl: uploadedImageUrl || '',
+                    createdAt: serverTimestamp()
+                });
+                showToast('✅ Шаблон сохранён!', 'success');
+                loadTemplates();
+            } catch (err) { showToast('Ошибка сохранения: ' + err.message, 'error'); }
+        });
 
         // ===== ПРЕДПРОСМОТР =====
         function updatePreview() {
             const banner = document.getElementById('previewBanner');
             const hasAnyValue = nameInput.value || sportSelect.value || dateInput.value || cityInput.value;
-
-            if (!hasAnyValue) {
-                banner.style.display = 'none';
-                return;
-            }
-
+            if (!hasAnyValue) { banner.style.display = 'none'; return; }
             banner.style.display = 'block';
             document.getElementById('previewName').textContent = nameInput.value || 'Название турнира';
             document.getElementById('previewDate').textContent = dateInput.value ? new Date(dateInput.value + 'T00:00:00').toLocaleDateString('ru-RU') : '—';
@@ -677,181 +714,132 @@
             el.addEventListener('change', updatePreview);
         });
 
-        // ===== ВАЛИДАЦИЯ (Безопасная работа с датами через строки) =====
+        // ===== ВАЛИДАЦИЯ =====
         function validateField(fieldId, condition) {
             const group = document.getElementById(fieldId);
-            if (!condition) {
-                group.classList.add('error');
-                return false;
-            }
+            if (!condition) { group.classList.add('error'); return false; }
             group.classList.remove('error');
             return true;
         }
 
         function validateForm() {
             let isValid = true;
-            const todayStr = new Date().toISOString().split('T')[0]; // Формат "YYYY-MM-DD"
+            const todayStr = new Date().toISOString().split('T')[0];
 
             isValid = validateField('nameGroup', nameInput.value.trim().length > 0) && isValid;
             isValid = validateField('sportGroup', sportSelect.value !== '') && isValid;
+            isValid = validateField('weightClassesGroup', selectedWeightClasses.length > 0) && isValid;
             isValid = validateField('dateGroup', dateInput.value !== '') && isValid;
             isValid = validateField('deadlineGroup', deadlineInput.value !== '') && isValid;
             isValid = validateField('cityGroup', cityInput.value.trim().length > 0) && isValid;
 
-            // Сравнение строк дат работает идеально и не зависит от часовых поясов
             if (dateInput.value && dateInput.value < todayStr) {
                 validateField('dateGroup', false);
                 document.querySelector('#dateGroup .error-message').textContent = 'Дата должна быть в будущем';
                 isValid = false;
-            } else if (dateInput.value) {
-                document.querySelector('#dateGroup .error-message').textContent = 'Выберите дату';
             }
-
             if (deadlineInput.value && deadlineInput.value > dateInput.value) {
                 validateField('deadlineGroup', false);
                 document.querySelector('#deadlineGroup .error-message').textContent = 'Не позже даты турнира';
                 isValid = false;
-            } else if (deadlineInput.value) {
-                document.querySelector('#deadlineGroup .error-message').textContent = 'Выберите дату';
             }
-
             return isValid;
         }
 
-        // Очистка ошибок при вводе
         ['tournamentName', 'tournamentSport', 'tournamentDate', 'registrationDeadline', 'tournamentCity'].forEach(id => {
-            const element = document.getElementById(id);
-            const clearError = () => {
-                const groupId = id === 'tournamentName' ? 'nameGroup' : 
-                                id === 'tournamentSport' ? 'sportGroup' : 
-                                id === 'tournamentDate' ? 'dateGroup' : 
-                                id === 'registrationDeadline' ? 'deadlineGroup' : 'cityGroup';
-                document.getElementById(groupId).classList.remove('error');
+            const el = document.getElementById(id);
+            const clear = () => {
+                const gid = id === 'tournamentName' ? 'nameGroup' : id === 'tournamentSport' ? 'sportGroup' : id === 'tournamentDate' ? 'dateGroup' : id === 'registrationDeadline' ? 'deadlineGroup' : 'cityGroup';
+                document.getElementById(gid).classList.remove('error');
             };
-            element.addEventListener('input', clearError);
-            element.addEventListener('change', clearError);
+            el.addEventListener('input', clear);
+            el.addEventListener('change', clear);
         });
 
-        // ===== ЗАГРУЗКА ДАННЫХ ОРГАНИЗАЦИИ =====
+        // ===== ЗАГРУЗКА ОРГАНИЗАЦИИ =====
         async function loadOrganizationData(orgId) {
             try {
-                // Проверяем заявку
                 const requestDoc = await getDoc(doc(db, "organization_requests", orgId));
-                if (requestDoc.exists()) {
-                    const requestData = requestDoc.data();
-                    if (requestData.organizationId) {
-                        orgId = requestData.organizationId;
-                    }
-                }
-
+                if (requestDoc.exists() && requestDoc.data().organizationId) orgId = requestDoc.data().organizationId;
                 const orgDoc = await getDoc(doc(db, "organizations", orgId));
-                if (!orgDoc.exists()) {
-                    alert('Организация не найдена или не одобрена');
-                    window.location.href = 'organization-dashboard.html';
-                    return;
-                }
-
+                if (!orgDoc.exists()) { showToast('Организация не найдена', 'error'); window.location.href = 'organization-dashboard.html'; return; }
                 currentOrgId = orgDoc.id;
                 currentOrgData = orgDoc.data();
-
-                // Предзаполняем город из данных организации
-                if (currentOrgData.city) {
-                    cityInput.value = currentOrgData.city;
-                    updatePreview();
-                }
-            } catch (err) {
-                console.error('Ошибка загрузки:', err);
-                alert('Ошибка загрузки данных: ' + err.message);
-            }
+                if (currentOrgData.city) { cityInput.value = currentOrgData.city; updatePreview(); }
+                await loadTemplates();
+            } catch (err) { console.error('Ошибка:', err); showToast('Ошибка загрузки', 'error'); }
         }
 
         // ===== СОЗДАНИЕ ТУРНИРА =====
         document.getElementById('createBtn').addEventListener('click', async () => {
             if (!validateForm()) {
-                // Прокрутка к первой ошибке для удобства на мобильных
                 const firstError = document.querySelector('.form-group.error');
                 if (firstError) firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
                 return;
             }
-
-            if (!currentOrgId) {
-                alert('Ошибка: организация не определена');
-                return;
-            }
+            if (!currentOrgId) return showToast('Организация не определена', 'error');
 
             const createBtn = document.getElementById('createBtn');
-            const originalContent = createBtn.innerHTML;
+            const orig = createBtn.innerHTML;
             createBtn.disabled = true;
             createBtn.innerHTML = '<span class="loading-spinner"></span> Создание...';
 
-            const tournamentData = {
-                name: nameInput.value.trim(),
-                sport: sportSelect.value,
-                date: dateInput.value,
-                registrationDeadline: deadlineInput.value,
-                city: cityInput.value.trim(),
-                address: document.getElementById('tournamentAddress').value.trim(),
-                description: document.getElementById('tournamentDescription').value.trim(),
-                entryFee: parseFloat(feeInput.value) || 0,
-                maxParticipants: parseInt(document.getElementById('tournamentMaxParticipants').value) || 16,
-                organizationId: currentOrgId,
-                organizationName: currentOrgData?.name || 'Организация',
-                createdByUserId: currentUserId, // Добавили для надежности
-                status: 'registration',
-                participants: [], // Массив для хранения ID участников (нормально работает до ~150 чел)
-                participantCount: 0,
-                createdAt: serverTimestamp(),
-                updatedAt: serverTimestamp()
-            };
-
             try {
-                const docRef = await addDoc(collection(db, "tournaments"), tournamentData);
-                
+                const docRef = await addDoc(collection(db, "tournaments"), {
+                    name: nameInput.value.trim(),
+                    sport: sportSelect.value,
+                    date: dateInput.value,
+                    registrationDeadline: deadlineInput.value,
+                    city: cityInput.value.trim(),
+                    address: document.getElementById('tournamentAddress').value.trim(),
+                    description: document.getElementById('tournamentDescription').value.trim(),
+                    imageUrl: uploadedImageUrl || '',
+                    entryFee: parseFloat(feeInput.value) || 0,
+                    maxParticipants: parseInt(document.getElementById('tournamentMaxParticipants').value) || 16,
+                    weightClasses: selectedWeightClasses, // НОВОЕ: массив весовых категорий
+                    organizationId: currentOrgId,
+                    organizationName: currentOrgData?.name || 'Организация',
+                    createdByUserId: currentUserId,
+                    status: 'registration',
+                    participants: [],
+                    participantCount: 0,
+                    bracketGenerated: false, // НОВОЕ: флаг генерации сетки
+                    createdAt: serverTimestamp(),
+                    updatedAt: serverTimestamp()
+                });
+
                 createBtn.disabled = false;
-                createBtn.innerHTML = originalContent;
-                
-                // Успешный редирект
+                createBtn.innerHTML = orig;
                 window.location.href = `tournament-details.html?id=${docRef.id}`;
             } catch (err) {
-                console.error('Ошибка создания:', err);
+                console.error('Ошибка:', err);
                 createBtn.disabled = false;
-                createBtn.innerHTML = originalContent;
-                alert('❌ Ошибка создания: ' + err.message);
+                createBtn.innerHTML = orig;
+                showToast('❌ Ошибка: ' + err.message, 'error');
             }
         });
 
         // ===== АВТОРИЗАЦИЯ =====
         onAuthStateChanged(auth, async (user) => {
-            if (!user) {
-                window.location.href = 'login.html';
-                return;
-            }
-
-            currentUserId = user.uid; // Сохраняем ID текущего пользователя
-
+            if (!user) { window.location.href = 'login.html'; return; }
+            currentUserId = user.uid;
             const urlParams = new URLSearchParams(window.location.search);
             let orgId = urlParams.get('id');
-
             if (!orgId) {
-                const orgRequests = await getDocs(query(
-                    collection(db, "organization_requests"),
-                    where("userId", "==", user.uid),
-                    where("status", "==", "approved")
-                ));
+                const orgRequests = await getDocs(query(collection(db, "organization_requests"), where("userId", "==", user.uid), where("status", "==", "approved")));
                 if (!orgRequests.empty) {
-                    const request = orgRequests.docs[0].data();
-                    orgId = request.organizationId || orgRequests.docs[0].id;
+                    const req = orgRequests.docs[0].data();
+                    orgId = req.organizationId || orgRequests.docs[0].id;
                     window.history.replaceState(null, '', `?id=${orgId}`);
                 }
             }
-
-            if (orgId) {
-                loadOrganizationData(orgId);
-            } else {
-                alert('У вас нет активной организации');
-                window.location.href = 'organization-dashboard.html';
-            }
+            if (orgId) loadOrganizationData(orgId);
+            else { showToast('Нет активной организации', 'error'); setTimeout(() => window.location.href = 'organization-dashboard.html', 1500); }
         });
+
+        // ===== ИНИЦИАЛИЗАЦИЯ =====
+        initWeightClassesGrid();
+        updateSelectedCount();
     </script>
 </body>
 </html>
