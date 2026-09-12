@@ -1,0 +1,923 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <link rel="manifest" href="/prorank-live/manifest.json">
+    <link rel="apple-touch-icon" href="/prorank-live/icons/icon-192.png">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="PRORANK">
+    <meta name="theme-color" content="#fbbf24">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Кошелёк организатора | PRORANK</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700;14..32,800;14..32,900&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: radial-gradient(ellipse at 30% 40%, rgba(251, 191, 36, 0.15) 0%, transparent 60%),
+                        radial-gradient(ellipse at 70% 80%, rgba(251, 191, 36, 0.08) 0%, transparent 50%),
+                        linear-gradient(135deg, #1a1a1a 0%, #0f0f0f 40%, #1a1a1a 100%);
+            background-attachment: fixed;
+            color: #fff;
+            line-height: 1.4;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        .gold-top { position: fixed; top: 0; left: 0; width: 100%; height: 3px; background: linear-gradient(90deg, #fbbf24, #ffdd88, #fbbf24, #b8860b); z-index: 1001; }
+        .navbar { display: flex; justify-content: space-between; align-items: center; padding: 16px 32px; background: rgba(0,0,0,0.75); backdrop-filter: blur(16px); border-bottom: 1px solid rgba(251,191,36,0.25); position: sticky; top: 0; z-index: 1000; }
+        .logo { font-size: 1.8rem; font-weight: 800; cursor: pointer; background: linear-gradient(135deg, #ffffff, #fbbf24); background-clip: text; color: transparent; }
+        .logo span { background: linear-gradient(135deg, #fbbf24, #ffdd77); background-clip: text; color: transparent; }
+        .menu-toggle { display: none; background: rgba(251,191,36,0.1); border: 1px solid #fbbf24; color: #fbbf24; font-size: 1.6rem; cursor: pointer; padding: 8px 14px; border-radius: 12px; min-height: 44px; min-width: 44px; }
+        .nav-links { display: flex; gap: 6px; background: rgba(15,15,15,0.7); backdrop-filter: blur(12px); padding: 5px 14px; border-radius: 60px; border: 1px solid rgba(251,191,36,0.2); }
+        .nav-links a { color: #ddd; text-decoration: none; font-size: 0.9rem; font-weight: 500; padding: 8px 18px; border-radius: 40px; transition: all 0.2s ease; }
+        .nav-links a i { margin-right: 8px; color: #fbbf24; }
+        .nav-links a:hover { color: #fbbf24; background: rgba(251,191,36,0.1); }
+        .container { max-width: 900px; margin: 1.5rem auto; padding: 0 20px; width: 100%; flex: 1; }
+
+        /* Breadcrumbs */
+        .breadcrumbs { display: flex; align-items: center; gap: 8px; margin-bottom: 16px; font-size: 0.72rem; color: #888; flex-wrap: wrap; }
+        .breadcrumbs a { color: #888; text-decoration: none; transition: color 0.2s; }
+        .breadcrumbs a:hover { color: #fbbf24; }
+        .breadcrumbs i { font-size: 0.55rem; color: #555; }
+        .breadcrumbs .current { color: #fbbf24; font-weight: 600; }
+
+        /* Заголовок */
+        .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 12px; }
+        .page-title { font-size: 1.5rem; font-weight: 800; color: #fff; display: flex; align-items: center; gap: 10px; }
+        .page-title i { color: #fbbf24; }
+        .page-subtitle { font-size: 0.75rem; color: #888; margin-top: 3px; }
+
+        /* ===== ГЛАВНАЯ КАРТОЧКА БАЛАНСА ===== */
+        .balance-card {
+            background: linear-gradient(135deg, rgba(251,191,36,0.08), rgba(15,15,15,0.7));
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(251,191,36,0.3);
+            border-radius: 28px;
+            padding: 28px 26px 24px;
+            margin-bottom: 16px;
+            position: relative;
+            overflow: hidden;
+        }
+        .balance-card::before {
+            content: '';
+            position: absolute;
+            top: -60%; right: -30%;
+            width: 80%; height: 80%;
+            background: radial-gradient(circle, rgba(251,191,36,0.08), transparent 70%);
+            pointer-events: none;
+        }
+        .balance-label { font-size: 0.7rem; color: #888; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 6px; position: relative; z-index: 1; }
+        .balance-amount { font-size: 3rem; font-weight: 900; color: #fff; letter-spacing: -1.5px; line-height: 1; position: relative; z-index: 1; }
+        .balance-amount .currency { font-size: 1.5rem; color: #fbbf24; margin-left: 4px; font-weight: 700; }
+        .balance-sub { font-size: 0.7rem; color: #888; margin-top: 8px; position: relative; z-index: 1; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+        .balance-sub i { color: #10b981; font-size: 0.6rem; }
+
+        .balance-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 22px; position: relative; z-index: 1; }
+
+        .btn-wallet {
+            padding: 14px 12px;
+            border-radius: 60px;
+            font-weight: 700;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            min-height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            border: none;
+            font-family: 'Inter', sans-serif;
+        }
+        .btn-withdraw {
+            background: linear-gradient(135deg, #fbbf24, #e5a800);
+            color: #0b0b0b;
+            box-shadow: 0 4px 20px rgba(251,191,36,0.2);
+        }
+        .btn-withdraw:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 6px 24px rgba(251,191,36,0.35); }
+        .btn-withdraw:disabled { opacity: 0.4; cursor: not-allowed; }
+        .btn-dashboard {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(251,191,36,0.3);
+            color: #fbbf24;
+        }
+        .btn-dashboard:hover { background: rgba(251,191,36,0.1); }
+
+        /* ===== СТАТИСТИКА ===== */
+        .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 16px; }
+        .stat-card {
+            background: rgba(15,15,15,0.7);
+            backdrop-filter: blur(8px);
+            border-radius: 16px;
+            padding: 14px 16px;
+            border: 1px solid rgba(255,255,255,0.05);
+            transition: border-color 0.2s;
+        }
+        .stat-card:hover { border-color: rgba(251,191,36,0.2); }
+        .stat-card.escrow { border-color: rgba(16,185,129,0.2); background: linear-gradient(135deg, rgba(16,185,129,0.05), rgba(15,15,15,0.7)); }
+        .stat-label { font-size: 0.6rem; color: #888; text-transform: uppercase; letter-spacing: 0.4px; display: flex; align-items: center; gap: 5px; margin-bottom: 4px; }
+        .stat-label i { color: #fbbf24; font-size: 0.7rem; }
+        .stat-card.escrow .stat-label i { color: #10b981; }
+        .stat-value { font-size: 1.25rem; font-weight: 800; color: #fff; letter-spacing: -0.5px; }
+        .stat-value.gold { color: #fbbf24; }
+        .stat-value.green { color: #10b981; }
+        .stat-sub { font-size: 0.58rem; color: #666; margin-top: 2px; }
+
+        /* ===== БЛОК ЭСКРОУ ===== */
+        .escrow-panel {
+            background: linear-gradient(135deg, rgba(16,185,129,0.06), rgba(15,15,15,0.6));
+            border: 1px solid rgba(16,185,129,0.2);
+            border-radius: 20px;
+            padding: 18px 20px;
+            margin-bottom: 16px;
+        }
+        .escrow-panel-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+        .escrow-panel-header h3 { font-size: 0.85rem; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+        .escrow-panel-header h3 i { color: #10b981; }
+        .escrow-panel-header .count-badge { font-size: 0.65rem; background: rgba(16,185,129,0.15); color: #10b981; padding: 3px 10px; border-radius: 20px; font-weight: 700; }
+        .escrow-hint { font-size: 0.68rem; color: #666; margin-bottom: 12px; line-height: 1.4; }
+
+        .escrow-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 12px; background: rgba(0,0,0,0.2); border-radius: 12px; margin-bottom: 6px; cursor: pointer; transition: background 0.2s; gap: 10px; }
+        .escrow-item:hover { background: rgba(16,185,129,0.08); }
+        .escrow-item:last-child { margin-bottom: 0; }
+        .escrow-item-info { flex: 1; min-width: 0; }
+        .escrow-item-name { font-weight: 700; font-size: 0.78rem; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .escrow-item-meta { font-size: 0.6rem; color: #888; margin-top: 2px; }
+        .escrow-item-amount { text-align: right; flex-shrink: 0; }
+        .escrow-item-amount .val { font-size: 0.9rem; font-weight: 800; color: #10b981; }
+        .escrow-item-amount .lbl { font-size: 0.55rem; color: #666; text-transform: uppercase; letter-spacing: 0.3px; margin-top: 1px; }
+
+        /* ===== ПАНЕЛИ ===== */
+        .panel { background: rgba(15,15,15,0.7); backdrop-filter: blur(8px); border-radius: 20px; padding: 18px; margin-bottom: 16px; border: 1px solid rgba(251,191,36,0.1); }
+        .panel-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; flex-wrap: wrap; gap: 10px; }
+        .panel-header h3 { font-size: 0.85rem; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+        .panel-header h3 i { color: #fbbf24; }
+        .panel-header .tx-count { font-size: 0.6rem; color: #666; background: rgba(255,255,255,0.05); padding: 2px 12px; border-radius: 40px; }
+
+        /* ===== ФИЛЬТР ТРАНЗАКЦИЙ ===== */
+        .tx-filters { display: flex; gap: 6px; margin-bottom: 12px; overflow-x: auto; scrollbar-width: none; padding-bottom: 2px; }
+        .tx-filters::-webkit-scrollbar { display: none; }
+        .tx-filter-btn { padding: 6px 12px; border-radius: 20px; border: 1px solid rgba(251,191,36,0.15); background: transparent; color: #888; font-family: 'Inter', sans-serif; font-size: 0.62rem; font-weight: 600; cursor: pointer; transition: all 0.2s; white-space: nowrap; flex-shrink: 0; }
+        .tx-filter-btn:hover { color: #fff; border-color: rgba(251,191,36,0.3); }
+        .tx-filter-btn.active { background: rgba(251,191,36,0.12); color: #fbbf24; border-color: rgba(251,191,36,0.4); }
+
+        /* ===== ТРАНЗАКЦИИ ===== */
+        .tx-list { display: flex; flex-direction: column; gap: 6px; }
+        .tx-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 11px 14px;
+            background: rgba(20,20,25,0.7);
+            border: 1px solid rgba(255,255,255,0.04);
+            border-radius: 12px;
+            transition: border-color 0.2s;
+        }
+        .tx-item:hover { border-color: rgba(251,191,36,0.15); }
+        .tx-icon { width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 0.9rem; flex-shrink: 0; }
+        .tx-icon.payout { background: rgba(16,185,129,0.15); color: #10b981; }
+        .tx-icon.fee { background: rgba(239,68,68,0.12); color: #ef4444; }
+        .tx-icon.withdrawal { background: rgba(245,158,11,0.12); color: #f59e0b; }
+        .tx-icon.refund { background: rgba(59,130,246,0.12); color: #3b82f6; }
+        .tx-icon.escrow { background: rgba(139,92,246,0.12); color: #a78bfa; }
+        .tx-body { flex: 1; min-width: 0; }
+        .tx-name { font-weight: 600; font-size: 0.78rem; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .tx-date { font-size: 0.6rem; color: #666; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .tx-right { text-align: right; flex-shrink: 0; margin-left: 8px; }
+        .tx-amount { font-weight: 800; font-size: 0.85rem; letter-spacing: -0.2px; }
+        .tx-amount.positive { color: #10b981; }
+        .tx-amount.negative { color: #ef4444; }
+        .tx-status { font-size: 0.55rem; color: #f59e0b; font-weight: 600; margin-top: 2px; display: block; text-transform: uppercase; letter-spacing: 0.3px; }
+        .tx-status.completed { color: #10b981; }
+
+        /* ===== ПУСТОЕ СОСТОЯНИЕ ===== */
+        .empty-state { text-align: center; padding: 32px 20px; color: #666; }
+        .empty-state i { font-size: 2rem; color: #333; display: block; margin-bottom: 10px; }
+        .empty-state p { font-size: 0.75rem; }
+
+        /* ===== МОДАЛКИ ===== */
+        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(6px); z-index: 2000; display: none; align-items: center; justify-content: center; padding: 20px; opacity: 0; transition: opacity 0.25s; }
+        .modal-overlay.show { display: flex; opacity: 1; }
+        .modal { background: linear-gradient(135deg, #1a1a1a, #0a0a0a); border: 1px solid rgba(251,191,36,0.2); border-radius: 24px; padding: 26px; width: 100%; max-width: 440px; max-height: 90vh; overflow-y: auto; transform: translateY(15px); transition: transform 0.25s; }
+        .modal-overlay.show .modal { transform: translateY(0); }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+        .modal-header h3 { font-size: 1.05rem; font-weight: 800; display: flex; align-items: center; gap: 8px; }
+        .modal-header h3 i { color: #fbbf24; }
+        .modal-close { background: transparent; border: none; color: #888; font-size: 1.2rem; cursor: pointer; }
+        .modal-close:hover { color: #fff; }
+        .modal-body { font-size: 0.82rem; color: #ccc; line-height: 1.5; margin-bottom: 16px; }
+        .modal-body strong { color: #fbbf24; }
+        .modal-body .info-box { background: rgba(251,191,36,0.08); border: 1px solid rgba(251,191,36,0.25); border-radius: 10px; padding: 10px; margin-top: 10px; font-size: 0.75rem; color: #fcd34d; }
+
+        .form-group { margin-bottom: 14px; }
+        .form-group label { display: block; font-size: 0.72rem; color: #aaa; margin-bottom: 6px; font-weight: 600; }
+        .form-group input, .form-group select { width: 100%; padding: 12px 14px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; color: #fff; font-size: 0.85rem; font-family: 'Inter', sans-serif; transition: border-color 0.2s; }
+        .form-group input:focus, .form-group select:focus { outline: none; border-color: rgba(251,191,36,0.35); }
+        .form-group .field-hint { font-size: 0.65rem; color: #666; margin-top: 5px; }
+
+        .preset-amounts { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin: 8px 0 14px; }
+        .preset-btn { padding: 8px 4px; border-radius: 10px; border: 1px solid rgba(251,191,36,0.2); background: transparent; color: #aaa; font-family: 'Inter', sans-serif; font-size: 0.72rem; font-weight: 700; cursor: pointer; transition: all 0.2s; }
+        .preset-btn:hover { color: #fbbf24; border-color: rgba(251,191,36,0.4); background: rgba(251,191,36,0.05); }
+
+        .method-options { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
+        .method-option { display: flex; align-items: center; gap: 12px; padding: 12px 14px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 12px; cursor: pointer; transition: all 0.2s; }
+        .method-option:hover { border-color: rgba(251,191,36,0.2); background: rgba(251,191,36,0.03); }
+        .method-option.selected { border-color: rgba(251,191,36,0.4); background: rgba(251,191,36,0.06); }
+        .method-option input[type="radio"] { accent-color: #fbbf24; width: 16px; height: 16px; cursor: pointer; }
+        .method-option i { font-size: 1.1rem; color: #fbbf24; width: 22px; text-align: center; }
+        .method-option .mt { flex: 1; }
+        .method-option .mt-title { font-weight: 600; font-size: 0.82rem; color: #fff; }
+        .method-option .mt-sub { font-size: 0.65rem; color: #888; }
+
+        .modal-actions { display: flex; gap: 8px; }
+        .btn { font-family: 'Inter', sans-serif; font-weight: 700; border: none; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 7px; padding: 12px 20px; border-radius: 40px; transition: all 0.2s; font-size: 0.82rem; }
+        .btn-primary { background: #fbbf24; color: #000; flex: 1; }
+        .btn-primary:hover:not(:disabled) { background: #ffd94d; }
+        .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+        .btn-outline { background: transparent; border: 1px solid rgba(255,255,255,0.1); color: #888; }
+        .btn-outline:hover { color: #fff; border-color: rgba(255,255,255,0.2); }
+        .btn-large { padding: 14px; width: 100%; justify-content: center; font-size: 0.9rem; }
+
+        /* ===== TOAST ===== */
+        .toast-container { position: fixed; top: 20px; right: 20px; z-index: 3000; display: flex; flex-direction: column; gap: 10px; pointer-events: none; }
+        .toast { background: rgba(15,15,15,0.95); backdrop-filter: blur(12px); border-radius: 12px; padding: 12px 18px; display: flex; align-items: center; gap: 10px; min-width: 260px; box-shadow: 0 10px 40px rgba(0,0,0,0.5); transform: translateX(120%); transition: transform 0.4s cubic-bezier(0.175,0.885,0.32,1.275); pointer-events: auto; }
+        .toast.show { transform: translateX(0); }
+        .toast.success { border-left: 4px solid #10b981; }
+        .toast.error { border-left: 4px solid #ef4444; }
+        .toast.info { border-left: 4px solid #60a5fa; }
+        .toast i { font-size: 1.1rem; }
+        .toast.success i { color: #10b981; }
+        .toast.error i { color: #ef4444; }
+        .toast.info i { color: #60a5fa; }
+        .toast-message { font-size: 0.8rem; font-weight: 500; color: #fff; }
+
+        .loading-spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid rgba(0,0,0,0.2); border-top-color: #0a0a0a; border-radius: 50%; animation: spin 0.6s linear infinite; }
+        .loading-spinner.gold { border-color: rgba(251,191,36,0.2); border-top-color: #fbbf24; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .skeleton { background: linear-gradient(90deg, rgba(255,255,255,0.03) 25%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.03) 75%); background-size: 200% 100%; animation: skel 1.5s infinite; border-radius: 8px; }
+        @keyframes skel { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+
+        /* ===== АДАПТИВ ===== */
+        @media (max-width: 768px) {
+            .container { padding: 0 14px; }
+            .navbar { padding: 12px 18px; }
+            .menu-toggle { display: block; }
+            .nav-links { display: none; flex-direction: column; position: absolute; top: 68px; left: 18px; right: 18px; background: #0f0f0f; border-radius: 24px; padding: 20px; gap: 10px; border: 1px solid rgba(251,191,36,0.3); }
+            .nav-links.show { display: flex; }
+            .page-title { font-size: 1.2rem; }
+            .balance-amount { font-size: 2.4rem; }
+            .stats-grid { grid-template-columns: 1fr 1fr; }
+            .stats-grid .stat-card:last-child { grid-column: 1 / -1; }
+            .balance-actions { grid-template-columns: 1fr; }
+            .toast-container { top: auto; bottom: 16px; right: 12px; left: 12px; }
+            .toast { min-width: auto; width: 100%; }
+            .preset-amounts { grid-template-columns: 1fr 1fr; }
+            .escrow-item { flex-wrap: wrap; }
+        }
+    </style>
+</head>
+<body>
+    <div class="gold-top"></div>
+    <div class="toast-container" id="toastContainer"></div>
+
+    <header class="navbar">
+        <div class="logo" onclick="window.location='index.html'">PRO<span>RANK</span></div>
+        <button class="menu-toggle" id="menuToggle"><i class="fas fa-bars"></i></button>
+        <nav class="nav-links" id="navLinks"></nav>
+    </header>
+
+    <main>
+        <div class="container">
+            <div class="breadcrumbs">
+                <a href="organization-dashboard.html" id="dashLink">Дашборд</a>
+                <i class="fas fa-chevron-right"></i>
+                <span class="current">Кошелёк</span>
+            </div>
+
+            <div class="page-header">
+                <div>
+                    <div class="page-title"><i class="fas fa-wallet"></i> Кошелёк организации</div>
+                    <div class="page-subtitle" id="orgNameSub">—</div>
+                </div>
+            </div>
+
+            <!-- ===== ГЛАВНАЯ КАРТОЧКА ===== -->
+            <div class="balance-card">
+                <div class="balance-label">Доступно к выводу</div>
+                <div class="balance-amount" id="balanceAmount">
+                    <span class="skeleton" style="display:inline-block;width:140px;height:44px;"></span>
+                </div>
+                <div class="balance-sub">
+                    <i class="fas fa-check-circle"></i>
+                    <span>Без комиссии · Вывод от 100 ₽</span>
+                </div>
+                <div class="balance-actions">
+                    <button class="btn-wallet btn-withdraw" id="withdrawBtn">
+                        <i class="fas fa-arrow-up"></i> Вывести
+                    </button>
+                    <button class="btn-wallet btn-dashboard" id="dashboardBtn">
+                        <i class="fas fa-chart-line"></i> В дашборд
+                    </button>
+                </div>
+            </div>
+
+            <!-- ===== СТАТИСТИКА ===== -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-label"><i class="fas fa-trending-up"></i> Всего заработано</div>
+                    <div class="stat-value gold" id="statEarned">0 ₽</div>
+                    <div class="stat-sub">за всё время</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label"><i class="fas fa-arrow-up"></i> Выведено</div>
+                    <div class="stat-value" id="statWithdrawn">0 ₽</div>
+                    <div class="stat-sub">успешных выводов</div>
+                </div>
+                <div class="stat-card escrow">
+                    <div class="stat-label"><i class="fas fa-lock"></i> В эскроу</div>
+                    <div class="stat-value green" id="statEscrow">0 ₽</div>
+                    <div class="stat-sub">заблокировано до старта</div>
+                </div>
+            </div>
+
+            <!-- ===== ЭСКРОУ ПО ТУРНИРАМ ===== -->
+            <div class="escrow-panel" id="escrowPanel" style="display: none;">
+                <div class="escrow-panel-header">
+                    <h3><i class="fas fa-lock"></i> Средства в эскроу</h3>
+                    <span class="count-badge" id="escrowCount">0</span>
+                </div>
+                <div class="escrow-hint">
+                    <i class="fas fa-info-circle" style="color:#10b981;"></i>
+                    Эти средства перейдут на ваш баланс, когда вы нажмёте «Начать турнир».
+                </div>
+                <div id="escrowList"></div>
+            </div>
+
+            <!-- ===== ТРАНЗАКЦИИ ===== -->
+            <div class="panel">
+                <div class="panel-header">
+                    <h3><i class="fas fa-history"></i> История операций</h3>
+                    <span class="tx-count" id="txCount">0</span>
+                </div>
+
+                <div class="tx-filters" id="txFilters">
+                    <button class="tx-filter-btn active" data-filter="all">Все</button>
+                    <button class="tx-filter-btn" data-filter="payout">Выплаты</button>
+                    <button class="tx-filter-btn" data-filter="fee">Комиссии</button>
+                    <button class="tx-filter-btn" data-filter="withdrawal">Выводы</button>
+                    <button class="tx-filter-btn" data-filter="refund">Возвраты</button>
+                </div>
+
+                <div class="tx-list" id="txList">
+                    <div class="empty-state"><i class="fas fa-spinner fa-spin"></i><p>Загрузка...</p></div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- ===== МОДАЛКА ВЫВОДА ===== -->
+    <div class="modal-overlay" id="withdrawModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3><i class="fas fa-arrow-up"></i> Вывод средств</h3>
+                <button class="modal-close" onclick="closeModal('withdrawModal')"><i class="fas fa-times"></i></button>
+            </div>
+
+            <div class="modal-body">
+                Доступно: <strong id="availableForWithdraw">0 ₽</strong>
+            </div>
+
+            <div class="form-group">
+                <label>Сумма вывода (₽)</label>
+                <input type="number" id="withdrawAmount" placeholder="Введите сумму" min="100" step="100">
+                <div class="field-hint">Минимум 100 ₽</div>
+            </div>
+
+            <div class="preset-amounts">
+                <button class="preset-btn" data-amount="500">500 ₽</button>
+                <button class="preset-btn" data-amount="1000">1 000 ₽</button>
+                <button class="preset-btn" data-amount="2500">2 500 ₽</button>
+                <button class="preset-btn" data-amount="5000">5 000 ₽</button>
+                <button class="preset-btn" data-amount="10000">10 000 ₽</button>
+                <button class="preset-btn" data-amount="max">Всё</button>
+            </div>
+
+            <div class="form-group">
+                <label>Реквизиты для вывода</label>
+                <input type="text" id="withdrawDetails" placeholder="Номер карты или телефон для СБП">
+            </div>
+
+            <div class="form-group">
+                <label>Способ вывода</label>
+                <div class="method-options">
+                    <label class="method-option selected" data-method="card">
+                        <input type="radio" name="withdrawMethod" value="card" checked>
+                        <i class="fas fa-credit-card"></i>
+                        <div class="mt">
+                            <div class="mt-title">Банковская карта</div>
+                            <div class="mt-sub">Visa, Mastercard, МИР</div>
+                        </div>
+                    </label>
+                    <label class="method-option" data-method="sbp">
+                        <input type="radio" name="withdrawMethod" value="sbp">
+                        <i class="fas fa-mobile-alt"></i>
+                        <div class="mt">
+                            <div class="mt-title">СБП</div>
+                            <div class="mt-sub">По номеру телефона</div>
+                        </div>
+                    </label>
+                </div>
+            </div>
+
+            <div class="modal-actions">
+                <button class="btn btn-outline" onclick="closeModal('withdrawModal')">Отмена</button>
+                <button class="btn btn-primary" id="confirmWithdrawBtn" style="flex: 1.5;">
+                    <i class="fas fa-paper-plane"></i> Запросить вывод
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== МОДАЛКА ПОДТВЕРЖДЕНИЯ ===== -->
+    <div class="modal-overlay" id="confirmModal">
+        <div class="modal" style="max-width: 420px;">
+            <div class="modal-header">
+                <h3 id="confirmTitle"><i class="fas fa-question-circle"></i> Подтверждение</h3>
+                <button class="modal-close" onclick="closeConfirm(false)"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body" id="confirmBody"></div>
+            <div class="modal-actions">
+                <button class="btn btn-outline" onclick="closeConfirm(false)">Отмена</button>
+                <button class="btn btn-primary" id="confirmBtn" style="flex:1;">Подтвердить</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="mobileBottomNavContainer"></div>
+
+    <script type="importmap">
+        {"imports":{
+            "firebase/app":"https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js",
+            "firebase/firestore":"https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js",
+            "firebase/auth":"https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js"
+        }}
+    </script>
+    <script type="module" src="header.js"></script>
+    <script type="module">
+        import { initializeApp } from "firebase/app";
+        import {
+            getFirestore, doc, getDoc, getDocs, collection,
+            query, where, orderBy, limit, addDoc
+        } from "firebase/firestore";
+        import { getAuth, onAuthStateChanged } from "firebase/auth";
+        import { OrganizerWallet } from "./organizer-wallet.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDUGYJY7pX7q02MS5SACMIIQXpjpQ97mPw",
+            authDomain: "proranklive.firebaseapp.com",
+            projectId: "proranklive",
+            storageBucket: "proranklive.firebasestorage.app",
+            messagingSenderId: "716836144015",
+            appId: "1:716836144015:web:f1575147750608d0f881fa"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+
+        // ============================================================
+        // СОСТОЯНИЕ
+        // ============================================================
+        let currentUserId = null;
+        let currentOrgId = null;
+        let currentOrgData = null;
+        let balance = { available: 0, totalEarned: 0, totalWithdrawn: 0 };
+        let allTournaments = [];
+        let allTransactions = [];
+        let currentFilter = 'all';
+        let selectedWithdrawMethod = 'card';
+        let confirmResolver = null;
+
+        // ============================================================
+        // УТИЛИТЫ
+        // ============================================================
+        const fmtMoney = n => `${Math.round(Number(n) || 0).toLocaleString('ru-RU')} ₽`;
+        const plural = (n, one, few, many) => {
+            const m10 = n % 10, m100 = n % 100;
+            if (m10 === 1 && m100 !== 11) return one;
+            if (m10 >= 2 && m10 <= 4 && (m100 < 10 || m100 >= 20)) return few;
+            return many;
+        };
+        const formatDate = (date) => {
+            if (!date) return '—';
+            const d = date.toDate ? date.toDate() : (date instanceof Date ? date : new Date(date));
+            if (isNaN(d.getTime())) return '—';
+            return d.toLocaleString('ru-RU', {
+                day: '2-digit', month: '2-digit', year: '2-digit',
+                hour: '2-digit', minute: '2-digit'
+            });
+        };
+
+        window.showToast = function(msg, type = 'info') {
+            const c = document.getElementById('toastContainer');
+            const t = document.createElement('div');
+            t.className = `toast ${type}`;
+            const ic = { success: 'fa-check-circle', error: 'fa-exclamation-circle', info: 'fa-info-circle' };
+            t.innerHTML = `<i class="fas ${ic[type]}"></i><span class="toast-message">${msg}</span>`;
+            c.appendChild(t);
+            requestAnimationFrame(() => t.classList.add('show'));
+            setTimeout(() => { t.classList.remove('show'); setTimeout(() => t.remove(), 400); }, 3500);
+        };
+
+        window.openModal = id => document.getElementById(id).classList.add('show');
+        window.closeModal = id => document.getElementById(id).classList.remove('show');
+
+        window.showConfirm = function(title, body, label = 'Подтвердить') {
+            return new Promise(resolve => {
+                confirmResolver = resolve;
+                document.getElementById('confirmTitle').innerHTML = `<i class="fas fa-question-circle"></i> ${title}`;
+                document.getElementById('confirmBody').innerHTML = body;
+                const btn = document.getElementById('confirmBtn');
+                btn.innerHTML = label;
+                btn.onclick = () => closeConfirm(true);
+                document.getElementById('confirmModal').classList.add('show');
+            });
+        };
+        window.closeConfirm = function(result) {
+            document.getElementById('confirmModal').classList.remove('show');
+            if (confirmResolver) { confirmResolver(result); confirmResolver = null; }
+        };
+
+        // ============================================================
+        // ЗАГРУЗКА ОРГАНИЗАЦИИ
+        // ============================================================
+        async function loadOrganizationData(orgId) {
+            try {
+                const reqDoc = await getDoc(doc(db, "organization_requests", orgId));
+                if (reqDoc.exists() && reqDoc.data().organizationId) {
+                    orgId = reqDoc.data().organizationId;
+                }
+
+                const orgDoc = await getDoc(doc(db, "organizations", orgId));
+                if (!orgDoc.exists()) {
+                    showToast('Организация не найдена', 'error');
+                    setTimeout(() => window.location.href = 'index.html', 1200);
+                    return;
+                }
+
+                currentOrgData = orgDoc.data();
+
+                // Проверка владельца
+                const ownerId = currentOrgData.userId || currentOrgData.ownerId || currentOrgData.createdByUserId;
+                if (ownerId && currentUserId && ownerId !== currentUserId) {
+                    showToast('Доступ запрещён', 'error');
+                    setTimeout(() => window.location.href = 'index.html', 1200);
+                    return;
+                }
+
+                currentOrgId = orgDoc.id;
+                document.getElementById('orgNameSub').textContent = currentOrgData.name || 'Организация';
+                document.getElementById('dashLink').href = `organization-dashboard.html?id=${currentOrgId}`;
+                document.getElementById('dashboardBtn').onclick = () => {
+                    window.location.href = `organization-dashboard.html?id=${currentOrgId}`;
+                };
+
+                await Promise.all([
+                    loadBalance(),
+                    loadTransactions(),
+                    loadTournaments()
+                ]);
+
+                renderEscrow();
+                renderTransactions();
+                renderStats();
+            } catch (err) {
+                console.error('Ошибка загрузки:', err);
+                showToast('Ошибка загрузки данных', 'error');
+            }
+        }
+
+        // ============================================================
+        // БАЛАНС
+        // ============================================================
+        async function loadBalance() {
+            try {
+                balance = await OrganizerWallet.getBalance(currentOrgId);
+                renderBalance();
+            } catch (err) {
+                console.error('Ошибка баланса:', err);
+            }
+        }
+
+        function renderBalance() {
+            const el = document.getElementById('balanceAmount');
+            const amount = balance.available || 0;
+            el.innerHTML = `${amount.toLocaleString('ru-RU')} <span class="currency">₽</span>`;
+
+            document.getElementById('statEarned').textContent = fmtMoney(balance.totalEarned || 0);
+            document.getElementById('statWithdrawn').textContent = fmtMoney(balance.totalWithdrawn || 0);
+
+            // Кнопка вывода
+            const btn = document.getElementById('withdrawBtn');
+            if (amount < 100) {
+                btn.disabled = true;
+                btn.title = 'Минимум для вывода — 100 ₽';
+            } else {
+                btn.disabled = false;
+                btn.title = '';
+            }
+        }
+
+        // ============================================================
+        // ТРАНЗАКЦИИ
+        // ============================================================
+        async function loadTransactions() {
+            try {
+                allTransactions = await OrganizerWallet.getTransactions(currentOrgId, 100);
+            } catch (err) {
+                console.error('Ошибка транзакций:', err);
+                allTransactions = [];
+            }
+        }
+
+        function renderTransactions() {
+            const container = document.getElementById('txList');
+            const txCount = document.getElementById('txCount');
+
+            let filtered = allTransactions;
+            if (currentFilter !== 'all') {
+                filtered = filtered.filter(tx => {
+                    if (currentFilter === 'payout') return tx.type === 'organizer_payout';
+                    if (currentFilter === 'fee') return tx.type === 'platform_fee';
+                    if (currentFilter === 'withdrawal') return tx.type === 'withdrawal';
+                    if (currentFilter === 'refund') return tx.type === 'tournament_refund' || tx.type === 'refund';
+                    return true;
+                });
+            }
+
+            txCount.textContent = filtered.length;
+
+            if (!filtered.length) {
+                container.innerHTML = `<div class="empty-state"><i class="fas fa-inbox"></i><p>Операций пока нет</p></div>`;
+                return;
+            }
+
+            container.innerHTML = filtered.map(tx => {
+                const isPositive = ['organizer_payout', 'deposit', 'refund', 'tournament_refund'].includes(tx.type);
+                const isWithdrawal = tx.type === 'withdrawal';
+                const isFee = tx.type === 'platform_fee';
+
+                let iconClass = 'escrow';
+                if (isPositive) iconClass = 'payout';
+                else if (isWithdrawal) iconClass = 'withdrawal';
+                else if (isFee) iconClass = 'fee';
+                else if (tx.type === 'refund') iconClass = 'refund';
+
+                let icon = 'fa-percent';
+                if (isPositive) icon = 'fa-arrow-down';
+                else if (isWithdrawal) icon = 'fa-arrow-up';
+                else if (isFee) icon = 'fa-percent';
+                else if (tx.type === 'tournament_refund') icon = 'fa-undo';
+
+                const typeNames = {
+                    organizer_payout: 'Выплата за турнир',
+                    platform_fee: 'Комиссия платформы',
+                    withdrawal: 'Вывод средств',
+                    tournament_refund: 'Возврат бойцу',
+                    escrow_hold: 'Поступление в эскроу',
+                    escrow_release: 'Раскрытие эскроу',
+                    deposit: 'Пополнение',
+                    refund: 'Возврат'
+                };
+
+                const sign = isPositive ? '+' : (isFee || isWithdrawal || tx.amount < 0 ? '−' : '');
+                const amountClass = isPositive ? 'positive' : 'negative';
+                const amount = Math.abs(tx.amount || 0);
+
+                const statusClass = tx.status === 'completed' ? 'completed' : '';
+                const statusText = tx.status === 'pending' ? '⏳ Обработка'
+                    : tx.status === 'completed' ? '✅ Выполнено'
+                    : tx.status === 'failed' ? '❌ Отклонено' : '';
+
+                return `
+                    <div class="tx-item">
+                        <div class="tx-icon ${iconClass}">
+                            <i class="fas ${icon}"></i>
+                        </div>
+                        <div class="tx-body">
+                            <div class="tx-name">${typeNames[tx.type] || tx.type}</div>
+                            <div class="tx-date">${formatDate(tx.createdAt)}${tx.description ? ' · ' + tx.description : ''}</div>
+                        </div>
+                        <div class="tx-right">
+                            <div class="tx-amount ${amountClass}">${sign} ${amount.toLocaleString('ru-RU')} ₽</div>
+                            ${statusText ? `<span class="tx-status ${statusClass}">${statusText}</span>` : ''}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Фильтры
+        document.querySelectorAll('.tx-filter-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.tx-filter-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentFilter = btn.dataset.filter;
+                renderTransactions();
+            });
+        });
+
+        // ============================================================
+        // ЭСКРОУ
+        // ============================================================
+        async function loadTournaments() {
+            try {
+                const q = query(
+                    collection(db, "tournaments"),
+                    where("organizationId", "==", currentOrgId)
+                );
+                const snap = await getDocs(q);
+                allTournaments = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+            } catch (err) {
+                console.error('Ошибка турниров:', err);
+                allTournaments = [];
+            }
+        }
+
+        function renderEscrow() {
+            // Турниры в registration со средствами в эскроу
+            const escrowTournaments = allTournaments.filter(t =>
+                !t.deleted &&
+                t.status === 'registration' &&
+                !t.paidOutToOrganizer &&
+                (t.escrowAmount || 0) > 0
+            );
+
+            const totalEscrow = escrowTournaments.reduce((s, t) => s + (t.escrowAmount || 0), 0);
+
+            // Обновляем верхнюю плитку
+            document.getElementById('statEscrow').textContent = fmtMoney(totalEscrow);
+
+            // Показываем/скрываем панель
+            const panel = document.getElementById('escrowPanel');
+            if (!escrowTournaments.length) {
+                panel.style.display = 'none';
+                return;
+            }
+
+            panel.style.display = 'block';
+            document.getElementById('escrowCount').textContent = escrowTournaments.length;
+
+            document.getElementById('escrowList').innerHTML = escrowTournaments.map(t => {
+                const myShare = Math.round((t.escrowAmount || 0) * 0.8);
+                const paidCount = t.participantCount || 0;
+                return `
+                    <div class="escrow-item" onclick="window.location.href='tournament-details.html?id=${t.id}'">
+                        <div class="escrow-item-info">
+                            <div class="escrow-item-name">${t.name}</div>
+                            <div class="escrow-item-meta">${paidCount} ${plural(paidCount, 'боец', 'бойца', 'бойцов')} · старт ${formatDate(new Date(t.date + 'T00:00:00'))}</div>
+                        </div>
+                        <div class="escrow-item-amount">
+                            <div class="val">${fmtMoney(myShare)}</div>
+                            <div class="lbl">Ваша доля 80%</div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // ============================================================
+        // СТАТИСТИКА
+        // ============================================================
+        function renderStats() {
+            // Уже заполнено в renderBalance и renderEscrow
+        }
+
+        // ============================================================
+        // МОДАЛКА ВЫВОДА
+        // ============================================================
+        document.getElementById('withdrawBtn')?.addEventListener('click', () => {
+            const amount = balance.available || 0;
+            if (amount < 100) {
+                showToast('Минимум для вывода — 100 ₽', 'error');
+                return;
+            }
+            document.getElementById('availableForWithdraw').textContent = fmtMoney(amount);
+            document.getElementById('withdrawAmount').value = '';
+            document.getElementById('withdrawDetails').value = '';
+            openModal('withdrawModal');
+        });
+
+        // Пресеты сумм
+        document.querySelectorAll('.preset-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const val = btn.dataset.amount;
+                if (val === 'max') {
+                    document.getElementById('withdrawAmount').value = balance.available || 0;
+                } else {
+                    document.getElementById('withdrawAmount').value = val;
+                }
+            });
+        });
+
+        // Методы вывода
+        document.querySelectorAll('[data-method]').forEach(opt => {
+            opt.addEventListener('click', (e) => {
+                e.preventDefault();
+                document.querySelectorAll('[data-method]').forEach(o => o.classList.remove('selected'));
+                opt.classList.add('selected');
+                const radio = opt.querySelector('input[type="radio"]');
+                if (radio) radio.checked = true;
+                selectedWithdrawMethod = opt.dataset.method;
+            });
+        });
+
+        // Подтверждение вывода
+        document.getElementById('confirmWithdrawBtn')?.addEventListener('click', async () => {
+            const amount = parseInt(document.getElementById('withdrawAmount').value);
+            const details = document.getElementById('withdrawDetails').value.trim();
+
+            if (!amount || amount < 100) {
+                showToast('Минимальная сумма — 100 ₽', 'error');
+                return;
+            }
+            if (amount > (balance.available || 0)) {
+                showToast('Недостаточно средств', 'error');
+                return;
+            }
+            if (!details) {
+                showToast('Укажите реквизиты', 'error');
+                return;
+            }
+
+            const btn = document.getElementById('confirmWithdrawBtn');
+            const origText = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<span class="loading-spinner"></span> Отправка...';
+
+            try {
+                await OrganizerWallet.requestWithdrawal(
+                    currentOrgId, amount, selectedWithdrawMethod, details
+                );
+                showToast('✅ Заявка на вывод отправлена', 'success');
+                closeModal('withdrawModal');
+                await Promise.all([loadBalance(), loadTransactions()]);
+                renderTransactions();
+            } catch (err) {
+                console.error(err);
+                showToast('Ошибка: ' + err.message, 'error');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = origText;
+            }
+        });
+
+        // ============================================================
+        // АВТОРИЗАЦИЯ
+        // ============================================================
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) {
+                window.location.href = 'login.html';
+                return;
+            }
+            currentUserId = user.uid;
+
+            const urlParams = new URLSearchParams(window.location.search);
+            let orgId = urlParams.get('id');
+
+            if (!orgId) {
+                const orgRequests = await getDocs(query(
+                    collection(db, "organization_requests"),
+                    where("userId", "==", user.uid),
+                    where("status", "==", "approved")
+                ));
+                if (!orgRequests.empty) {
+                    const req = orgRequests.docs[0].data();
+                    orgId = req.organizationId || orgRequests.docs[0].id;
+                    window.history.replaceState(null, '', `?id=${orgId}`);
+                }
+            }
+
+            if (orgId) {
+                await loadOrganizationData(orgId);
+            } else {
+                showToast('Нет активной организации', 'error');
+                setTimeout(() => window.location.href = 'organization-dashboard.html', 1500);
+            }
+        });
+
+        // ============================================================
+        // MOBILE MENU
+        // ============================================================
+        document.getElementById('menuToggle')?.addEventListener('click', () => {
+            document.getElementById('navLinks').classList.toggle('show');
+        });
+    </script>
+</body>
+</html>

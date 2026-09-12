@@ -1,0 +1,1462 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>LIVE Судейство | PRORANK</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700;14..32,800;14..32,900&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background: radial-gradient(ellipse at 30% 40%, rgba(251,191,36,0.15) 0%, transparent 60%), radial-gradient(ellipse at 70% 80%, rgba(251,191,36,0.08) 0%, transparent 50%), linear-gradient(135deg, #1a1a1a 0%, #0f0f0f 40%, #1a1a1a 100%); background-attachment: fixed; color: #fff; min-height: 100vh; overflow-x: hidden; }
+        .gold-top { position: fixed; top: 0; left: 0; width: 100%; height: 3px; background: linear-gradient(90deg, #fbbf24, #ffdd88, #fbbf24, #b8860b); z-index: 1001; }
+
+        .top-bar { display: flex; justify-content: space-between; align-items: center; padding: 12px 20px; background: rgba(0,0,0,0.85); backdrop-filter: blur(16px); border-bottom: 1px solid rgba(251,191,36,0.2); position: sticky; top: 0; z-index: 100; gap: 12px; flex-wrap: wrap; }
+        .top-bar .logo { font-size: 1.3rem; font-weight: 800; background: linear-gradient(135deg, #fff, #fbbf24); background-clip: text; color: transparent; cursor: pointer; }
+        .top-bar .logo span { background: linear-gradient(135deg, #fbbf24, #ffdd77); background-clip: text; color: transparent; }
+        .top-bar .tournament-info { display: flex; align-items: center; gap: 12px; font-size: 0.85rem; flex: 1; min-width: 0; }
+        .top-bar .tournament-name { font-weight: 700; color: #fbbf24; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .top-bar .role-badge { display: inline-flex; align-items: center; gap: 5px; font-size: 0.65rem; font-weight: 700; padding: 3px 10px; border-radius: 30px; text-transform: uppercase; letter-spacing: 0.3px; flex-shrink: 0; }
+        .role-badge.chief { background: rgba(251,191,36,0.15); color: #fbbf24; border: 1px solid rgba(251,191,36,0.3); }
+        .role-badge.judge { background: rgba(139,92,246,0.15); color: #a78bfa; border: 1px solid rgba(139,92,246,0.3); }
+        .role-badge.display { background: rgba(59,130,246,0.15); color: #60a5fa; border: 1px solid rgba(59,130,246,0.3); }
+        .role-badge.view { background: rgba(107,114,128,0.15); color: #9ca3af; border: 1px solid rgba(107,114,128,0.3); }
+
+        .fs-btn { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #aaa; padding: 6px 10px; border-radius: 10px; cursor: pointer; font-size: 0.8rem; transition: all 0.2s; }
+        .fs-btn:hover { color: #fbbf24; border-color: rgba(251,191,36,0.3); }
+
+        .container { max-width: 900px; margin: 0 auto; padding: 20px; }
+
+        .empty-state { text-align: center; padding: 60px 20px; color: #666; }
+        .empty-state i { font-size: 3rem; color: #333; margin-bottom: 16px; display: block; }
+        .empty-state h3 { color: #888; margin-bottom: 8px; font-size: 1.05rem; }
+        .empty-state p { font-size: 0.82rem; margin-bottom: 16px; }
+
+        .btn { font-family: 'Inter', sans-serif; font-weight: 700; border: none; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 7px; padding: 11px 18px; border-radius: 40px; transition: all 0.2s; font-size: 0.78rem; text-decoration: none; }
+        .btn:active { transform: scale(0.97); }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+        .btn-primary { background: #fbbf24; color: #0a0a0a; }
+        .btn-primary:hover:not(:disabled) { background: #ffd94d; }
+        .btn-outline { background: transparent; border: 1px solid rgba(251,191,36,0.4); color: #fbbf24; }
+        .btn-outline:hover:not(:disabled) { background: rgba(251,191,36,0.08); }
+        .btn-success { background: rgba(16,185,129,0.15); border: 1px solid rgba(16,185,129,0.3); color: #10b981; }
+        .btn-success:hover:not(:disabled) { background: rgba(16,185,129,0.25); }
+        .btn-danger { background: rgba(239,68,68,0.15); border: 1px solid rgba(239,68,68,0.3); color: #ef4444; }
+        .btn-danger:hover:not(:disabled) { background: rgba(239,68,68,0.25); }
+        .btn-blue { background: rgba(59,130,246,0.15); border: 1px solid rgba(59,130,246,0.3); color: #60a5fa; }
+        .btn-blue:hover:not(:disabled) { background: rgba(59,130,246,0.25); }
+        .btn-sm { padding: 7px 12px; font-size: 0.7rem; min-height: 32px; }
+        .btn-lg { padding: 14px 24px; font-size: 0.95rem; min-height: 50px; }
+        .btn-block { width: 100%; }
+
+        /* ВЫБОР СТОЛА */
+        .ring-select-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 70vh; gap: 24px; padding: 20px; }
+        .ring-select-title { font-size: 1.6rem; font-weight: 800; text-align: center; }
+        .ring-select-subtitle { color: #888; font-size: 0.9rem; text-align: center; max-width: 500px; }
+        .ring-buttons-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 12px;
+            width: 100%;
+            max-width: 700px;
+        }
+        .ring-select-btn {
+            background: linear-gradient(145deg, rgba(139,92,246,0.15), rgba(15,15,15,0.9));
+            border: 2px solid rgba(139,92,246,0.3);
+            border-radius: 20px;
+            padding: 26px 14px;
+            cursor: pointer;
+            transition: all 0.25s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            font-family: 'Inter', sans-serif;
+        }
+        .ring-select-btn:hover {
+            border-color: #a78bfa;
+            transform: translateY(-4px);
+            box-shadow: 0 12px 30px rgba(139,92,246,0.35);
+        }
+        .ring-select-btn.closed { opacity: 0.4; cursor: not-allowed; }
+        .ring-select-btn.closed:hover { transform: none; box-shadow: none; }
+        .ring-select-btn .rn {
+            font-size: 2.4rem;
+            font-weight: 900;
+            color: #a78bfa;
+            line-height: 1;
+        }
+        .ring-select-btn .rl {
+            font-size: 0.7rem;
+            color: #aaa;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 700;
+        }
+        .ring-select-btn .rc {
+            font-size: 0.65rem;
+            color: #666;
+            font-weight: 600;
+        }
+
+        /* ШАПКА СТОЛА */
+        .ring-header {
+            background: rgba(15,15,15,0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(139,92,246,0.3);
+            border-radius: 18px;
+            padding: 18px 22px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 14px;
+            flex-wrap: wrap;
+        }
+        .ring-header .rh-left {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+        .ring-header .rh-badge {
+            width: 52px;
+            height: 52px;
+            border-radius: 14px;
+            background: linear-gradient(135deg, rgba(139,92,246,0.3), rgba(139,92,246,0.1));
+            border: 2px solid #a78bfa;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 900;
+            font-size: 1.5rem;
+            color: #a78bfa;
+        }
+        .ring-header .rh-info h2 {
+            font-size: 1.25rem;
+            font-weight: 800;
+        }
+        .ring-header .rh-info p {
+            font-size: 0.75rem;
+            color: #888;
+            margin-top: 3px;
+        }
+
+        .ring-closed-banner {
+            background: linear-gradient(135deg, rgba(16,185,129,0.15), rgba(15,15,15,0.8));
+            border: 2px solid rgba(16,185,129,0.4);
+            border-radius: 20px;
+            padding: 40px 24px;
+            text-align: center;
+            margin-top: 20px;
+        }
+        .ring-closed-banner i {
+            font-size: 4rem;
+            color: #10b981;
+            margin-bottom: 16px;
+            display: block;
+        }
+        .ring-closed-banner h2 {
+            font-size: 1.4rem;
+            margin-bottom: 8px;
+        }
+        .ring-closed-banner p {
+            color: #888;
+            margin-bottom: 20px;
+        }
+
+        .matches-list { display: flex; flex-direction: column; gap: 12px; }
+
+        .match-item {
+            background: rgba(15,15,15,0.75); backdrop-filter: blur(12px);
+            border: 1px solid rgba(251,191,36,0.15); border-radius: 16px;
+            padding: 16px; transition: all 0.2s;
+        }
+        .match-item.is-live { border-color: #ef4444; box-shadow: 0 0 25px rgba(239,68,68,0.15); }
+        .match-item.is-mine { border-color: #a78bfa; background: linear-gradient(135deg, rgba(139,92,246,0.06), rgba(15,15,15,0.75)); }
+        .match-item.is-completed { opacity: 0.65; border-color: rgba(59,130,246,0.25); }
+        .match-item.next-highlight { border-color: #10b981; box-shadow: 0 0 30px rgba(16,185,129,0.3); animation: pulseHighlight 2s infinite; }
+        @keyframes pulseHighlight {
+            0%, 100% { box-shadow: 0 0 30px rgba(16,185,129,0.3); }
+            50% { box-shadow: 0 0 45px rgba(16,185,129,0.5); }
+        }
+
+        .match-header { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 12px; flex-wrap: wrap; }
+        .match-meta { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+        .badge { display: inline-flex; align-items: center; gap: 4px; font-size: 0.62rem; font-weight: 800; padding: 3px 10px; border-radius: 20px; text-transform: uppercase; letter-spacing: 0.3px; }
+        .badge.round { background: rgba(251,191,36,0.1); color: #fbbf24; border: 1px solid rgba(251,191,36,0.25); }
+        .badge.category { background: rgba(59,130,246,0.1); color: #60a5fa; border: 1px solid rgba(59,130,246,0.25); }
+        .badge.live { background: #ef4444; color: #fff; animation: pulse 1.5s infinite; }
+        .badge.mine { background: rgba(139,92,246,0.2); color: #a78bfa; border: 1px solid rgba(139,92,246,0.4); }
+        .badge.free { background: rgba(16,185,129,0.15); color: #10b981; border: 1px solid rgba(16,185,129,0.3); }
+        .badge.completed { background: rgba(59,130,246,0.15); color: #60a5fa; border: 1px solid rgba(59,130,246,0.3); }
+        .badge.taken { background: rgba(107,114,128,0.15); color: #9ca3af; border: 1px solid rgba(107,114,128,0.3); }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
+
+        .match-fighters { display: grid; grid-template-columns: 1fr auto 1fr; gap: 12px; align-items: center; margin-bottom: 14px; }
+        .m-fighter { display: flex; align-items: center; gap: 10px; padding: 10px; border-radius: 12px; background: rgba(0,0,0,0.25); }
+        .m-fighter.red { border-left: 4px solid rgba(239,68,68,0.6); }
+        .m-fighter.blue { border-left: 4px solid rgba(59,130,246,0.6); }
+        .m-fighter.winner { background: linear-gradient(90deg, rgba(16,185,129,0.15), transparent); }
+        .m-fighter .avatar { width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, #fbbf24, #f59e0b); display: flex; align-items: center; justify-content: center; font-weight: 800; color: #000; font-size: 0.9rem; flex-shrink: 0; }
+        .m-fighter .info { flex: 1; min-width: 0; }
+        .m-fighter .name { font-size: 0.85rem; font-weight: 700; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .m-fighter .club { font-size: 0.65rem; color: #888; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .m-fighter .score { font-size: 1.4rem; font-weight: 900; color: #fbbf24; font-variant-numeric: tabular-nums; }
+        .m-fighter .win-icon { color: #10b981; font-size: 1rem; }
+        .m-vs { font-size: 0.9rem; font-weight: 800; color: #fbbf24; }
+
+        .match-timer { display: flex; align-items: center; justify-content: center; gap: 8px; padding: 8px 14px; background: rgba(0,0,0,0.3); border-radius: 10px; font-size: 0.9rem; font-weight: 800; color: #10b981; font-variant-numeric: tabular-nums; margin-bottom: 12px; }
+        .match-timer.warning { color: #ef4444; animation: pulse 1s infinite; }
+
+        .match-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+        .match-actions .btn { flex: 1; min-width: 130px; }
+
+        /* РЕЖИМ СУДЬИ */
+        .judge-container { max-width: 900px; margin: 0 auto; padding: 20px; }
+        .judge-header { background: rgba(15,15,15,0.7); border: 1px solid rgba(251,191,36,0.15); border-radius: 16px; padding: 14px 18px; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
+        .judge-header .weight { color: #fbbf24; font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; }
+        .judge-header .meta { color: #888; font-size: 0.72rem; }
+        .judge-header .round-duration { font-size: 0.72rem; color: #888; display: flex; align-items: center; gap: 5px; }
+        .judge-header .round-duration i { color: #fbbf24; }
+
+        .timer-display { text-align: center; margin: 20px 0; padding: 26px; background: rgba(10,10,10,0.85); border-radius: 24px; border: 2px solid rgba(251,191,36,0.2); }
+        .timer-value { font-size: clamp(4rem, 14vw, 7rem); font-weight: 900; color: #fbbf24; font-variant-numeric: tabular-nums; letter-spacing: -2px; text-shadow: 0 0 40px rgba(251,191,36,0.3); line-height: 1; }
+        .timer-value.warning { color: #ef4444; animation: pulse 1s infinite; }
+        .timer-value.running { color: #10b981; text-shadow: 0 0 40px rgba(16,185,129,0.4); }
+        .timer-label { font-size: 0.72rem; color: #888; margin-top: 8px; text-transform: uppercase; letter-spacing: 2px; }
+
+        .timer-controls { display: flex; gap: 8px; justify-content: center; margin-top: 16px; flex-wrap: wrap; }
+        .timer-btn { padding: 12px 20px; border: none; border-radius: 40px; font-family: 'Inter', sans-serif; font-weight: 700; font-size: 0.82rem; cursor: pointer; transition: all 0.2s; display: inline-flex; align-items: center; gap: 7px; min-height: 46px; }
+        .timer-btn.start { background: #10b981; color: #fff; }
+        .timer-btn.pause { background: #fbbf24; color: #000; }
+        .timer-btn.reset { background: rgba(255,255,255,0.08); color: #fff; border: 1px solid rgba(255,255,255,0.15); }
+        .timer-btn.undo { background: rgba(245,158,11,0.15); border: 1px solid rgba(245,158,11,0.3); color: #f59e0b; }
+        .timer-btn.undo:disabled { opacity: 0.4; cursor: not-allowed; }
+        .timer-btn.finish { background: #ef4444; color: #fff; }
+
+        .scoreboard { display: grid; grid-template-columns: 1fr auto 1fr; gap: 14px; margin: 20px 0; align-items: stretch; }
+        .fighter-panel { background: rgba(15,15,15,0.75); border-radius: 20px; padding: 18px; border: 2px solid rgba(251,191,36,0.15); display: flex; flex-direction: column; align-items: center; gap: 10px; }
+        .fighter-panel.red { border-color: rgba(239,68,68,0.3); }
+        .fighter-panel.blue { border-color: rgba(59,130,246,0.3); }
+        .fighter-panel .corner-label { font-size: 0.62rem; font-weight: 800; text-transform: uppercase; letter-spacing: 2px; }
+        .fighter-panel.red .corner-label { color: #ef4444; }
+        .fighter-panel.blue .corner-label { color: #60a5fa; }
+        .fighter-panel .fighter-avatar { width: 60px; height: 60px; border-radius: 50%; background: linear-gradient(135deg, #fbbf24, #f59e0b); display: flex; align-items: center; justify-content: center; font-weight: 900; color: #000; font-size: 1.4rem; }
+        .fighter-panel .fighter-name { font-weight: 700; font-size: 0.92rem; text-align: center; }
+        .fighter-panel .score-value { font-size: 3.2rem; font-weight: 900; color: #fbbf24; line-height: 1; font-variant-numeric: tabular-nums; }
+        .score-buttons { display: flex; gap: 6px; width: 100%; }
+        .score-btn { flex: 1; padding: 13px 8px; border: none; border-radius: 12px; font-family: 'Inter', sans-serif; font-weight: 800; font-size: 1rem; cursor: pointer; transition: all 0.15s; }
+        .score-btn.plus1 { background: rgba(251,191,36,0.15); color: #fbbf24; border: 1px solid rgba(251,191,36,0.3); }
+        .score-btn.plus2 { background: rgba(16,185,129,0.15); color: #10b981; border: 1px solid rgba(16,185,129,0.3); }
+        .score-btn.minus { background: rgba(239,68,68,0.1); color: #ef4444; border: 1px solid rgba(239,68,68,0.2); font-size: 0.9rem; padding: 10px; }
+        .score-btn:active { transform: scale(0.95); }
+        .vs-divider { display: flex; align-items: center; justify-content: center; font-size: 1.3rem; font-weight: 900; color: #fbbf24; }
+
+        .history-panel { background: rgba(15,15,15,0.5); border-radius: 14px; padding: 12px 16px; margin-top: 16px; border: 1px solid rgba(255,255,255,0.04); }
+        .history-panel h4 { font-size: 0.7rem; color: #888; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+        .history-panel h4 i { color: #fbbf24; }
+        .history-list { display: flex; flex-direction: column; gap: 4px; }
+        .history-item { display: flex; justify-content: space-between; align-items: center; font-size: 0.68rem; padding: 5px 10px; background: rgba(0,0,0,0.25); border-radius: 8px; color: #ccc; }
+        .history-item .time { color: #666; font-size: 0.6rem; }
+        .history-item.positive { border-left: 3px solid #10b981; }
+        .history-item.negative { border-left: 3px solid #ef4444; }
+
+        /* ТАБЛО */
+        body.display-mode { background: #000; }
+        body.display-mode .top-bar { display: none; }
+        body.display-mode .gold-top { display: none; }
+
+        .display-container { min-height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 40px 20px; position: relative; }
+        .display-live-badge { position: absolute; top: 24px; right: 24px; background: #ef4444; color: #fff; padding: 10px 22px; border-radius: 40px; font-size: 1.1rem; font-weight: 900; letter-spacing: 3px; animation: pulse 1.5s infinite; box-shadow: 0 0 30px rgba(239,68,68,0.5); }
+        .display-tournament-name { position: absolute; top: 24px; left: 24px; font-size: 1.1rem; font-weight: 700; color: #fbbf24; text-transform: uppercase; letter-spacing: 2px; }
+        .display-fs-btn { position: absolute; top: 24px; left: 50%; transform: translateX(-50%); background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.15); color: #aaa; padding: 8px 16px; border-radius: 40px; cursor: pointer; font-size: 0.75rem; font-family: 'Inter', sans-serif; font-weight: 600; display: flex; align-items: center; gap: 6px; }
+        .display-weight-class { font-size: 1.4rem; color: #fbbf24; font-weight: 700; text-transform: uppercase; letter-spacing: 3px; margin-bottom: 24px; }
+        .display-fighters { display: grid; grid-template-columns: 1fr auto 1fr; gap: 40px; align-items: center; width: 100%; max-width: 1400px; }
+        .display-fighter { text-align: center; padding: 36px; border-radius: 30px; background: rgba(255,255,255,0.03); border: 2px solid rgba(251,191,36,0.2); }
+        .display-fighter.red { border-color: rgba(239,68,68,0.4); }
+        .display-fighter.blue { border-color: rgba(59,130,246,0.4); }
+        .display-fighter.winner { border-color: #10b981; box-shadow: 0 0 60px rgba(16,185,129,0.3); }
+        .display-fighter .corner { font-size: 1rem; font-weight: 800; letter-spacing: 4px; margin-bottom: 14px; }
+        .display-fighter.red .corner { color: #ef4444; }
+        .display-fighter.blue .corner { color: #60a5fa; }
+        .display-fighter .name { font-size: clamp(1.5rem, 4vw, 2.5rem); font-weight: 900; margin-bottom: 6px; }
+        .display-fighter .club { font-size: 1rem; color: #888; margin-bottom: 20px; }
+        .display-fighter .score { font-size: clamp(5rem, 15vw, 10rem); font-weight: 900; color: #fbbf24; line-height: 1; font-variant-numeric: tabular-nums; }
+        .display-fighter.winner .score { color: #10b981; }
+        .display-vs { font-size: 3rem; font-weight: 900; color: #fbbf24; }
+        .display-timer { margin-top: 36px; font-size: clamp(4rem, 12vw, 8rem); font-weight: 900; color: #fbbf24; font-variant-numeric: tabular-nums; letter-spacing: -2px; }
+        .display-timer.warning { color: #ef4444; animation: pulse 1s infinite; }
+        .display-timer.running { color: #10b981; }
+        .display-status { margin-top: 14px; font-size: 0.95rem; color: #888; text-transform: uppercase; letter-spacing: 3px; }
+
+        .display-winner-overlay { position: fixed; inset: 0; background: radial-gradient(circle, rgba(16,185,129,0.2), rgba(0,0,0,0.97)); z-index: 100; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 20px; animation: fadeIn 0.5s; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .display-winner-overlay .trophy { font-size: 8rem; color: #fbbf24; animation: bounce 1s infinite; }
+        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-20px); } }
+        .display-winner-overlay .winner-name { font-size: clamp(2rem, 6vw, 5rem); font-weight: 900; color: #10b981; text-align: center; padding: 0 20px; }
+        .display-winner-overlay .winner-score { font-size: clamp(1.5rem, 4vw, 3rem); font-weight: 700; color: #fbbf24; font-variant-numeric: tabular-nums; }
+        .display-winner-overlay .winner-label { font-size: 1rem; color: #888; text-transform: uppercase; letter-spacing: 4px; }
+
+        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(8px); z-index: 2000; display: none; align-items: center; justify-content: center; padding: 20px; opacity: 0; transition: opacity 0.25s; }
+        .modal-overlay.show { display: flex; opacity: 1; }
+        .modal { background: linear-gradient(135deg, #1a1a1a, #0a0a0a); border: 1px solid rgba(251,191,36,0.25); border-radius: 24px; padding: 26px; width: 100%; max-width: 480px; transform: translateY(15px); transition: transform 0.25s; }
+        .modal-overlay.show .modal { transform: translateY(0); }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; }
+        .modal-header h3 { font-size: 1.15rem; font-weight: 800; display: flex; align-items: center; gap: 8px; }
+        .modal-header h3 i { color: #fbbf24; }
+        .modal-close { background: transparent; border: none; color: #888; font-size: 1.3rem; cursor: pointer; }
+        .modal-body { font-size: 0.82rem; color: #ccc; line-height: 1.5; margin-bottom: 16px; }
+        .modal-body .info-box { background: rgba(251,191,36,0.08); border: 1px solid rgba(251,191,36,0.25); border-radius: 10px; padding: 10px; margin-top: 10px; font-size: 0.75rem; color: #fcd34d; }
+
+        .form-group { margin-bottom: 14px; }
+        .form-group label { display: block; font-size: 0.72rem; color: #aaa; margin-bottom: 6px; font-weight: 600; text-transform: uppercase; }
+        .form-select, .form-group textarea { width: 100%; padding: 11px 14px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; color: #fff; font-size: 0.85rem; font-family: 'Inter', sans-serif; }
+        .form-select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%23fbbf24' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; padding-right: 36px; }
+        .frs-hint { font-size: 0.72rem; color: #fbbf24; margin-top: 6px; }
+        .modal-actions { display: flex; gap: 8px; }
+        .modal-actions .btn { flex: 1; }
+
+        .toast-container { position: fixed; top: 20px; right: 20px; z-index: 3000; display: flex; flex-direction: column; gap: 10px; pointer-events: none; }
+        .toast { background: rgba(15,15,15,0.95); backdrop-filter: blur(12px); border-radius: 12px; padding: 14px 20px; display: flex; align-items: center; gap: 12px; min-width: 260px; box-shadow: 0 10px 40px rgba(0,0,0,0.5); transform: translateX(120%); transition: transform 0.4s; pointer-events: auto; }
+        .toast.show { transform: translateX(0); }
+        .toast.success { border-left: 4px solid #10b981; }
+        .toast.error { border-left: 4px solid #ef4444; }
+        .toast.info { border-left: 4px solid #60a5fa; }
+        .toast i { font-size: 1.1rem; }
+        .toast.success i { color: #10b981; }
+        .toast.error i { color: #ef4444; }
+        .toast.info i { color: #60a5fa; }
+
+        @media (max-width: 768px) {
+            .match-fighters { grid-template-columns: 1fr; gap: 8px; }
+            .m-vs { display: none; }
+            .scoreboard { grid-template-columns: 1fr; gap: 10px; }
+            .vs-divider { font-size: 1rem; padding: 6px 0; }
+            .display-fighters { grid-template-columns: 1fr; gap: 20px; }
+            .display-vs { display: none; }
+            .display-fighter { padding: 20px; }
+            .ring-buttons-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+    </style>
+</head>
+<body>
+    <div class="gold-top"></div>
+    <div class="toast-container" id="toastContainer"></div>
+
+    <div class="top-bar" id="topBar">
+        <div class="logo" onclick="window.location='index.html'">PRO<span>RANK</span> LIVE</div>
+        <div class="tournament-info">
+            <span class="tournament-name" id="tournamentName">Загрузка...</span>
+            <span class="role-badge" id="roleBadge" style="display: none;"></span>
+        </div>
+        <button class="fs-btn" onclick="toggleFullscreen()" title="На весь экран"><i class="fas fa-expand"></i></button>
+    </div>
+
+    <!-- ЭКРАН ВЫБОРА СТОЛА -->
+    <div class="ring-select-screen" id="ringSelectScreen" style="display: none;">
+        <h1 class="ring-select-title">🥊 Выберите стол</h1>
+        <p class="ring-select-subtitle">Каждый стол — свой судья. Выберите номер вашего стола, чтобы видеть только свои бои.</p>
+        <div class="ring-buttons-grid" id="ringButtonsGrid"></div>
+        <button class="btn btn-outline btn-lg" onclick="switchToChiefView()" style="margin-top: 12px;">
+            <i class="fas fa-crown"></i> Я главный судья
+        </button>
+    </div>
+
+    <!-- ЭКРАН СТОЛА (СПИСОК БОЁВ) -->
+    <div class="container" id="ringView" style="display: none;">
+        <div class="ring-header">
+            <div class="rh-left">
+                <div class="rh-badge" id="ringBadge">1</div>
+                <div class="rh-info">
+                    <h2 id="ringTitle">Стол 1</h2>
+                    <p id="ringSubtitle">Загрузка...</p>
+                </div>
+            </div>
+            <div id="ringHeaderActions"></div>
+        </div>
+
+        <div id="ringContent">
+            <div class="empty-state"><i class="fas fa-spinner fa-spin"></i><h3>Загрузка боёв...</h3></div>
+        </div>
+    </div>
+
+    <!-- РЕЖИМ СУДЬИ -->
+    <div class="judge-container" id="judgeView" style="display: none;">
+        <div class="judge-header">
+            <div>
+                <div class="weight" id="judgeWeight">—</div>
+                <div class="meta" id="judgeMeta">—</div>
+            </div>
+            <div class="round-duration" id="judgeRoundDuration"><i class="fas fa-hourglass-half"></i> 3:00</div>
+        </div>
+
+        <div class="timer-display">
+            <div class="timer-value" id="judgeTimer">03:00</div>
+            <div class="timer-label">Время раунда</div>
+            <div class="timer-controls">
+                <button class="timer-btn start" id="btnStart" onclick="startTimer()"><i class="fas fa-play"></i> Старт</button>
+                <button class="timer-btn pause" id="btnPause" onclick="pauseTimer()" style="display:none;"><i class="fas fa-pause"></i> Пауза</button>
+                <button class="timer-btn reset" onclick="resetTimerOnly()"><i class="fas fa-redo"></i></button>
+                <button class="timer-btn undo" onclick="undoLast()" id="btnUndo" disabled><i class="fas fa-undo"></i> Undo</button>
+                <button class="timer-btn finish" onclick="openFinishModal()"><i class="fas fa-flag-checkered"></i> ФИНИШ</button>
+            </div>
+        </div>
+
+        <div class="scoreboard">
+            <div class="fighter-panel red">
+                <div class="corner-label">Красный</div>
+                <div class="fighter-avatar" id="judgeF1Avatar">?</div>
+                <div class="fighter-name" id="judgeF1Name">—</div>
+                <div class="score-value" id="judgeScore1">0</div>
+                <div class="score-buttons">
+                    <button class="score-btn plus1" onclick="changeScore(1, 1)">+1</button>
+                    <button class="score-btn plus2" onclick="changeScore(1, 2)">+2</button>
+                    <button class="score-btn minus" onclick="changeScore(1, -1)">−1</button>
+                </div>
+            </div>
+            <div class="vs-divider">VS</div>
+            <div class="fighter-panel blue">
+                <div class="corner-label">Синий</div>
+                <div class="fighter-avatar" id="judgeF2Avatar">?</div>
+                <div class="fighter-name" id="judgeF2Name">—</div>
+                <div class="score-value" id="judgeScore2">0</div>
+                <div class="score-buttons">
+                    <button class="score-btn plus1" onclick="changeScore(2, 1)">+1</button>
+                    <button class="score-btn plus2" onclick="changeScore(2, 2)">+2</button>
+                    <button class="score-btn minus" onclick="changeScore(2, -1)">−1</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="history-panel" id="historyPanel" style="display: none;">
+            <h4><i class="fas fa-history"></i> Последние действия</h4>
+            <div class="history-list" id="historyList"></div>
+        </div>
+
+        <div style="display: flex; gap: 8px; margin-top: 16px;">
+            <button class="btn btn-blue btn-block" onclick="openDisplayForCurrent()"><i class="fas fa-tv"></i> Открыть табло</button>
+            <button class="btn btn-outline" onclick="backToRing()" title="Вернуться к списку"><i class="fas fa-list"></i></button>
+        </div>
+    </div>
+
+    <!-- ТАБЛО -->
+    <div class="display-container" id="displayView" style="display: none;">
+        <div class="display-tournament-name" id="displayTournamentName">—</div>
+        <div class="display-live-badge" id="displayLiveBadge" style="display:none;">● LIVE</div>
+        <button class="display-fs-btn" onclick="toggleFullscreen()"><i class="fas fa-expand"></i> На весь экран</button>
+        <div class="display-weight-class" id="displayWeightClass">—</div>
+        <div class="display-fighters">
+            <div class="display-fighter red" id="displayFighter1">
+                <div class="corner">КРАСНЫЙ</div>
+                <div class="name" id="displayF1Name">—</div>
+                <div class="club" id="displayF1Club">—</div>
+                <div class="score" id="displayScore1">0</div>
+            </div>
+            <div class="display-vs">VS</div>
+            <div class="display-fighter blue" id="displayFighter2">
+                <div class="corner">СИНИЙ</div>
+                <div class="name" id="displayF2Name">—</div>
+                <div class="club" id="displayF2Club">—</div>
+                <div class="score" id="displayScore2">0</div>
+            </div>
+        </div>
+        <div class="display-timer" id="displayTimer">03:00</div>
+        <div class="display-status" id="displayStatus">Ожидание боя</div>
+    </div>
+
+    <div id="displayWinnerOverlay"></div>
+
+    <div class="modal-overlay" id="finishModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3><i class="fas fa-flag-checkered"></i> Завершить бой</h3>
+                <button class="modal-close" onclick="closeModal('finishModal')"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="form-group">
+                <label>Победитель</label>
+                <select id="finishWinner" class="form-select"></select>
+            </div>
+            <div class="form-group">
+                <label>Тип победы</label>
+                <select id="finishWinType" class="form-select">
+                    <option value="decision">Решением (+100 FRS)</option>
+                    <option value="ko">Нокаут / TKO (+150 FRS)</option>
+                    <option value="submission">Сабмишн (+150 FRS)</option>
+                </select>
+                <div class="frs-hint"><i class="fas fa-info-circle"></i> Проигравшему −50 FRS</div>
+            </div>
+            <div class="form-group">
+                <label>Комментарий (опционально)</label>
+                <textarea id="finishComment" rows="2" placeholder="2 раунд, удушающий..."></textarea>
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-outline" onclick="closeModal('finishModal')">Отмена</button>
+                <button class="btn btn-primary" id="confirmFinishBtn" onclick="confirmFinish()" style="flex: 2;"><i class="fas fa-check"></i> Завершить</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="confirmModal">
+        <div class="modal" style="max-width: 440px;">
+            <div class="modal-header">
+                <h3 id="confirmTitle"><i class="fas fa-question-circle"></i> Подтверждение</h3>
+                <button class="modal-close" onclick="closeConfirm(false)"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body" id="confirmBody"></div>
+            <div class="modal-actions">
+                <button class="btn btn-outline" onclick="closeConfirm(false)">Отмена</button>
+                <button class="btn btn-primary" id="confirmBtn" style="flex: 1;">Подтвердить</button>
+            </div>
+        </div>
+    </div>
+
+    <script type="importmap">
+    { "imports": {
+        "firebase/app": "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js",
+        "firebase/firestore": "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js",
+        "firebase/auth": "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js"
+    }}
+    </script>
+
+    <script type="module">
+        import { initializeApp } from "firebase/app";
+        import { getFirestore, doc, getDoc, updateDoc, collection, query, where, getDocs, addDoc, onSnapshot, serverTimestamp, increment } from "firebase/firestore";
+        import { getAuth, onAuthStateChanged } from "firebase/auth";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDUGYJY7pX7q02MS5SACMIIQXpjpQ97mPw",
+            authDomain: "proranklive.firebaseapp.com",
+            projectId: "proranklive",
+            storageBucket: "proranklive.firebasestorage.app",
+            messagingSenderId: "716836144015",
+            appId: "1:716836144015:web:f1575147750608d0f881fa"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+
+        const FRS_WIN = 100, FRS_WIN_FINISH = 150, FRS_LOSS = -50;
+        const DEFAULT_ROUND_DURATION = 180;
+        const WARNING_SECONDS = 10;
+        const WINNER_DISPLAY_SECONDS = 10;
+        const HISTORY_LIMIT = 20;
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const tournamentId = urlParams.get('id');
+        const matchIdParam = urlParams.get('match');
+        const urlRole = urlParams.get('role');
+        const urlRing = urlParams.get('ring');
+
+        let tournamentData = null;
+        let matches = [];
+        let currentMatch = null;
+        let currentMode = 'select'; // select | ring | judge | display | chief
+        let currentUserId = null;
+        let currentUserName = '';
+        let userRole = 'view';
+        let myRing = null;
+        let timerInterval = null;
+        let matchesUnsubscribe = null;
+        let tournamentUnsubscribe = null;
+        let audioCtx = null;
+        let lastBeepSecond = -1;
+        let confirmResolver = null;
+        let isFinishing = false;
+        let winnerDisplayTimer = null;
+        let isOwner = false;
+
+        window.showToast = function(msg, type = 'info') {
+            const c = document.getElementById('toastContainer');
+            const t = document.createElement('div');
+            t.className = `toast ${type}`;
+            const ic = { success: 'fa-check-circle', error: 'fa-exclamation-circle', info: 'fa-info-circle' };
+            t.innerHTML = `<i class="fas ${ic[type]}"></i><span>${msg}</span>`;
+            c.appendChild(t);
+            requestAnimationFrame(() => t.classList.add('show'));
+            setTimeout(() => { t.classList.remove('show'); setTimeout(() => t.remove(), 400); }, 3200);
+        };
+
+        window.openModal = id => document.getElementById(id).classList.add('show');
+        window.closeModal = id => document.getElementById(id).classList.remove('show');
+
+        function parseTimestamp(ts) {
+            if (!ts) return 0;
+            if (typeof ts === 'number') return ts;
+            if (typeof ts === 'string') { const d = new Date(ts); return isNaN(d.getTime()) ? 0 : d.getTime(); }
+            if (ts.toDate && typeof ts.toDate === 'function') { try { return ts.toDate().getTime(); } catch (e) { return 0; } }
+            if (ts.seconds !== undefined) return ts.seconds * 1000 + Math.floor((ts.nanoseconds || 0) / 1e6);
+            return 0;
+        }
+
+        function calculateRemaining(match) {
+            if (!match) return 0;
+            const duration = match.roundDuration || DEFAULT_ROUND_DURATION;
+            const elapsed = match.liveElapsed || 0;
+            if (!match.isLive || !match.liveStartedAt) return Math.max(0, duration - elapsed);
+            const startedAt = parseTimestamp(match.liveStartedAt);
+            if (!startedAt) return Math.max(0, duration - elapsed);
+            const additional = Math.max(0, Math.floor((Date.now() - startedAt) / 1000));
+            return Math.max(0, duration - elapsed - additional);
+        }
+
+        function beep(freq = 800, duration = 150) {
+            try {
+                if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain); gain.connect(audioCtx.destination);
+                osc.frequency.value = freq; osc.type = 'sine';
+                gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration / 1000);
+                osc.start(); osc.stop(audioCtx.currentTime + duration / 1000);
+            } catch (e) {}
+        }
+
+        window.toggleFullscreen = function() {
+            if (!document.fullscreenElement) document.documentElement.requestFullscreen().catch(() => {});
+            else document.exitFullscreen();
+        };
+
+        window.showConfirm = function(title, body, label = 'Подтвердить') {
+            return new Promise(resolve => {
+                confirmResolver = resolve;
+                document.getElementById('confirmTitle').innerHTML = `<i class="fas fa-question-circle"></i> ${title}`;
+                document.getElementById('confirmBody').innerHTML = body;
+                const btn = document.getElementById('confirmBtn');
+                btn.innerHTML = label;
+                btn.onclick = () => closeConfirm(true);
+                document.getElementById('confirmModal').classList.add('show');
+            });
+        };
+        window.closeConfirm = function(result) {
+            document.getElementById('confirmModal').classList.remove('show');
+            if (confirmResolver) { confirmResolver(result); confirmResolver = null; }
+        };
+
+        function formatTime(seconds) {
+            const min = Math.floor(seconds / 60);
+            const sec = seconds % 60;
+            return `${String(min).padStart(2, '0')}:${String(sec).padStart(2, '0')}`;
+        }
+
+        // ============================================================
+        // АВТОРИЗАЦИЯ
+        // ============================================================
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) {
+                showToast('Войдите в аккаунт', 'error');
+                setTimeout(() => window.location.href = 'login.html', 1500);
+                return;
+            }
+            currentUserId = user.uid;
+
+            if (!tournamentId) {
+                showToast('ID турнира не указан', 'error');
+                setTimeout(() => window.location.href = 'my-tournaments.html', 1500);
+                return;
+            }
+
+            await loadTournament();
+            if (!tournamentData) return;
+
+            isOwner = await checkIsOwner(user.uid);
+
+            // Определяем роль
+            if (urlRole === 'display' && matchIdParam) {
+                userRole = 'display';
+            } else if (urlRole === 'chief' && isOwner) {
+                userRole = 'chief';
+            } else if (urlRing) {
+                userRole = 'judge';
+                myRing = parseInt(urlRing);
+            } else if (isOwner && urlRole === 'view') {
+                userRole = 'view';
+            } else if (isOwner) {
+                userRole = 'chief';
+            } else {
+                userRole = 'view';
+            }
+
+            try {
+                const fDoc = await getDoc(doc(db, "fighters", user.uid));
+                if (fDoc.exists()) currentUserName = fDoc.data().name || 'Судья';
+                else {
+                    const orgDoc = await getDoc(doc(db, "organizations", tournamentData.organizationId));
+                    if (orgDoc.exists()) currentUserName = orgDoc.data().name || 'Организатор';
+                }
+            } catch (e) {}
+
+            renderRoleBadge();
+            document.getElementById('tournamentName').textContent = tournamentData.name;
+            document.title = `${tournamentData.name} | LIVE`;
+
+            subscribeToMatches();
+            subscribeToTournament();
+
+            // Стартовая навигация
+            if (userRole === 'display') {
+                await loadMatchById(matchIdParam);
+                showDisplayView();
+            } else if (userRole === 'judge' && myRing) {
+                showRingView(myRing);
+            } else if (userRole === 'chief') {
+                showRingSelectScreen();
+            } else {
+                showRingSelectScreen();
+            }
+        });
+
+        async function loadTournament() {
+            try {
+                const snap = await getDoc(doc(db, "tournaments", tournamentId));
+                if (!snap.exists()) { showToast('Турнир не найден', 'error'); return; }
+                tournamentData = { id: snap.id, ...snap.data() };
+            } catch (e) { showToast('Ошибка загрузки', 'error'); }
+        }
+
+        async function checkIsOwner(uid) {
+            if (!tournamentData) return false;
+            if (tournamentData.createdByUserId === uid) return true;
+            try {
+                const r1 = await getDocs(query(collection(db, "organization_requests"), where("userId", "==", uid), where("status", "==", "approved")));
+                if (!r1.empty) {
+                    const orgId = r1.docs[0].data().organizationId || r1.docs[0].id;
+                    if (tournamentData.organizationId === orgId) return true;
+                }
+            } catch (e) {}
+            return false;
+        }
+
+        function renderRoleBadge() {
+            const badge = document.getElementById('roleBadge');
+            const roles = {
+                chief: { label: '👑 Главный', cls: 'chief' },
+                judge: { label: `🥊 Стол ${myRing || ''}`, cls: 'judge' },
+                display: { label: '📺 Табло', cls: 'display' },
+                view: { label: '👁️ Зритель', cls: 'view' }
+            };
+            const r = roles[userRole] || roles.view;
+            badge.className = `role-badge ${r.cls}`;
+            badge.textContent = r.label;
+            badge.style.display = 'inline-flex';
+        }
+
+        // ============================================================
+        // ПОДПИСКИ
+        // ============================================================
+        function subscribeToMatches() {
+            if (matchesUnsubscribe) matchesUnsubscribe();
+            matchesUnsubscribe = onSnapshot(
+                collection(db, `tournaments/${tournamentId}/matches`),
+                (snapshot) => {
+                    matches = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+                    matches.sort((a, b) => a.round - b.round || a.matchNumber - b.matchNumber);
+
+                    if (currentMode === 'select') renderRingButtons();
+                    if (currentMode === 'ring') renderRingContent();
+                    if (currentMatch) {
+                        const updated = matches.find(m => m.id === currentMatch.id);
+                        if (updated) {
+                            const wasCompleted = currentMatch.status === 'completed';
+                            currentMatch = updated;
+                            if (currentMode === 'judge') renderJudgeUI();
+                            if (currentMode === 'display') {
+                                renderDisplayUI();
+                                if (!wasCompleted && currentMatch.status === 'completed') showWinnerOnDisplay();
+                            }
+                        }
+                    }
+                },
+                (err) => console.error('Matches:', err)
+            );
+        }
+
+        function subscribeToTournament() {
+            if (tournamentUnsubscribe) tournamentUnsubscribe();
+            tournamentUnsubscribe = onSnapshot(
+                doc(db, "tournaments", tournamentId),
+                (snap) => { if (snap.exists()) tournamentData = { id: snap.id, ...snap.data() }; }
+            );
+        }
+
+        // ============================================================
+        // ЭКРАН ВЫБОРА СТОЛА
+        // ============================================================
+        function showRingSelectScreen() {
+            currentMode = 'select';
+            document.getElementById('ringSelectScreen').style.display = 'flex';
+            document.getElementById('ringView').style.display = 'none';
+            document.getElementById('judgeView').style.display = 'none';
+            document.getElementById('displayView').style.display = 'none';
+            document.body.classList.remove('display-mode');
+            renderRingButtons();
+        }
+
+        function renderRingButtons() {
+            const grid = document.getElementById('ringButtonsGrid');
+            const ringsCount = tournamentData?.ringsCount || 1;
+            const closedRings = tournamentData?.closedRings || {};
+
+            let html = '';
+            for (let r = 1; r <= ringsCount; r++) {
+                const ringMatches = matches.filter(m => m.ringId === r && m.round === 1);
+                const total = ringMatches.length;
+                const completed = ringMatches.filter(m => m.status === 'completed').length;
+                const isClosed = closedRings[r] === true;
+
+                const cls = isClosed ? 'closed' : '';
+                html += `<button class="ring-select-btn ${cls}" onclick="${isClosed ? '' : `selectRing(${r})`}" ${isClosed ? 'disabled' : ''}>
+                    <div class="rn">${r}</div>
+                    <div class="rl">Стол ${r}</div>
+                    <div class="rc">${completed}/${total} ${isClosed ? '· закрыт' : ''}</div>
+                </button>`;
+            }
+            grid.innerHTML = html;
+        }
+
+        window.selectRing = function(ring) {
+            myRing = ring;
+            userRole = 'judge';
+            renderRoleBadge();
+            showRingView(ring);
+        };
+
+        window.switchToChiefView = function() {
+            if (!isOwner) {
+                showToast('Только организатор', 'error');
+                return;
+            }
+            userRole = 'chief';
+            renderRoleBadge();
+            // Показываем все столы (как "главный") — переиспользуем ringView, но с фильтром по всем
+            showChiefView();
+        };
+
+        // ============================================================
+        // ЭКРАН СТОЛА
+        // ============================================================
+        function showRingView(ring) {
+            currentMode = 'ring';
+            document.getElementById('ringSelectScreen').style.display = 'none';
+            document.getElementById('ringView').style.display = 'block';
+            document.getElementById('judgeView').style.display = 'none';
+            document.getElementById('displayView').style.display = 'none';
+            document.body.classList.remove('display-mode');
+            document.getElementById('ringBadge').textContent = ring;
+            document.getElementById('ringTitle').textContent = `Стол ${ring}`;
+            renderRingContent();
+        }
+
+        window.backToRing = function() {
+            if (myRing) showRingView(myRing);
+            else showRingSelectScreen();
+        };
+
+        function showChiefView() {
+            currentMode = 'ring';
+            document.getElementById('ringSelectScreen').style.display = 'none';
+            document.getElementById('ringView').style.display = 'block';
+            document.getElementById('judgeView').style.display = 'none';
+            document.getElementById('displayView').style.display = 'none';
+            document.body.classList.remove('display-mode');
+            document.getElementById('ringBadge').textContent = '👑';
+            document.getElementById('ringTitle').textContent = 'Все столы';
+            renderRingContent();
+        }
+
+        function renderRingContent() {
+            const content = document.getElementById('ringContent');
+            const headerActions = document.getElementById('ringHeaderActions');
+            const closedRings = tournamentData?.closedRings || {};
+
+            // Проверка: закрыт ли мой стол
+            const isMyRingClosed = myRing && closedRings[myRing];
+
+            // Определяем какие бои показывать
+            let filtered = matches.filter(m => m.fighter1 && m.fighter2 && m.status !== 'bye');
+
+            if (userRole === 'chief' && currentMode === 'ring' && document.getElementById('ringBadge').textContent === '👑') {
+                // Chief видит все
+            } else if (myRing) {
+                filtered = filtered.filter(m => m.ringId === myRing);
+            }
+
+            // Проверяем: все бои завершены?
+            const pendingMatches = filtered.filter(m => m.status === 'pending' || m.status === 'live' || (m.isLive));
+            const allCompleted = filtered.length > 0 && filtered.every(m => m.status === 'completed');
+
+            // Кнопки в шапке
+            let headerHtml = '';
+            if (userRole === 'chief') {
+                headerHtml = `<button class="btn btn-outline btn-sm" onclick="showRingSelectScreen()"><i class="fas fa-th"></i> К выбору стола</button>`;
+            } else if (myRing && !isMyRingClosed && allCompleted && filtered.length > 0) {
+                headerHtml = `<button class="btn btn-success btn-sm" onclick="closeMyRing()"><i class="fas fa-flag-checkered"></i> Завершить стол ${myRing}</button>`;
+            }
+            headerActions.innerHTML = headerHtml;
+
+            // Если стол закрыт — показываем баннер
+            if (isMyRingClosed) {
+                content.innerHTML = `
+                    <div class="ring-closed-banner">
+                        <i class="fas fa-check-circle"></i>
+                        <h2>Стол ${myRing} завершён</h2>
+                        <p>Все бои на этом столе проведены. Судейство закрыто.</p>
+                        <button class="btn btn-outline" onclick="showRingSelectScreen()">
+                            <i class="fas fa-th"></i> Другой стол
+                        </button>
+                    </div>
+                `;
+                return;
+            }
+
+            // Обновляем подзаголовок
+            const total = filtered.length;
+            const completed = filtered.filter(m => m.status === 'completed').length;
+            document.getElementById('ringSubtitle').textContent = `${completed} из ${total} боёв завершено`;
+
+            if (!filtered.length) {
+                content.innerHTML = `<div class="empty-state"><i class="fas fa-inbox"></i><h3>Нет боёв</h3><p>На этом столе пока нет матчей</p></div>`;
+                return;
+            }
+
+            // Сортируем: сначала свободные / мои активные, потом завершённые
+            filtered.sort((a, b) => {
+                const priority = (m) => {
+                    if (m.status === 'completed') return 3;
+                    if (m.isLive) return 0;
+                    if (m.judgeId === currentUserId) return 1;
+                    if (!m.judgeId) return 0.5;
+                    return 4;
+                };
+                const pa = priority(a), pb = priority(b);
+                if (pa !== pb) return pa - pb;
+                return a.round - b.round || a.matchNumber - b.matchNumber;
+            });
+
+            content.innerHTML = `<div class="matches-list">${filtered.map(m => renderMatchItem(m)).join('')}</div>`;
+        }
+
+        function renderMatchItem(m) {
+            const isLive = m.isLive === true;
+            const isCompleted = m.status === 'completed';
+            const isMine = m.judgeId === currentUserId;
+            const isTaken = m.judgeId && !isMine;
+            const isFree = !m.judgeId && !m.isLive && !isCompleted;
+
+            let badgesHtml = '';
+            if (m.ringId) badgesHtml += `<span class="badge round"><i class="fas fa-circle"></i> Стол ${m.ringId}</span>`;
+            badgesHtml += `<span class="badge round">Раунд ${m.round} · Бой ${m.matchNumber}</span>`;
+            if (m.weightClass) badgesHtml += `<span class="badge category">${m.weightClass}</span>`;
+            if (isCompleted) badgesHtml += `<span class="badge completed">✅ Завершён</span>`;
+            else if (isLive) badgesHtml += `<span class="badge live">● LIVE</span>`;
+            else if (isMine) badgesHtml += `<span class="badge mine">👤 Ваш</span>`;
+            else if (isTaken) badgesHtml += `<span class="badge taken">👤 ${m.judgeName || 'Занят'}</span>`;
+            else badgesHtml += `<span class="badge free">🟢 Свободен</span>`;
+
+            const winnerId = m.winner?.id;
+            const f1Class = winnerId === m.fighter1?.id ? 'winner' : '';
+            const f2Class = winnerId === m.fighter2?.id ? 'winner' : '';
+
+            let timerHtml = '';
+            if (isLive) {
+                const remaining = calculateRemaining(m);
+                timerHtml = `<div class="match-timer ${remaining <= 10 ? 'warning' : ''}" data-match-id="${m.id}"><i class="fas fa-clock"></i> ${formatTime(remaining)}</div>`;
+            }
+
+            let actions = '';
+            const canManage = userRole === 'judge' || userRole === 'chief';
+
+            if (isCompleted) {
+                actions = `<button class="btn btn-blue btn-sm" onclick="openDisplayView('${m.id}')"><i class="fas fa-tv"></i> Табло</button>`;
+            } else if (isMine) {
+                actions = `
+                    <button class="btn btn-primary btn-sm" onclick="continueJudge('${m.id}')"><i class="fas fa-gavel"></i> Продолжить</button>
+                    <button class="btn btn-blue btn-sm" onclick="openDisplayView('${m.id}')"><i class="fas fa-tv"></i> Табло</button>
+                    <button class="btn btn-outline btn-sm" onclick="releaseMatch('${m.id}')" title="Освободить"><i class="fas fa-unlock"></i></button>
+                `;
+            } else if (isFree && canManage) {
+                actions = `
+                    <button class="btn btn-success btn-sm" onclick="takeAndJudge('${m.id}')"><i class="fas fa-play"></i> Взять бой</button>
+                    <button class="btn btn-blue btn-sm" onclick="openDisplayView('${m.id}')"><i class="fas fa-tv"></i> Табло</button>
+                `;
+            } else if (isTaken && canManage) {
+                actions = `
+                    <button class="btn btn-danger btn-sm" onclick="overrideMatch('${m.id}')"><i class="fas fa-hand-rock"></i> Перехватить</button>
+                    <button class="btn btn-blue btn-sm" onclick="openDisplayView('${m.id}')"><i class="fas fa-tv"></i> Табло</button>
+                `;
+            } else {
+                actions = `<button class="btn btn-outline btn-sm" onclick="openDisplayView('${m.id}')"><i class="fas fa-tv"></i> Смотреть</button>`;
+            }
+
+            return `
+                <div class="match-item ${isLive ? 'is-live' : ''} ${isMine ? 'is-mine' : ''} ${isCompleted ? 'is-completed' : ''}" data-id="${m.id}">
+                    <div class="match-header">
+                        <div class="match-meta">${badgesHtml}</div>
+                    </div>
+                    <div class="match-fighters">
+                        <div class="m-fighter red ${f1Class}">
+                            <div class="avatar">${(m.fighter1?.name || '?')[0].toUpperCase()}</div>
+                            <div class="info">
+                                <div class="name">${m.fighter1?.name || 'TBD'}</div>
+                                <div class="club">${m.fighter1?.club || ''}</div>
+                            </div>
+                            <div class="score">${m.score1 || 0}</div>
+                            ${winnerId === m.fighter1?.id ? '<i class="fas fa-trophy win-icon"></i>' : ''}
+                        </div>
+                        <div class="m-vs">VS</div>
+                        <div class="m-fighter blue ${f2Class}">
+                            <div class="avatar">${(m.fighter2?.name || '?')[0].toUpperCase()}</div>
+                            <div class="info">
+                                <div class="name">${m.fighter2?.name || 'TBD'}</div>
+                                <div class="club">${m.fighter2?.club || ''}</div>
+                            </div>
+                            <div class="score">${m.score2 || 0}</div>
+                            ${winnerId === m.fighter2?.id ? '<i class="fas fa-trophy win-icon"></i>' : ''}
+                        </div>
+                    </div>
+                    ${timerHtml}
+                    <div class="match-actions">${actions}</div>
+                </div>
+            `;
+        }
+
+        // ============================================================
+        // ЗАКРЫТИЕ СТОЛА
+        // ============================================================
+        window.closeMyRing = async function() {
+            if (!myRing) return;
+            const ok = await showConfirm(
+                `Завершить стол ${myRing}?`,
+                `<div>Стол <strong>${myRing}</strong> будет закрыт.</div>
+                <div class="info-box"><i class="fas fa-info-circle"></i> Все бои на этом столе проведены. Судейство и табло будут закрыты.</div>`,
+                'Завершить'
+            );
+            if (!ok) return;
+
+            try {
+                const closedRings = { ...(tournamentData.closedRings || {}) };
+                closedRings[myRing] = true;
+
+                await updateDoc(doc(db, "tournaments", tournamentId), {
+                    closedRings,
+                    updatedAt: new Date().toISOString()
+                });
+
+                tournamentData.closedRings = closedRings;
+                showToast(`✅ Стол ${myRing} закрыт`, 'success');
+                renderRingContent();
+            } catch (e) {
+                console.error(e);
+                showToast('Ошибка: ' + e.message, 'error');
+            }
+        };
+
+        // ============================================================
+        // ДЕЙСТВИЯ С БОЁМ
+        // ============================================================
+        window.takeAndJudge = async function(mid) {
+            const m = matches.find(x => x.id === mid);
+            if (!m) return;
+            if (m.judgeId && m.judgeId !== currentUserId) { showToast('Бой занят', 'error'); return; }
+            try {
+                await updateDoc(doc(db, `tournaments/${tournamentId}/matches`, mid), {
+                    judgeId: currentUserId,
+                    judgeName: currentUserName || 'Судья',
+                    judgeTakenAt: new Date().toISOString()
+                });
+                await loadMatchById(mid);
+                showJudgeView();
+                showToast('✅ Бой взят', 'success');
+            } catch (e) { showToast('Ошибка: ' + e.message, 'error'); }
+        };
+
+        window.continueJudge = async function(mid) {
+            await loadMatchById(mid);
+            showJudgeView();
+        };
+
+        window.overrideMatch = async function(mid) {
+            const m = matches.find(x => x.id === mid);
+            if (!m) return;
+            const ok = await showConfirm('Перехватить бой?', `<div>Бой ведёт <strong>${m.judgeName || 'другой'}</strong>.</div>`, 'Перехватить');
+            if (!ok) return;
+            try {
+                await updateDoc(doc(db, `tournaments/${tournamentId}/matches`, mid), {
+                    judgeId: currentUserId,
+                    judgeName: currentUserName || 'Судья',
+                    judgeTakenAt: new Date().toISOString()
+                });
+                await loadMatchById(mid);
+                showJudgeView();
+                showToast('✅ Перехвачен', 'success');
+            } catch (e) { showToast('Ошибка', 'error'); }
+        };
+
+        window.releaseMatch = async function(mid) {
+            const ok = await showConfirm('Освободить бой?', '<div>Счёт и таймер сохранятся</div>', 'Освободить');
+            if (!ok) return;
+            try {
+                await updateDoc(doc(db, `tournaments/${tournamentId}/matches`, mid), {
+                    judgeId: null, judgeName: null, judgeTakenAt: null
+                });
+                showToast('Бой освобождён', 'info');
+            } catch (e) { showToast('Ошибка', 'error'); }
+        };
+
+        window.openDisplayView = async function(mid) {
+            const url = new URL(window.location.href);
+            url.searchParams.set('id', tournamentId);
+            url.searchParams.set('match', mid);
+            url.searchParams.set('role', 'display');
+            url.searchParams.delete('ring');
+            const newWin = window.open(url.toString(), '_blank');
+            if (!newWin) showToast('Разрешите всплывающие окна', 'error');
+            else showToast('📺 Табло открыто', 'success');
+        };
+
+        window.openDisplayForCurrent = function() {
+            if (!currentMatch) return;
+            openDisplayView(currentMatch.id);
+        };
+
+        async function loadMatchById(mid) {
+            try {
+                const snap = await getDoc(doc(db, `tournaments/${tournamentId}/matches`, mid));
+                if (!snap.exists()) { showToast('Бой не найден', 'error'); return; }
+                currentMatch = { id: snap.id, ...snap.data() };
+            } catch (e) { showToast('Ошибка загрузки', 'error'); }
+        }
+
+        // ============================================================
+        // РЕЖИМ СУДЬИ
+        // ============================================================
+        function showJudgeView() {
+            currentMode = 'judge';
+            document.getElementById('ringSelectScreen').style.display = 'none';
+            document.getElementById('ringView').style.display = 'none';
+            document.getElementById('judgeView').style.display = 'block';
+            document.getElementById('displayView').style.display = 'none';
+            document.body.classList.remove('display-mode');
+            renderJudgeUI();
+            startTimerInterval();
+        }
+
+        function renderJudgeUI() {
+            if (!currentMatch) return;
+            document.getElementById('judgeWeight').textContent = currentMatch.weightClass || '—';
+            document.getElementById('judgeMeta').textContent = `Раунд ${currentMatch.round} · Бой ${currentMatch.matchNumber} · Стол ${currentMatch.ringId || myRing || '—'}`;
+            const duration = currentMatch.roundDuration || DEFAULT_ROUND_DURATION;
+            document.getElementById('judgeRoundDuration').innerHTML = `<i class="fas fa-hourglass-half"></i> Раунд: ${formatTime(duration)}`;
+            document.getElementById('judgeF1Name').textContent = currentMatch.fighter1?.name || '—';
+            document.getElementById('judgeF2Name').textContent = currentMatch.fighter2?.name || '—';
+            document.getElementById('judgeF1Avatar').textContent = (currentMatch.fighter1?.name || '?')[0].toUpperCase();
+            document.getElementById('judgeF2Avatar').textContent = (currentMatch.fighter2?.name || '?')[0].toUpperCase();
+            document.getElementById('judgeScore1').textContent = currentMatch.score1 || 0;
+            document.getElementById('judgeScore2').textContent = currentMatch.score2 || 0;
+            const history = currentMatch.scoreHistory || [];
+            document.getElementById('btnUndo').disabled = history.length === 0;
+            renderHistory(history);
+            updateJudgeTimerDisplay();
+        }
+
+        function renderHistory(history) {
+            const panel = document.getElementById('historyPanel');
+            const list = document.getElementById('historyList');
+            if (!history || history.length === 0) { panel.style.display = 'none'; return; }
+            panel.style.display = 'block';
+            const last = history.slice(-5).reverse();
+            list.innerHTML = last.map(h => {
+                const time = h.at ? new Date(h.at).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) : '';
+                const cls = h.action.startsWith('+') ? 'positive' : 'negative';
+                const sideName = h.side === 1 ? '🔴' : '🔵';
+                return `<div class="history-item ${cls}"><span>${sideName} ${h.action} → ${h.newScore}</span><span class="time">${time}</span></div>`;
+            }).join('');
+        }
+
+        function updateJudgeTimerDisplay() {
+            if (!currentMatch) return;
+            const remaining = calculateRemaining(currentMatch);
+            const jt = document.getElementById('judgeTimer');
+            if (jt) {
+                jt.textContent = formatTime(remaining);
+                jt.classList.toggle('warning', remaining <= WARNING_SECONDS && currentMatch.isLive);
+                jt.classList.toggle('running', currentMatch.isLive && remaining > WARNING_SECONDS);
+            }
+            const btnStart = document.getElementById('btnStart');
+            const btnPause = document.getElementById('btnPause');
+            if (btnStart && btnPause) {
+                btnStart.style.display = currentMatch.isLive ? 'none' : 'flex';
+                btnPause.style.display = currentMatch.isLive ? 'flex' : 'none';
+            }
+        }
+
+        function startTimerInterval() {
+            stopTimerInterval();
+            lastBeepSecond = -1;
+            timerInterval = setInterval(() => {
+                const m = currentMatch;
+                if (!m) return;
+                if (currentMode === 'judge') updateJudgeTimerDisplay();
+                if (currentMode === 'display') updateDisplayTimerDisplay();
+                if (m.isLive) {
+                    const remaining = calculateRemaining(m);
+                    if (remaining <= WARNING_SECONDS && remaining > 0 && remaining !== lastBeepSecond) {
+                        lastBeepSecond = remaining;
+                        beep(remaining <= 3 ? 1000 : 700, 100);
+                    }
+                }
+            }, 500);
+        }
+
+        function stopTimerInterval() {
+            if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+        }
+
+        window.startTimer = async function() {
+            if (!currentMatch) return;
+            if (currentMatch.status === 'completed') return showToast('Бой завершён', 'error');
+            if (currentMatch.judgeId !== currentUserId && userRole !== 'chief') return showToast('Бой не ваш', 'error');
+            try {
+                await updateDoc(doc(db, `tournaments/${tournamentId}/matches`, currentMatch.id), {
+                    isLive: true, liveStartedAt: serverTimestamp(), liveElapsed: currentMatch.liveElapsed || 0
+                });
+                showToast('▶️ Бой начат', 'success');
+            } catch (e) { showToast('Ошибка', 'error'); }
+        };
+
+        window.pauseTimer = async function() {
+            if (!currentMatch) return;
+            try {
+                const startedAt = parseTimestamp(currentMatch.liveStartedAt);
+                const elapsedNow = currentMatch.liveElapsed || 0;
+                const additional = startedAt ? Math.max(0, Math.floor((Date.now() - startedAt) / 1000)) : 0;
+                await updateDoc(doc(db, `tournaments/${tournamentId}/matches`, currentMatch.id), {
+                    isLive: false, liveStartedAt: null, liveElapsed: elapsedNow + additional
+                });
+                showToast('⏸️ Пауза', 'info');
+            } catch (e) { showToast('Ошибка', 'error'); }
+        };
+
+        window.resetTimerOnly = async function() {
+            if (!currentMatch) return;
+            const ok = await showConfirm('Сбросить таймер?', '<div>Счёт сохранится</div>', 'Сбросить');
+            if (!ok) return;
+            try {
+                await updateDoc(doc(db, `tournaments/${tournamentId}/matches`, currentMatch.id), {
+                    isLive: false, liveStartedAt: null, liveElapsed: 0
+                });
+                showToast('Сброшен', 'info');
+            } catch (e) { showToast('Ошибка', 'error'); }
+        };
+
+        window.changeScore = async function(fighter, delta) {
+            if (!currentMatch) return;
+            if (currentMatch.status === 'completed') return showToast('Бой завершён', 'error');
+            if (currentMatch.judgeId !== currentUserId && userRole !== 'chief') return showToast('Бой не ваш', 'error');
+            try {
+                const field = fighter === 1 ? 'score1' : 'score2';
+                const currentScore = currentMatch[field] || 0;
+                if (delta < 0 && currentScore <= 0) return;
+                const newScore = Math.max(0, currentScore + delta);
+                const historyItem = {
+                    action: delta > 0 ? `+${delta}` : `${delta}`,
+                    side: fighter, prevScore: currentScore, newScore: newScore,
+                    at: new Date().toISOString(), by: currentUserName || currentUserId
+                };
+                const updatedHistory = [...(currentMatch.scoreHistory || []), historyItem];
+                const trimmed = updatedHistory.slice(-HISTORY_LIMIT);
+                await updateDoc(doc(db, `tournaments/${tournamentId}/matches`, currentMatch.id), {
+                    [field]: increment(delta), scoreHistory: trimmed
+                });
+            } catch (e) { showToast('Ошибка', 'error'); }
+        };
+
+        window.undoLast = async function() {
+            if (!currentMatch) return;
+            const history = currentMatch.scoreHistory || [];
+            if (!history.length) return showToast('Нет действий', 'info');
+            const last = history[history.length - 1];
+            const field = last.side === 1 ? 'score1' : 'score2';
+            const newHistory = history.slice(0, -1);
+            try {
+                await updateDoc(doc(db, `tournaments/${tournamentId}/matches`, currentMatch.id), {
+                    [field]: last.prevScore, scoreHistory: newHistory
+                });
+                showToast(`Отменено`, 'info');
+            } catch (e) { showToast('Ошибка', 'error'); }
+        };
+
+        // ============================================================
+        // ФИНИШ
+        // ============================================================
+        window.openFinishModal = function() {
+            if (!currentMatch) return;
+            if (currentMatch.status === 'completed') return showToast('Бой завершён', 'error');
+            if (!currentMatch.fighter1 || !currentMatch.fighter2) return showToast('Не оба бойца', 'error');
+            if (currentMatch.judgeId !== currentUserId && userRole !== 'chief') return showToast('Бой не ваш', 'error');
+            const select = document.getElementById('finishWinner');
+            select.innerHTML = `
+                <option value="${currentMatch.fighter1.id}">${currentMatch.fighter1.name}</option>
+                <option value="${currentMatch.fighter2.id}">${currentMatch.fighter2.name}</option>
+            `;
+            document.getElementById('finishComment').value = '';
+            openModal('finishModal');
+        };
+
+        window.confirmFinish = async function() {
+            if (isFinishing) return;
+            if (!currentMatch) return;
+            if (currentMatch.status === 'completed') { closeModal('finishModal'); return; }
+            isFinishing = true;
+            const btn = document.getElementById('confirmFinishBtn');
+            const origText = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Обработка...';
+
+            try {
+                const winnerId = document.getElementById('finishWinner').value;
+                const winType = document.getElementById('finishWinType').value;
+                const comment = document.getElementById('finishComment').value.trim();
+                const winnerData = currentMatch.fighter1.id === winnerId ? currentMatch.fighter1 : currentMatch.fighter2;
+                const loserData = currentMatch.fighter1.id === winnerId ? currentMatch.fighter2 : currentMatch.fighter1;
+                const frsWinner = winType === 'decision' ? FRS_WIN : FRS_WIN_FINISH;
+                const finalScore = { score1: currentMatch.score1 || 0, score2: currentMatch.score2 || 0 };
+
+                await updateDoc(doc(db, `tournaments/${tournamentId}/matches`, currentMatch.id), {
+                    winner: { id: winnerData.id, name: winnerData.name },
+                    winType, comment: comment || null, status: 'completed',
+                    isLive: false, liveStartedAt: null, finalScore,
+                    completedAt: new Date().toISOString()
+                });
+
+                try { await updateDoc(doc(db, "fighters", winnerData.id), { frs: increment(frsWinner), wins: increment(1), finishes: winType !== 'decision' ? increment(1) : increment(0), lastFightDate: new Date().toISOString() }); } catch (e) {}
+                try { await updateDoc(doc(db, "fighters", loserData.id), { frs: increment(FRS_LOSS), losses: increment(1), lastFightDate: new Date().toISOString() }); } catch (e) {}
+                try { await addDoc(collection(db, "fights"), { winnerId: winnerData.id, winnerName: winnerData.name, loserId: loserData.id, loserName: loserData.name, sport: tournamentData?.sport || 'ММА', isFinish: winType !== 'decision', date: serverTimestamp(), tournamentId, tournamentName: tournamentData?.name || '' }); } catch (e) {}
+
+                const nr = currentMatch.round + 1;
+                const nm = Math.ceil(currentMatch.matchNumber / 2);
+                const nextMatch = matches.find(x => x.round === nr && x.matchNumber === nm && x.weightClass === currentMatch.weightClass);
+                if (nextMatch) {
+                    const slot = currentMatch.matchNumber % 2 === 1 ? 'fighter1' : 'fighter2';
+                    try {
+                        // Применяем ringId текущего стола и к следующему бою
+                        const upd = { [slot]: winnerData };
+                        if (currentMatch.ringId) upd.ringId = currentMatch.ringId;
+                        await updateDoc(doc(db, `tournaments/${tournamentId}/matches`, nextMatch.id), upd);
+                    } catch (e) {}
+                }
+
+                closeModal('finishModal');
+                const typeText = winType === 'decision' ? 'решением' : (winType === 'ko' ? 'нокаутом' : 'сабмишном');
+                showToast(`✅ ${winnerData.name} победил ${typeText}`, 'success');
+                stopTimerInterval();
+
+                setTimeout(async () => {
+                    await loadMatches();
+                    if (myRing) showRingView(myRing);
+                }, 1500);
+            } catch (e) {
+                console.error(e);
+                showToast('Ошибка: ' + e.message, 'error');
+            } finally {
+                isFinishing = false;
+                btn.disabled = false;
+                btn.innerHTML = origText;
+            }
+        };
+
+        // ============================================================
+        // ТАБЛО
+        // ============================================================
+        function showDisplayView() {
+            currentMode = 'display';
+            document.getElementById('ringSelectScreen').style.display = 'none';
+            document.getElementById('ringView').style.display = 'none';
+            document.getElementById('judgeView').style.display = 'none';
+            document.getElementById('displayView').style.display = 'flex';
+            document.body.classList.add('display-mode');
+            renderDisplayUI();
+            startTimerInterval();
+        }
+
+        function renderDisplayUI() {
+            if (!currentMatch) return;
+            document.getElementById('displayTournamentName').textContent = tournamentData?.name || '';
+            document.getElementById('displayWeightClass').textContent = currentMatch.weightClass || '—';
+            document.getElementById('displayF1Name').textContent = currentMatch.fighter1?.name || '—';
+            document.getElementById('displayF2Name').textContent = currentMatch.fighter2?.name || '—';
+            document.getElementById('displayF1Club').textContent = currentMatch.fighter1?.club || '';
+            document.getElementById('displayF2Club').textContent = currentMatch.fighter2?.club || '';
+            document.getElementById('displayScore1').textContent = currentMatch.score1 || 0;
+            document.getElementById('displayScore2').textContent = currentMatch.score2 || 0;
+            document.getElementById('displayLiveBadge').style.display = currentMatch.isLive ? 'block' : 'none';
+            const status = currentMatch.status === 'completed' ? 'Завершён'
+                : currentMatch.isLive ? 'Идёт бой'
+                : (currentMatch.liveElapsed > 0 ? 'Пауза' : 'Ожидание');
+            document.getElementById('displayStatus').textContent = status;
+            document.getElementById('displayFighter1').classList.toggle('winner', currentMatch.winner?.id === currentMatch.fighter1?.id);
+            document.getElementById('displayFighter2').classList.toggle('winner', currentMatch.winner?.id === currentMatch.fighter2?.id);
+            updateDisplayTimerDisplay();
+        }
+
+        function updateDisplayTimerDisplay() {
+            if (!currentMatch) return;
+            const remaining = calculateRemaining(currentMatch);
+            const dt = document.getElementById('displayTimer');
+            if (dt) {
+                dt.textContent = formatTime(remaining);
+                dt.classList.toggle('warning', remaining <= WARNING_SECONDS && currentMatch.isLive);
+                dt.classList.toggle('running', currentMatch.isLive && remaining > WARNING_SECONDS);
+            }
+        }
+
+        function showWinnerOnDisplay() {
+            if (!currentMatch || currentMatch.status !== 'completed') return;
+            const winner = currentMatch.winner;
+            if (!winner) return;
+            const finalScore = currentMatch.finalScore || { score1: currentMatch.score1 || 0, score2: currentMatch.score2 || 0 };
+            const winnerScore = winner.id === currentMatch.fighter1?.id ? finalScore.score1 : finalScore.score2;
+            const loserScore = winner.id === currentMatch.fighter1?.id ? finalScore.score2 : finalScore.score1;
+
+            const overlay = document.getElementById('displayWinnerOverlay');
+            overlay.innerHTML = `<div class="display-winner-overlay">
+                <i class="fas fa-trophy trophy"></i>
+                <div class="winner-label">Победитель</div>
+                <div class="winner-name">${winner.name}</div>
+                <div class="winner-score">${winnerScore} : ${loserScore}</div>
+            </div>`;
+            beep(1000, 300);
+            setTimeout(() => beep(1300, 300), 250);
+            setTimeout(() => beep(1600, 500), 500);
+            if (winnerDisplayTimer) clearTimeout(winnerDisplayTimer);
+            winnerDisplayTimer = setTimeout(() => {
+                overlay.innerHTML = `<div class="display-winner-overlay" style="background: #000;">
+                    <i class="fas fa-flag-checkered" style="font-size: 5rem; color: #333;"></i>
+                    <div class="winner-label">Бой завершён</div>
+                    <div style="font-size: 1.2rem; color: #666; margin-top: 10px;">Ожидайте следующий</div>
+                </div>`;
+            }, WINNER_DISPLAY_SECONDS * 1000);
+        }
+
+        // Мини-таймеры в списке
+        setInterval(() => {
+            document.querySelectorAll('.match-timer[data-match-id]').forEach(el => {
+                const mid = el.dataset.matchId;
+                const m = matches.find(x => x.id === mid);
+                if (!m || !m.isLive) return;
+                const remaining = calculateRemaining(m);
+                el.innerHTML = `<i class="fas fa-clock"></i> ${formatTime(remaining)}`;
+                el.classList.toggle('warning', remaining <= 10);
+            });
+        }, 1000);
+
+        window.addEventListener('beforeunload', () => {
+            if (matchesUnsubscribe) matchesUnsubscribe();
+            if (tournamentUnsubscribe) tournamentUnsubscribe();
+            stopTimerInterval();
+            if (winnerDisplayTimer) clearTimeout(winnerDisplayTimer);
+        });
+    </script>
+</body>
+</html>

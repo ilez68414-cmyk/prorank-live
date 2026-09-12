@@ -15,226 +15,1143 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700;14..32,800;14..32,900&display=swap" rel="stylesheet">
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            background: radial-gradient(ellipse at 30% 40%, rgba(251, 191, 36, 0.15) 0%, transparent 60%),
-                        radial-gradient(ellipse at 70% 80%, rgba(251, 191, 36, 0.08) 0%, transparent 50%),
-                        linear-gradient(135deg, #1a1a1a 0%, #0f0f0f 40%, #1a1a1a 100%);
-            background-attachment: fixed;
-            color: #fff;
-            line-height: 1.4;
-            min-height: 100vh;
-            display: flex;
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    /* ============================================
+       БАЗА
+       ============================================ */
+    body {
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        background: radial-gradient(ellipse at 30% 40%, rgba(251, 191, 36, 0.15) 0%, transparent 60%),
+                    radial-gradient(ellipse at 70% 80%, rgba(251, 191, 36, 0.08) 0%, transparent 50%),
+                    linear-gradient(135deg, #1a1a1a 0%, #0f0f0f 40%, #1a1a1a 100%);
+        background-attachment: fixed;
+        color: #fff;
+        line-height: 1.4;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+    }
+
+    /* ============================================
+       ЗОЛОТАЯ ПОЛОСКА СВЕРХУ
+       ============================================ */
+    .gold-top {
+        position: fixed;
+        top: 0; left: 0;
+        width: 100%; height: 3px;
+        background: linear-gradient(90deg, #fbbf24, #ffdd88, #fbbf24, #b8860b);
+        z-index: 1001;
+    }
+
+    /* ============================================
+       НАВБАР
+       ============================================ */
+    .navbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 16px 32px;
+        background: rgba(0, 0, 0, 0.75);
+        backdrop-filter: blur(16px);
+        border-bottom: 1px solid rgba(251, 191, 36, 0.25);
+        position: sticky;
+        top: 0;
+        z-index: 1000;
+    }
+    .logo {
+        font-size: 1.8rem;
+        font-weight: 800;
+        cursor: pointer;
+        background: linear-gradient(135deg, #ffffff, #fbbf24);
+        background-clip: text;
+        -webkit-background-clip: text;
+        color: transparent;
+    }
+    .logo span {
+        background: linear-gradient(135deg, #fbbf24, #ffdd77);
+        background-clip: text;
+        -webkit-background-clip: text;
+        color: transparent;
+    }
+    .menu-toggle {
+        display: none;
+        background: rgba(251,191,36,0.1);
+        border: 1px solid #fbbf24;
+        color: #fbbf24;
+        font-size: 1.6rem;
+        cursor: pointer;
+        padding: 8px 14px;
+        border-radius: 12px;
+        min-height: 44px;
+        min-width: 44px;
+    }
+    .nav-links {
+        display: flex;
+        gap: 6px;
+        background: rgba(15,15,15,0.7);
+        backdrop-filter: blur(12px);
+        padding: 5px 14px;
+        border-radius: 60px;
+        border: 1px solid rgba(251,191,36,0.2);
+    }
+    .nav-links a {
+        color: #ddd;
+        text-decoration: none;
+        font-size: 0.9rem;
+        font-weight: 500;
+        padding: 8px 18px;
+        border-radius: 40px;
+        transition: all 0.2s ease;
+    }
+    .nav-links a i { margin-right: 8px; color: #fbbf24; }
+    .nav-links a:hover { color: #fbbf24; background: rgba(251,191,36,0.1); }
+
+    /* ============================================
+       КОНТЕЙНЕР
+       ============================================ */
+    .container {
+        max-width: 760px;
+        margin: 1.5rem auto;
+        padding: 0 20px;
+        width: 100%;
+        flex: 1;
+    }
+
+    /* ============================================
+       BREADCRUMBS
+       ============================================ */
+    .breadcrumbs {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 16px;
+        font-size: 0.72rem;
+        color: #888;
+    }
+    .breadcrumbs a { color: #888; text-decoration: none; transition: color 0.2s ease; }
+    .breadcrumbs a:hover { color: #fbbf24; }
+    .breadcrumbs i { font-size: 0.55rem; color: #555; }
+    .breadcrumbs .current { color: #fbbf24; font-weight: 600; }
+
+    /* ============================================
+       БАННЕР ЧЕРНОВИКА
+       ============================================ */
+    .draft-banner {
+        background: linear-gradient(135deg, rgba(251,191,36,0.12), rgba(15,15,15,0.6));
+        border: 1px solid rgba(251,191,36,0.35);
+        border-radius: 16px;
+        padding: 14px 16px;
+        margin-bottom: 16px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+        animation: slideDown 0.4s ease;
+    }
+    @keyframes slideDown {
+        from { opacity: 0; transform: translateY(-10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    .draft-banner .draft-icon {
+        width: 36px;
+        height: 36px;
+        border-radius: 10px;
+        background: rgba(251,191,36,0.15);
+        color: #fbbf24;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.95rem;
+        flex-shrink: 0;
+    }
+    .draft-banner .draft-text { flex: 1; min-width: 180px; }
+    .draft-banner .draft-title {
+        font-size: 0.85rem;
+        font-weight: 700;
+        color: #fff;
+        margin-bottom: 2px;
+    }
+    .draft-banner .draft-sub { font-size: 0.7rem; color: #aaa; }
+    .draft-banner .draft-actions { display: flex; gap: 8px; }
+
+    /* ============================================
+       КАРТОЧКА ФОРМЫ
+       ============================================ */
+    .form-card {
+        background: rgba(15,15,15,0.7);
+        backdrop-filter: blur(12px);
+        border-radius: 24px;
+        padding: 28px;
+        border: 1px solid rgba(251,191,36,0.15);
+        box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+    }
+    .form-header {
+        margin-bottom: 24px;
+        text-align: center;
+        position: relative;
+    }
+    .form-header .icon-circle {
+        width: 56px;
+        height: 56px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, rgba(251,191,36,0.15), rgba(251,191,36,0.05));
+        border: 1px solid rgba(251,191,36,0.25);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 12px;
+        font-size: 1.5rem;
+        color: #fbbf24;
+    }
+    .form-header h1 {
+        font-size: 1.35rem;
+        font-weight: 800;
+        color: #fff;
+        margin-bottom: 4px;
+    }
+    .form-header p { font-size: 0.75rem; color: #888; }
+
+    /* ============================================
+       ПРОГРЕСС ЗАПОЛНЕНИЯ ФОРМЫ
+       ============================================ */
+    .form-progress {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-top: 14px;
+        padding: 8px 12px;
+        background: rgba(0,0,0,0.25);
+        border-radius: 12px;
+        border: 1px solid rgba(255,255,255,0.04);
+    }
+    .form-progress-bar {
+        flex: 1;
+        height: 4px;
+        background: rgba(255,255,255,0.06);
+        border-radius: 10px;
+        overflow: hidden;
+    }
+    .form-progress-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #fbbf24, #ffdd77);
+        border-radius: 10px;
+        width: 0%;
+        transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .form-progress-text {
+        font-size: 0.65rem;
+        color: #888;
+        font-weight: 700;
+        letter-spacing: 0.3px;
+        text-transform: uppercase;
+        min-width: 60px;
+        text-align: right;
+    }
+
+    /* ============================================
+       СЕКЦИИ ФОРМЫ
+       ============================================ */
+    .form-section { margin-bottom: 24px; }
+    .form-section-title {
+        font-size: 0.72rem;
+        font-weight: 700;
+        color: #fbbf24;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 14px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .form-section-title i { font-size: 0.8rem; }
+
+    /* ============================================
+       ГРУППЫ ПОЛЕЙ
+       ============================================ */
+    .form-group { margin-bottom: 16px; }
+    .form-group label {
+        display: block;
+        font-size: 0.72rem;
+        color: #aaa;
+        margin-bottom: 7px;
+        font-weight: 500;
+    }
+    .form-group label .required { color: #fbbf24; }
+
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+        width: 100%;
+        padding: 11px 14px;
+        background: rgba(255,255,255,0.04);
+        border: 1px solid rgba(255,255,255,0.08);
+        border-radius: 10px;
+        color: #fff;
+        font-size: 0.82rem;
+        font-family: 'Inter', sans-serif;
+        transition: all 0.2s ease;
+    }
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+        outline: none;
+        border-color: rgba(251,191,36,0.35);
+        background: rgba(255,255,255,0.06);
+        box-shadow: 0 0 0 3px rgba(251,191,36,0.05);
+    }
+    .form-group input::placeholder,
+    .form-group textarea::placeholder { color: #555; }
+
+    .form-group select {
+        appearance: none;
+        -webkit-appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23888' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 16px center;
+        cursor: pointer;
+        padding-right: 38px;
+    }
+    .form-group select option { background: #1a1a1a; color: #fff; }
+
+    .form-group textarea {
+        resize: vertical;
+        min-height: 90px;
+        line-height: 1.5;
+    }
+
+    .form-group .field-hint {
+        font-size: 0.63rem;
+        color: #666;
+        margin-top: 5px;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        flex-wrap: wrap;
+        line-height: 1.4;
+    }
+    .form-group .field-hint i { color: #fbbf24; }
+
+    .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 14px;
+    }
+
+    /* ============================================
+       ОШИБКИ ПОЛЕЙ
+       ============================================ */
+    .form-group.error input,
+    .form-group.error select,
+    .form-group.error textarea {
+        border-color: rgba(239,68,68,0.5);
+        background: rgba(239,68,68,0.03);
+        animation: shakeError 0.35s ease;
+    }
+    @keyframes shakeError {
+        0%, 100% { transform: translateX(0); }
+        25% { transform: translateX(-4px); }
+        50% { transform: translateX(4px); }
+        75% { transform: translateX(-2px); }
+    }
+    .form-group .error-message {
+        font-size: 0.63rem;
+        color: #ef4444;
+        margin-top: 5px;
+        display: none;
+        align-items: center;
+        gap: 5px;
+    }
+    .form-group .error-message::before {
+        content: '\f071';
+        font-family: 'Font Awesome 6 Free';
+        font-weight: 900;
+        font-size: 0.55rem;
+    }
+    .form-group.error .error-message { display: flex; }
+
+    /* ============================================
+       ВЕСОВЫЕ КАТЕГОРИИ
+       ============================================ */
+    .weight-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        margin-bottom: 10px;
+        flex-wrap: wrap;
+    }
+    .weight-presets {
+        display: flex;
+        gap: 6px;
+        flex-wrap: wrap;
+    }
+    .preset-btn {
+        padding: 5px 11px;
+        border-radius: 20px;
+        border: 1px solid rgba(251,191,36,0.2);
+        background: transparent;
+        color: #888;
+        font-family: 'Inter', sans-serif;
+        font-size: 0.65rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+    }
+    .preset-btn:hover {
+        color: #fff;
+        border-color: rgba(251,191,36,0.4);
+        background: rgba(251,191,36,0.05);
+    }
+    .preset-btn:active { transform: scale(0.95); }
+    .preset-btn i { font-size: 0.6rem; color: #fbbf24; }
+
+    .weight-classes-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+        gap: 7px;
+    }
+    .weight-class-option {
+        display: flex;
+        align-items: center;
+        gap: 9px;
+        padding: 9px 12px;
+        background: rgba(255,255,255,0.03);
+        border: 1px solid rgba(255,255,255,0.08);
+        border-radius: 10px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        font-size: 0.72rem;
+        color: #ccc;
+    }
+    .weight-class-option:hover {
+        background: rgba(251,191,36,0.05);
+        border-color: rgba(251,191,36,0.2);
+    }
+    .weight-class-option.selected {
+        background: rgba(251,191,36,0.1);
+        border-color: rgba(251,191,36,0.4);
+        color: #fbbf24;
+    }
+    .weight-class-option input[type="checkbox"] {
+        width: 15px;
+        height: 15px;
+        accent-color: #fbbf24;
+        cursor: pointer;
+        flex-shrink: 0;
+    }
+    .weight-class-option .class-name { flex: 1; font-weight: 500; }
+    .weight-class-option .class-range { font-size: 0.62rem; color: #666; }
+    .weight-class-option.selected .class-range { color: #fbbf24; opacity: 0.7; }
+
+    .selected-count {
+        display: inline-block;
+        margin-left: 6px;
+        padding: 2px 8px;
+        background: rgba(251,191,36,0.15);
+        color: #fbbf24;
+        border-radius: 20px;
+        font-size: 0.62rem;
+        font-weight: 700;
+    }
+
+    /* ============================================
+       ЗАГРУЗКА ФОТО
+       ============================================ */
+    .image-upload-area {
+        position: relative;
+        width: 100%;
+        height: 200px;
+        border-radius: 16px;
+        border: 2px dashed rgba(251,191,36,0.25);
+        background: rgba(255,255,255,0.02);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        overflow: hidden;
+    }
+    .image-upload-area:hover,
+    .image-upload-area.dragover {
+        border-color: rgba(251,191,36,0.6);
+        background: rgba(251,191,36,0.05);
+    }
+    .image-upload-area.dragover {
+        border-style: solid;
+        box-shadow: 0 0 0 4px rgba(251,191,36,0.1);
+    }
+    .image-upload-area.has-image {
+        border-style: solid;
+        border-color: rgba(251,191,36,0.3);
+    }
+    .image-upload-area.uploading {
+        cursor: wait;
+        border-color: rgba(96,165,250,0.5);
+    }
+    .image-upload-area .upload-placeholder {
+        text-align: center;
+        z-index: 2;
+        padding: 20px;
+    }
+    .image-upload-area .upload-placeholder i {
+        font-size: 2.3rem;
+        color: #fbbf24;
+        margin-bottom: 10px;
+        display: block;
+        transition: transform 0.3s ease;
+    }
+    .image-upload-area.dragover .upload-placeholder i {
+        transform: scale(1.2) translateY(-4px);
+    }
+    .image-upload-area .upload-placeholder p {
+        font-size: 0.78rem;
+        color: #ccc;
+        font-weight: 600;
+        margin-bottom: 4px;
+    }
+    .image-upload-area .upload-placeholder .hint {
+        font-size: 0.63rem;
+        color: #666;
+        max-width: 280px;
+        line-height: 1.4;
+    }
+
+    .image-upload-area .preview-img {
+        position: absolute;
+        top: 0; left: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        z-index: 1;
+    }
+    .image-upload-area .image-overlay {
+        position: absolute;
+        top: 0; left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(to bottom, rgba(0,0,0,0.2), rgba(0,0,0,0.65));
+        z-index: 2;
+        display: none;
+    }
+    .image-upload-area.has-image .image-overlay { display: block; }
+
+    .image-upload-area .change-label {
+        position: absolute;
+        bottom: 12px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 3;
+        color: #fff;
+        font-size: 0.7rem;
+        font-weight: 600;
+        display: none;
+        align-items: center;
+        gap: 6px;
+        background: rgba(0,0,0,0.5);
+        padding: 5px 12px;
+        border-radius: 20px;
+        backdrop-filter: blur(6px);
+    }
+    .image-upload-area.has-image .change-label { display: flex; }
+
+    .image-upload-area .remove-img {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        z-index: 4;
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background: rgba(239,68,68,0.9);
+        border: none;
+        color: #fff;
+        font-size: 0.75rem;
+        cursor: pointer;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s ease;
+    }
+    .image-upload-area .remove-img:hover {
+        transform: scale(1.1);
+        background: #ef4444;
+    }
+    .image-upload-area.has-image .remove-img { display: flex; }
+
+    .upload-progress {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        height: 4px;
+        background: rgba(0,0,0,0.3);
+        z-index: 5;
+        display: none;
+    }
+    .image-upload-area.uploading .upload-progress { display: block; }
+    .upload-progress-bar {
+        height: 100%;
+        background: linear-gradient(90deg, #fbbf24, #ffdd77);
+        width: 0%;
+        transition: width 0.3s ease;
+        border-radius: 2px;
+    }
+    .upload-progress-text {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 6;
+        color: #fff;
+        font-size: 0.85rem;
+        font-weight: 700;
+        display: none;
+        text-shadow: 0 2px 8px rgba(0,0,0,0.8);
+    }
+    .image-upload-area.uploading .upload-progress-text { display: block; }
+    .image-upload-area.uploading .upload-placeholder { display: none; }
+    #tournamentImageFile { display: none; }
+
+    /* ============================================
+       ШАБЛОНЫ
+       ============================================ */
+    .templates-section { margin-bottom: 24px; }
+    .templates-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 9px;
+    }
+    .template-card {
+        background: rgba(20,20,25,0.8);
+        border: 1px solid rgba(251,191,36,0.1);
+        border-radius: 12px;
+        padding: 12px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        position: relative;
+    }
+    .template-card:hover {
+        border-color: rgba(251,191,36,0.35);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+    }
+    .template-card .t-name {
+        font-weight: 700;
+        font-size: 0.78rem;
+        color: #fff;
+        margin-bottom: 6px;
+        padding-right: 24px;
+        word-break: break-word;
+    }
+    .template-card .t-meta {
+        font-size: 0.62rem;
+        color: #888;
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+    }
+    .template-card .t-meta span { display: flex; align-items: center; gap: 5px; }
+    .template-card .t-meta i { color: #fbbf24; font-size: 0.58rem; width: 12px; }
+    .template-card .delete-template {
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        background: none;
+        border: none;
+        color: #555;
+        font-size: 0.7rem;
+        cursor: pointer;
+        padding: 3px;
+        transition: all 0.2s;
+        border-radius: 4px;
+        width: 22px;
+        height: 22px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .template-card .delete-template:hover {
+        color: #ef4444;
+        background: rgba(239,68,68,0.1);
+    }
+    .templates-empty {
+        text-align: center;
+        padding: 16px;
+        color: #555;
+        font-size: 0.72rem;
+    }
+    .templates-empty i {
+        font-size: 1.4rem;
+        color: #333;
+        display: block;
+        margin-bottom: 6px;
+    }
+    .templates-empty p { margin-top: 4px; }
+
+    /* ============================================
+       ПРЕДПРОСМОТР
+       ============================================ */
+    .preview-banner {
+        background: linear-gradient(135deg, rgba(251,191,36,0.08), rgba(15,15,15,0.5));
+        border: 1px solid rgba(251,191,36,0.15);
+        border-radius: 14px;
+        padding: 14px;
+        margin-bottom: 24px;
+        animation: fadeIn 0.3s ease;
+    }
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+    .preview-banner .preview-label {
+        font-size: 0.58rem;
+        color: #888;
+        text-transform: uppercase;
+        letter-spacing: 0.3px;
+        margin-bottom: 6px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+    .preview-banner .preview-label i { color: #fbbf24; font-size: 0.65rem; }
+    .preview-banner .preview-name {
+        font-size: 1.05rem;
+        font-weight: 700;
+        color: #fff;
+        margin-bottom: 8px;
+        word-break: break-word;
+    }
+    .preview-banner .preview-details {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        font-size: 0.68rem;
+        color: #aaa;
+    }
+    .preview-banner .preview-details span {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+    .preview-banner .preview-details i { color: #fbbf24; font-size: 0.62rem; }
+
+    .preview-banner .preview-weights {
+        margin-top: 10px;
+        padding-top: 10px;
+        border-top: 1px solid rgba(255,255,255,0.06);
+        display: flex;
+        align-items: flex-start;
+        gap: 8px;
+        font-size: 0.66rem;
+        color: #aaa;
+        flex-wrap: wrap;
+    }
+    .preview-banner .preview-weights > i {
+        color: #fbbf24;
+        font-size: 0.65rem;
+        margin-top: 3px;
+    }
+    .preview-banner .preview-weight-tag {
+        display: inline-block;
+        padding: 2px 8px;
+        background: rgba(251,191,36,0.1);
+        color: #fbbf24;
+        border: 1px solid rgba(251,191,36,0.25);
+        border-radius: 12px;
+        font-size: 0.6rem;
+        font-weight: 600;
+        margin: 1px 2px;
+    }
+    .preview-banner .preview-weight-more {
+        color: #666;
+        font-size: 0.6rem;
+        margin-left: 2px;
+        align-self: center;
+    }
+
+    /* ============================================
+       БЛОК ОБЩЕЙ ВМЕСТИМОСТИ
+       ============================================ */
+    .total-capacity {
+        background: rgba(251,191,36,0.06);
+        border: 1px solid rgba(251,191,36,0.2);
+        border-radius: 12px;
+        padding: 12px 14px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        animation: fadeIn 0.3s ease;
+    }
+    .total-capacity-icon {
+        width: 36px;
+        height: 36px;
+        border-radius: 10px;
+        background: rgba(251,191,36,0.15);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #fbbf24;
+        font-size: 0.95rem;
+        flex-shrink: 0;
+    }
+    .total-capacity-body { flex: 1; min-width: 0; }
+    .total-capacity-label {
+        font-size: 0.75rem;
+        color: #aaa;
+        margin-bottom: 2px;
+    }
+    .total-capacity-value {
+        font-size: 1rem;
+        font-weight: 800;
+        color: #fbbf24;
+    }
+    .total-capacity-sub {
+        font-size: 0.65rem;
+        color: #888;
+        margin-top: 2px;
+    }
+
+    /* ============================================
+       КНОПКИ
+       ============================================ */
+    .form-actions {
+        display: flex;
+        gap: 10px;
+        margin-top: 8px;
+        flex-wrap: wrap;
+    }
+    .btn {
+        font-family: 'Inter', sans-serif;
+        font-weight: 600;
+        font-size: 0.78rem;
+        border: none;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 7px;
+        padding: 11px 18px;
+        border-radius: 40px;
+        min-height: 42px;
+        transition: all 0.2s ease;
+        white-space: nowrap;
+        text-decoration: none;
+    }
+    .btn:active { transform: scale(0.97); }
+
+    .btn-primary {
+        background: #fbbf24;
+        color: #0a0a0a;
+        flex: 1;
+    }
+    .btn-primary:hover {
+        background: #ffd94d;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(251, 191, 36, 0.25);
+    }
+    .btn-primary:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        transform: none;
+        box-shadow: none;
+    }
+
+    .btn-secondary {
+        background: rgba(255,255,255,0.05);
+        border: 1px solid rgba(255,255,255,0.1);
+        color: #aaa;
+    }
+    .btn-secondary:hover {
+        color: #fff;
+        border-color: rgba(255,255,255,0.2);
+        background: rgba(255,255,255,0.08);
+    }
+
+    .btn-ghost {
+        background: transparent;
+        border: 1px solid rgba(251,191,36,0.2);
+        color: #fbbf24;
+        font-size: 0.72rem;
+        padding: 10px 14px;
+    }
+    .btn-ghost:hover {
+        background: rgba(251,191,36,0.08);
+        border-color: rgba(251,191,36,0.4);
+    }
+
+    .btn-danger {
+        background: rgba(239,68,68,0.12);
+        border: 1px solid rgba(239,68,68,0.3);
+        color: #ef4444;
+    }
+    .btn-danger:hover {
+        background: rgba(239,68,68,0.2);
+    }
+
+    /* ============================================
+       СПИННЕР
+       ============================================ */
+    .loading-spinner {
+        display: inline-block;
+        width: 15px;
+        height: 15px;
+        border: 2px solid rgba(0,0,0,0.2);
+        border-top-color: #0a0a0a;
+        border-radius: 50%;
+        animation: spin 0.6s linear infinite;
+    }
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+
+    /* ============================================
+       TOAST УВЕДОМЛЕНИЯ
+       ============================================ */
+    .toast-container {
+        position: fixed;
+        top: 16px;
+        right: 16px;
+        z-index: 3000;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        pointer-events: none;
+    }
+    .toast {
+        background: rgba(15,15,15,0.95);
+        backdrop-filter: blur(12px);
+        border: 1px solid rgba(255,255,255,0.1);
+        border-radius: 10px;
+        padding: 11px 16px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        min-width: 260px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        transform: translateX(120%);
+        transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        pointer-events: auto;
+    }
+    .toast.show { transform: translateX(0); }
+    .toast.success { border-left: 3px solid #10b981; }
+    .toast.error { border-left: 3px solid #ef4444; }
+    .toast.info { border-left: 3px solid #60a5fa; }
+    .toast i { font-size: 1rem; }
+    .toast.success i { color: #10b981; }
+    .toast.error i { color: #ef4444; }
+    .toast.info i { color: #60a5fa; }
+    .toast-message {
+        font-size: 0.78rem;
+        font-weight: 500;
+        color: #fff;
+    }
+
+    /* ============================================
+       МОДАЛКА ПОДТВЕРЖДЕНИЯ
+       ============================================ */
+    .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.75);
+        backdrop-filter: blur(6px);
+        z-index: 2000;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+    .modal-overlay.show {
+        display: flex;
+        opacity: 1;
+    }
+    .modal {
+        background: linear-gradient(135deg, #1a1a1a 0%, #0a0a0a 100%);
+        border: 1px solid rgba(251,191,36,0.2);
+        border-radius: 20px;
+        padding: 24px;
+        width: 100%;
+        max-width: 440px;
+        transform: translateY(20px);
+        transition: transform 0.3s ease;
+    }
+    .modal-overlay.show .modal { transform: translateY(0); }
+    .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 14px;
+    }
+    .modal-header h3 {
+        font-size: 1rem;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .modal-header h3 i { color: #fbbf24; }
+    .modal-close {
+        background: transparent;
+        border: none;
+        color: #888;
+        font-size: 1.1rem;
+        cursor: pointer;
+        transition: color 0.2s ease;
+    }
+    .modal-close:hover { color: #fff; }
+    .modal-body {
+        font-size: 0.82rem;
+        color: #ccc;
+        line-height: 1.5;
+        margin-bottom: 18px;
+    }
+    .modal-body strong { color: #fbbf24; }
+    .modal-body .warning-box {
+        background: rgba(239,68,68,0.08);
+        border: 1px solid rgba(239,68,68,0.25);
+        border-radius: 10px;
+        padding: 10px;
+        margin-top: 10px;
+        font-size: 0.72rem;
+        color: #fca5a5;
+    }
+    .modal-body .info-box {
+        background: rgba(251,191,36,0.08);
+        border: 1px solid rgba(251,191,36,0.25);
+        border-radius: 10px;
+        padding: 10px;
+        margin-top: 10px;
+        font-size: 0.72rem;
+        color: #fcd34d;
+    }
+    .modal-actions {
+        display: flex;
+        gap: 8px;
+    }
+    .modal-actions .btn {
+        flex: 1;
+        justify-content: center;
+    }
+
+    .autofill-hint {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-top: -4px;
+        margin-bottom: 14px;
+        padding: 10px 12px;
+        background: linear-gradient(135deg, rgba(251,191,36,0.08), rgba(251,191,36,0.02));
+        border: 1px solid rgba(251,191,36,0.2);
+        border-radius: 10px;
+        position: relative;
+        overflow: hidden;
+    }
+    .autofill-hint::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; bottom: 0;
+        width: 3px;
+        background: linear-gradient(180deg, #fbbf24, #b8860b);
+    }
+    .autofill-icon {
+        width: 28px;
+        height: 28px;
+        border-radius: 8px;
+        background: rgba(251,191,36,0.15);
+        color: #fbbf24;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.75rem;
+        flex-shrink: 0;
+        animation: sparkle 2s ease-in-out infinite;
+    }
+    @keyframes sparkle {
+        0%, 100% { opacity: 1; transform: scale(1); }
+        50% { opacity: 0.7; transform: scale(1.08); }
+    }
+    .autofill-text {
+        flex: 1;
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 1px;
+    }
+    .autofill-text strong {
+        font-size: 0.68rem;
+        color: #fbbf24;
+        font-weight: 700;
+        letter-spacing: 0.3px;
+        text-transform: uppercase;
+    }
+    .autofill-text span {
+        font-size: 0.68rem;
+        color: #aaa;
+        line-height: 1.3;
+    }
+
+    /* ============================================
+       АДАПТИВ
+       ============================================ */
+    @media (max-width: 768px) {
+        .container { padding: 0 14px; }
+        .navbar { padding: 12px 18px; }
+        .menu-toggle { display: block; }
+        .nav-links {
+            display: none;
             flex-direction: column;
-        }
-        .gold-top { position: fixed; top: 0; left: 0; width: 100%; height: 3px; background: linear-gradient(90deg, #fbbf24, #ffdd88, #fbbf24, #b8860b); z-index: 1001; }
-        .navbar { display: flex; justify-content: space-between; align-items: center; padding: 16px 32px; background: rgba(0, 0, 0, 0.75); backdrop-filter: blur(16px); border-bottom: 1px solid rgba(251, 191, 36, 0.25); position: sticky; top: 0; z-index: 1000; }
-        .logo { font-size: 1.8rem; font-weight: 800; cursor: pointer; background: linear-gradient(135deg, #ffffff, #fbbf24); background-clip: text; color: transparent; }
-        .logo span { background: linear-gradient(135deg, #fbbf24, #ffdd77); background-clip: text; color: transparent; }
-        .menu-toggle { display: none; background: rgba(251,191,36,0.1); border: 1px solid #fbbf24; color: #fbbf24; font-size: 1.6rem; cursor: pointer; padding: 8px 14px; border-radius: 12px; min-height: 44px; min-width: 44px; }
-        .nav-links { display: flex; gap: 6px; background: rgba(15,15,15,0.7); backdrop-filter: blur(12px); padding: 5px 14px; border-radius: 60px; border: 1px solid rgba(251,191,36,0.2); }
-        .nav-links a { color: #ddd; text-decoration: none; font-size: 0.9rem; font-weight: 500; padding: 8px 18px; border-radius: 40px; transition: all 0.2s ease; }
-        .nav-links a i { margin-right: 8px; color: #fbbf24; }
-        .nav-links a:hover { color: #fbbf24; background: rgba(251,191,36,0.1); }
-        .container { max-width: 700px; margin: 2rem auto; padding: 0 24px; width: 100%; flex: 1; }
-
-        .breadcrumbs { display: flex; align-items: center; gap: 8px; margin-bottom: 20px; font-size: 0.75rem; color: #888; }
-        .breadcrumbs a { color: #888; text-decoration: none; transition: color 0.2s ease; }
-        .breadcrumbs a:hover { color: #fbbf24; }
-        .breadcrumbs i { font-size: 0.6rem; color: #555; }
-        .breadcrumbs .current { color: #fbbf24; font-weight: 600; }
-
-        .form-card { background: rgba(15,15,15,0.7); backdrop-filter: blur(12px); border-radius: 28px; padding: 32px; border: 1px solid rgba(251,191,36,0.15); box-shadow: 0 8px 32px rgba(0,0,0,0.3); }
-        .form-header { margin-bottom: 28px; text-align: center; }
-        .form-header .icon-circle { width: 64px; height: 64px; border-radius: 50%; background: linear-gradient(135deg, rgba(251,191,36,0.15), rgba(251,191,36,0.05)); border: 1px solid rgba(251,191,36,0.25); display: flex; align-items: center; justify-content: center; margin: 0 auto 16px; font-size: 1.8rem; color: #fbbf24; }
-        .form-header h1 { font-size: 1.5rem; font-weight: 800; color: #fff; margin-bottom: 6px; }
-        .form-header p { font-size: 0.8rem; color: #888; }
-
-        .form-section { margin-bottom: 28px; }
-        .form-section-title { font-size: 0.75rem; font-weight: 700; color: #fbbf24; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
-        .form-section-title i { font-size: 0.85rem; }
-
-        .form-group { margin-bottom: 18px; }
-        .form-group label { display: block; font-size: 0.75rem; color: #aaa; margin-bottom: 8px; font-weight: 500; }
-        .form-group label .required { color: #fbbf24; }
-        .form-group input, .form-group select, .form-group textarea {
-            width: 100%; padding: 12px 16px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
-            border-radius: 12px; color: #fff; font-size: 0.85rem; font-family: 'Inter', sans-serif; transition: all 0.2s ease;
-        }
-        .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
-            outline: none; border-color: rgba(251,191,36,0.35); background: rgba(255,255,255,0.06); box-shadow: 0 0 0 3px rgba(251,191,36,0.05);
-        }
-        .form-group input::placeholder, .form-group textarea::placeholder { color: #555; }
-        .form-group select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23888' d='M6 8L1 3h10z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 16px center; cursor: pointer; }
-        .form-group select option { background: #1a1a1a; color: #fff; }
-        .form-group textarea { resize: vertical; min-height: 100px; }
-        .form-group .field-hint { font-size: 0.65rem; color: #666; margin-top: 6px; }
-        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-
-        .form-group.error input, .form-group.error select, .form-group.error textarea { border-color: rgba(239,68,68,0.5); }
-        .form-group .error-message { font-size: 0.65rem; color: #ef4444; margin-top: 6px; display: none; }
-        .form-group.error .error-message { display: block; }
-
-        /* ===== ЧЕКБОКСЫ ВЕСОВЫХ КАТЕГОРИЙ ===== */
-        .weight-classes-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            gap: 8px;
-        }
-        .weight-class-option {
-            display: flex;
-            align-items: center;
+            position: absolute;
+            top: 68px;
+            left: 18px;
+            right: 18px;
+            background: #0f0f0f;
+            border-radius: 24px;
+            padding: 20px;
             gap: 10px;
-            padding: 10px 14px;
-            background: rgba(255,255,255,0.03);
-            border: 1px solid rgba(255,255,255,0.08);
-            border-radius: 10px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            font-size: 0.75rem;
-            color: #ccc;
+            border: 1px solid rgba(251,191,36,0.3);
         }
-        .weight-class-option:hover {
-            background: rgba(251,191,36,0.05);
-            border-color: rgba(251,191,36,0.2);
-        }
-        .weight-class-option.selected {
-            background: rgba(251,191,36,0.1);
-            border-color: rgba(251,191,36,0.4);
-            color: #fbbf24;
-        }
-        .weight-class-option input[type="checkbox"] {
-            width: 16px;
-            height: 16px;
-            accent-color: #fbbf24;
-            cursor: pointer;
-            flex-shrink: 0;
-        }
-        .weight-class-option .class-name {
-            flex: 1;
-            font-weight: 500;
-        }
-        .weight-class-option .class-range {
-            font-size: 0.65rem;
-            color: #666;
-        }
-        .weight-class-option.selected .class-range {
-            color: #fbbf24;
-            opacity: 0.7;
-        }
-        .selected-count {
-            display: inline-block;
-            margin-left: 8px;
-            padding: 2px 8px;
-            background: rgba(251,191,36,0.15);
-            color: #fbbf24;
-            border-radius: 20px;
-            font-size: 0.65rem;
-            font-weight: 700;
-        }
+        .nav-links.show { display: flex; }
 
-        /* ===== ЗАГРУЗКА ФОТО ===== */
-        .image-upload-area {
-            position: relative; width: 100%; height: 200px; border-radius: 16px;
-            border: 2px dashed rgba(251,191,36,0.25); background: rgba(255,255,255,0.02);
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            cursor: pointer; transition: all 0.3s ease; overflow: hidden;
+        .form-card { padding: 20px 16px; border-radius: 20px; }
+        .form-row { grid-template-columns: 1fr; gap: 0; }
+        .form-actions { flex-direction: column; }
+        .btn { width: 100%; }
+
+        .toast-container {
+            top: auto;
+            bottom: 16px;
+            right: 12px;
+            left: 12px;
         }
-        .image-upload-area:hover { border-color: rgba(251,191,36,0.5); background: rgba(251,191,36,0.03); }
-        .image-upload-area.has-image { border-style: solid; border-color: rgba(251,191,36,0.3); }
-        .image-upload-area.uploading { cursor: wait; border-color: rgba(96,165,250,0.5); }
-        .image-upload-area .upload-placeholder { text-align: center; z-index: 2; padding: 20px; }
-        .image-upload-area .upload-placeholder i { font-size: 2.5rem; color: #fbbf24; margin-bottom: 10px; display: block; }
-        .image-upload-area .upload-placeholder p { font-size: 0.8rem; color: #ccc; font-weight: 600; margin-bottom: 4px; }
-        .image-upload-area .upload-placeholder .hint { font-size: 0.65rem; color: #666; }
-        .image-upload-area .preview-img { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: 1; }
-        .image-upload-area .image-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(to bottom, rgba(0,0,0,0.3), rgba(0,0,0,0.6)); z-index: 2; display: none; }
-        .image-upload-area.has-image .image-overlay { display: block; }
-        .image-upload-area .change-label { position: absolute; bottom: 12px; left: 50%; transform: translateX(-50%); z-index: 3; color: #fff; font-size: 0.7rem; font-weight: 600; display: none; align-items: center; gap: 6px; }
-        .image-upload-area.has-image .change-label { display: flex; }
-        .image-upload-area .remove-img { position: absolute; top: 10px; right: 10px; z-index: 4; width: 32px; height: 32px; border-radius: 50%; background: rgba(239,68,68,0.9); border: none; color: #fff; font-size: 0.75rem; cursor: pointer; display: none; align-items: center; justify-content: center; transition: transform 0.2s; }
-        .image-upload-area .remove-img:hover { transform: scale(1.1); }
-        .image-upload-area.has-image .remove-img { display: flex; }
-        .upload-progress { position: absolute; bottom: 0; left: 0; width: 100%; height: 4px; background: rgba(0,0,0,0.3); z-index: 5; display: none; }
-        .upload-progress.show { display: block; }
-        .upload-progress-bar { height: 100%; background: linear-gradient(90deg, #fbbf24, #ffdd77); width: 0%; transition: width 0.3s ease; border-radius: 2px; }
-        .upload-progress-text { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 6; color: #fff; font-size: 0.85rem; font-weight: 700; display: none; text-shadow: 0 2px 8px rgba(0,0,0,0.8); }
-        .image-upload-area.uploading .upload-progress { display: block; }
-        .image-upload-area.uploading .upload-progress-text { display: block; }
-        .image-upload-area.uploading .upload-placeholder { display: none; }
-        #tournamentImageFile { display: none; }
+        .toast { min-width: auto; width: 100%; }
 
-        /* ===== ШАБЛОНЫ ===== */
-        .templates-section { margin-bottom: 28px; }
-        .templates-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; }
-        .template-card { background: rgba(20,20,25,0.8); border: 1px solid rgba(251,191,36,0.1); border-radius: 14px; padding: 14px; cursor: pointer; transition: all 0.2s ease; position: relative; }
-        .template-card:hover { border-color: rgba(251,191,36,0.35); transform: translateY(-2px); }
-        .template-card .t-name { font-weight: 700; font-size: 0.8rem; color: #fff; margin-bottom: 6px; padding-right: 24px; }
-        .template-card .t-meta { font-size: 0.65rem; color: #888; display: flex; flex-direction: column; gap: 3px; }
-        .template-card .t-meta span { display: flex; align-items: center; gap: 5px; }
-        .template-card .t-meta i { color: #fbbf24; font-size: 0.6rem; width: 12px; }
-        .template-card .delete-template { position: absolute; top: 10px; right: 10px; background: none; border: none; color: #555; font-size: 0.7rem; cursor: pointer; padding: 2px; transition: color 0.2s; }
-        .template-card .delete-template:hover { color: #ef4444; }
-        .templates-empty { text-align: center; padding: 20px; color: #555; font-size: 0.75rem; }
-        .templates-empty i { font-size: 1.5rem; color: #333; display: block; margin-bottom: 8px; }
+        .weight-classes-grid { grid-template-columns: 1fr; }
+        .image-upload-area { height: 160px; }
 
-        /* ===== ПРЕДПРОСМОТР ===== */
-        .preview-banner { background: linear-gradient(135deg, rgba(251,191,36,0.08), rgba(15,15,15,0.5)); border: 1px solid rgba(251,191,36,0.15); border-radius: 16px; padding: 16px; margin-bottom: 28px; }
-        .preview-banner .preview-label { font-size: 0.6rem; color: #888; text-transform: uppercase; letter-spacing: 0.3px; margin-bottom: 8px; }
-        .preview-banner .preview-name { font-size: 1.1rem; font-weight: 700; color: #fff; margin-bottom: 8px; }
-        .preview-banner .preview-details { display: flex; flex-wrap: wrap; gap: 12px; font-size: 0.7rem; color: #aaa; }
-        .preview-banner .preview-details span { display: flex; align-items: center; gap: 5px; }
-        .preview-banner .preview-details i { color: #fbbf24; font-size: 0.65rem; }
+        .draft-banner { flex-direction: column; align-items: stretch; }
+        .draft-banner .draft-actions { justify-content: flex-end; }
 
-        /* ===== КНОПКИ ===== */
-        .form-actions { display: flex; gap: 12px; margin-top: 8px; flex-wrap: wrap; }
-        .btn { font-family: 'Inter', sans-serif; font-weight: 600; font-size: 0.8rem; border: none; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 12px 20px; border-radius: 40px; min-height: 44px; transition: all 0.2s ease; white-space: nowrap; text-decoration: none; }
-        .btn:active { transform: scale(0.97); }
-        .btn-primary { background: #fbbf24; color: #0a0a0a; flex: 1; }
-        .btn-primary:hover { background: #ffd94d; transform: translateY(-2px); box-shadow: 0 4px 15px rgba(251, 191, 36, 0.25); }
-        .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
-        .btn-secondary { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #aaa; }
-        .btn-secondary:hover { color: #fff; border-color: rgba(255,255,255,0.2); }
-        .btn-ghost { background: transparent; border: 1px solid rgba(251,191,36,0.2); color: #fbbf24; font-size: 0.75rem; padding: 10px 16px; }
-        .btn-ghost:hover { background: rgba(251,191,36,0.08); }
+        .weight-header { flex-direction: column; align-items: stretch; }
+        .weight-presets { justify-content: center; }
+    }
 
-        .loading-spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid rgba(0,0,0,0.2); border-top-color: #0a0a0a; border-radius: 50%; animation: spin 0.6s linear infinite; }
-        @keyframes spin { to { transform: rotate(360deg); } }
-
-        /* ===== TOAST ===== */
-        .toast-container { position: fixed; top: 20px; right: 20px; z-index: 3000; display: flex; flex-direction: column; gap: 10px; pointer-events: none; }
-        .toast { background: rgba(15,15,15,0.95); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 14px 20px; display: flex; align-items: center; gap: 12px; min-width: 280px; box-shadow: 0 10px 40px rgba(0,0,0,0.5); transform: translateX(120%); transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); pointer-events: auto; }
-        .toast.show { transform: translateX(0); }
-        .toast.success { border-left: 4px solid #10b981; }
-        .toast.error { border-left: 4px solid #ef4444; }
-        .toast.info { border-left: 4px solid #60a5fa; }
-        .toast i { font-size: 1.2rem; }
-        .toast.success i { color: #10b981; }
-        .toast.error i { color: #ef4444; }
-        .toast.info i { color: #60a5fa; }
-        .toast-message { font-size: 0.85rem; font-weight: 500; color: #fff; }
-
-        @media (max-width: 768px) {
-            .container { padding: 0 16px; }
-            .navbar { padding: 12px 18px; }
-            .menu-toggle { display: block; }
-            .nav-links { display: none; flex-direction: column; position: absolute; top: 68px; left: 18px; right: 18px; background: #0f0f0f; border-radius: 24px; padding: 20px; gap: 10px; border: 1px solid rgba(251,191,36,0.3); }
-            .nav-links.show { display: flex; }
-            .form-card { padding: 24px 18px; }
-            .form-row { grid-template-columns: 1fr; gap: 0; }
-            .form-actions { flex-direction: column; }
-            .btn { width: 100%; }
-            .toast-container { top: auto; bottom: 20px; right: 16px; left: 16px; }
-            .toast { min-width: auto; width: 100%; }
-            .weight-classes-grid { grid-template-columns: 1fr; }
-        }
-        @media (max-width: 480px) {
-            .form-card { padding: 20px 14px; border-radius: 20px; }
-            .form-header h1 { font-size: 1.3rem; }
-            .templates-grid { grid-template-columns: 1fr; }
-        }
-    </style>
+    @media (max-width: 480px) {
+        .form-card { padding: 18px 12px; border-radius: 18px; }
+        .form-header h1 { font-size: 1.15rem; }
+        .templates-grid { grid-template-columns: 1fr; }
+        .preview-banner .preview-details { font-size: 0.62rem; gap: 8px; }
+        .modal { padding: 20px; }
+    }
+</style>
 </head>
 <body>
     <div class="gold-top"></div>
@@ -254,11 +1171,32 @@
                 <span class="current">Создание турнира</span>
             </div>
 
+            <!-- БАННЕР ЧЕРНОВИКА -->
+            <div class="draft-banner" id="draftBanner" style="display: none;">
+                <div class="draft-icon"><i class="fas fa-file-alt"></i></div>
+                <div class="draft-text">
+                    <div class="draft-title">Найден черновик</div>
+                    <div class="draft-sub" id="draftSub">Вы не закончили создание турнира ранее</div>
+                </div>
+                <div class="draft-actions">
+                    <button class="btn btn-ghost" id="discardDraftBtn"><i class="fas fa-trash"></i> Удалить</button>
+                    <button class="btn btn-primary" id="restoreDraftBtn" style="flex: 0 0 auto;"><i class="fas fa-undo"></i> Восстановить</button>
+                </div>
+            </div>
+
             <div class="form-card">
                 <div class="form-header">
                     <div class="icon-circle"><i class="fas fa-trophy"></i></div>
                     <h1>Создание турнира</h1>
                     <p>Заполните информацию о турнире для публикации</p>
+
+                    <!-- Прогресс заполнения -->
+                    <div class="form-progress">
+                        <div class="form-progress-bar">
+                            <div class="form-progress-fill" id="formProgressFill"></div>
+                        </div>
+                        <div class="form-progress-text" id="formProgressText">0%</div>
+                    </div>
                 </div>
 
                 <!-- ШАБЛОНЫ -->
@@ -271,13 +1209,17 @@
 
                 <!-- ПРЕДПРОСМОТР -->
                 <div class="preview-banner" id="previewBanner" style="display: none;">
-                    <div class="preview-label">Предпросмотр</div>
+                    <div class="preview-label"><i class="fas fa-eye"></i> Предпросмотр карточки</div>
                     <div class="preview-name" id="previewName">—</div>
                     <div class="preview-details">
                         <span><i class="fas fa-calendar-alt"></i> <span id="previewDate">—</span></span>
                         <span><i class="fas fa-map-marker-alt"></i> <span id="previewCity">—</span></span>
                         <span><i class="fas fa-fist-raised"></i> <span id="previewSport">—</span></span>
                         <span><i class="fas fa-ruble-sign"></i> <span id="previewFee">0</span> ₽</span>
+                    </div>
+                    <div class="preview-weights" id="previewWeights" style="display: none;">
+                        <i class="fas fa-weight-hanging"></i>
+                        <div id="previewWeightsTags"></div>
                     </div>
                 </div>
 
@@ -298,6 +1240,10 @@
                             <option value="Бокс">Бокс</option>
                             <option value="ММА">ММА</option>
                             <option value="Борьба">Борьба</option>
+                            <option value="Кикбоксинг">Кикбоксинг</option>
+                            <option value="Муай-тай">Муай-тай</option>
+                            <option value="Грэпплинг">Грэпплинг</option>
+                            <option value="Другое">Другое</option>
                         </select>
                         <div class="error-message">Выберите вид спорта</div>
                     </div>
@@ -308,10 +1254,16 @@
                             Весовые категории <span class="required">*</span>
                             <span class="selected-count" id="selectedCount">0 выбрано</span>
                         </label>
-                        <div class="weight-classes-grid" id="weightClassesGrid">
-                            <!-- Заполняется через JS -->
+                        <div class="weight-header">
+                            <div class="weight-presets">
+                                <button type="button" class="preset-btn" data-preset="all"><i class="fas fa-check-double"></i> Все</button>
+                                <button type="button" class="preset-btn" data-preset="none"><i class="fas fa-times"></i> Сбросить</button>
+                                <button type="button" class="preset-btn" data-preset="light"><i class="fas fa-feather"></i> Лёгкие (45-66)</button>
+                                <button type="button" class="preset-btn" data-preset="heavy"><i class="fas fa-dumbbell"></i> Тяжёлые (78+)</button>
+                            </div>
                         </div>
-                        <div class="field-hint">Выберите категории, в которых будет проводиться турнир. Бойцы будут распределены по сеткам категорий</div>
+                        <div class="weight-classes-grid" id="weightClassesGrid"></div>
+                        <div class="field-hint">Выберите категории, в которых будет проводиться турнир. Бойцы распределяются по сеткам категорий</div>
                         <div class="error-message">Выберите хотя бы одну весовую категорию</div>
                     </div>
 
@@ -323,8 +1275,8 @@
                             <button class="remove-img" id="removeImageBtn" type="button"><i class="fas fa-times"></i></button>
                             <div class="upload-placeholder" id="uploadPlaceholder">
                                 <i class="fas fa-cloud-upload-alt"></i>
-                                <p>Нажмите, чтобы загрузить фото</p>
-                                <div class="hint">JPG, PNG. Макс. 5 МБ. Рекомендуется 1200×600</div>
+                                <p>Нажмите или перетащите фото</p>
+                                <div class="hint">JPG, PNG, WebP. Макс. 5 МБ. Рекомендуется 1200×630 (16:9)</div>
                             </div>
                             <div class="upload-progress">
                                 <div class="upload-progress-bar" id="uploadProgressBar"></div>
@@ -333,13 +1285,12 @@
                             <div class="change-label"><i class="fas fa-camera"></i> Изменить фото</div>
                         </div>
                         <input type="file" id="tournamentImageFile" accept="image/jpeg,image/png,image/webp">
-                        <div class="field-hint">Фото будет отображаться на карточке турнира в каталоге</div>
                     </div>
 
                     <div class="form-group" id="descriptionGroup">
                         <label>Описание</label>
                         <textarea id="tournamentDescription" placeholder="Опишите турнир: правила, категории, призы..." maxlength="500"></textarea>
-                        <div class="field-hint">Максимум 500 символов</div>
+                        <div class="field-hint"><span id="descCounter">0</span> / 500 символов</div>
                     </div>
                 </div>
 
@@ -356,6 +1307,15 @@
                             <label>Окончание набора <span class="required">*</span></label>
                             <input type="date" id="registrationDeadline">
                             <div class="error-message">Выберите дату</div>
+                        </div>
+                    </div>
+                    <div class="autofill-hint">
+                        <div class="autofill-icon">
+                            <i class="fas fa-magic"></i>
+                        </div>
+                        <div class="autofill-text">
+                            <strong>Автозаполнение</strong>
+                            <span>Окончание набора = дата турнира − 3 дня</span>
                         </div>
                     </div>
                     <div class="form-row">
@@ -375,22 +1335,47 @@
                 <div class="form-section">
                     <div class="form-section-title"><i class="fas fa-users-cog"></i> Настройки участия</div>
                     <div class="form-row">
-                        <div class="form-group">
-                            <label>Взнос (₽)</label>
-                            <input type="number" id="tournamentFee" value="0" min="0" step="100">
-                            <div class="field-hint">0 — бесплатное участие</div>
-                        </div>
-                        <div class="form-group">
-                            <label>Максимум участников (на категорию)</label>
-                            <input type="number" id="tournamentMaxParticipants" value="16" min="2" max="128">
-                            <div class="field-hint">От 2 до 128 в каждой категории</div>
+            <div class="form-group">
+                    <label>Взнос (₽)</label>
+                    <input type="number" id="tournamentFee" value="0" min="0" step="100">
+                    <div class="field-hint">0 — бесплатное участие</div>
+                </div>
+                <div class="form-group">
+                    <label>Максимум на категорию</label>
+                    <input type="number" id="tournamentMaxParticipants" value="16" min="2" max="256">
+                    <div class="field-hint" id="maxParticipantsHint">От 2 до 256 в каждой категории</div>
+                </div>
+            </div>
+
+            <!-- 🔧 НОВОЕ: количество столов -->
+            <div class="form-group" id="ringsGroup">
+                <label>
+                    Количество столов (рингов) <span class="required">*</span>
+                </label>
+                <input type="number" id="tournamentRings" value="1" min="1" max="20">
+                <div class="field-hint">
+                    <i class="fas fa-info-circle"></i>
+                    Сколько одновременных боёв может идти. Для 6 столов — введите 6. Каждый стол получит своего судью и ссылку на панель
+                </div>
+                <div class="error-message">Укажите от 1 до 20</div>
+            </div>
+                    <div class="form-group" id="totalCapacityGroup" style="display: none;">
+                        <div style="background: rgba(251,191,36,0.06); border: 1px solid rgba(251,191,36,0.2); border-radius: 12px; padding: 12px 14px; display: flex; align-items: center; gap: 12px;">
+                            <div style="width: 36px; height: 36px; border-radius: 10px; background: rgba(251,191,36,0.15); display: flex; align-items: center; justify-content: center; color: #fbbf24; font-size: 0.95rem; flex-shrink: 0;">
+                                <i class="fas fa-users"></i>
+                            </div>
+                            <div style="flex: 1;">
+                                <div style="font-size: 0.75rem; color: #aaa; margin-bottom: 2px;">Общая вместимость турнира</div>
+                                <div style="font-size: 1rem; font-weight: 800; color: #fbbf24;" id="totalCapacityText">—</div>
+                                <div style="font-size: 0.65rem; color: #888; margin-top: 2px;" id="totalCapacitySub"></div>
+                            </div>
                         </div>
                     </div>
                 </div>
 
                 <!-- КНОПКИ -->
                 <div class="form-actions">
-                    <button class="btn btn-secondary" onclick="window.location.href='organization-dashboard.html'">
+                    <button class="btn btn-secondary" id="cancelBtn">
                         <i class="fas fa-arrow-left"></i> Назад
                     </button>
                     <button class="btn btn-ghost" id="saveTemplateBtn">
@@ -403,6 +1388,21 @@
             </div>
         </div>
     </main>
+
+    <!-- МОДАЛКА ПОДТВЕРЖДЕНИЯ -->
+    <div class="modal-overlay" id="confirmModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 id="confirmTitle"><i class="fas fa-question-circle"></i> Подтверждение</h3>
+                <button class="modal-close" onclick="closeConfirm()"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body" id="confirmBody"></div>
+            <div class="modal-actions">
+                <button class="btn btn-secondary" onclick="closeConfirm()">Отмена</button>
+                <button class="btn btn-primary" id="confirmBtn" style="flex: 1;"><i class="fas fa-check"></i> Подтвердить</button>
+            </div>
+        </div>
+    </div>
 
     <div id="mobileBottomNavContainer"></div>
 
@@ -448,9 +1448,75 @@
             { name: "Тяжёлая", range: "100+ кг", min: 100, max: 999 }
         ];
 
-        let selectedWeightClasses = [];
+        // ===== CLOUDINARY =====
+        const CLOUD_NAME = 'dbv7bfkgy';
+        const UPLOAD_PRESET = 'prorank_avatars';
+        const CLOUDINARY_URL = `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`;
+        const MAX_FILE_SIZE = 5 * 1024 * 1024;
 
-        // Инициализация чекбоксов весовых категорий
+        // ===== СОСТОЯНИЕ =====
+        let selectedWeightClasses = [];
+        let currentOrgId = null;
+        let currentOrgData = null;
+        let currentUserId = null;
+        let uploadedImageUrl = '';
+        let hasUnsavedChanges = false;
+        let draftSaveTimer = null;
+        const DRAFT_KEY = 'prorank_tournament_draft';
+        const DRAFT_MAX_AGE = 7 * 24 * 60 * 60 * 1000; // 7 дней
+
+        // ===== DOM =====
+        const nameInput = document.getElementById('tournamentName');
+        const sportSelect = document.getElementById('tournamentSport');
+        const dateInput = document.getElementById('tournamentDate');
+        const deadlineInput = document.getElementById('registrationDeadline');
+        const cityInput = document.getElementById('tournamentCity');
+        const addressInput = document.getElementById('tournamentAddress');
+        const descInput = document.getElementById('tournamentDescription');
+        const feeInput = document.getElementById('tournamentFee');
+        const maxPartInput = document.getElementById('tournamentMaxParticipants');
+        const ringsInput = document.getElementById('tournamentRings');
+        const imageUploadArea = document.getElementById('imageUploadArea');
+        const imageFileInput = document.getElementById('tournamentImageFile');
+        const imagePreview = document.getElementById('imagePreview');
+        const removeImageBtn = document.getElementById('removeImageBtn');
+        const uploadProgressBar = document.getElementById('uploadProgressBar');
+        const uploadProgressText = document.getElementById('uploadProgressText');
+
+        // ===== TOAST =====
+        window.showToast = function(message, type = 'info') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            const icons = { success: 'fa-check-circle', error: 'fa-exclamation-circle', info: 'fa-info-circle' };
+            toast.innerHTML = `<i class="fas ${icons[type]}"></i><span class="toast-message">${message}</span>`;
+            container.appendChild(toast);
+            requestAnimationFrame(() => toast.classList.add('show'));
+            setTimeout(() => { toast.classList.remove('show'); setTimeout(() => toast.remove(), 400); }, 3200);
+        };
+
+        // ===== МОДАЛКА ПОДТВЕРЖДЕНИЯ =====
+        let confirmResolver = null;
+        window.showConfirm = function(title, body, confirmLabel = 'Подтвердить') {
+            return new Promise(resolve => {
+                confirmResolver = resolve;
+                document.getElementById('confirmTitle').innerHTML = `<i class="fas fa-question-circle"></i> ${title}`;
+                document.getElementById('confirmBody').innerHTML = body;
+                const confirmBtn = document.getElementById('confirmBtn');
+                confirmBtn.innerHTML = `<i class="fas fa-check"></i> ${confirmLabel}`;
+                confirmBtn.onclick = () => {
+                    document.getElementById('confirmModal').classList.remove('show');
+                    resolve(true);
+                };
+                document.getElementById('confirmModal').classList.add('show');
+            });
+        };
+        window.closeConfirm = function() {
+            document.getElementById('confirmModal').classList.remove('show');
+            if (confirmResolver) confirmResolver(false);
+        };
+
+        // ===== ВЕСОВЫЕ КАТЕГОРИИ =====
         function initWeightClassesGrid() {
             const grid = document.getElementById('weightClassesGrid');
             grid.innerHTML = WEIGHT_CLASSES.map((wc, idx) => `
@@ -461,18 +1527,64 @@
                 </label>
             `).join('');
 
-            // Обработчики
             grid.querySelectorAll('input[type="checkbox"]').forEach(cb => {
                 cb.addEventListener('change', (e) => {
                     const option = e.target.closest('.weight-class-option');
                     if (e.target.checked) {
                         option.classList.add('selected');
-                        selectedWeightClasses.push(e.target.value);
+                        // FIX: не допускаем дубликаты
+                        if (!selectedWeightClasses.includes(e.target.value)) {
+                            selectedWeightClasses.push(e.target.value);
+                        }
                     } else {
                         option.classList.remove('selected');
                         selectedWeightClasses = selectedWeightClasses.filter(w => w !== e.target.value);
                     }
                     updateSelectedCount();
+                    updatePreview();
+                    updateTotalCapacity();
+                    markDirty();
+                });
+            });
+
+            // Пресеты
+            document.querySelectorAll('.preset-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const preset = btn.dataset.preset;
+                    const checkboxes = grid.querySelectorAll('input[type="checkbox"]');
+
+                    if (preset === 'all') {
+                        checkboxes.forEach((cb, i) => {
+                            cb.checked = true;
+                            cb.closest('.weight-class-option').classList.add('selected');
+                        });
+                        selectedWeightClasses = WEIGHT_CLASSES.map(wc => `${wc.name} (${wc.range})`);
+                    } else if (preset === 'none') {
+                        checkboxes.forEach(cb => {
+                            cb.checked = false;
+                            cb.closest('.weight-class-option').classList.remove('selected');
+                        });
+                        selectedWeightClasses = [];
+                    } else if (preset === 'light') {
+                        checkboxes.forEach((cb, i) => {
+                            const isLight = i <= 3; // 45-66
+                            cb.checked = isLight;
+                            cb.closest('.weight-class-option').classList.toggle('selected', isLight);
+                        });
+                        selectedWeightClasses = WEIGHT_CLASSES.slice(0, 4).map(wc => `${wc.name} (${wc.range})`);
+                    } else if (preset === 'heavy') {
+                        checkboxes.forEach((cb, i) => {
+                            const isHeavy = i >= 6; // 78+
+                            cb.checked = isHeavy;
+                            cb.closest('.weight-class-option').classList.toggle('selected', isHeavy);
+                        });
+                        selectedWeightClasses = WEIGHT_CLASSES.slice(6).map(wc => `${wc.name} (${wc.range})`);
+                    }
+
+                    updateSelectedCount();
+                    updatePreview();
+                    updateTotalCapacity();
+                    markDirty();
                 });
             });
         }
@@ -482,41 +1594,6 @@
             countEl.textContent = `${selectedWeightClasses.length} выбрано`;
             countEl.style.display = selectedWeightClasses.length > 0 ? 'inline-block' : 'none';
         }
-
-        // ===== CLOUDINARY =====
-        const CLOUD_NAME = 'dbv7bfkgy';
-        const UPLOAD_PRESET = 'prorank_avatars';
-        const CLOUDINARY_URL = `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`;
-        const MAX_FILE_SIZE = 5 * 1024 * 1024;
-
-        let currentOrgId = null;
-        let currentOrgData = null;
-        let currentUserId = null;
-        let uploadedImageUrl = '';
-
-        window.showToast = function(message, type = 'info') {
-            const container = document.getElementById('toastContainer');
-            const toast = document.createElement('div');
-            toast.className = `toast ${type}`;
-            const icons = { success: 'fa-check-circle', error: 'fa-exclamation-circle', info: 'fa-info-circle' };
-            toast.innerHTML = `<i class="fas ${icons[type]}"></i><span class="toast-message">${message}</span>`;
-            container.appendChild(toast);
-            requestAnimationFrame(() => toast.classList.add('show'));
-            setTimeout(() => { toast.classList.remove('show'); setTimeout(() => toast.remove(), 400); }, 3500);
-        };
-
-        const nameInput = document.getElementById('tournamentName');
-        const sportSelect = document.getElementById('tournamentSport');
-        const dateInput = document.getElementById('tournamentDate');
-        const deadlineInput = document.getElementById('registrationDeadline');
-        const cityInput = document.getElementById('tournamentCity');
-        const feeInput = document.getElementById('tournamentFee');
-        const imageUploadArea = document.getElementById('imageUploadArea');
-        const imageFileInput = document.getElementById('tournamentImageFile');
-        const imagePreview = document.getElementById('imagePreview');
-        const removeImageBtn = document.getElementById('removeImageBtn');
-        const uploadProgressBar = document.getElementById('uploadProgressBar');
-        const uploadProgressText = document.getElementById('uploadProgressText');
 
         // ===== ФОТО =====
         imageUploadArea.addEventListener('click', () => {
@@ -530,23 +1607,63 @@
             imagePreview.src = '';
             imageUploadArea.classList.remove('has-image');
             imageFileInput.value = '';
+            markDirty();
         });
 
         imageFileInput.addEventListener('change', async (e) => {
             const file = e.target.files[0];
             if (!file) return;
+            await handleImageFile(file);
+        });
+
+        // Drag & Drop
+        ['dragenter', 'dragover'].forEach(evt => {
+            imageUploadArea.addEventListener(evt, (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                if (!imageUploadArea.classList.contains('uploading')) {
+                    imageUploadArea.classList.add('dragover');
+                }
+            });
+        });
+        ['dragleave', 'drop'].forEach(evt => {
+            imageUploadArea.addEventListener(evt, (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                imageUploadArea.classList.remove('dragover');
+            });
+        });
+        imageUploadArea.addEventListener('drop', async (e) => {
+            const file = e.dataTransfer.files[0];
+            if (file) await handleImageFile(file);
+        });
+
+        async function handleImageFile(file) {
             if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
                 showToast('❌ Допустимы только JPG, PNG, WebP', 'error');
-                imageFileInput.value = '';
                 return;
             }
             if (file.size > MAX_FILE_SIZE) {
                 showToast('❌ Файл слишком большой (макс. 5 МБ)', 'error');
-                imageFileInput.value = '';
                 return;
             }
-            await uploadToCloudinary(file);
-        });
+
+            // Проверка размеров
+            const img = new Image();
+            const url = URL.createObjectURL(file);
+            img.onload = async () => {
+                URL.revokeObjectURL(url);
+                if (img.width < 600 || img.height < 300) {
+                    showToast('⚠️ Рекомендуется от 600×300, у вас ' + img.width + '×' + img.height, 'info');
+                }
+                await uploadToCloudinary(file);
+            };
+            img.onerror = () => {
+                URL.revokeObjectURL(url);
+                showToast('❌ Не удалось прочитать изображение', 'error');
+            };
+            img.src = url;
+        }
 
         async function uploadToCloudinary(file) {
             imageUploadArea.classList.add('uploading');
@@ -558,11 +1675,13 @@
             formData.append('upload_preset', UPLOAD_PRESET);
 
             try {
-                let fakeProgress = 0;
+                // Прогресс через XHR (реальный)
                 const progressInterval = setInterval(() => {
-                    fakeProgress = Math.min(fakeProgress + Math.random() * 15, 90);
-                    uploadProgressBar.style.width = fakeProgress + '%';
-                    uploadProgressText.textContent = `Загрузка ${Math.round(fakeProgress)}%`;
+                    const current = parseFloat(uploadProgressBar.style.width) || 0;
+                    if (current < 90) {
+                        uploadProgressBar.style.width = Math.min(current + 5, 90) + '%';
+                        uploadProgressText.textContent = `Загрузка ${Math.round(Math.min(current + 5, 90))}%`;
+                    }
                 }, 200);
 
                 const response = await fetch(CLOUDINARY_URL, { method: 'POST', body: formData });
@@ -570,16 +1689,23 @@
 
                 if (!response.ok) throw new Error('Ошибка загрузки');
                 const data = await response.json();
-                
+
                 uploadProgressBar.style.width = '100%';
                 uploadProgressText.textContent = 'Загрузка 100%';
-                uploadedImageUrl = data.secure_url;
+
+                // Трансформация 16:9 + качество + формат
+                uploadedImageUrl = data.secure_url.replace(
+                    '/upload/',
+                    '/upload/w_1200,h_630,c_fill,g_auto,q_auto:good,f_auto/'
+                );
+
                 imagePreview.src = uploadedImageUrl;
                 imagePreview.style.display = 'block';
                 imageUploadArea.classList.remove('uploading');
                 imageUploadArea.classList.add('has-image');
-                showToast('✅ Фото успешно загружено', 'success');
-                setTimeout(() => { uploadProgressBar.style.width = '0%'; }, 1000);
+                showToast('✅ Фото загружено', 'success');
+                markDirty();
+                setTimeout(() => { uploadProgressBar.style.width = '0%'; }, 800);
             } catch (err) {
                 console.error('Ошибка:', err);
                 imageUploadArea.classList.remove('uploading');
@@ -602,7 +1728,7 @@
                 }
                 container.innerHTML = `<div class="templates-grid">${templates.map(t => `
                     <div class="template-card" onclick="applyTemplate('${t.id}')">
-                        <button class="delete-template" onclick="event.stopPropagation(); deleteTemplate('${t.id}')" title="Удалить"><i class="fas fa-trash"></i></button>
+                        <button class="delete-template" onclick="event.stopPropagation(); deleteTemplate('${t.id}', '${(t.name || '').replace(/'/g, "\\'")}')" title="Удалить"><i class="fas fa-trash"></i></button>
                         <div class="t-name">${t.name}</div>
                         <div class="t-meta">
                             <span><i class="fas fa-fist-raised"></i> ${t.sport || '—'}</span>
@@ -626,22 +1752,18 @@
                 nameInput.value = t.name || '';
                 sportSelect.value = t.sport || '';
                 cityInput.value = t.city || '';
-                document.getElementById('tournamentAddress').value = t.address || '';
-                document.getElementById('tournamentDescription').value = t.description || '';
+                addressInput.value = t.address || '';
+                descInput.value = t.description || '';
                 feeInput.value = t.entryFee || 0;
-                document.getElementById('tournamentMaxParticipants').value = t.maxParticipants || 16;
+                maxPartInput.value = t.maxParticipants || 16;
+                document.getElementById('descCounter').textContent = descInput.value.length;
 
-                // Восстанавливаем весовые категории
                 if (t.weightClasses && Array.isArray(t.weightClasses)) {
-                    selectedWeightClasses = [...t.weightClasses];
+                    selectedWeightClasses = [...new Set(t.weightClasses)]; // FIX: уникальные
                     document.querySelectorAll('#weightClassesGrid input[type="checkbox"]').forEach(cb => {
-                        if (selectedWeightClasses.includes(cb.value)) {
-                            cb.checked = true;
-                            cb.closest('.weight-class-option').classList.add('selected');
-                        } else {
-                            cb.checked = false;
-                            cb.closest('.weight-class-option').classList.remove('selected');
-                        }
+                        const isSel = selectedWeightClasses.includes(cb.value);
+                        cb.checked = isSel;
+                        cb.closest('.weight-class-option').classList.toggle('selected', isSel);
                     });
                     updateSelectedCount();
                 }
@@ -654,15 +1776,22 @@
                 }
 
                 updatePreview();
+                updateTotalCapacity();
+                updateFormProgress();
+                markDirty();
                 showToast(`📋 Шаблон «${t.name}» применён`, 'success');
-                document.querySelector('.form-section').scrollIntoView({ behavior: 'smooth' });
             } catch (err) {
                 showToast('Ошибка загрузки шаблона', 'error');
             }
         };
 
-        window.deleteTemplate = async function(templateId) {
-            if (!confirm('Удалить этот шаблон?')) return;
+        window.deleteTemplate = async function(templateId, name) {
+            const ok = await showConfirm(
+                'Удалить шаблон?',
+                `Шаблон «<strong>${name}</strong>» будет удалён навсегда.`,
+                'Удалить'
+            );
+            if (!ok) return;
             try {
                 await deleteDoc(doc(db, "tournament_templates", templateId));
                 showToast('Шаблон удалён', 'info');
@@ -672,9 +1801,9 @@
 
         document.getElementById('saveTemplateBtn').addEventListener('click', async () => {
             const name = nameInput.value.trim();
-            if (!name) return showToast('Сначала заполните название турнира', 'error');
+            if (!name) return showToast('Сначала заполните название', 'error');
             if (!currentUserId || !currentOrgId) return showToast('Ошибка авторизации', 'error');
-            if (selectedWeightClasses.length === 0) return showToast('Выберите хотя бы одну весовую категорию', 'error');
+            if (selectedWeightClasses.length === 0) return showToast('Выберите хотя бы одну категорию', 'error');
 
             try {
                 await addDoc(collection(db, "tournament_templates"), {
@@ -683,23 +1812,23 @@
                     name,
                     sport: sportSelect.value,
                     city: cityInput.value.trim(),
-                    address: document.getElementById('tournamentAddress').value.trim(),
-                    description: document.getElementById('tournamentDescription').value.trim(),
+                    address: addressInput.value.trim(),
+                    description: descInput.value.trim(),
                     entryFee: parseFloat(feeInput.value) || 0,
-                    maxParticipants: parseInt(document.getElementById('tournamentMaxParticipants').value) || 16,
+                    maxParticipants: parseInt(maxPartInput.value) || 16,
                     weightClasses: selectedWeightClasses,
                     imageUrl: uploadedImageUrl || '',
                     createdAt: serverTimestamp()
                 });
                 showToast('✅ Шаблон сохранён!', 'success');
                 loadTemplates();
-            } catch (err) { showToast('Ошибка сохранения: ' + err.message, 'error'); }
+            } catch (err) { showToast('Ошибка: ' + err.message, 'error'); }
         });
 
         // ===== ПРЕДПРОСМОТР =====
         function updatePreview() {
             const banner = document.getElementById('previewBanner');
-            const hasAnyValue = nameInput.value || sportSelect.value || dateInput.value || cityInput.value;
+            const hasAnyValue = nameInput.value || sportSelect.value || dateInput.value || cityInput.value || selectedWeightClasses.length > 0;
             if (!hasAnyValue) { banner.style.display = 'none'; return; }
             banner.style.display = 'block';
             document.getElementById('previewName').textContent = nameInput.value || 'Название турнира';
@@ -707,54 +1836,292 @@
             document.getElementById('previewCity').textContent = cityInput.value || '—';
             document.getElementById('previewSport').textContent = sportSelect.value || '—';
             document.getElementById('previewFee').textContent = feeInput.value || '0';
+
+            // Весовые категории
+            const weightsDiv = document.getElementById('previewWeights');
+            const weightsTags = document.getElementById('previewWeightsTags');
+            if (selectedWeightClasses.length > 0) {
+                weightsDiv.style.display = 'flex';
+                const show = selectedWeightClasses.slice(0, 5);
+                const rest = selectedWeightClasses.length - show.length;
+                weightsTags.innerHTML = show.map(w => {
+                    const short = w.replace(/\s*\(.*\)/, ''); // убираем " (45–50 кг)"
+                    return `<span class="preview-weight-tag">${short}</span>`;
+                }).join('') + (rest > 0 ? `<span class="preview-weight-more">+${rest}</span>` : '');
+            } else {
+                weightsDiv.style.display = 'none';
+            }
         }
 
-        [nameInput, sportSelect, dateInput, deadlineInput, cityInput, feeInput].forEach(el => {
-            el.addEventListener('input', updatePreview);
-            el.addEventListener('change', updatePreview);
+        // ===== ОБЩАЯ ВМЕСТИМОСТЬ =====
+        function updateTotalCapacity() {
+            const maxPerCat = parseInt(maxPartInput.value) || 0;
+            const catCount = selectedWeightClasses.length;
+            const group = document.getElementById('totalCapacityGroup');
+            if (maxPerCat > 0 && catCount > 0) {
+                group.style.display = 'block';
+                const total = maxPerCat * catCount;
+                document.getElementById('totalCapacityText').textContent = `${total} бойцов`;
+                document.getElementById('totalCapacitySub').textContent = `${maxPerCat} × ${catCount} ${catCount === 1 ? 'категория' : (catCount < 5 ? 'категории' : 'категорий')}`;
+            } else {
+                group.style.display = 'none';
+            }
+        }
+
+        // ===== ПРОГРЕСС ЗАПОЛНЕНИЯ =====
+        function updateFormProgress() {
+            const checks = [
+                nameInput.value.trim().length > 0,
+                sportSelect.value !== '',
+                selectedWeightClasses.length > 0,
+                dateInput.value !== '',
+                deadlineInput.value !== '',
+                cityInput.value.trim().length > 0,
+                uploadedImageUrl !== ''
+            ];
+            const filled = checks.filter(Boolean).length;
+            const percent = Math.round((filled / checks.length) * 100);
+            document.getElementById('formProgressFill').style.width = percent + '%';
+            document.getElementById('formProgressText').textContent = percent + '%';
+        }
+
+        // ===== СЛУШАТЕЛИ =====
+        [nameInput, sportSelect, dateInput, deadlineInput, cityInput, addressInput, descInput, feeInput, maxPartInput].forEach(el => {
+            el.addEventListener('input', () => { updatePreview(); markDirty(); });
+            el.addEventListener('change', () => { updatePreview(); markDirty(); });
         });
 
+        // Счётчик описания
+        descInput.addEventListener('input', () => {
+            document.getElementById('descCounter').textContent = descInput.value.length;
+        });
+
+        // Автозаполнение дедлайна
+        dateInput.addEventListener('change', () => {
+            if (dateInput.value && !deadlineInput.value) {
+                const d = new Date(dateInput.value + 'T00:00:00');
+                d.setDate(d.getDate() - 3);
+                const y = d.getFullYear();
+                const m = String(d.getMonth() + 1).padStart(2, '0');
+                const day = String(d.getDate()).padStart(2, '0');
+                deadlineInput.value = `${y}-${m}-${day}`;
+                updatePreview();
+            }
+        });
+
+        maxPartInput.addEventListener('input', updateTotalCapacity);
+
         // ===== ВАЛИДАЦИЯ =====
-        function validateField(fieldId, condition) {
-            const group = document.getElementById(fieldId);
-            if (!condition) { group.classList.add('error'); return false; }
-            group.classList.remove('error');
-            return true;
+        function setFieldError(groupId, message) {
+            const group = document.getElementById(groupId);
+            group.classList.add('error');
+            const msgEl = group.querySelector('.error-message');
+            if (msgEl && message) msgEl.textContent = message;
+            return false;
+        }
+
+        function clearFieldError(groupId) {
+            document.getElementById(groupId).classList.remove('error');
         }
 
         function validateForm() {
             let isValid = true;
-            const todayStr = new Date().toISOString().split('T')[0];
 
-            isValid = validateField('nameGroup', nameInput.value.trim().length > 0) && isValid;
-            isValid = validateField('sportGroup', sportSelect.value !== '') && isValid;
-            isValid = validateField('weightClassesGroup', selectedWeightClasses.length > 0) && isValid;
-            isValid = validateField('dateGroup', dateInput.value !== '') && isValid;
-            isValid = validateField('deadlineGroup', deadlineInput.value !== '') && isValid;
-            isValid = validateField('cityGroup', cityInput.value.trim().length > 0) && isValid;
-
-            if (dateInput.value && dateInput.value < todayStr) {
-                validateField('dateGroup', false);
-                document.querySelector('#dateGroup .error-message').textContent = 'Дата должна быть в будущем';
+            if (nameInput.value.trim().length === 0) {
+                setFieldError('nameGroup', 'Введите название турнира');
                 isValid = false;
             }
-            if (deadlineInput.value && deadlineInput.value > dateInput.value) {
-                validateField('deadlineGroup', false);
-                document.querySelector('#deadlineGroup .error-message').textContent = 'Не позже даты турнира';
+            if (sportSelect.value === '') {
+                setFieldError('sportGroup', 'Выберите вид спорта');
                 isValid = false;
             }
+            if (selectedWeightClasses.length === 0) {
+                setFieldError('weightClassesGroup', 'Выберите хотя бы одну весовую категорию');
+                isValid = false;
+            }
+            if (dateInput.value === '') {
+                setFieldError('dateGroup', 'Выберите дату турнира');
+                isValid = false;
+            }
+            if (cityInput.value.trim().length === 0) {
+                setFieldError('cityGroup', 'Введите город');
+                isValid = false;
+            }
+            if (deadlineInput.value === '') {
+                setFieldError('deadlineGroup', 'Выберите окончание набора');
+                isValid = false;
+            }
+
+            // Дата не в прошлом (сравнение по локальной дате)
+            if (dateInput.value) {
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                const tDate = new Date(dateInput.value + 'T00:00:00');
+                if (tDate < today) {
+                    setFieldError('dateGroup', 'Дата не может быть в прошлом');
+                    isValid = false;
+                }
+            }
+
+            // Дедлайн <= дата турнира
+            if (deadlineInput.value && dateInput.value) {
+                const dDate = new Date(deadlineInput.value + 'T00:00:00');
+                const tDate = new Date(dateInput.value + 'T00:00:00');
+                if (dDate > tDate) {
+                    setFieldError('deadlineGroup', 'Набор не может закрыться после турнира');
+                    isValid = false;
+                }
+            }
+
+            // Проверка rings
+            const rings = parseInt(ringsInput.value) || 0;
+            if (rings < 1 || rings > 20) {
+                setFieldError('ringsGroup', 'От 1 до 20');
+                isValid = false;
+            }
+
             return isValid;
         }
 
-        ['tournamentName', 'tournamentSport', 'tournamentDate', 'registrationDeadline', 'tournamentCity'].forEach(id => {
-            const el = document.getElementById(id);
-            const clear = () => {
-                const gid = id === 'tournamentName' ? 'nameGroup' : id === 'tournamentSport' ? 'sportGroup' : id === 'tournamentDate' ? 'dateGroup' : id === 'registrationDeadline' ? 'deadlineGroup' : 'cityGroup';
-                document.getElementById(gid).classList.remove('error');
-            };
-            el.addEventListener('input', clear);
-            el.addEventListener('change', clear);
+        // Сброс ошибок при вводе
+        const errorMap = {
+            'tournamentName': 'nameGroup',
+            'tournamentRings': 'ringsGroup',
+            'tournamentSport': 'sportGroup',
+            'tournamentDate': 'dateGroup',
+            'registrationDeadline': 'deadlineGroup',
+            'tournamentCity': 'cityGroup'
+        };
+        Object.entries(errorMap).forEach(([inputId, groupId]) => {
+            const el = document.getElementById(inputId);
+            if (el) {
+                el.addEventListener('input', () => clearFieldError(groupId));
+                el.addEventListener('change', () => clearFieldError(groupId));
+            }
         });
+
+        // ===== ЧЕРНОВИК =====
+        function markDirty() {
+            hasUnsavedChanges = true;
+            updateFormProgress();
+            scheduleDraftSave();
+        }
+
+        function scheduleDraftSave() {
+            if (draftSaveTimer) clearTimeout(draftSaveTimer);
+            draftSaveTimer = setTimeout(saveDraft, 1500);
+        }
+
+        function saveDraft() {
+            try {
+                const draft = {
+                    name: nameInput.value,
+                    sport: sportSelect.value,
+                    date: dateInput.value,
+                    deadline: deadlineInput.value,
+                    city: cityInput.value,
+                    address: addressInput.value,
+                    description: descInput.value,
+                    fee: feeInput.value,
+                    maxParticipants: maxPartInput.value,
+                    weightClasses: selectedWeightClasses,
+                    imageUrl: uploadedImageUrl,
+                    savedAt: Date.now()
+                };
+                // Если форма пустая — не сохраняем
+                const isEmpty = !draft.name && !draft.sport && !draft.date && !draft.city && draft.weightClasses.length === 0 && !draft.imageUrl;
+                if (isEmpty) {
+                    localStorage.removeItem(DRAFT_KEY);
+                    return;
+                }
+                localStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
+                hasUnsavedChanges = false;
+            } catch (e) { console.error('Draft save error:', e); }
+        }
+
+        function loadDraft() {
+            try {
+                const raw = localStorage.getItem(DRAFT_KEY);
+                if (!raw) return null;
+                const draft = JSON.parse(raw);
+                if (Date.now() - (draft.savedAt || 0) > DRAFT_MAX_AGE) {
+                    localStorage.removeItem(DRAFT_KEY);
+                    return null;
+                }
+                return draft;
+            } catch (e) { return null; }
+        }
+
+        function applyDraft(draft) {
+            nameInput.value = draft.name || '';
+            sportSelect.value = draft.sport || '';
+            dateInput.value = draft.date || '';
+            deadlineInput.value = draft.deadline || '';
+            cityInput.value = draft.city || '';
+            addressInput.value = draft.address || '';
+            descInput.value = draft.description || '';
+            feeInput.value = draft.fee || 0;
+            maxPartInput.value = draft.maxParticipants || 16;
+
+            if (Array.isArray(draft.weightClasses)) {
+                selectedWeightClasses = [...new Set(draft.weightClasses)];
+                document.querySelectorAll('#weightClassesGrid input[type="checkbox"]').forEach(cb => {
+                    const isSel = selectedWeightClasses.includes(cb.value);
+                    cb.checked = isSel;
+                    cb.closest('.weight-class-option').classList.toggle('selected', isSel);
+                });
+                updateSelectedCount();
+            }
+
+            if (draft.imageUrl) {
+                uploadedImageUrl = draft.imageUrl;
+                imagePreview.src = draft.imageUrl;
+                imagePreview.style.display = 'block';
+                imageUploadArea.classList.add('has-image');
+            }
+
+            document.getElementById('descCounter').textContent = descInput.value.length;
+            updatePreview();
+            updateTotalCapacity();
+            updateFormProgress();
+            hasUnsavedChanges = false;
+        }
+
+        function clearDraft() {
+            localStorage.removeItem(DRAFT_KEY);
+        }
+
+        function showDraftBanner(draft) {
+            const banner = document.getElementById('draftBanner');
+            const sub = document.getElementById('draftSub');
+            const ago = Math.round((Date.now() - draft.savedAt) / 60000);
+            let agoText = 'только что';
+            if (ago >= 60 * 24) agoText = `${Math.round(ago / (60 * 24))} дн. назад`;
+            else if (ago >= 60) agoText = `${Math.round(ago / 60)} ч. назад`;
+            else if (ago >= 1) agoText = `${ago} мин. назад`;
+
+            const name = draft.name ? `«${draft.name}»` : 'черновик';
+            sub.textContent = `${name} • сохранён ${agoText}`;
+            banner.style.display = 'flex';
+
+            document.getElementById('restoreDraftBtn').onclick = () => {
+                applyDraft(draft);
+                banner.style.display = 'none';
+                showToast('📝 Черновик восстановлен', 'success');
+            };
+            document.getElementById('discardDraftBtn').onclick = async () => {
+                const ok = await showConfirm(
+                    'Удалить черновик?',
+                    'Все несохранённые данные будут потеряны.',
+                    'Удалить'
+                );
+                if (ok) {
+                    clearDraft();
+                    banner.style.display = 'none';
+                    showToast('Черновик удалён', 'info');
+                }
+            };
+        }
 
         // ===== ЗАГРУЗКА ОРГАНИЗАЦИИ =====
         async function loadOrganizationData(orgId) {
@@ -762,10 +2129,12 @@
                 const requestDoc = await getDoc(doc(db, "organization_requests", orgId));
                 if (requestDoc.exists() && requestDoc.data().organizationId) orgId = requestDoc.data().organizationId;
                 const orgDoc = await getDoc(doc(db, "organizations", orgId));
-                if (!orgDoc.exists()) { showToast('Организация не найдена', 'error'); window.location.href = 'organization-dashboard.html'; return; }
+                if (!orgDoc.exists()) { showToast('Организация не найдена', 'error'); setTimeout(() => window.location.href = 'organization-dashboard.html', 1200); return; }
                 currentOrgId = orgDoc.id;
                 currentOrgData = orgDoc.data();
-                if (currentOrgData.city) { cityInput.value = currentOrgData.city; updatePreview(); }
+                if (currentOrgData.city && !cityInput.value) { cityInput.value = currentOrgData.city; }
+                updatePreview();
+                updateFormProgress();
                 await loadTemplates();
             } catch (err) { console.error('Ошибка:', err); showToast('Ошибка загрузки', 'error'); }
         }
@@ -775,42 +2144,76 @@
             if (!validateForm()) {
                 const firstError = document.querySelector('.form-group.error');
                 if (firstError) firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                showToast('Заполните все обязательные поля', 'error');
                 return;
             }
             if (!currentOrgId) return showToast('Организация не определена', 'error');
 
+            const name = nameInput.value.trim();
+            const date = dateInput.value;
+
             const createBtn = document.getElementById('createBtn');
             const orig = createBtn.innerHTML;
             createBtn.disabled = true;
-            createBtn.innerHTML = '<span class="loading-spinner"></span> Создание...';
+            createBtn.innerHTML = '<span class="loading-spinner"></span> Проверка...';
 
             try {
+                // Проверка дубликата
+                const dupQuery = query(
+                    collection(db, "tournaments"),
+                    where("organizationId", "==", currentOrgId),
+                    where("name", "==", name),
+                    where("date", "==", date)
+                );
+                const dupSnap = await getDocs(dupQuery);
+                if (!dupSnap.empty) {
+                    createBtn.disabled = false;
+                    createBtn.innerHTML = orig;
+                    const ok = await showConfirm(
+                        'Такой турнир уже есть',
+                        `У вас уже есть турнир «<strong>${name}</strong>» на <strong>${new Date(date + 'T00:00:00').toLocaleDateString('ru-RU')}</strong>.<br><br>Создать ещё один?`,
+                        'Создать'
+                    );
+                    if (!ok) return;
+                    createBtn.disabled = true;
+                    createBtn.innerHTML = '<span class="loading-spinner"></span> Создание...';
+                }
+
+                createBtn.innerHTML = '<span class="loading-spinner"></span> Создание...';
+
                 const docRef = await addDoc(collection(db, "tournaments"), {
-                    name: nameInput.value.trim(),
+                    name,
                     sport: sportSelect.value,
-                    date: dateInput.value,
+                    date,
                     registrationDeadline: deadlineInput.value,
                     city: cityInput.value.trim(),
-                    address: document.getElementById('tournamentAddress').value.trim(),
-                    description: document.getElementById('tournamentDescription').value.trim(),
+                    address: addressInput.value.trim(),
+                    description: descInput.value.trim(),
                     imageUrl: uploadedImageUrl || '',
                     entryFee: parseFloat(feeInput.value) || 0,
-                    maxParticipants: parseInt(document.getElementById('tournamentMaxParticipants').value) || 16,
-                    weightClasses: selectedWeightClasses, // НОВОЕ: массив весовых категорий
+                    maxParticipants: parseInt(maxPartInput.value) || 16,
+                    weightClasses: selectedWeightClasses,
                     organizationId: currentOrgId,
                     organizationName: currentOrgData?.name || 'Организация',
                     createdByUserId: currentUserId,
                     status: 'registration',
-                    participants: [],
                     participantCount: 0,
-                    bracketGenerated: false, // НОВОЕ: флаг генерации сетки
+                    bracketGenerated: false,
+                    ringsCount: parseInt(ringsInput.value) || 1,
                     createdAt: serverTimestamp(),
                     updatedAt: serverTimestamp()
                 });
 
+                // Убираем черновик
+                clearDraft();
+                hasUnsavedChanges = false;
+
                 createBtn.disabled = false;
                 createBtn.innerHTML = orig;
-                window.location.href = `tournament-details.html?id=${docRef.id}`;
+                showToast('✅ Турнир создан!', 'success');
+                setTimeout(() => {
+                    window.location.href = `tournament-details.html?id=${docRef.id}`;
+                }, 600);
             } catch (err) {
                 console.error('Ошибка:', err);
                 createBtn.disabled = false;
@@ -819,10 +2222,25 @@
             }
         });
 
+        // Отмена с подтверждением
+        document.getElementById('cancelBtn').addEventListener('click', async () => {
+            if (hasUnsavedChanges || nameInput.value || selectedWeightClasses.length > 0) {
+                const ok = await showConfirm(
+                    'Выйти без создания?',
+                    'Черновик сохранён — вы сможете вернуться к нему позже.',
+                    'Выйти'
+                );
+                if (!ok) return;
+                saveDraft();
+            }
+            window.location.href = 'organization-dashboard.html';
+        });
+
         // ===== АВТОРИЗАЦИЯ =====
         onAuthStateChanged(auth, async (user) => {
             if (!user) { window.location.href = 'login.html'; return; }
             currentUserId = user.uid;
+
             const urlParams = new URLSearchParams(window.location.search);
             let orgId = urlParams.get('id');
             if (!orgId) {
@@ -833,13 +2251,29 @@
                     window.history.replaceState(null, '', `?id=${orgId}`);
                 }
             }
-            if (orgId) loadOrganizationData(orgId);
+            if (orgId) await loadOrganizationData(orgId);
             else { showToast('Нет активной организации', 'error'); setTimeout(() => window.location.href = 'organization-dashboard.html', 1500); }
+        });
+
+        // ===== BEFORE UNLOAD =====
+        window.addEventListener('beforeunload', (e) => {
+            if (hasUnsavedChanges) {
+                saveDraft();
+                e.preventDefault();
+                e.returnValue = '';
+            }
         });
 
         // ===== ИНИЦИАЛИЗАЦИЯ =====
         initWeightClassesGrid();
         updateSelectedCount();
+        updateFormProgress();
+
+        // Показать черновик при загрузке
+        setTimeout(() => {
+            const draft = loadDraft();
+            if (draft) showDraftBanner(draft);
+        }, 400);
     </script>
 </body>
 </html>

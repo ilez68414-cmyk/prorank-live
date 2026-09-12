@@ -1,5 +1,5 @@
 // sw-v2.js - Service Worker для PRORANK PWA (v2.0.0)
-const CACHE_NAME = 'prorank-v2.1.2';
+const CACHE_NAME = 'prorank-v2.1.3';
 const OFFLINE_URL = '/prorank-live/offline.html';
 
 // ============================================================
@@ -36,6 +36,8 @@ const STATIC_FILES = [
   '/prorank-live/tournament-create.html',
   '/prorank-live/tournament-details.html',
   '/prorank-live/tournaments.html',
+  '/prorank-live/live-judging.html',
+  '/prorank-live/organizer-wallet.html',
 
   '/prorank-live/partner-analytics.html',
   '/prorank-live/partner-dashboard.html',
@@ -59,6 +61,7 @@ const STATIC_FILES = [
   '/prorank-live/fix-prompt.js',
   '/prorank-live/header.js',
   '/prorank-live/OneSignalSDKWorker.js',
+  '/prorank-live/organizer-wallet.js',
   '/prorank-live/payment.js',
   '/prorank-live/premium.js',
   '/prorank-live/print-utils.js',

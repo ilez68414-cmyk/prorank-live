@@ -39,6 +39,7 @@
         .nav-links a:hover { color: #fbbf24; background: rgba(251,191,36,0.1); }
         .container { max-width: 1200px; margin: 2rem auto; padding: 0 24px; width: 100%; }
 
+        /* ===== ШАПКА ОРГАНИЗАЦИИ ===== */
         .org-card { background: rgba(15,15,15,0.7); backdrop-filter: blur(12px); border-radius: 24px; padding: 20px 24px; margin-bottom: 20px; border: 1px solid rgba(251,191,36,0.15); box-shadow: 0 8px 32px rgba(0,0,0,0.3); }
         .org-top { display: flex; gap: 16px; align-items: center; flex-wrap: wrap; }
         .org-avatar { width: 56px; height: 56px; border-radius: 50%; background: linear-gradient(135deg, #fbbf24, #f59e0b); display: flex; align-items: center; justify-content: center; font-size: 22px; font-weight: 700; color: #000; flex-shrink: 0; border: 2px solid #fbbf24; box-shadow: 0 0 20px rgba(251,191,36,0.15); }
@@ -50,191 +51,267 @@
         .org-details-row { display: flex; flex-wrap: wrap; gap: 4px 14px; }
         .org-details-row span { font-size: 0.7rem; color: #999; display: inline-flex; align-items: center; gap: 4px; }
         .org-details-row i { color: #fbbf24; font-size: 0.65rem; width: 14px; text-align: center; }
-        .org-actions { display: flex; gap: 8px; flex-shrink: 0; }
+        .org-actions { display: flex; gap: 8px; flex-shrink: 0; flex-wrap: wrap; }
 
         .btn { font-family: 'Inter', sans-serif; font-weight: 600; font-size: 0.7rem; border: none; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 8px 16px; border-radius: 40px; min-height: 36px; transition: all 0.2s ease; white-space: nowrap; text-decoration: none; }
         .btn:active { transform: scale(0.96); }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
         .btn-primary { background: #fbbf24; color: #0a0a0a; }
-        .btn-primary:hover { background: #ffd94d; transform: translateY(-2px); box-shadow: 0 4px 15px rgba(251, 191, 36, 0.25); }
+        .btn-primary:hover:not(:disabled) { background: #ffd94d; transform: translateY(-2px); box-shadow: 0 4px 15px rgba(251, 191, 36, 0.25); }
         .btn-icon { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #aaa; padding: 8px 12px; min-height: 36px; }
         .btn-icon:hover { color: #fbbf24; border-color: rgba(251,191,36,0.3); }
         .btn-outline { background: transparent; border: 1px solid rgba(251, 191, 36, 0.4); color: #fbbf24; padding: 8px 14px; font-size: 0.7rem; }
+        .btn-outline:hover:not(:disabled) { background: rgba(251,191,36,0.08); }
         .btn-sm { padding: 6px 12px; font-size: 0.65rem; min-height: 32px; }
+        .btn-success { background: rgba(16,185,129,0.15); border: 1px solid rgba(16,185,129,0.3); color: #10b981; }
+        .btn-success:hover:not(:disabled) { background: rgba(16,185,129,0.25); }
+        .btn-danger { background: rgba(239,68,68,0.12); border: 1px solid rgba(239,68,68,0.3); color: #ef4444; }
+        .btn-danger:hover:not(:disabled) { background: rgba(239,68,68,0.22); }
 
-        .profile-tabs { display: flex; gap: 4px; background: rgba(15,15,15,0.5); backdrop-filter: blur(8px); border-radius: 16px; padding: 4px; margin-bottom: 20px; border: 1px solid rgba(251,191,36,0.1); }
-        .tab-btn { flex: 1; padding: 10px 16px; border: none; background: transparent; color: #888; font-family: 'Inter', sans-serif; font-weight: 600; font-size: 0.85rem; border-radius: 12px; cursor: pointer; transition: all 0.3s ease; display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; }
+        /* ===== ТАБЫ ===== */
+        .profile-tabs { display: flex; gap: 4px; background: rgba(15,15,15,0.5); backdrop-filter: blur(8px); border-radius: 16px; padding: 4px; margin-bottom: 20px; border: 1px solid rgba(251,191,36,0.1); overflow-x: auto; scrollbar-width: none; }
+        .profile-tabs::-webkit-scrollbar { display: none; }
+        .tab-btn { flex: 1 0 auto; padding: 10px 16px; border: none; background: transparent; color: #888; font-family: 'Inter', sans-serif; font-weight: 600; font-size: 0.85rem; border-radius: 12px; cursor: pointer; transition: all 0.3s ease; display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; position: relative; }
         .tab-btn i { font-size: 1rem; }
         .tab-btn:hover { color: #fff; background: rgba(255,255,255,0.05); }
         .tab-btn.active { color: #fbbf24; background: rgba(251,191,36,0.12); }
+        .tab-badge { background: #ef4444; color: #fff; font-size: 0.6rem; font-weight: 800; padding: 2px 7px; border-radius: 20px; min-width: 18px; text-align: center; }
+        .tab-badge.hidden { display: none; }
 
-        .finance-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 20px; }
-        .finance-card { background: rgba(15,15,15,0.7); backdrop-filter: blur(12px); border-radius: 20px; padding: 16px; border: 1px solid rgba(251,191,36,0.1); display: flex; flex-direction: column; gap: 6px; transition: transform 0.2s; }
+        /* ===== ФИНАНСОВАЯ ПАНЕЛЬ ===== */
+        .finance-section-title { font-size: 0.68rem; font-weight: 700; color: #888; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+        .finance-section-title i { color: #fbbf24; font-size: 0.75rem; }
+
+        .finance-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 12px; }
+        .finance-card {
+            background: rgba(15,15,15,0.7);
+            backdrop-filter: blur(12px);
+            border-radius: 20px;
+            padding: 16px 18px;
+            border: 1px solid rgba(251,191,36,0.1);
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            transition: all 0.2s;
+            position: relative;
+            overflow: hidden;
+        }
         .finance-card:hover { transform: translateY(-2px); border-color: rgba(251,191,36,0.25); }
+        .finance-card.escrow { border-color: rgba(16,185,129,0.25); background: linear-gradient(135deg, rgba(16,185,129,0.06), rgba(15,15,15,0.7)); }
+        .finance-card.escrow::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; bottom: 0;
+            width: 3px;
+            background: linear-gradient(180deg, #10b981, #059669);
+        }
+        .finance-card.balance { border-color: rgba(251,191,36,0.25); background: linear-gradient(135deg, rgba(251,191,36,0.06), rgba(15,15,15,0.7)); }
+        .finance-card.balance::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; bottom: 0;
+            width: 3px;
+            background: linear-gradient(180deg, #fbbf24, #b8860b);
+        }
         .finance-label { font-size: 0.65rem; color: #888; display: flex; align-items: center; gap: 6px; text-transform: uppercase; letter-spacing: 0.3px; }
         .finance-label i { color: #fbbf24; font-size: 0.8rem; }
-        .finance-value { font-size: 1.4rem; font-weight: 800; color: #fff; }
+        .finance-card.escrow .finance-label i { color: #10b981; }
+        .finance-value { font-size: 1.6rem; font-weight: 800; color: #fff; letter-spacing: -0.5px; }
         .finance-value.gold { color: #fbbf24; }
         .finance-value.green { color: #10b981; }
         .finance-value.blue { color: #60a5fa; }
-        .finance-sub { font-size: 0.6rem; color: #666; }
+        .finance-sub { font-size: 0.62rem; color: #666; }
+        .finance-sub.warn { color: #f59e0b; }
+        .finance-sub.ok { color: #10b981; }
 
+        /* Мини-статистика (3 колонки) */
+        .mini-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 20px; }
+        .mini-stat { background: rgba(15,15,15,0.6); border-radius: 14px; padding: 12px 14px; border: 1px solid rgba(255,255,255,0.04); text-align: center; transition: border-color 0.2s; }
+        .mini-stat:hover { border-color: rgba(251,191,36,0.2); }
+        .mini-stat .v { font-size: 1.1rem; font-weight: 800; color: #fbbf24; }
+        .mini-stat .l { font-size: 0.58rem; color: #888; margin-top: 3px; text-transform: uppercase; letter-spacing: 0.3px; }
+
+        /* ===== ALERTS ===== */
         .alerts-panel { background: rgba(15,15,15,0.7); backdrop-filter: blur(12px); border-radius: 20px; padding: 16px 20px; margin-bottom: 20px; border: 1px solid rgba(251,191,36,0.1); }
         .alerts-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
         .alerts-header h3 { font-size: 0.85rem; font-weight: 700; display: flex; align-items: center; gap: 8px; }
         .alerts-header h3 i { color: #f59e0b; }
-        .alert-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 12px; cursor: pointer; transition: all 0.2s ease; margin-bottom: 6px; border: 1px solid transparent; }
+        .alert-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 12px; transition: all 0.2s ease; margin-bottom: 6px; border: 1px solid transparent; flex-wrap: wrap; }
         .alert-item:hover { background: rgba(251,191,36,0.05); border-color: rgba(251,191,36,0.15); }
         .alert-icon { width: 32px; height: 32px; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 0.8rem; }
         .alert-icon.warning { background: rgba(251,191,36,0.12); color: #fbbf24; }
         .alert-icon.danger { background: rgba(239,68,68,0.12); color: #ef4444; }
         .alert-icon.info { background: rgba(59,130,246,0.12); color: #60a5fa; }
-        .alert-text { flex: 1; font-size: 0.75rem; color: #ccc; }
-        .alert-arrow { color: #666; font-size: 0.7rem; }
+        .alert-icon.success { background: rgba(16,185,129,0.12); color: #10b981; }
+        .alert-text { flex: 1; font-size: 0.75rem; color: #ccc; min-width: 150px; }
+        .alert-text strong { color: #fbbf24; }
+        .alert-actions { display: flex; gap: 6px; flex-shrink: 0; flex-wrap: wrap; }
 
-        .empty-state { text-align: center; padding: 32px 20px; color: #666; }
-        .empty-state i { font-size: 2.5rem; color: #333; margin-bottom: 12px; display: block; }
-        .empty-state p { font-size: 0.85rem; margin-bottom: 16px; }
-
-        /* ===== БЛИЖАЙШИЙ ТУРНИР С ОБЛОЖКОЙ ===== */
-        .featured-tournament {
-            position: relative;
-            background: rgba(15,15,15,0.7);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(251,191,36,0.25);
-            border-radius: 24px;
-            overflow: hidden;
-            margin-bottom: 20px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-        .featured-tournament:hover { border-color: rgba(251,191,36,0.45); box-shadow: 0 8px 32px rgba(251,191,36,0.1); }
-        .featured-cover {
-            position: relative;
-            width: 100%;
-            height: 200px;
-            background: linear-gradient(135deg, rgba(251,191,36,0.15), rgba(15,15,15,0.8));
-            overflow: hidden;
-        }
-        .featured-cover img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.4s ease; }
-        .featured-tournament:hover .featured-cover img { transform: scale(1.05); }
-        .featured-cover::after {
-            content: '';
-            position: absolute; bottom: 0; left: 0; right: 0; height: 80%;
-            background: linear-gradient(to top, rgba(15,15,15,0.98), transparent);
-            pointer-events: none;
-        }
-        .featured-cover.no-image { display: flex; align-items: center; justify-content: center; }
-        .featured-cover.no-image i { font-size: 4rem; color: rgba(251,191,36,0.2); }
-        .featured-content { position: relative; padding: 20px 24px 24px; }
-        .featured-badge { position: absolute; top: 16px; left: 16px; z-index: 2; }
-        .featured-name { font-size: 1.3rem; font-weight: 800; color: #fff; margin-bottom: 12px; }
-        .featured-info { display: flex; flex-wrap: wrap; gap: 12px; font-size: 0.75rem; color: #aaa; margin-bottom: 16px; }
-        .featured-info span { display: flex; align-items: center; gap: 6px; }
-        .featured-info i { color: #fbbf24; font-size: 0.7rem; }
-        .progress-bar { height: 6px; background: #2a2a2a; border-radius: 10px; overflow: hidden; margin-bottom: 8px; }
-        .progress-fill { height: 100%; background: linear-gradient(90deg, #fbbf24, #ffdd77); border-radius: 10px; transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1); }
-        .progress-text { display: flex; justify-content: space-between; font-size: 0.7rem; color: #888; }
-
-        /* ===== АКТИВНЫЕ ТУРНИРЫ С ОБЛОЖКАМИ ===== */
+        /* ===== ПАНЕЛИ ===== */
         .panel { background: rgba(15,15,15,0.7); backdrop-filter: blur(8px); border-radius: 20px; padding: 20px; margin-bottom: 20px; border: 1px solid rgba(251,191,36,0.1); }
         .panel-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 10px; }
         .panel-header h3 { font-size: 0.9rem; font-weight: 700; display: flex; align-items: center; gap: 8px; }
         .panel-header h3 i { color: #fbbf24; }
+
+        /* ===== ЗАЯВКИ ===== */
+        .requests-toolbar { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; align-items: center; }
+        .requests-toolbar select, .requests-toolbar input {
+            padding: 8px 12px;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 30px;
+            color: #fff;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.72rem;
+            min-height: 36px;
+        }
+        .requests-toolbar select { padding-right: 30px; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%23fbbf24' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; }
+        .requests-toolbar input { flex: 1; min-width: 140px; }
+        .requests-toolbar input:focus, .requests-toolbar select:focus { outline: none; border-color: rgba(251,191,36,0.4); }
+
+        .bulk-bar { display: flex; align-items: center; justify-content: space-between; gap: 10px; background: linear-gradient(135deg, rgba(251,191,36,0.08), rgba(15,15,15,0.5)); border: 1px solid rgba(251,191,36,0.3); border-radius: 14px; padding: 10px 14px; margin-bottom: 14px; flex-wrap: wrap; }
+        .bulk-bar .info { font-size: 0.75rem; color: #ccc; }
+        .bulk-bar .info strong { color: #fbbf24; font-size: 0.9rem; }
+        .bulk-bar .actions { display: flex; gap: 6px; flex-wrap: wrap; }
+
+        .request-row { display: flex; align-items: center; gap: 10px; padding: 12px 14px; background: rgba(20,20,25,0.8); border: 1px solid rgba(251,191,36,0.08); border-radius: 12px; margin-bottom: 8px; transition: all 0.2s ease; flex-wrap: wrap; }
+        .request-row:hover { border-color: rgba(251,191,36,0.25); }
+        .request-row.not-paid { border-color: rgba(245,158,11,0.25); background: rgba(245,158,11,0.03); }
+
+        .request-checkbox { width: 18px; height: 18px; accent-color: #fbbf24; cursor: pointer; flex-shrink: 0; }
+        .request-avatar { width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg, #fbbf24, #f59e0b); display: flex; align-items: center; justify-content: center; font-weight: 800; color: #000; font-size: 0.85rem; flex-shrink: 0; }
+        .request-info { flex: 1; min-width: 140px; }
+        .request-name { font-weight: 700; font-size: 0.82rem; color: #fff; margin-bottom: 3px; }
+        .request-meta { display: flex; flex-wrap: wrap; gap: 4px 10px; font-size: 0.62rem; color: #888; }
+        .request-meta span { display: inline-flex; align-items: center; gap: 4px; }
+        .request-meta i { color: #fbbf24; font-size: 0.58rem; }
+        .request-tournament { color: #a78bfa; font-weight: 600; font-size: 0.62rem; background: rgba(139,92,246,0.1); padding: 3px 9px; border-radius: 20px; border: 1px solid rgba(139,92,246,0.2); }
+        .payment-badge { display: inline-flex; align-items: center; gap: 4px; font-size: 0.58rem; font-weight: 800; padding: 3px 9px; border-radius: 20px; text-transform: uppercase; letter-spacing: 0.3px; }
+        .payment-badge.paid { background: rgba(16,185,129,0.15); color: #10b981; border: 1px solid rgba(16,185,129,0.3); }
+        .payment-badge.pending { background: rgba(245,158,11,0.15); color: #f59e0b; border: 1px solid rgba(245,158,11,0.3); }
+
+        .request-actions { display: flex; gap: 5px; flex-shrink: 0; }
+        .req-btn { width: 34px; height: 34px; border-radius: 50%; border: 1px solid; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s ease; background: transparent; font-size: 0.75rem; }
+        .req-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+        .req-btn.approve { border-color: rgba(16,185,129,0.4); color: #10b981; }
+        .req-btn.approve:hover:not(:disabled) { background: rgba(16,185,129,0.15); transform: scale(1.08); }
+        .req-btn.reject { border-color: rgba(239,68,68,0.4); color: #ef4444; }
+        .req-btn.reject:hover:not(:disabled) { background: rgba(239,68,68,0.15); transform: scale(1.08); }
+
+        /* ===== КАРТОЧКИ ТУРНИРОВ ===== */
         .tournament-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; }
-        
-        .tournament-card {
-            position: relative;
-            background: rgba(20,20,25,0.8);
-            border: 1px solid rgba(251,191,36,0.1);
-            border-radius: 16px;
-            overflow: hidden;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-        .tournament-card:hover { border-color: rgba(251,191,36,0.35); transform: translateY(-2px); }
-        
-        .card-cover {
-            position: relative;
-            width: 100%;
-            height: 120px;
-            background: linear-gradient(135deg, rgba(251,191,36,0.15), rgba(15,15,15,0.8));
-            overflow: hidden;
-        }
+        .tournament-card { position: relative; background: rgba(20,20,25,0.8); border: 1px solid rgba(251,191,36,0.1); border-radius: 16px; overflow: hidden; cursor: pointer; transition: all 0.22s ease; display: flex; flex-direction: column; }
+        .tournament-card:hover { border-color: rgba(251,191,36,0.35); transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0,0,0,0.4); }
+        .tournament-card.status-active { border-color: rgba(16,185,129,0.4); }
+        .tournament-card.status-active:hover { border-color: rgba(16,185,129,0.7); box-shadow: 0 8px 24px rgba(16,185,129,0.15); }
+
+        .card-cover { position: relative; width: 100%; height: 96px; background: linear-gradient(135deg, rgba(251,191,36,0.15), rgba(15,15,15,0.8)); overflow: hidden; }
         .card-cover img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.4s ease; }
-        .tournament-card:hover .card-cover img { transform: scale(1.05); }
-        .card-cover::after {
-            content: '';
-            position: absolute; bottom: 0; left: 0; right: 0; height: 70%;
-            background: linear-gradient(to top, rgba(15,15,15,0.95), transparent);
-            pointer-events: none;
-        }
-        .card-cover.no-image { display: flex; align-items: center; justify-content: center; }
-        .card-cover.no-image i { font-size: 2.5rem; color: rgba(251,191,36,0.2); }
-        
-        .card-body { padding: 12px 14px 14px; }
-        .tournament-card .t-name { font-weight: 700; font-size: 0.85rem; color: #fff; margin-bottom: 8px; }
-        .tournament-card .t-info { display: flex; flex-direction: column; gap: 4px; font-size: 0.65rem; color: #888; margin-bottom: 10px; }
-        .tournament-card .t-info span { display: flex; align-items: center; gap: 6px; }
-        .tournament-card .t-info i { color: #fbbf24; width: 14px; font-size: 0.6rem; }
-        .tournament-card .t-footer { display: flex; justify-content: space-between; align-items: center; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.05); font-size: 0.65rem; color: #888; }
+        .tournament-card:hover .card-cover img { transform: scale(1.06); }
+        .card-cover::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 60%; background: linear-gradient(to top, rgba(15,15,15,0.95), transparent); pointer-events: none; }
+        .card-cover.no-image { display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, rgba(251,191,36,0.08), rgba(15,15,15,0.6)); }
+        .card-cover.no-image i { font-size: 2rem; color: rgba(251,191,36,0.2); }
 
-        .analytics-filters { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
-        .filter-btn { padding: 8px 16px; border-radius: 30px; border: 1px solid rgba(251,191,36,0.2); background: transparent; color: #888; font-family: 'Inter', sans-serif; font-size: 0.7rem; font-weight: 600; cursor: pointer; transition: all 0.2s ease; }
-        .filter-btn:hover { color: #fff; border-color: rgba(251,191,36,0.4); }
-        .filter-btn.active { background: rgba(251,191,36,0.12); color: #fbbf24; border-color: rgba(251,191,36,0.4); }
-        
-        .analytics-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 20px; }
-        .analytics-stat { background: rgba(15,15,15,0.7); border-radius: 16px; padding: 16px; text-align: center; border: 1px solid rgba(251,191,36,0.1); transition: transform 0.2s, border-color 0.2s; }
-        .analytics-stat:hover { transform: translateY(-3px); border-color: rgba(251,191,36,0.3); }
-        .analytics-stat .stat-icon { width: 40px; height: 40px; background: rgba(251,191,36,0.1); border-radius: 12px; display: flex; align-items: center; justify-content: center; margin: 0 auto 10px; color: #fbbf24; font-size: 1.1rem; }
-        .analytics-stat .value { font-size: 1.4rem; font-weight: 800; color: #fff; }
-        .analytics-stat .label { font-size: 0.65rem; color: #888; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .card-status-badge { position: absolute; top: 8px; right: 8px; z-index: 3; font-size: 0.5rem; font-weight: 800; padding: 3px 9px; border-radius: 20px; text-transform: uppercase; letter-spacing: 0.4px; backdrop-filter: blur(8px); }
+        .card-status-badge.registration { background: rgba(251,191,36,0.9); color: #000; }
+        .card-status-badge.scheduled { background: rgba(139,92,246,0.9); color: #fff; }
+        .card-status-badge.active { background: rgba(16,185,129,0.95); color: #000; animation: pulseActive 1.5s infinite; }
+        .card-status-badge.completed { background: rgba(59,130,246,0.9); color: #fff; }
+        .card-status-badge.cancelled { background: rgba(107,114,128,0.9); color: #fff; }
+        @keyframes pulseActive { 0%, 100% { box-shadow: 0 0 0 0 rgba(16,185,129,0.5); } 50% { box-shadow: 0 0 0 8px rgba(16,185,129,0); } }
 
-        .chart-container { background: rgba(15,15,15,0.7); border-radius: 20px; padding: 20px; margin-bottom: 16px; border: 1px solid rgba(251,191,36,0.1); }
-        .chart-container h4 { font-size: 0.8rem; font-weight: 700; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
-        .chart-container h4 i { color: #fbbf24; }
-        .chart-wrapper { position: relative; width: 100%; height: 250px; }
-        .chart-wrapper canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
-        
-        .analytics-table { background: rgba(15,15,15,0.7); border-radius: 20px; padding: 20px; border: 1px solid rgba(251,191,36,0.1); overflow-x: auto; }
-        .analytics-table h4 { font-size: 0.8rem; font-weight: 700; margin-bottom: 12px; }
-        table { width: 100%; border-collapse: collapse; font-size: 0.7rem; }
-        th { text-align: left; padding: 10px 8px; color: #888; font-weight: 600; border-bottom: 1px solid rgba(255,255,255,0.1); }
-        td { padding: 10px 8px; border-bottom: 1px solid rgba(255,255,255,0.05); color: #ccc; }
-        tr:hover td { background: rgba(251,191,36,0.03); cursor: pointer; }
+        .card-pending-badge { position: absolute; top: 8px; left: 8px; z-index: 3; background: #ef4444; color: #fff; font-size: 0.55rem; font-weight: 800; padding: 3px 9px; border-radius: 20px; display: inline-flex; align-items: center; gap: 4px; box-shadow: 0 2px 8px rgba(239,68,68,0.4); }
+        .card-paid-badge { position: absolute; bottom: 8px; right: 8px; z-index: 3; background: rgba(16,185,129,0.9); color: #000; font-size: 0.55rem; font-weight: 800; padding: 3px 9px; border-radius: 20px; display: inline-flex; align-items: center; gap: 4px; backdrop-filter: blur(8px); }
 
+        .card-body { padding: 12px 14px 14px; flex: 1; display: flex; flex-direction: column; }
+        .tournament-name { font-weight: 700; font-size: 0.85rem; color: #fff; margin-bottom: 6px; line-height: 1.25; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+        .card-info { display: flex; flex-direction: column; gap: 3px; margin-bottom: 10px; font-size: 0.62rem; color: #888; }
+        .card-info span { display: flex; align-items: center; gap: 5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .card-info i { color: #fbbf24; font-size: 0.55rem; width: 10px; text-align: center; flex-shrink: 0; }
+
+        .card-escrow-row { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 8px 10px; background: rgba(16,185,129,0.06); border: 1px solid rgba(16,185,129,0.15); border-radius: 10px; margin-bottom: 10px; font-size: 0.65rem; }
+        .card-escrow-row .lbl { color: #888; display: flex; align-items: center; gap: 4px; }
+        .card-escrow-row .lbl i { color: #10b981; font-size: 0.6rem; }
+        .card-escrow-row .val { color: #10b981; font-weight: 800; font-size: 0.8rem; }
+        .card-payout-row { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 8px 10px; background: rgba(251,191,36,0.06); border: 1px solid rgba(251,191,36,0.15); border-radius: 10px; margin-bottom: 10px; font-size: 0.65rem; }
+        .card-payout-row .lbl { color: #888; display: flex; align-items: center; gap: 4px; }
+        .card-payout-row .lbl i { color: #fbbf24; font-size: 0.6rem; }
+        .card-payout-row .val { color: #fbbf24; font-weight: 800; font-size: 0.8rem; }
+
+        .progress-bar { height: 4px; background: #2a2a2a; border-radius: 10px; overflow: hidden; margin-bottom: 5px; }
+        .progress-fill { height: 100%; background: linear-gradient(90deg, #fbbf24, #ffdd77); border-radius: 10px; transition: width 0.5s ease; }
+        .progress-text { display: flex; justify-content: space-between; font-size: 0.55rem; color: #666; margin-bottom: 8px; }
+
+        .card-footer { display: flex; justify-content: space-between; align-items: center; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.05); gap: 6px; margin-top: auto; flex-wrap: wrap; }
+        .card-footer .fee { font-size: 0.75rem; font-weight: 800; color: #fbbf24; }
+        .card-actions { display: flex; gap: 4px; flex-wrap: wrap; }
+
+        .card-live-btn { background: #10b981; color: #000; font-size: 0.6rem; font-weight: 800; padding: 6px 12px; border-radius: 20px; display: inline-flex; align-items: center; gap: 5px; border: none; cursor: pointer; box-shadow: 0 4px 12px rgba(16,185,129,0.4); transition: all 0.2s ease; }
+        .card-live-btn:hover { background: #34d399; transform: scale(1.05); }
+
+        .card-start-btn { background: #fbbf24; color: #000; font-size: 0.6rem; font-weight: 800; padding: 6px 12px; border-radius: 20px; display: inline-flex; align-items: center; gap: 5px; border: none; cursor: pointer; transition: all 0.2s ease; }
+        .card-start-btn:hover { background: #ffd94d; transform: scale(1.05); }
+
+        /* ===== ПУСТЫЕ СОСТОЯНИЯ ===== */
+        .empty-state { text-align: center; padding: 40px 20px; color: #666; }
+        .empty-state i { font-size: 2.5rem; color: #333; margin-bottom: 12px; display: block; }
+        .empty-state p { font-size: 0.82rem; margin-bottom: 16px; }
+
+        /* ===== МОДАЛКИ ===== */
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.75); backdrop-filter: blur(6px); z-index: 2000; display: none; align-items: center; justify-content: center; padding: 20px; opacity: 0; transition: opacity 0.3s ease; }
         .modal-overlay.show { display: flex; opacity: 1; }
-        .modal { background: linear-gradient(135deg, #1a1a1a 0%, #0a0a0a 100%); border: 1px solid rgba(251,191,36,0.2); border-radius: 24px; padding: 28px; width: 100%; max-width: 500px; max-height: 90vh; overflow-y: auto; transform: translateY(20px); transition: transform 0.3s ease; }
+        .modal { background: linear-gradient(135deg, #1a1a1a 0%, #0a0a0a 100%); border: 1px solid rgba(251,191,36,0.2); border-radius: 24px; padding: 26px; width: 100%; max-width: 500px; max-height: 90vh; overflow-y: auto; transform: translateY(20px); transition: transform 0.3s ease; }
         .modal-overlay.show .modal { transform: translateY(0); }
-        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        .modal-header h3 { font-size: 1.1rem; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; }
+        .modal-header h3 { font-size: 1.05rem; font-weight: 700; display: flex; align-items: center; gap: 8px; }
         .modal-header h3 i { color: #fbbf24; }
-        .modal-close { background: transparent; border: none; color: #888; font-size: 1.2rem; cursor: pointer; padding: 4px; }
+        .modal-close { background: transparent; border: none; color: #888; font-size: 1.2rem; cursor: pointer; }
         .modal-close:hover { color: #fff; }
-        .form-group { margin-bottom: 16px; }
-        .form-group label { display: block; font-size: 0.75rem; color: #aaa; margin-bottom: 6px; font-weight: 500; }
-        .form-group input, .form-group textarea { width: 100%; padding: 10px 14px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.06); border-radius: 12px; color: #fff; font-size: 0.85rem; font-family: 'Inter', sans-serif; transition: border-color 0.2s ease; }
+        .modal-body { font-size: 0.82rem; color: #ccc; line-height: 1.5; margin-bottom: 16px; }
+        .modal-body strong { color: #fbbf24; }
+        .modal-body .warning-box { background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.25); border-radius: 10px; padding: 10px; margin-top: 10px; font-size: 0.75rem; color: #fca5a5; }
+        .modal-body .info-box { background: rgba(251,191,36,0.08); border: 1px solid rgba(251,191,36,0.25); border-radius: 10px; padding: 10px; margin-top: 10px; font-size: 0.75rem; color: #fcd34d; }
+        .modal-body .success-box { background: rgba(16,185,129,0.08); border: 1px solid rgba(16,185,129,0.25); border-radius: 10px; padding: 10px; margin-top: 10px; font-size: 0.75rem; color: #6ee7b7; }
+        .modal-actions { display: flex; gap: 8px; }
+        .modal-actions .btn { flex: 1; justify-content: center; }
+
+        .form-group { margin-bottom: 14px; }
+        .form-group label { display: block; font-size: 0.72rem; color: #aaa; margin-bottom: 6px; font-weight: 500; }
+        .form-group input, .form-group textarea { width: 100%; padding: 10px 14px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.06); border-radius: 12px; color: #fff; font-size: 0.82rem; font-family: 'Inter', sans-serif; }
         .form-group input:focus, .form-group textarea:focus { outline: none; border-color: rgba(251,191,36,0.25); }
         .form-group textarea { resize: vertical; min-height: 80px; }
 
-        .skeleton { background: linear-gradient(90deg, rgba(255,255,255,0.03) 25%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.03) 75%); background-size: 200% 100%; animation: skeleton-loading 1.5s infinite; border-radius: 8px; }
-        @keyframes skeleton-loading { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
-        .skeleton-text { height: 14px; margin-bottom: 8px; }
-        .skeleton-title { height: 24px; width: 60%; margin-bottom: 16px; }
-        .skeleton-card { height: 100px; border-radius: 20px; margin-bottom: 12px; }
-
+        /* ===== TOAST ===== */
         .toast-container { position: fixed; top: 20px; right: 20px; z-index: 3000; display: flex; flex-direction: column; gap: 10px; pointer-events: none; }
-        .toast { background: rgba(15,15,15,0.95); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 14px 20px; display: flex; align-items: center; gap: 12px; min-width: 280px; box-shadow: 0 10px 40px rgba(0,0,0,0.5); transform: translateX(120%); transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); pointer-events: auto; }
+        .toast { background: rgba(15,15,15,0.95); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 12px 18px; display: flex; align-items: center; gap: 10px; min-width: 260px; box-shadow: 0 10px 40px rgba(0,0,0,0.5); transform: translateX(120%); transition: transform 0.4s cubic-bezier(0.175,0.885,0.32,1.275); pointer-events: auto; }
         .toast.show { transform: translateX(0); }
         .toast.success { border-left: 4px solid #10b981; }
         .toast.error { border-left: 4px solid #ef4444; }
         .toast.info { border-left: 4px solid #60a5fa; }
-        .toast i { font-size: 1.2rem; }
+        .toast i { font-size: 1.1rem; }
         .toast.success i { color: #10b981; }
         .toast.error i { color: #ef4444; }
         .toast.info i { color: #60a5fa; }
-        .toast-message { font-size: 0.85rem; font-weight: 500; color: #fff; }
+        .toast-message { font-size: 0.8rem; font-weight: 500; color: #fff; }
+
+        .skeleton { background: linear-gradient(90deg, rgba(255,255,255,0.03) 25%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.03) 75%); background-size: 200% 100%; animation: skel 1.5s infinite; border-radius: 8px; }
+        @keyframes skel { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+
+        /* ===== ТРАНЗАКЦИИ ===== */
+        .tx-list { display: flex; flex-direction: column; gap: 6px; }
+        .tx-item { display: flex; align-items: center; gap: 12px; padding: 10px 12px; background: rgba(20,20,25,0.7); border: 1px solid rgba(255,255,255,0.04); border-radius: 12px; transition: border-color 0.2s; }
+        .tx-item:hover { border-color: rgba(251,191,36,0.15); }
+        .tx-icon { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 0.85rem; flex-shrink: 0; }
+        .tx-icon.payout { background: rgba(16,185,129,0.15); color: #10b981; }
+        .tx-icon.fee { background: rgba(239,68,68,0.12); color: #ef4444; }
+        .tx-icon.withdrawal { background: rgba(245,158,11,0.12); color: #f59e0b; }
+        .tx-icon.refund { background: rgba(59,130,246,0.12); color: #3b82f6; }
+        .tx-body { flex: 1; min-width: 0; }
+        .tx-name { font-weight: 600; font-size: 0.78rem; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .tx-date { font-size: 0.6rem; color: #666; margin-top: 1px; }
+        .tx-amount { font-weight: 800; font-size: 0.85rem; flex-shrink: 0; }
+        .tx-amount.positive { color: #10b981; }
+        .tx-amount.negative { color: #ef4444; }
 
         @media (max-width: 768px) {
             .container { padding: 0 16px; }
@@ -242,20 +319,20 @@
             .menu-toggle { display: block; }
             .nav-links { display: none; flex-direction: column; position: absolute; top: 68px; left: 18px; right: 18px; background: #0f0f0f; border-radius: 24px; padding: 20px; gap: 10px; border: 1px solid rgba(251,191,36,0.3); }
             .nav-links.show { display: flex; }
-            .finance-grid { grid-template-columns: 1fr 1fr; }
-            .analytics-stats { grid-template-columns: 1fr 1fr; }
+            .finance-grid { grid-template-columns: 1fr; }
+            .mini-stats { grid-template-columns: 1fr 1fr; }
             .tournament-grid { grid-template-columns: 1fr; }
             .org-actions { width: 100%; }
             .org-actions .btn { flex: 1; }
             .toast-container { top: auto; bottom: 20px; right: 16px; left: 16px; }
             .toast { min-width: auto; width: 100%; }
-            .featured-cover { height: 160px; }
-            .featured-name { font-size: 1.1rem; }
+            .request-row { flex-wrap: wrap; }
+            .request-actions { width: 100%; justify-content: flex-end; }
+            .bulk-bar { flex-direction: column; align-items: stretch; }
         }
         @media (max-width: 480px) {
-            .finance-grid { grid-template-columns: 1fr; }
-            .analytics-stats { grid-template-columns: 1fr; }
-            .featured-content { padding: 16px; }
+            .mini-stats { grid-template-columns: 1fr; }
+            .finance-value { font-size: 1.3rem; }
         }
     </style>
 </head>
@@ -271,10 +348,13 @@
 
     <main>
         <div class="container">
+
+            <!-- ===== ШАПКА ОРГАНИЗАЦИИ ===== -->
             <div class="org-card" id="orgCardSkeleton">
-                <div class="skeleton skeleton-title" style="width: 40%;"></div>
-                <div class="skeleton skeleton-text" style="width: 70%;"></div>
+                <div class="skeleton skeleton-title" style="width: 40%;height:24px;"></div>
+                <div class="skeleton skeleton-text" style="width: 70%;height:14px;margin-top:8px;"></div>
             </div>
+
             <div class="org-card" id="orgCardReal" style="display: none;">
                 <div class="org-top">
                     <div class="org-avatar" id="orgAvatar">🏢</div>
@@ -290,169 +370,186 @@
                         </div>
                     </div>
                     <div class="org-actions">
-                        <button class="btn btn-icon" id="settingsBtn" title="Настройки организации"><i class="fas fa-cog"></i></button>
-                        <button class="btn btn-primary" onclick="window.location.href='tournament-create.html'"><i class="fas fa-plus"></i> Создать турнир</button>
+                        <button class="btn btn-icon" id="walletBtn" title="Кошелёк организатора"><i class="fas fa-wallet"></i></button>
+                        <button class="btn btn-icon" id="settingsBtn" title="Настройки"><i class="fas fa-cog"></i></button>
+                        <button class="btn btn-primary" onclick="window.location.href='tournament-create.html'"><i class="fas fa-plus"></i> Создать</button>
                     </div>
                 </div>
             </div>
 
+            <!-- ===== ТАБЫ ===== -->
             <div class="profile-tabs">
                 <button class="tab-btn active" data-tab="overview"><i class="fas fa-chart-pie"></i> <span>Обзор</span></button>
-                <button class="tab-btn" data-tab="analytics"><i class="fas fa-chart-line"></i> <span>Аналитика</span></button>
+                <button class="tab-btn" data-tab="requests">
+                    <i class="fas fa-user-clock"></i> <span>Заявки</span>
+                    <span class="tab-badge hidden" id="tabRequestsBadge">0</span>
+                </button>
+                <button class="tab-btn" data-tab="wallet">
+                    <i class="fas fa-wallet"></i> <span>Финансы</span>
+                </button>
             </div>
 
+            <!-- ===== TAB OVERVIEW ===== -->
             <div id="tab-overview">
-                <div class="finance-grid" id="financeSkeleton">
-                    <div class="skeleton skeleton-card"></div>
-                    <div class="skeleton skeleton-card"></div>
-                    <div class="skeleton skeleton-card"></div>
-                    <div class="skeleton skeleton-card"></div>
-                </div>
-                <div class="finance-grid" id="financeReal" style="display: none;">
-                    <div class="finance-card">
-                        <div class="finance-label"><i class="fas fa-wallet"></i> Всего собрано</div>
-                        <div class="finance-value gold" id="finTotal">0 ₽</div>
-                        <div class="finance-sub">оборот по всем турнирам</div>
+
+                <!-- ФИНАНСЫ: Эскроу + Баланс -->
+                <div class="finance-section-title"><i class="fas fa-coins"></i> Финансы</div>
+                <div class="finance-grid" id="financeGrid">
+                    <div class="finance-card escrow">
+                        <div class="finance-label"><i class="fas fa-lock"></i> В эскроу</div>
+                        <div class="finance-value green" id="finEscrow">0 ₽</div>
+                        <div class="finance-sub" id="finEscrowSub">заблокировано до старта турниров</div>
                     </div>
-                    <div class="finance-card">
-                        <div class="finance-label"><i class="fas fa-hand-holding-usd"></i> Мой доход</div>
-                        <div class="finance-value green" id="finMine">0 ₽</div>
-                        <div class="finance-sub">чистыми (80%)</div>
-                    </div>
-                    <div class="finance-card">
-                        <div class="finance-label"><i class="fas fa-users"></i> Всего бойцов</div>
-                        <div class="finance-value" id="finParticipants">0</div>
-                        <div class="finance-sub">прошли через турниры</div>
-                    </div>
-                    <div class="finance-card">
-                        <div class="finance-label"><i class="fas fa-calendar-check"></i> Активных</div>
-                        <div class="finance-value blue" id="finActive">0</div>
-                        <div class="finance-sub">турниров сейчас</div>
+                    <div class="finance-card balance">
+                        <div class="finance-label"><i class="fas fa-wallet"></i> На балансе</div>
+                        <div class="finance-value gold" id="finBalance">0 ₽</div>
+                        <div class="finance-sub" id="finBalanceSub">доступно к выводу</div>
                     </div>
                 </div>
 
+                <!-- Мини-статистика -->
+                <div class="mini-stats">
+                    <div class="mini-stat"><div class="v" id="minStatTournaments">0</div><div class="l">Турниров</div></div>
+                    <div class="mini-stat"><div class="v" id="minStatParticipants">0</div><div class="l">Бойцов</div></div>
+                    <div class="mini-stat"><div class="v" id="minStatActive">0</div><div class="l">Активных</div></div>
+                    <div class="mini-stat"><div class="v" id="minStatPending">0</div><div class="l">Ждут одобрения</div></div>
+                </div>
+
+                <!-- АЛЕРТЫ -->
                 <div class="alerts-panel" id="alertsPanel" style="display: none;">
-                    <div class="alerts-header">
-                        <h3><i class="fas fa-bell"></i> Требует внимания</h3>
-                    </div>
+                    <div class="alerts-header"><h3><i class="fas fa-bell"></i> Требует внимания</h3></div>
                     <div id="alertsContainer"></div>
                 </div>
 
-                <div id="featuredTournament"></div>
-
+                <!-- ТУРНИРЫ -->
                 <div class="panel">
                     <div class="panel-header">
-                        <h3><i class="fas fa-trophy"></i> Активные турниры</h3>
-                        <button class="btn btn-outline" onclick="window.location.href='my-tournaments.html'">Все турниры <i class="fas fa-arrow-right"></i></button>
+                        <h3><i class="fas fa-trophy"></i> Ваши турниры</h3>
+                        <button class="btn btn-outline btn-sm" onclick="window.location.href='my-tournaments.html'">Все <i class="fas fa-arrow-right"></i></button>
                     </div>
-                    <div id="activeTournaments">
-                        <div class="empty-state">
-                            <i class="fas fa-trophy"></i>
-                            <p>У вас пока нет активных турниров</p>
-                            <button class="btn btn-primary" onclick="window.location.href='tournament-create.html'"><i class="fas fa-plus"></i> Создать первый турнир</button>
+                    <div id="activeTournaments"></div>
+                </div>
+            </div>
+
+            <!-- ===== TAB REQUESTS ===== -->
+            <div id="tab-requests" style="display: none;">
+                <div class="panel">
+                    <div class="panel-header">
+                        <h3><i class="fas fa-user-clock"></i> Заявки на участие <span id="requestsCountBadge" style="font-size:0.75rem;color:#888;font-weight:500;"></span></h3>
+                    </div>
+
+                    <div class="requests-toolbar">
+                        <select id="filterTournament"><option value="">Все турниры</option></select>
+                        <input type="text" id="searchRequest" placeholder="🔍 Поиск по имени бойца...">
+                    </div>
+
+                    <div class="bulk-bar" id="bulkBar" style="display: none;">
+                        <div class="info">Выбрано: <strong id="selectedCount">0</strong></div>
+                        <div class="actions">
+                            <button class="btn btn-success btn-sm" onclick="bulkApprove()"><i class="fas fa-check"></i> Принять выбранные</button>
+                            <button class="btn btn-danger btn-sm" onclick="bulkReject()"><i class="fas fa-times"></i> Отклонить</button>
+                            <button class="btn btn-outline btn-sm" onclick="clearSelection()">Сбросить</button>
+                        </div>
+                    </div>
+
+                    <div id="requestsList"></div>
+                </div>
+            </div>
+
+            <!-- ===== TAB WALLET ===== -->
+            <div id="tab-wallet" style="display: none;">
+
+                <div class="panel" style="background: linear-gradient(135deg, rgba(251,191,36,0.08), rgba(15,15,15,0.7)); border-color: rgba(251,191,36,0.3);">
+                    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+                        <div>
+                            <div style="font-size: 0.65rem; color: #fbbf24; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;">Доступно к выводу</div>
+                            <div style="font-size: 2rem; font-weight: 800; color: #fbbf24; letter-spacing: -0.5px;" id="walletBalanceBig">0 ₽</div>
+                            <div style="font-size: 0.7rem; color: #888; margin-top: 4px;" id="walletEarnedSub">Всего заработано: 0 ₽</div>
+                        </div>
+                        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                            <button class="btn btn-primary" onclick="window.location.href='organizer-wallet.html'" style="min-height: 46px; padding: 0 22px;">
+                                <i class="fas fa-wallet"></i> Открыть кошелёк
+                            </button>
                         </div>
                     </div>
                 </div>
-            </div>
 
-            <div id="tab-analytics" style="display: none;">
-                <div class="analytics-filters">
-                    <button class="filter-btn active" data-period="30">30 дней</button>
-                    <button class="filter-btn" data-period="all">За всё время</button>
-                </div>
-
-                <div class="analytics-stats">
-                    <div class="analytics-stat">
-                        <div class="stat-icon"><i class="fas fa-trophy"></i></div>
-                        <div class="value" id="anTournaments">0</div>
-                        <div class="label">Турниров</div>
-                    </div>
-                    <div class="analytics-stat">
-                        <div class="stat-icon"><i class="fas fa-users"></i></div>
-                        <div class="value" id="anAvgFill">0%</div>
-                        <div class="label">Средний набор</div>
-                    </div>
-                    <div class="analytics-stat">
-                        <div class="stat-icon"><i class="fas fa-ruble-sign"></i></div>
-                        <div class="value" id="anIncome">0 ₽</div>
-                        <div class="label">Мой доход</div>
-                    </div>
-                    <div class="analytics-stat">
-                        <div class="stat-icon"><i class="fas fa-chart-line"></i></div>
-                        <div class="value" id="anAvgIncome">0 ₽</div>
-                        <div class="label">В среднем с турнира</div>
-                    </div>
-                </div>
-
-                <div class="chart-container">
-                    <h4><i class="fas fa-chart-line"></i> Динамика моего дохода</h4>
-                    <div class="chart-wrapper"><canvas id="incomeChart"></canvas></div>
-                </div>
-
-                <div class="chart-container">
-                    <h4><i class="fas fa-chart-bar"></i> Участники по турнирам</h4>
-                    <div class="chart-wrapper"><canvas id="participantsChart"></canvas></div>
-                </div>
-
-                <div class="analytics-table">
+                <div class="panel">
                     <div class="panel-header">
-                        <h4>Детализация по турнирам</h4>
-                        <button class="btn btn-outline btn-sm" id="exportCsvBtn"><i class="fas fa-file-csv"></i> Экспорт CSV</button>
+                        <h3><i class="fas fa-history"></i> Последние операции</h3>
+                        <button class="btn btn-outline btn-sm" onclick="window.location.href='organizer-wallet.html'">Все <i class="fas fa-arrow-right"></i></button>
                     </div>
-                    <div id="analyticsTable">
-                        <div class="empty-state"><i class="fas fa-chart-bar"></i><p>Нет данных за выбранный период</p></div>
-                    </div>
+                    <div id="recentTransactions" class="tx-list"></div>
                 </div>
             </div>
+
         </div>
     </main>
 
+    <!-- ===== МОДАЛКА НАЧАЛА ТУРНИРА ===== -->
+    <div class="modal-overlay" id="startTournamentModal">
+        <div class="modal">
+            <div class="modal-header"><h3><i class="fas fa-play"></i> Начать турнир?</h3><button class="modal-close" onclick="closeModal('startTournamentModal')"><i class="fas fa-times"></i></button></div>
+            <div class="modal-body" id="startModalBody"></div>
+            <div class="modal-actions">
+                <button class="btn btn-outline" onclick="closeModal('startTournamentModal')">Отмена</button>
+                <button class="btn btn-primary" id="confirmStartBtn" style="flex:1;"><i class="fas fa-fire"></i> Начать</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== МОДАЛКА ПОДТВЕРЖДЕНИЯ ===== -->
+    <div class="modal-overlay" id="confirmModal">
+        <div class="modal" style="max-width: 440px;">
+            <div class="modal-header"><h3 id="confirmTitle"><i class="fas fa-question-circle"></i> Подтверждение</h3><button class="modal-close" onclick="closeConfirm(false)"><i class="fas fa-times"></i></button></div>
+            <div class="modal-body" id="confirmBody"></div>
+            <div class="modal-actions">
+                <button class="btn btn-outline" onclick="closeConfirm(false)">Отмена</button>
+                <button class="btn btn-primary" id="confirmBtn" style="flex:1;">Подтвердить</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== МОДАЛКА РАССЫЛКИ ===== -->
+    <div class="modal-overlay" id="broadcastModal">
+        <div class="modal">
+            <div class="modal-header"><h3><i class="fas fa-bullhorn"></i> Рассылка</h3><button class="modal-close" onclick="closeModal('broadcastModal')"><i class="fas fa-times"></i></button></div>
+            <div class="form-group"><label>Сообщение</label><textarea id="broadcastMessage" placeholder="Турнир переносится..."></textarea></div>
+            <button class="btn btn-primary" id="sendBroadcastBtn" style="width:100%;justify-content:center;"><i class="fas fa-paper-plane"></i> Отправить</button>
+        </div>
+    </div>
+
+    <!-- ===== МОДАЛКА НАСТРОЕК ===== -->
     <div class="modal-overlay" id="settingsModal">
         <div class="modal">
-            <div class="modal-header">
-                <h3><i class="fas fa-cog"></i> Настройки организации</h3>
-                <button class="modal-close" id="closeSettingsModal"><i class="fas fa-times"></i></button>
-            </div>
-            <div class="form-group">
-                <label>Название организации *</label>
-                <input type="text" id="editOrgName" placeholder="Название">
-            </div>
-            <div class="form-group">
-                <label>Город</label>
-                <input type="text" id="editOrgCity" placeholder="Город">
-            </div>
-            <div class="form-group">
-                <label>Телефон</label>
-                <input type="text" id="editOrgPhone" placeholder="+7 (___) ___-__-__">
-            </div>
-            <div class="form-group">
-                <label>Виды спорта (через запятую)</label>
-                <input type="text" id="editOrgSports" placeholder="Бокс, ММА, Борьба">
-            </div>
-            <div class="form-group">
-                <label>Описание</label>
-                <textarea id="editOrgDesc" placeholder="Краткое описание организации"></textarea>
-            </div>
-            <button class="btn btn-primary" id="saveSettingsBtn" style="width: 100%; justify-content: center;"><i class="fas fa-save"></i> Сохранить изменения</button>
+            <div class="modal-header"><h3><i class="fas fa-cog"></i> Настройки организации</h3><button class="modal-close" onclick="closeModal('settingsModal')"><i class="fas fa-times"></i></button></div>
+            <div class="form-group"><label>Название *</label><input type="text" id="editOrgName"></div>
+            <div class="form-group"><label>Город</label><input type="text" id="editOrgCity"></div>
+            <div class="form-group"><label>Телефон</label><input type="text" id="editOrgPhone"></div>
+            <div class="form-group"><label>Виды спорта (через запятую)</label><input type="text" id="editOrgSports"></div>
+            <div class="form-group"><label>Описание</label><textarea id="editOrgDesc"></textarea></div>
+            <button class="btn btn-primary" id="saveSettingsBtn" style="width:100%;justify-content:center;"><i class="fas fa-save"></i> Сохранить</button>
         </div>
     </div>
 
     <div id="mobileBottomNavContainer"></div>
 
     <script type="importmap">
-        {
-            "imports": {
-                "firebase/app": "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js",
-                "firebase/firestore": "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js",
-                "firebase/auth": "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js"
-            }
-        }
+        {"imports":{
+            "firebase/app":"https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js",
+            "firebase/firestore":"https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js",
+            "firebase/auth":"https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js"
+        }}
     </script>
     <script type="module" src="header.js"></script>
     <script type="module">
         import { initializeApp } from "firebase/app";
-        import { getFirestore, doc, getDoc, updateDoc, collection, query, where, getDocs, orderBy } from "firebase/firestore";
+        import {
+            getFirestore, doc, getDoc, updateDoc, collection,
+            query, where, getDocs, orderBy, onSnapshot, addDoc, serverTimestamp, increment
+        } from "firebase/firestore";
         import { getAuth, onAuthStateChanged } from "firebase/auth";
+        import { OrganizerWallet } from "./organizer-wallet.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyDUGYJY7pX7q02MS5SACMIIQXpjpQ97mPw",
@@ -467,75 +564,73 @@
         const db = getFirestore(app);
         const auth = getAuth(app);
 
+        // ============================================================
+        // СОСТОЯНИЕ
+        // ============================================================
+        let currentUserId = null;
         let currentOrgId = null;
         let currentOrgData = null;
+        let organizerBalance = { available: 0, totalEarned: 0, totalWithdrawn: 0 };
         let allTournaments = [];
-        let currentPeriod = 30;
+        let allRequests = [];       // pending заявки по всем турнирам организации
+        let allRegistrations = [];  // все заявки (для подсчёта эскроу)
+        let currentFilterTournament = '';
+        let searchQuery = '';
+        let selectedRequestIds = new Set();
+        let requestsUnsubscribe = null;
+        let confirmResolver = null;
 
-        window.showToast = function(message, type = 'info') {
-            const container = document.getElementById('toastContainer');
-            const toast = document.createElement('div');
-            toast.className = `toast ${type}`;
-            const icons = { success: 'fa-check-circle', error: 'fa-exclamation-circle', info: 'fa-info-circle' };
-            toast.innerHTML = `<i class="fas ${icons[type]}"></i><span class="toast-message">${message}</span>`;
-            container.appendChild(toast);
-            requestAnimationFrame(() => toast.classList.add('show'));
-            setTimeout(() => { toast.classList.remove('show'); setTimeout(() => toast.remove(), 400); }, 3500);
+        // ============================================================
+        // УТИЛИТЫ
+        // ============================================================
+        const formatDate = d => d ? new Date(d + 'T00:00:00').toLocaleDateString('ru-RU') : '—';
+        const daysUntil = d => Math.ceil((new Date(d + 'T00:00:00') - new Date()) / 86400000);
+        const plural = (n, one, few, many) => {
+            const m10 = n % 10, m100 = n % 100;
+            if (m10 === 1 && m100 !== 11) return one;
+            if (m10 >= 2 && m10 <= 4 && (m100 < 10 || m100 >= 20)) return few;
+            return many;
+        };
+        const fmtMoney = n => `${Math.round(Number(n) || 0).toLocaleString('ru-RU')} ₽`;
+
+        window.showToast = function(msg, type = 'info') {
+            const c = document.getElementById('toastContainer'), t = document.createElement('div');
+            t.className = `toast ${type}`;
+            const ic = { success: 'fa-check-circle', error: 'fa-exclamation-circle', info: 'fa-info-circle' };
+            t.innerHTML = `<i class="fas ${ic[type]}"></i><span class="toast-message">${msg}</span>`;
+            c.appendChild(t);
+            requestAnimationFrame(() => t.classList.add('show'));
+            setTimeout(() => { t.classList.remove('show'); setTimeout(() => t.remove(), 400); }, 3500);
         };
 
-        window.switchTab = function(tabName) {
-            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-            document.querySelector(`.tab-btn[data-tab="${tabName}"]`)?.classList.add('active');
-            document.querySelectorAll('[id^="tab-"]').forEach(content => content.style.display = 'none');
-            document.getElementById(`tab-${tabName}`).style.display = 'block';
-            if (tabName === 'analytics') setTimeout(() => renderAnalytics(), 100);
-        };
-        document.querySelectorAll('.tab-btn').forEach(btn => {
-            btn.addEventListener('click', () => switchTab(btn.dataset.tab));
-        });
+        window.openModal = id => document.getElementById(id).classList.add('show');
+        window.closeModal = id => document.getElementById(id).classList.remove('show');
 
-        const settingsModal = document.getElementById('settingsModal');
-        document.getElementById('settingsBtn')?.addEventListener('click', () => settingsModal.classList.add('show'));
-        document.getElementById('closeSettingsModal')?.addEventListener('click', () => settingsModal.classList.remove('show'));
-        settingsModal?.addEventListener('click', (e) => { if (e.target === e.currentTarget) settingsModal.classList.remove('show'); });
-
-        document.getElementById('saveSettingsBtn')?.addEventListener('click', async () => {
-            if (!currentOrgId) return showToast('Организация не найдена', 'error');
-            const name = document.getElementById('editOrgName').value.trim();
-            if (!name) return showToast('Название обязательно', 'error');
-
-            const sportsText = document.getElementById('editOrgSports').value.trim();
-            const sports = sportsText ? sportsText.split(',').map(s => s.trim()).filter(s => s) : [];
-
-            try {
-                await updateDoc(doc(db, "organizations", currentOrgId), {
-                    name, city: document.getElementById('editOrgCity').value.trim(),
-                    phone: document.getElementById('editOrgPhone').value.trim(), sports,
-                    description: document.getElementById('editOrgDesc').value.trim(),
-                    updatedAt: new Date().toISOString()
-                });
-                showToast('✅ Настройки успешно сохранены!', 'success');
-                settingsModal.classList.remove('show');
-                loadOrganizationData(currentOrgId);
-            } catch (err) {
-                showToast('❌ Ошибка сохранения: ' + err.message, 'error');
-            }
-        });
-
-        document.querySelectorAll('.filter-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-                currentPeriod = btn.dataset.period === 'all' ? 'all' : parseInt(btn.dataset.period);
-                renderAnalytics();
+        window.showConfirm = function(title, body, label = 'Подтвердить') {
+            return new Promise(resolve => {
+                confirmResolver = resolve;
+                document.getElementById('confirmTitle').innerHTML = `<i class="fas fa-question-circle"></i> ${title}`;
+                document.getElementById('confirmBody').innerHTML = body;
+                const btn = document.getElementById('confirmBtn');
+                btn.innerHTML = label;
+                btn.onclick = () => closeConfirm(true);
+                document.getElementById('confirmModal').classList.add('show');
             });
-        });
+        };
+        window.closeConfirm = function(result) {
+            document.getElementById('confirmModal').classList.remove('show');
+            if (confirmResolver) { confirmResolver(result); confirmResolver = null; }
+        };
 
+        // ============================================================
+        // ЗАГРУЗКА ОРГАНИЗАЦИИ
+        // ============================================================
         async function loadOrganizationData(orgId) {
             try {
-                const requestDoc = await getDoc(doc(db, "organization_requests", orgId));
-                if (requestDoc.exists() && requestDoc.data().organizationId) {
-                    orgId = requestDoc.data().organizationId;
+                // Разрешаем ID заявки → organizationId
+                const reqDoc = await getDoc(doc(db, "organization_requests", orgId));
+                if (reqDoc.exists() && reqDoc.data().organizationId) {
+                    orgId = reqDoc.data().organizationId;
                 }
 
                 const orgDoc = await getDoc(doc(db, "organizations", orgId));
@@ -544,435 +639,862 @@
                     return;
                 }
 
-                currentOrgId = orgDoc.id;
                 currentOrgData = orgDoc.data();
 
+                // Безопасность
+                const ownerId = currentOrgData.userId || currentOrgData.ownerId || currentOrgData.createdByUserId;
+                if (ownerId && currentUserId && ownerId !== currentUserId) {
+                    showToast('Доступ запрещён', 'error');
+                    setTimeout(() => window.location.href = 'index.html', 1200);
+                    return;
+                }
+
+                currentOrgId = orgDoc.id;
+
+                // Рендер шапки
                 document.getElementById('orgCardSkeleton').style.display = 'none';
                 document.getElementById('orgCardReal').style.display = 'block';
-
                 document.getElementById('orgName').textContent = currentOrgData.name || 'Организация';
                 document.getElementById('orgCity').textContent = currentOrgData.city || '—';
                 document.getElementById('orgPhone').textContent = currentOrgData.phone || '—';
                 document.getElementById('orgSports').textContent = currentOrgData.sports ? currentOrgData.sports.join(', ') : '—';
-                
                 if (currentOrgData.name) {
                     document.getElementById('orgAvatar').textContent = currentOrgData.name.charAt(0).toUpperCase();
                 }
 
+                // Заполняем форму настроек
                 document.getElementById('editOrgName').value = currentOrgData.name || '';
                 document.getElementById('editOrgCity').value = currentOrgData.city || '';
                 document.getElementById('editOrgPhone').value = currentOrgData.phone || '';
                 document.getElementById('editOrgSports').value = currentOrgData.sports ? currentOrgData.sports.join(', ') : '';
                 document.getElementById('editOrgDesc').value = currentOrgData.description || '';
 
-                await loadTournaments();
+                // Загружаем данные
+                await Promise.all([
+                    loadOrganizerBalance(),
+                    loadTournaments(),
+                    loadAllRegistrations()
+                ]);
+
+                subscribeToRequests();
+                renderFinance();
+                renderAlerts();
+                renderActiveTournaments();
+                updateTournamentFilter();
+                renderRecentTransactions();
+
             } catch (err) {
-                console.error('Ошибка:', err);
+                console.error('Ошибка загрузки:', err);
                 showToast('Ошибка загрузки данных', 'error');
             }
         }
 
-        async function loadTournaments() {
-            if (!currentOrgId) return;
+        // ============================================================
+        // БАЛАНС ОРГАНИЗАТОРА
+        // ============================================================
+        async function loadOrganizerBalance() {
             try {
-                const q = query(collection(db, "tournaments"), where("organizationId", "==", currentOrgId), orderBy("date", "asc"));
-                const snapshot = await getDocs(q);
-                allTournaments = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-
-                document.getElementById('financeSkeleton').style.display = 'none';
-                document.getElementById('financeReal').style.display = 'grid';
-
-                renderFinance();
-                await loadAlerts();
-                renderFeatured();
-                renderActiveTournaments();
+                organizerBalance = await OrganizerWallet.getBalance(currentOrgId);
+                document.getElementById('walletBalanceBig').textContent = fmtMoney(organizerBalance.available);
+                document.getElementById('walletEarnedSub').textContent = `Всего заработано: ${fmtMoney(organizerBalance.totalEarned)}`;
             } catch (err) {
-                console.error('Ошибка:', err);
+                console.error('Ошибка баланса:', err);
             }
         }
 
-        async function loadAlerts() {
-            if (!currentOrgId) return;
+        // ============================================================
+        // ТУРНИРЫ
+        // ============================================================
+        async function loadTournaments() {
+            try {
+                const q = query(
+                    collection(db, "tournaments"),
+                    where("organizationId", "==", currentOrgId)
+                );
+                const snap = await getDocs(q);
+                allTournaments = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+
+                // Исключаем удалённые из активного списка (но оставляем для подсчётов)
+                allTournaments.sort((a, b) => new Date(a.date || 0) - new Date(b.date || 0));
+            } catch (err) {
+                console.error('Ошибка турниров:', err);
+                showToast('Ошибка загрузки турниров', 'error');
+            }
+        }
+
+        // ============================================================
+        // ВСЕ РЕГИСТРАЦИИ (для подсчёта)
+        // ============================================================
+        async function loadAllRegistrations() {
+            try {
+                const q = query(
+                    collection(db, "tournament_registrations"),
+                    where("organizationId", "==", currentOrgId)
+                );
+                const snap = await getDocs(q);
+                allRegistrations = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+            } catch (err) {
+                console.error('Ошибка регистраций:', err);
+            }
+        }
+
+        // ============================================================
+        // ЗАЯВКИ — REAL-TIME
+        // ============================================================
+        function subscribeToRequests() {
+            if (requestsUnsubscribe) requestsUnsubscribe();
+
+            const q = query(
+                collection(db, "tournament_registrations"),
+                where("organizationId", "==", currentOrgId),
+                where("status", "==", "pending")
+            );
+
+            requestsUnsubscribe = onSnapshot(q, (snapshot) => {
+                allRequests = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+                allRequests.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
+
+                updateRequestsBadge();
+                renderRequests();
+                renderAlerts();
+                renderActiveTournaments();
+                renderFinance();
+                updateTournamentFilter();
+                renderMiniStats();
+            }, (err) => {
+                console.error('Requests subscription:', err);
+            });
+        }
+
+        function updateRequestsBadge() {
+            const badge = document.getElementById('tabRequestsBadge');
+            const count = allRequests.length;
+            if (count > 0) {
+                badge.textContent = count > 99 ? '99+' : count;
+                badge.classList.remove('hidden');
+            } else {
+                badge.classList.add('hidden');
+            }
+        }
+
+        // ============================================================
+        // ФИНАНСЫ (главный блок)
+        // ============================================================
+        function renderFinance() {
+            // Эскроу = сумма escrowAmount по всем турнирам организации
+            const escrowTotal = allTournaments
+                .filter(t => !t.paidOutToOrganizer && t.status !== 'cancelled' && !t.deleted)
+                .reduce((s, t) => s + (t.escrowAmount || 0), 0);
+
+            const balance = organizerBalance.available || 0;
+
+            document.getElementById('finEscrow').textContent = fmtMoney(escrowTotal);
+            document.getElementById('finBalance').textContent = fmtMoney(balance);
+
+            // Подпись эскроу
+            const activeEscrowTournaments = allTournaments.filter(t =>
+                !t.paidOutToOrganizer && t.status === 'registration' && (t.escrowAmount || 0) > 0 && !t.deleted
+            ).length;
+            const escrowSub = document.getElementById('finEscrowSub');
+            if (escrowTotal > 0 && activeEscrowTournaments > 0) {
+                escrowSub.textContent = `в ${activeEscrowTournaments} ${plural(activeEscrowTournaments, 'турнире', 'турнирах', 'турнирах')} · перейдёт на баланс при старте`;
+                escrowSub.className = 'finance-sub warn';
+            } else {
+                escrowSub.textContent = 'заблокировано до старта турниров';
+                escrowSub.className = 'finance-sub';
+            }
+
+            // Подпись баланса
+            const balanceSub = document.getElementById('finBalanceSub');
+            if (balance > 0) {
+                balanceSub.textContent = 'доступно к выводу';
+                balanceSub.className = 'finance-sub ok';
+            } else {
+                balanceSub.textContent = 'доступно к выводу';
+                balanceSub.className = 'finance-sub';
+            }
+
+            renderMiniStats();
+        }
+
+        function renderMiniStats() {
+            const notDeleted = allTournaments.filter(t => !t.deleted);
+            const totalParticipants = notDeleted.reduce((s, t) => s + (t.participantCount || 0), 0);
+            const activeCount = notDeleted.filter(t => t.status === 'active' || t.status === 'registration').length;
+
+            document.getElementById('minStatTournaments').textContent = notDeleted.length;
+            document.getElementById('minStatParticipants').textContent = totalParticipants;
+            document.getElementById('minStatActive').textContent = activeCount;
+            document.getElementById('minStatPending').textContent = allRequests.length;
+        }
+
+        // ============================================================
+        // АЛЕРТЫ
+        // ============================================================
+        function renderAlerts() {
             const alerts = [];
             const now = new Date();
             now.setHours(0, 0, 0, 0);
-
-            try {
-                const registrationsQuery = query(collection(db, "tournament_registrations"), where("organizationId", "==", currentOrgId), where("status", "==", "pending"));
-                const regSnapshot = await getDocs(registrationsQuery);
-                
-                if (!regSnapshot.empty) {
-                    const tournamentId = regSnapshot.docs[0].data().tournamentId;
-                    const tName = allTournaments.find(t => t.id === tournamentId)?.name || 'Турнир';
-                    alerts.push({
-                        type: 'warning', icon: 'fa-user-clock',
-                        text: `${regSnapshot.size} заявок ждут подтверждения в «${tName}»`,
-                        link: `tournament-details.html?id=${tournamentId}&tab=requests`
-                    });
-                }
-            } catch (err) { /* Игнорируем */ }
-
             const threeDaysFromNow = new Date(now);
             threeDaysFromNow.setDate(threeDaysFromNow.getDate() + 3);
 
+            // 1. Заявки по турнирам
+            const byTournament = {};
+            allRequests.forEach(r => {
+                byTournament[r.tournamentId] = (byTournament[r.tournamentId] || 0) + 1;
+            });
+            Object.entries(byTournament).forEach(([tid, count]) => {
+                const t = allTournaments.find(x => x.id === tid);
+                if (!t) return;
+                alerts.push({
+                    type: 'warning', icon: 'fa-user-clock',
+                    text: `<strong>${count}</strong> ${plural(count, 'заявка', 'заявки', 'заявок')} ждут в «${t.name}»`,
+                    actions: [
+                        { label: 'Заявки', icon: 'fa-eye', action: `switchToTab('requests'); document.getElementById('filterTournament').value='${tid}'; renderRequests();` }
+                    ]
+                });
+            });
+
+            // 2. Дедлайн близко
             allTournaments.forEach(t => {
-                if (t.status === 'registration' && t.registrationDeadline) {
-                    const deadline = new Date(t.registrationDeadline + 'T00:00:00');
-                    if (deadline >= now && deadline <= threeDaysFromNow) {
-                        alerts.push({ type: 'danger', icon: 'fa-clock', text: `«${t.name}»: набор закроется ${new Date(t.registrationDeadline + 'T00:00:00').toLocaleDateString('ru-RU')}`, link: `tournament-details.html?id=${t.id}` });
-                    }
+                if (t.status !== 'registration' || !t.registrationDeadline || t.deleted) return;
+                const deadline = new Date(t.registrationDeadline + 'T00:00:00');
+                if (deadline >= now && deadline <= threeDaysFromNow) {
+                    alerts.push({
+                        type: 'danger', icon: 'fa-clock',
+                        text: `«${t.name}»: набор закроется ${deadline.toLocaleDateString('ru-RU')}`,
+                        actions: [{ label: 'Открыть', icon: 'fa-eye', action: `openTournament('${t.id}')` }]
+                    });
                 }
-                if (t.status === 'registration' && t.maxParticipants) {
-                    const fillRate = (t.participantCount || 0) / t.maxParticipants;
-                    if (fillRate >= 0.8) {
-                        alerts.push({ type: 'info', icon: 'fa-users', text: `«${t.name}»: заполнен на ${Math.round(fillRate * 100)}%`, link: `tournament-details.html?id=${t.id}` });
+            });
+
+            // 3. Просроченные
+            allTournaments.forEach(t => {
+                if (t.status !== 'registration' || !t.date || t.deleted) return;
+                const tDate = new Date(t.date + 'T00:00:00');
+                if (tDate < now) {
+                    const daysPast = Math.floor((now - tDate) / (1000 * 60 * 60 * 24));
+                    alerts.push({
+                        type: 'danger', icon: 'fa-exclamation-triangle',
+                        text: `«${t.name}»: дата прошла ${daysPast} ${plural(daysPast, 'день', 'дня', 'дней')} назад, а статус «набор»`,
+                        actions: [{ label: 'Открыть', icon: 'fa-eye', action: `openTournament('${t.id}')` }]
+                    });
+                }
+            });
+
+            // 4. Заполнен на 80%+
+            allTournaments.forEach(t => {
+                if (t.status !== 'registration' || !t.maxParticipants || t.deleted) return;
+                const fillRate = (t.participantCount || 0) / t.maxParticipants;
+                if (fillRate >= 0.8 && fillRate < 1) {
+                    alerts.push({
+                        type: 'info', icon: 'fa-users',
+                        text: `«${t.name}»: заполнен на ${Math.round(fillRate * 100)}%`,
+                        actions: [{ label: 'Открыть', icon: 'fa-eye', action: `openTournament('${t.id}')` }]
+                    });
+                }
+            });
+
+            // 5. Готов к старту (registration + ≥2 approved + эскроу > 0)
+            allTournaments.forEach(t => {
+                if (t.status !== 'registration' || t.deleted) return;
+                if ((t.participantCount || 0) >= 2 && (t.escrowAmount || 0) > 0) {
+                    const days = daysUntil(t.date);
+                    if (days <= 1) {
+                        alerts.push({
+                            type: 'success', icon: 'fa-play',
+                            text: `«${t.name}»: готов к старту · в эскроу ${fmtMoney(t.escrowAmount)}`,
+                            actions: [{ label: 'Начать', icon: 'fa-fire', action: `openStartModal('${t.id}')` }]
+                        });
                     }
                 }
             });
 
+            // 6. Активный турнир
+            const activeT = allTournaments.find(t => t.status === 'active' && !t.deleted);
+            if (activeT) {
+                alerts.push({
+                    type: 'info', icon: 'fa-circle',
+                    text: `«${activeT.name}» идёт прямо сейчас`,
+                    actions: [{ label: 'LIVE', icon: 'fa-tower-broadcast', action: `openLive('${activeT.id}')` }]
+                });
+            }
+
             if (alerts.length > 0) {
                 document.getElementById('alertsPanel').style.display = 'block';
-                const container = document.getElementById('alertsContainer');
-                container.innerHTML = alerts.map(alert => `
-                    <div class="alert-item" onclick="window.location.href='${alert.link}'">
-                        <div class="alert-icon ${alert.type}"><i class="fas ${alert.icon}"></i></div>
-                        <div class="alert-text">${alert.text}</div>
-                        <div class="alert-arrow"><i class="fas fa-chevron-right"></i></div>
+                document.getElementById('alertsContainer').innerHTML = alerts.map(a => `
+                    <div class="alert-item">
+                        <div class="alert-icon ${a.type}"><i class="fas ${a.icon}"></i></div>
+                        <div class="alert-text">${a.text}</div>
+                        <div class="alert-actions">
+                            ${a.actions.map(act => `<button class="btn btn-outline btn-sm" onclick="${act.action}"><i class="fas ${act.icon}"></i> ${act.label}</button>`).join('')}
+                        </div>
                     </div>
                 `).join('');
+            } else {
+                document.getElementById('alertsPanel').style.display = 'none';
             }
         }
 
-        function renderFinance() {
-            const totalCollected = allTournaments.reduce((sum, t) => sum + ((t.participantCount || 0) * (t.entryFee || 0)), 0);
-            const mine = totalCollected * 0.8;
-            const totalParticipants = allTournaments.reduce((sum, t) => sum + (t.participantCount || 0), 0);
-            const activeCount = allTournaments.filter(t => t.status === 'registration' || t.status === 'active').length;
+        // ============================================================
+        // КАРТОЧКИ ТУРНИРОВ
+        // ============================================================
+        function renderActiveTournaments() {
+            const container = document.getElementById('activeTournaments');
+            const priority = { active: 0, scheduled: 1, registration: 2, completed: 3, cancelled: 4 };
 
-            document.getElementById('finTotal').textContent = `${Math.round(totalCollected).toLocaleString('ru-RU')} ₽`;
-            document.getElementById('finMine').textContent = `${Math.round(mine).toLocaleString('ru-RU')} ₽`;
-            document.getElementById('finParticipants').textContent = totalParticipants;
-            document.getElementById('finActive').textContent = activeCount;
+            const sorted = [...allTournaments]
+                .filter(t => !t.deleted)
+                .sort((a, b) => {
+                    const pa = priority[a.status] ?? 9;
+                    const pb = priority[b.status] ?? 9;
+                    if (pa !== pb) return pa - pb;
+                    return new Date(a.date || 0) - new Date(b.date || 0);
+                });
+
+            const show = sorted.slice(0, 6);
+
+            if (!show.length) {
+                container.innerHTML = `<div class="empty-state"><i class="fas fa-trophy"></i><p>У вас пока нет турниров</p><button class="btn btn-primary" onclick="window.location.href='tournament-create.html'"><i class="fas fa-plus"></i> Создать первый</button></div>`;
+                return;
+            }
+
+            container.innerHTML = `<div class="tournament-grid">${show.map(t => renderTournamentCard(t)).join('')}</div>`;
         }
 
-        function renderFeatured() {
-            const container = document.getElementById('featuredTournament');
-            const now = new Date();
-            const upcoming = allTournaments.filter(t => t.status === 'registration' && new Date(t.date + 'T00:00:00') >= now).sort((a, b) => new Date(a.date) - new Date(b.date))[0];
+        function renderTournamentCard(t) {
+            const progress = t.maxParticipants ? Math.round((t.participantCount || 0) / t.maxParticipants * 100) : 0;
+            const pendingCount = allRequests.filter(r => r.tournamentId === t.id).length;
+            const isActive = t.status === 'active';
+            const statusLabels = { registration: 'Набор', scheduled: 'Сетка', active: 'LIVE', completed: 'Завершён', cancelled: 'Отменён' };
 
-            if (!upcoming) { container.innerHTML = ''; return; }
+            const coverHtml = t.imageUrl
+                ? `<div class="card-cover"><img src="${t.imageUrl}" alt="" onerror="this.parentElement.classList.add('no-image'); this.outerHTML='<i class=\\'fas fa-trophy\\'></i>'"></div>`
+                : `<div class="card-cover no-image"><i class="fas fa-trophy"></i></div>`;
 
-            const progress = upcoming.maxParticipants ? Math.round((upcoming.participantCount || 0) / upcoming.maxParticipants * 100) : 0;
-            
-            // Обложка
-            const coverHtml = upcoming.imageUrl 
-                ? `<div class="featured-cover"><img src="${upcoming.imageUrl}" alt="${upcoming.name}" onerror="this.parentElement.classList.add('no-image'); this.outerHTML='<i class=\\'fas fa-trophy\\'></i>'"></div>`
-                : `<div class="featured-cover no-image"><i class="fas fa-trophy"></i></div>`;
+            // Эскроу блок
+            let financeRowHtml = '';
+            if (t.paidOutToOrganizer) {
+                financeRowHtml = `<div class="card-payout-row">
+                    <div class="lbl"><i class="fas fa-check-circle"></i> Выплачено вам</div>
+                    <div class="val">${fmtMoney(t.organizerIncome || 0)}</div>
+                </div>`;
+            } else if (t.status === 'cancelled') {
+                financeRowHtml = `<div class="card-escrow-row" style="background: rgba(239,68,68,0.05); border-color: rgba(239,68,68,0.15);">
+                    <div class="lbl" style="color: #ef4444;"><i class="fas fa-ban"></i> Отменён</div>
+                    <div class="val" style="color: #ef4444; font-size: 0.7rem;">Средства возвращены</div>
+                </div>`;
+            } else if ((t.escrowAmount || 0) > 0) {
+                financeRowHtml = `<div class="card-escrow-row">
+                    <div class="lbl"><i class="fas fa-lock"></i> В эскроу</div>
+                    <div class="val">${fmtMoney(t.escrowAmount)}</div>
+                </div>`;
+            }
 
-            container.innerHTML = `
-                <div class="featured-tournament" onclick="window.location.href='tournament-details.html?id=${upcoming.id}'">
-                    ${coverHtml}
-                    <div class="featured-badge">
-                        <span class="status-badge"><i class="fas fa-circle"></i> Идёт набор</span>
+            // Кнопки действий
+            let actionsHtml = '';
+            if (isActive) {
+                actionsHtml += `<button class="card-live-btn" onclick="event.stopPropagation(); openLive('${t.id}')"><i class="fas fa-tower-broadcast"></i> LIVE</button>`;
+            } else if (t.status === 'registration' && (t.participantCount || 0) >= 2 && (t.escrowAmount || 0) > 0) {
+                actionsHtml += `<button class="card-start-btn" onclick="event.stopPropagation(); openStartModal('${t.id}')"><i class="fas fa-fire"></i> Начать</button>`;
+            }
+            actionsHtml += `<button class="btn btn-outline btn-sm" onclick="event.stopPropagation(); openTournament('${t.id}')"><i class="fas fa-cog"></i> Управлять</button>`;
+
+            return `
+                <div class="tournament-card ${isActive ? 'status-active' : ''}" onclick="openTournament('${t.id}')">
+                    <div style="position: relative;">
+                        ${coverHtml}
+                        <span class="card-status-badge ${t.status}">${statusLabels[t.status] || t.status}</span>
+                        ${pendingCount > 0 ? `<span class="card-pending-badge"><i class="fas fa-bell"></i> ${pendingCount}</span>` : ''}
+                        ${t.paidOutToOrganizer ? `<span class="card-paid-badge"><i class="fas fa-check"></i> Оплачено</span>` : ''}
                     </div>
-                    <div class="featured-content">
-                        <div class="featured-name">🏆 ${upcoming.name}</div>
-                        <div class="featured-info">
-                            <span><i class="fas fa-calendar-alt"></i> ${new Date(upcoming.date + 'T00:00:00').toLocaleDateString('ru-RU')}</span>
-                            <span><i class="fas fa-map-marker-alt"></i> ${upcoming.city || '—'}</span>
-                            <span><i class="fas fa-fist-raised"></i> ${upcoming.sport || '—'}</span>
-                            <span><i class="fas fa-ruble-sign"></i> ${upcoming.entryFee || 0} ₽</span>
+                    <div class="card-body">
+                        <div class="tournament-name">${t.name}</div>
+                        <div class="card-info">
+                            <span><i class="fas fa-calendar-alt"></i> ${formatDate(t.date)}</span>
+                            <span><i class="fas fa-users"></i> ${t.participantCount || 0}/${t.maxParticipants || '—'} участников</span>
                         </div>
-                        <div class="progress-bar"><div class="progress-fill" style="width: ${progress}%;"></div></div>
-                        <div class="progress-text">
-                            <span>${upcoming.participantCount || 0} / ${upcoming.maxParticipants || 0} участников</span>
-                            <span>До ${new Date(upcoming.registrationDeadline + 'T00:00:00').toLocaleDateString('ru-RU')}</span>
+                        ${financeRowHtml}
+                        ${t.status === 'registration' || t.status === 'scheduled' ? `
+                            <div class="progress-bar"><div class="progress-fill" style="width: ${progress}%;"></div></div>
+                            <div class="progress-text"><span>${progress}% заполнено</span><span>${t.entryFee || 0} ₽</span></div>
+                        ` : ''}
+                        <div class="card-footer">
+                            <div class="fee">${t.entryFee || 0} ₽</div>
+                            <div class="card-actions">${actionsHtml}</div>
                         </div>
                     </div>
                 </div>
             `;
         }
 
-        function renderActiveTournaments() {
-            const container = document.getElementById('activeTournaments');
-            const active = allTournaments.filter(t => t.status === 'registration').slice(0, 3);
+        // ============================================================
+        // НАВИГАЦИЯ
+        // ============================================================
+        window.openTournament = id => window.location.href = `tournament-details.html?id=${id}`;
+        window.openLive = id => window.open(`live-judging.html?id=${id}`, '_blank');
 
-            if (!active.length) {
-                container.innerHTML = `<div class="empty-state"><i class="fas fa-trophy"></i><p>У вас пока нет активных турниров</p><button class="btn btn-primary" onclick="window.location.href='tournament-create.html'"><i class="fas fa-plus"></i> Создать первый турнир</button></div>`;
+        // ============================================================
+        // ТАБЫ
+        // ============================================================
+        window.switchToTab = function(tabName) {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelector(`.tab-btn[data-tab="${tabName}"]`)?.classList.add('active');
+            document.querySelectorAll('[id^="tab-"]').forEach(c => c.style.display = 'none');
+            document.getElementById(`tab-${tabName}`).style.display = 'block';
+        };
+
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', () => switchToTab(btn.dataset.tab));
+        });
+
+        // ============================================================
+        // ФИЛЬТР ЗАЯВОК
+        // ============================================================
+        function updateTournamentFilter() {
+            const select = document.getElementById('filterTournament');
+            if (!select) return;
+            const current = select.value;
+            const tids = [...new Set(allRequests.map(r => r.tournamentId))];
+            select.innerHTML = `<option value="">Все турниры (${allRequests.length})</option>` +
+                tids.map(tid => {
+                    const t = allTournaments.find(x => x.id === tid);
+                    const count = allRequests.filter(r => r.tournamentId === tid).length;
+                    return `<option value="${tid}">${t?.name || 'Турнир'} (${count})</option>`;
+                }).join('');
+            select.value = current;
+        }
+
+        function renderRequests() {
+            const container = document.getElementById('requestsList');
+            const filterTid = document.getElementById('filterTournament')?.value || '';
+            const search = (document.getElementById('searchRequest')?.value || '').toLowerCase().trim();
+
+            let filtered = allRequests;
+            if (filterTid) filtered = filtered.filter(r => r.tournamentId === filterTid);
+            if (search) filtered = filtered.filter(r =>
+                (r.fighterName || '').toLowerCase().includes(search) ||
+                (r.fighterClub || '').toLowerCase().includes(search)
+            );
+
+            document.getElementById('requestsCountBadge').textContent = filtered.length ? `(${filtered.length})` : '';
+
+            if (!filtered.length) {
+                container.innerHTML = `<div class="empty-state"><i class="fas fa-check-circle" style="color:#10b981;"></i><p>${allRequests.length ? 'Ничего не найдено по фильтру' : 'Заявок нет — всё под контролем'}</p></div>`;
+                updateBulkBar();
                 return;
             }
 
-            container.innerHTML = `<div class="tournament-grid">${active.map(t => {
-                const progress = t.maxParticipants ? Math.round((t.participantCount || 0) / t.maxParticipants * 100) : 0;
-                
-                // Обложка
-                const coverHtml = t.imageUrl 
-                    ? `<div class="card-cover"><img src="${t.imageUrl}" alt="${t.name}" onerror="this.parentElement.classList.add('no-image'); this.outerHTML='<i class=\\'fas fa-trophy\\'></i>'"></div>`
-                    : `<div class="card-cover no-image"><i class="fas fa-trophy"></i></div>`;
-
+            container.innerHTML = filtered.map(r => {
+                const t = allTournaments.find(x => x.id === r.tournamentId);
+                const isPaid = r.paymentStatus === 'paid';
+                const checked = selectedRequestIds.has(r.id) ? 'checked' : '';
                 return `
-                    <div class="tournament-card" onclick="window.location.href='tournament-details.html?id=${t.id}'">
-                        ${coverHtml}
-                        <div class="card-body">
-                            <div class="t-name">${t.name}</div>
-                            <div class="t-info">
-                                <span><i class="fas fa-calendar-alt"></i> ${new Date(t.date + 'T00:00:00').toLocaleDateString('ru-RU')}</span>
-                                <span><i class="fas fa-users"></i> ${t.participantCount || 0} участников</span>
+                    <div class="request-row ${isPaid ? '' : 'not-paid'}">
+                        <input type="checkbox" class="request-checkbox" data-rid="${r.id}" ${checked} onchange="toggleRequestSelection('${r.id}', this.checked)">
+                        <div class="request-avatar">${(r.fighterName || 'Б')[0].toUpperCase()}</div>
+                        <div class="request-info">
+                            <div class="request-name">${r.fighterName || 'Боец'}</div>
+                            <div class="request-meta">
+                                ${r.fighterWeight ? `<span><i class="fas fa-weight-hanging"></i> ${r.fighterWeight} кг</span>` : ''}
+                                ${r.fighterClub ? `<span><i class="fas fa-building"></i> ${r.fighterClub}</span>` : ''}
+                                <span class="request-tournament"><i class="fas fa-trophy"></i> ${t?.name || 'Турнир'}</span>
+                                <span class="payment-badge ${isPaid ? 'paid' : 'pending'}">
+                                    <i class="fas ${isPaid ? 'fa-check-circle' : 'fa-hourglass-half'}"></i>
+                                    ${isPaid ? 'Оплачено' : 'Не оплачено'}
+                                </span>
                             </div>
-                            <div class="progress-bar"><div class="progress-fill" style="width: ${progress}%;"></div></div>
-                            <div class="t-footer">
-                                <span>${progress}% заполнено</span>
-                                <span>${t.entryFee || 0} ₽</span>
-                            </div>
+                        </div>
+                        <div class="request-actions">
+                            <button class="req-btn approve" onclick="approveRequest('${r.id}')" ${isPaid ? '' : 'disabled'} title="${isPaid ? 'Принять' : 'Не оплачено'}"><i class="fas fa-check"></i></button>
+                            <button class="req-btn reject" onclick="rejectRequest('${r.id}')" title="Отклонить"><i class="fas fa-times"></i></button>
                         </div>
                     </div>
                 `;
-            }).join('')}</div>`;
+            }).join('');
+
+            updateBulkBar();
         }
 
-        function getFilteredTournaments() {
-            if (currentPeriod === 'all') return allTournaments;
-            const now = new Date();
-            return allTournaments.filter(t => {
-                const tournamentDate = new Date(t.date + 'T00:00:00');
-                const diffDays = (now - tournamentDate) / (1000 * 60 * 60 * 24);
-                return diffDays >= 0 && diffDays <= currentPeriod;
-            });
-        }
+        document.getElementById('filterTournament')?.addEventListener('change', renderRequests);
+        document.getElementById('searchRequest')?.addEventListener('input', renderRequests);
 
-        function renderAnalytics() {
-            const filtered = getFilteredTournaments();
-            const totalCollected = filtered.reduce((sum, t) => sum + ((t.participantCount || 0) * (t.entryFee || 0)), 0);
-            const myIncome = totalCollected * 0.8;
-            
-            const avgFill = filtered.length ? Math.round(filtered.reduce((sum, t) => {
-                return sum + (t.maxParticipants ? (t.participantCount || 0) / t.maxParticipants : 0);
-            }, 0) / filtered.length * 100) : 0;
+        window.toggleRequestSelection = (rid, checked) => {
+            if (checked) selectedRequestIds.add(rid);
+            else selectedRequestIds.delete(rid);
+            updateBulkBar();
+        };
 
-            const avgIncomePerTournament = filtered.length ? Math.round(myIncome / filtered.length) : 0;
-
-            document.getElementById('anTournaments').textContent = filtered.length;
-            document.getElementById('anAvgFill').textContent = `${avgFill}%`;
-            document.getElementById('anIncome').textContent = `${Math.round(myIncome).toLocaleString('ru-RU')} ₽`;
-            document.getElementById('anAvgIncome').textContent = `${avgIncomePerTournament.toLocaleString('ru-RU')} ₽`;
-
-            const tableContainer = document.getElementById('analyticsTable');
-            if (!filtered.length) {
-                tableContainer.innerHTML = `<div class="empty-state"><i class="fas fa-chart-bar"></i><p>Нет данных за выбранный период</p></div>`;
+        function updateBulkBar() {
+            const bar = document.getElementById('bulkBar');
+            const cnt = document.getElementById('selectedCount');
+            if (!bar) return;
+            if (selectedRequestIds.size > 0) {
+                bar.style.display = 'flex';
+                cnt.textContent = selectedRequestIds.size;
             } else {
-                tableContainer.innerHTML = `
-                    <table id="analyticsDataTable">
-                        <thead>
-                            <tr>
-                                <th>Название</th>
-                                <th>Участники</th>
-                                <th>Мой доход (80%)</th>
-                                <th>Статус</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${filtered.map(t => {
-                                const tIncome = Math.round((t.participantCount || 0) * (t.entryFee || 0) * 0.8);
-                                const statusMap = { registration: 'Набор', active: 'Идёт', completed: 'Завершён', cancelled: 'Отменён' };
-                                return `
-                                <tr onclick="window.location.href='tournament-details.html?id=${t.id}'">
-                                    <td>${t.name}</td>
-                                    <td>${t.participantCount || 0}/${t.maxParticipants || '—'}</td>
-                                    <td style="color: #10b981; font-weight: 600;">${tIncome.toLocaleString('ru-RU')} ₽</td>
-                                    <td><span class="status-badge ${t.status}" style="font-size: 0.6rem; padding: 2px 8px;">${statusMap[t.status] || t.status}</span></td>
-                                </tr>
-                            `}).join('')}
-                        </tbody>
-                    </table>
-                `;
+                bar.style.display = 'none';
             }
-            drawIncomeChart(filtered);
-            drawParticipantsChart(filtered);
         }
 
-        document.getElementById('exportCsvBtn')?.addEventListener('click', () => {
-            const table = document.getElementById('analyticsDataTable');
-            if (!table) return showToast('Нет данных для экспорта', 'error');
-            
-            let csv = [];
-            const rows = table.querySelectorAll('tr');
-            for (let i = 0; i < rows.length; i++) {
-                const row = [], cols = rows[i].querySelectorAll('td, th');
-                for (let j = 0; j < cols.length; j++) {
-                    let data = cols[j].innerText.replace(/(\r\n|\n|\r)/gm, '').trim();
-                    row.push('"' + data + '"');
-                }
-                csv.push(row.join(','));
+        window.clearSelection = () => {
+            selectedRequestIds.clear();
+            renderRequests();
+        };
+
+        // ============================================================
+        // ОДОБРЕНИЕ / ОТКЛОНЕНИЕ
+        // ============================================================
+        window.approveRequest = async function(rid) {
+            const r = allRequests.find(x => x.id === rid);
+            if (!r) return;
+            if (r.paymentAmount > 0 && r.paymentStatus !== 'paid') {
+                showToast('❌ Боец ещё не оплатил взнос', 'error');
+                return;
             }
-            
-            const csvString = csv.join('\n');
-            const blob = new Blob(['\uFEFF' + csvString], { type: 'text/csv;charset=utf-8;' });
-            const link = document.createElement('a');
-            link.href = URL.createObjectURL(blob);
-            link.download = `analytics_prorank_${new Date().toISOString().slice(0,10)}.csv`;
-            link.click();
-            showToast('✅ Файл успешно скачан', 'success');
+            try {
+                await updateDoc(doc(db, "tournament_registrations", rid), {
+                    status: 'approved',
+                    processedAt: new Date().toISOString()
+                });
+                await updateDoc(doc(db, "tournaments", r.tournamentId), { participantCount: increment(1) });
+                const t = allTournaments.find(x => x.id === r.tournamentId);
+                if (t) t.participantCount = (t.participantCount || 0) + 1;
+                selectedRequestIds.delete(rid);
+                showToast('✅ Боец принят', 'success');
+                renderActiveTournaments();
+            } catch (err) {
+                console.error(err);
+                showToast('Ошибка: ' + err.message, 'error');
+            }
+        };
+
+        window.rejectRequest = async function(rid) {
+            const r = allRequests.find(x => x.id === rid);
+            if (!r) return;
+            const isPaid = r.paymentStatus === 'paid';
+            const ok = await showConfirm(
+                'Отклонить заявку?',
+                `<div>Боец <strong>${r.fighterName}</strong> будет исключён.</div>
+                ${isPaid ? '<div class="info-box"><i class="fas fa-info-circle"></i> Взнос вернётся на баланс бойца</div>' : ''}`,
+                'Отклонить'
+            );
+            if (!ok) return;
+            try {
+                if (isPaid && r.paymentAmount > 0) {
+                    try {
+                        await OrganizerWallet.refundEntry(r.fighterId, r.paymentAmount, r.tournamentId, 'Возврат за отклонённую заявку');
+                        const t = allTournaments.find(x => x.id === r.tournamentId);
+                        if (t) t.escrowAmount = Math.max(0, (t.escrowAmount || 0) - r.paymentAmount);
+                    } catch (e) { console.error('Refund error:', e); }
+                }
+                await updateDoc(doc(db, "tournament_registrations", rid), {
+                    status: 'rejected',
+                    processedAt: new Date().toISOString()
+                });
+                selectedRequestIds.delete(rid);
+                showToast('Заявка отклонена', 'info');
+                renderFinance(); renderActiveTournaments();
+            } catch (err) {
+                console.error(err);
+                showToast('Ошибка: ' + err.message, 'error');
+            }
+        };
+
+        window.bulkApprove = async function() {
+            if (!selectedRequestIds.size) return;
+            const ids = Array.from(selectedRequestIds);
+            const paid = allRequests.filter(r => ids.includes(r.id) && r.paymentStatus === 'paid');
+            const notPaid = ids.filter(id => {
+                const r = allRequests.find(x => x.id === id);
+                return r && r.paymentStatus !== 'paid';
+            });
+
+            if (!paid.length) {
+                showToast('❌ Нет оплаченных заявок среди выбранных', 'error');
+                return;
+            }
+
+            const ok = await showConfirm(
+                'Принять заявки?',
+                `<div>Принять <strong>${paid.length}</strong> ${plural(paid.length, 'заявку', 'заявки', 'заявок')}?</div>
+                ${notPaid.length ? `<div class="warning-box"><i class="fas fa-exclamation-triangle"></i> ${notPaid.length} ${plural(notPaid.length, 'заявка', 'заявки', 'заявок')} без оплаты будут пропущены</div>` : ''}`,
+                'Принять'
+            );
+            if (!ok) return;
+
+            let success = 0, errors = 0;
+            for (const r of paid) {
+                try {
+                    await updateDoc(doc(db, "tournament_registrations", r.id), {
+                        status: 'approved',
+                        processedAt: new Date().toISOString()
+                    });
+                    await updateDoc(doc(db, "tournaments", r.tournamentId), { participantCount: increment(1) });
+                    const t = allTournaments.find(x => x.id === r.tournamentId);
+                    if (t) t.participantCount = (t.participantCount || 0) + 1;
+                    success++;
+                } catch (err) { errors++; }
+            }
+            selectedRequestIds.clear();
+            showToast(`✅ Принято: ${success}${errors ? ` · Ошибок: ${errors}` : ''}${notPaid.length ? ` · Пропущено: ${notPaid.length}` : ''}`, 'success');
+            renderActiveTournaments();
+        };
+
+        window.bulkReject = async function() {
+            if (!selectedRequestIds.size) return;
+            const ids = Array.from(selectedRequestIds);
+            const withMoney = allRequests.filter(r => ids.includes(r.id) && r.paymentStatus === 'paid' && r.paymentAmount > 0);
+            const refundTotal = withMoney.reduce((s, r) => s + (r.paymentAmount || 0), 0);
+
+            const ok = await showConfirm(
+                'Отклонить заявки?',
+                `<div>Отклонить <strong>${ids.length}</strong> ${plural(ids.length, 'заявку', 'заявки', 'заявок')}?</div>
+                ${refundTotal ? `<div class="info-box"><i class="fas fa-info-circle"></i> Вернётся бойцам: <strong>${fmtMoney(refundTotal)}</strong></div>` : ''}`,
+                'Отклонить'
+            );
+            if (!ok) return;
+
+            let success = 0, errors = 0;
+            for (const id of ids) {
+                const r = allRequests.find(x => x.id === id);
+                if (!r) continue;
+                try {
+                    if (r.paymentStatus === 'paid' && r.paymentAmount > 0) {
+                        try {
+                            await OrganizerWallet.refundEntry(r.fighterId, r.paymentAmount, r.tournamentId, 'Возврат за отклонённую заявку');
+                        } catch (e) { console.error(e); }
+                    }
+                    await updateDoc(doc(db, "tournament_registrations", id), {
+                        status: 'rejected',
+                        processedAt: new Date().toISOString()
+                    });
+                    success++;
+                } catch (err) { errors++; }
+            }
+            selectedRequestIds.clear();
+            showToast(`Отклонено: ${success}${errors ? ` · Ошибок: ${errors}` : ''}`, 'info');
+            renderFinance(); renderActiveTournaments();
+        };
+
+        // ============================================================
+        // СТАРТ ТУРНИРА
+        // ============================================================
+        window.openStartModal = function(tid) {
+            const t = allTournaments.find(x => x.id === tid);
+            if (!t) return;
+
+            const escrow = t.escrowAmount || 0;
+            const orgShare = Math.round(escrow * 0.8);
+            const platformShare = escrow - orgShare;
+
+            document.getElementById('startModalBody').innerHTML = `
+                <div>Запустить турнир <strong>${t.name}</strong>?</div>
+                <div class="info-box">
+                    <i class="fas fa-money-check-alt"></i>
+                    Вам будет зачислено: <strong>${fmtMoney(orgShare)}</strong> (80%)<br>
+                    Комиссия платформы: <strong>${fmtMoney(platformShare)}</strong> (20%)<br>
+                    Из эскроу: <strong>${fmtMoney(escrow)}</strong>
+                </div>
+                <div class="warning-box">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    После старта отмена заявок невозможна. Убедитесь, что все участники оплатили взнос.
+                </div>
+            `;
+
+            const btn = document.getElementById('confirmStartBtn');
+            btn.onclick = () => startTournament(tid);
+            openModal('startTournamentModal');
+        };
+
+        async function startTournament(tid) {
+            const t = allTournaments.find(x => x.id === tid);
+            if (!t) return;
+            const btn = document.getElementById('confirmStartBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Запуск...';
+
+            try {
+                // 1. Генерируем сетку если нужно
+                if (!t.bracketGenerated) {
+                    const approved = await getDocs(query(
+                        collection(db, "tournament_registrations"),
+                        where("tournamentId", "==", tid),
+                        where("status", "==", "approved")
+                    ));
+                    if (approved.size < 2) throw new Error('Минимум 2 участника');
+                    // Генерация произойдёт на детальной странице — тут редирект
+                    // Или делаем локально — пока просто отправим на детальную
+                    closeModal('startTournamentModal');
+                    window.location.href = `tournament-details.html?id=${tid}`;
+                    return;
+                }
+
+                // 2. Выплата организатору
+                if (!t.paidOutToOrganizer && (t.escrowAmount || 0) > 0) {
+                    const payout = await OrganizerWallet.payoutToOrganizer(
+                        t.organizationId, tid, t.name
+                    );
+                    t.paidOutToOrganizer = true;
+                    t.escrowAmount = 0;
+                    t.organizerIncome = payout.organizerAmount;
+                    t.platformFee = payout.platformAmount;
+                    showToast(`✅ Выплачено ${fmtMoney(payout.organizerAmount)}`, 'success');
+                }
+
+                // 3. Меняем статус
+                await updateDoc(doc(db, "tournaments", tid), {
+                    status: 'active',
+                    startedAt: new Date().toISOString()
+                });
+                t.status = 'active';
+
+                closeModal('startTournamentModal');
+                renderFinance();
+                renderAlerts();
+                renderActiveTournaments();
+                await loadOrganizerBalance();
+                renderRecentTransactions();
+                showToast('🔥 Турнир запущен!', 'success');
+            } catch (err) {
+                console.error(err);
+                showToast('Ошибка: ' + err.message, 'error');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-fire"></i> Начать';
+            }
+        }
+
+        // ============================================================
+        // ТРАНЗАКЦИИ (последние)
+        // ============================================================
+        async function renderRecentTransactions() {
+            const container = document.getElementById('recentTransactions');
+            if (!container) return;
+            try {
+                const txs = await OrganizerWallet.getTransactions(currentOrgId, 5);
+                if (!txs.length) {
+                    container.innerHTML = `<div class="empty-state" style="padding:20px;"><i class="fas fa-inbox"></i><p>Операций пока нет</p></div>`;
+                    return;
+                }
+                container.innerHTML = txs.map(tx => {
+                    const isPositive = ['organizer_payout', 'deposit'].includes(tx.type);
+                    const iconClass = isPositive ? 'payout' : (tx.type === 'withdrawal' ? 'withdrawal' : 'fee');
+                    const sign = isPositive ? '+' : '−';
+                    const date = tx.createdAt?.toLocaleString('ru-RU', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) || '—';
+                    const typeNames = {
+                        organizer_payout: 'Выплата за турнир',
+                        platform_fee: 'Комиссия платформы',
+                        withdrawal: 'Вывод средств',
+                        refund: 'Возврат'
+                    };
+                    return `
+                        <div class="tx-item">
+                            <div class="tx-icon ${iconClass}">
+                                <i class="fas ${isPositive ? 'fa-arrow-down' : (tx.type === 'withdrawal' ? 'fa-arrow-up' : 'fa-percent')}"></i>
+                            </div>
+                            <div class="tx-body">
+                                <div class="tx-name">${typeNames[tx.type] || tx.type}</div>
+                                <div class="tx-date">${date}${tx.description ? ' · ' + tx.description : ''}</div>
+                            </div>
+                            <div class="tx-amount ${isPositive ? 'positive' : 'negative'}">${sign} ${fmtMoney(tx.amount)}</div>
+                        </div>
+                    `;
+                }).join('');
+            } catch (err) {
+                console.error(err);
+                container.innerHTML = `<div class="empty-state" style="padding:20px;"><i class="fas fa-exclamation-triangle"></i><p>Ошибка загрузки</p></div>`;
+            }
+        }
+
+        // ============================================================
+        // НАСТРОЙКИ
+        // ============================================================
+        document.getElementById('settingsBtn')?.addEventListener('click', () => {
+            // Заполняем заново — сбрасывает несохранённые изменения
+            document.getElementById('editOrgName').value = currentOrgData.name || '';
+            document.getElementById('editOrgCity').value = currentOrgData.city || '';
+            document.getElementById('editOrgPhone').value = currentOrgData.phone || '';
+            document.getElementById('editOrgSports').value = currentOrgData.sports ? currentOrgData.sports.join(', ') : '';
+            document.getElementById('editOrgDesc').value = currentOrgData.description || '';
+            openModal('settingsModal');
         });
 
-        function drawIncomeChart(tournaments) {
-            const canvas = document.getElementById('incomeChart');
-            if (!canvas) return;
-            const ctx = canvas.getContext('2d');
-            const wrapper = canvas.parentElement;
-            const width = wrapper.clientWidth;
-            const height = wrapper.clientHeight;
-
-            canvas.width = width * window.devicePixelRatio;
-            canvas.height = height * window.devicePixelRatio;
-            canvas.style.width = width + 'px';
-            canvas.style.height = height + 'px';
-            ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
-            ctx.clearRect(0, 0, width, height);
-
-            if (!tournaments.length) {
-                ctx.fillStyle = '#666'; ctx.font = '12px Inter'; ctx.textAlign = 'center';
-                ctx.fillText('Нет данных для отображения', width / 2, height / 2);
-                return;
+        document.getElementById('saveSettingsBtn')?.addEventListener('click', async () => {
+            const name = document.getElementById('editOrgName').value.trim();
+            if (!name) return showToast('Название обязательно', 'error');
+            const sportsText = document.getElementById('editOrgSports').value.trim();
+            const sports = sportsText ? sportsText.split(',').map(s => s.trim()).filter(s => s) : [];
+            try {
+                await updateDoc(doc(db, "organizations", currentOrgId), {
+                    name,
+                    city: document.getElementById('editOrgCity').value.trim(),
+                    phone: document.getElementById('editOrgPhone').value.trim(),
+                    sports,
+                    description: document.getElementById('editOrgDesc').value.trim(),
+                    updatedAt: new Date().toISOString()
+                });
+                showToast('✅ Сохранено', 'success');
+                closeModal('settingsModal');
+                // Обновляем локальные данные
+                currentOrgData.name = name;
+                currentOrgData.city = document.getElementById('editOrgCity').value.trim();
+                currentOrgData.phone = document.getElementById('editOrgPhone').value.trim();
+                currentOrgData.sports = sports;
+                document.getElementById('orgName').textContent = name;
+                document.getElementById('orgCity').textContent = currentOrgData.city || '—';
+                document.getElementById('orgPhone').textContent = currentOrgData.phone || '—';
+                document.getElementById('orgSports').textContent = sports.length ? sports.join(', ') : '—';
+            } catch (err) {
+                showToast('Ошибка: ' + err.message, 'error');
             }
+        });
 
-            const padding = { top: 30, right: 20, bottom: 30, left: 50 };
-            const chartWidth = width - padding.left - padding.right;
-            const chartHeight = height - padding.top - padding.bottom;
-            const maxIncome = Math.max(...tournaments.map(t => (t.participantCount || 0) * (t.entryFee || 0) * 0.8), 1000);
-            const stepX = tournaments.length > 1 ? chartWidth / (tournaments.length - 1) : chartWidth / 2;
+        // ============================================================
+        // РАССЫЛКА
+        // ============================================================
+        document.getElementById('sendBroadcastBtn')?.addEventListener('click', async () => {
+            const msg = document.getElementById('broadcastMessage').value.trim();
+            if (!msg) return showToast('Введите сообщение', 'error');
+            try {
+                await addDoc(collection(db, "notifications"), {
+                    organizationId: currentOrgId,
+                    type: 'broadcast',
+                    message: msg,
+                    createdAt: serverTimestamp()
+                });
+                showToast('✅ Отправлено', 'success');
+                closeModal('broadcastModal');
+                document.getElementById('broadcastMessage').value = '';
+            } catch (err) { showToast('Ошибка', 'error'); }
+        });
 
-            ctx.strokeStyle = 'rgba(255,255,255,0.06)'; ctx.fillStyle = '#888'; ctx.font = '10px Inter'; ctx.textAlign = 'right';
-            for (let i = 0; i <= 4; i++) {
-                const y = padding.top + chartHeight - (i / 4) * chartHeight;
-                ctx.beginPath(); ctx.moveTo(padding.left, y); ctx.lineTo(width - padding.right, y); ctx.stroke();
-                ctx.fillText(`${Math.round((i / 4) * maxIncome).toLocaleString('ru-RU')}`, padding.left - 8, y + 3);
-            }
+        // ============================================================
+        // КОШЕЛЁК
+        // ============================================================
+        document.getElementById('walletBtn')?.addEventListener('click', () => {
+            window.location.href = 'organizer-wallet.html';
+        });
 
-            const incomeData = tournaments.map(t => (t.participantCount || 0) * (t.entryFee || 0) * 0.8);
-            
-            ctx.beginPath();
-            incomeData.forEach((value, index) => {
-                const x = padding.left + index * stepX;
-                const y = padding.top + chartHeight - (value / maxIncome) * chartHeight;
-                if (index === 0) ctx.moveTo(x, y);
-                else {
-                    const prevX = padding.left + (index - 1) * stepX;
-                    const prevY = padding.top + chartHeight - (incomeData[index - 1] / maxIncome) * chartHeight;
-                    ctx.bezierCurveTo(prevX + (x - prevX) / 2, prevY, prevX + (x - prevX) / 2, y, x, y);
-                }
-            });
-            ctx.strokeStyle = '#fbbf24'; ctx.lineWidth = 2.5; ctx.lineJoin = 'round'; ctx.stroke();
-
-            ctx.lineTo(padding.left + (incomeData.length - 1) * stepX, padding.top + chartHeight);
-            ctx.lineTo(padding.left, padding.top + chartHeight);
-            ctx.closePath();
-            const gradient = ctx.createLinearGradient(0, padding.top, 0, padding.top + chartHeight);
-            gradient.addColorStop(0, 'rgba(251, 191, 36, 0.2)');
-            gradient.addColorStop(1, 'rgba(0,0,0,0)');
-            ctx.fillStyle = gradient;
-            ctx.fill();
-
-            incomeData.forEach((value, index) => {
-                const x = padding.left + index * stepX;
-                const y = padding.top + chartHeight - (value / maxIncome) * chartHeight;
-                ctx.beginPath(); ctx.arc(x, y, 4, 0, Math.PI * 2);
-                ctx.fillStyle = '#1a1a1a'; ctx.fill();
-                ctx.strokeStyle = '#fbbf24'; ctx.lineWidth = 2; ctx.stroke();
-            });
-
-            ctx.textAlign = 'center'; ctx.fillStyle = '#888'; ctx.font = '10px Inter';
-            tournaments.forEach((t, index) => {
-                const x = padding.left + index * stepX;
-                ctx.fillText(t.date ? t.date.slice(5) : 'N/A', x, height - padding.bottom + 15);
-            });
-        }
-
-        function drawParticipantsChart(tournaments) {
-            const canvas = document.getElementById('participantsChart');
-            if (!canvas) return;
-            const ctx = canvas.getContext('2d');
-            const wrapper = canvas.parentElement;
-            const width = wrapper.clientWidth;
-            const height = wrapper.clientHeight;
-
-            canvas.width = width * window.devicePixelRatio;
-            canvas.height = height * window.devicePixelRatio;
-            canvas.style.width = width + 'px';
-            canvas.style.height = height + 'px';
-            ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
-            ctx.clearRect(0, 0, width, height);
-
-            if (!tournaments.length) {
-                ctx.fillStyle = '#666'; ctx.font = '12px Inter'; ctx.textAlign = 'center';
-                ctx.fillText('Нет данных для отображения', width / 2, height / 2);
-                return;
-            }
-
-            const padding = { top: 30, right: 20, bottom: 40, left: 40 };
-            const chartWidth = width - padding.left - padding.right;
-            const chartHeight = height - padding.top - padding.bottom;
-            const maxParticipants = Math.max(...tournaments.map(t => t.participantCount || 0), 10);
-            const gap = chartWidth / tournaments.length;
-            const barWidth = Math.min(40, gap * 0.6);
-
-            ctx.strokeStyle = 'rgba(255,255,255,0.06)'; ctx.fillStyle = '#888'; ctx.font = '10px Inter'; ctx.textAlign = 'right';
-            for (let i = 0; i <= 4; i++) {
-                const y = padding.top + chartHeight - (i / 4) * chartHeight;
-                ctx.beginPath(); ctx.moveTo(padding.left, y); ctx.lineTo(width - padding.right, y); ctx.stroke();
-                ctx.fillText(`${Math.round((i / 4) * maxParticipants)}`, padding.left - 8, y + 3);
-            }
-
-            tournaments.forEach((t, index) => {
-                const x = padding.left + index * gap + (gap - barWidth) / 2;
-                const barHeight = ((t.participantCount || 0) / maxParticipants) * chartHeight;
-                const y = padding.top + chartHeight - barHeight;
-
-                const gradient = ctx.createLinearGradient(x, y, x, padding.top + chartHeight);
-                gradient.addColorStop(0, '#fbbf24');
-                gradient.addColorStop(1, 'rgba(251,191,36,0.2)');
-
-                ctx.fillStyle = gradient;
-                ctx.beginPath();
-                const radius = 4;
-                ctx.moveTo(x, padding.top + chartHeight);
-                ctx.lineTo(x, y + radius);
-                ctx.quadraticCurveTo(x, y, x + radius, y);
-                ctx.lineTo(x + barWidth - radius, y);
-                ctx.quadraticCurveTo(x + barWidth, y, x + barWidth, y + radius);
-                ctx.lineTo(x + barWidth, padding.top + chartHeight);
-                ctx.fill();
-
-                ctx.fillStyle = '#fff'; ctx.textAlign = 'center'; ctx.font = '10px Inter';
-                if (t.participantCount > 0) ctx.fillText(t.participantCount, x + barWidth / 2, y - 8);
-            });
-
-            ctx.textAlign = 'center'; ctx.fillStyle = '#888'; ctx.font = '10px Inter';
-            tournaments.forEach((t, index) => {
-                const x = padding.left + index * gap + gap / 2;
-                const label = t.name ? (t.name.length > 12 ? t.name.substring(0, 10) + '...' : t.name) : 'N/A';
-                
-                ctx.save();
-                ctx.translate(x, height - padding.bottom + 15);
-                if (t.name && t.name.length > 8) {
-                    ctx.rotate(-Math.PI / 4);
-                    ctx.textAlign = 'right';
-                }
-                ctx.fillText(label, 0, 0);
-                ctx.restore();
-            });
-        }
-
+        // ============================================================
+        // АВТОРИЗАЦИЯ
+        // ============================================================
         onAuthStateChanged(auth, async (user) => {
             if (!user) { window.location.href = 'login.html'; return; }
+            currentUserId = user.uid;
 
             const urlParams = new URLSearchParams(window.location.search);
             let orgId = urlParams.get('id');
 
             if (!orgId) {
-                const orgRequests = await getDocs(query(collection(db, "organization_requests"), where("userId", "==", user.uid), where("status", "==", "approved")));
+                const orgRequests = await getDocs(query(
+                    collection(db, "organization_requests"),
+                    where("userId", "==", user.uid),
+                    where("status", "==", "approved")
+                ));
                 if (!orgRequests.empty) {
-                    const request = orgRequests.docs[0].data();
-                    orgId = request.organizationId || orgRequests.docs[0].id;
+                    const req = orgRequests.docs[0].data();
+                    orgId = req.organizationId || orgRequests.docs[0].id;
                     window.history.replaceState(null, '', `?id=${orgId}`);
                 }
             }
@@ -980,13 +1502,23 @@
             if (orgId) {
                 loadOrganizationData(orgId);
             } else {
-                showToast('У вас нет активной организации', 'error');
+                showToast('Нет активной организации', 'error');
                 setTimeout(() => window.location.href = 'organization-dashboard.html', 1500);
             }
         });
 
-        window.addEventListener('resize', () => {
-            if (document.getElementById('tab-analytics').style.display === 'block') renderAnalytics();
+        // ============================================================
+        // ОТПИСКА
+        // ============================================================
+        window.addEventListener('beforeunload', () => {
+            if (requestsUnsubscribe) requestsUnsubscribe();
+        });
+
+        // ============================================================
+        // MOBILE MENU
+        // ============================================================
+        document.getElementById('menuToggle')?.addEventListener('click', () => {
+            document.getElementById('navLinks').classList.toggle('show');
         });
     </script>
 </body>
