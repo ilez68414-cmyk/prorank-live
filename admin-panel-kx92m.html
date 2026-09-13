@@ -1245,6 +1245,13 @@
                     <span class="badge green" id="partnersBadge">0</span>
                 </div>
 
+                <!-- 🔧 СЕЗОНЫ -->
+                <div class="nav-item" data-section="seasons">
+                    <span class="icon"><i class="fas fa-trophy"></i></span>
+                    <span>Сезоны</span>
+                    <span class="badge green" id="seasonsBadge">0</span>
+                </div>
+
                 <div class="nav-item" data-section="clubs">
                     <span class="icon"><i class="fas fa-users"></i></span>
                     <span>Клубы</span>
@@ -1420,6 +1427,143 @@
                             <div style="text-align:center; padding:20px; color:#666;"><div class="loading-spinner"></div> Загрузка...</div>
                         </div>
                     </div>
+                </div>
+            </div>
+
+            <!-- ===== СЕЗОНЫ ===== -->
+            <div class="section-content" id="section-seasons">
+                <div class="page-header">
+                    <div>
+                        <h1><i class="fas fa-trophy"></i>Сезоны</h1>
+                        <div class="subtitle">Управление сезонами рейтинга бойцов и клубов</div>
+                    </div>
+                    <div class="header-actions">
+                        <button class="btn btn-primary btn-sm" id="showAddSeasonFormBtn"><i class="fas fa-plus"></i> Создать сезон</button>
+                        <button class="btn btn-outline btn-sm" id="refreshSeasonsBtn"><i class="fas fa-sync"></i> Обновить</button>
+                    </div>
+                </div>
+
+                <!-- Форма создания/редактирования -->
+                <div class="admin-form" id="seasonForm" style="display:none;">
+                    <h3 id="seasonFormTitle"><i class="fas fa-plus-circle"></i> Новый сезон</h3>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Название *</label>
+                            <input type="text" id="seasonName" placeholder="Зима 2026">
+                        </div>
+                        <div class="form-group">
+                            <label>Сезон (время года) *</label>
+                            <select id="seasonSeason">
+                                <option value="winter">❄️ Зима</option>
+                                <option value="spring">🌸 Весна</option>
+                                <option value="summer">☀️ Лето</option>
+                                <option value="autumn">🍂 Осень</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Год *</label>
+                            <input type="number" id="seasonYear" placeholder="2026" min="2020" max="2100">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Дата начала *</label>
+                            <input type="date" id="seasonStartDate">
+                        </div>
+                        <div class="form-group">
+                            <label>Дата окончания *</label>
+                            <input type="date" id="seasonEndDate">
+                        </div>
+                        <div class="form-group">
+                            <label>ID сезона (латиницей) *</label>
+                            <input type="text" id="seasonId" placeholder="2026-winter">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Призовой фонд (₽) *</label>
+                            <input type="number" id="seasonPrizePool" placeholder="100000" min="0">
+                        </div>
+                        <div class="form-group">
+                            <label>Источник фонда</label>
+                            <select id="seasonPrizePoolSource">
+                                <option value="sponsor">🤝 Спонсор</option>
+                                <option value="platform">🏢 Платформа</option>
+                                <option value="mixed">🎯 Смешанный</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Имя спонсора (опционально)</label>
+                            <input type="text" id="seasonSponsorName" placeholder="PRORANK">
+                        </div>
+                    </div>
+
+                    <h3 style="margin-top: 16px;"><i class="fas fa-star"></i> Призы бойцам (топ-3)</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>🥇 1-е место (₽)</label>
+                            <input type="number" id="fighterPrize1" placeholder="50000" min="0">
+                        </div>
+                        <div class="form-group">
+                            <label>🥈 2-е место (₽)</label>
+                            <input type="number" id="fighterPrize2" placeholder="30000" min="0">
+                        </div>
+                        <div class="form-group">
+                            <label>🥉 3-е место (₽)</label>
+                            <input type="number" id="fighterPrize3" placeholder="20000" min="0">
+                        </div>
+                    </div>
+
+                    <h3 style="margin-top: 16px;"><i class="fas fa-users"></i> Призы клубам (топ-3)</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>🥇 1-е место (₽)</label>
+                            <input type="number" id="clubPrize1" placeholder="30000" min="0">
+                        </div>
+                        <div class="form-group">
+                            <label>🥈 2-е место (₽)</label>
+                            <input type="number" id="clubPrize2" placeholder="20000" min="0">
+                        </div>
+                        <div class="form-group">
+                            <label>🥉 3-е место (₽)</label>
+                            <input type="number" id="clubPrize3" placeholder="10000" min="0">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Правила (каждое с новой строки)</label>
+                            <textarea id="seasonRules" rows="5" placeholder="Сезон длится 3 месяца&#10;FRS обнуляется в начале сезона&#10;Топ-3 получают призы"></textarea>
+                        </div>
+                    </div>
+
+                    <div class="form-row" style="align-items:center;">
+                        <div class="form-group" style="flex:0 1 auto;">
+                            <button id="saveSeasonBtn" class="btn btn-success"><i class="fas fa-save"></i> Сохранить</button>
+                            <button id="cancelSeasonBtn" class="btn btn-outline" style="margin-left:8px;">Отмена</button>
+                        </div>
+                    </div>
+                    <div id="seasonFormMessage" style="margin-top:8px;"></div>
+                </div>
+
+                <!-- Фильтры -->
+                <div class="filters">
+                    <select id="seasonStatusFilter">
+                        <option value="">Все статусы</option>
+                        <option value="upcoming">📅 upcoming</option>
+                        <option value="active">🟢 active</option>
+                        <option value="finished">✅ finished</option>
+                        <option value="paid">💰 paid</option>
+                    </select>
+                    <input type="text" id="seasonSearch" placeholder="🔍 Поиск по названию...">
+                </div>
+
+                <!-- Список сезонов -->
+                <div id="seasonsList">
+                    <div style="text-align:center; padding:20px; color:#666;"><div class="loading-spinner"></div> Загрузка...</div>
                 </div>
             </div>
 
@@ -1702,7 +1846,7 @@
         // ИМПОРТЫ
         // ============================================================
         import { initializeApp } from "firebase/app";
-        import {
+                import {
             getFirestore,
             collection,
             getDocs,
@@ -1716,10 +1860,12 @@
             where,
             setDoc,
             serverTimestamp,
-            limit
+            limit,
+            Timestamp
         } from "firebase/firestore";
         import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "firebase/auth";
         import { getStorage, ref, deleteObject } from "firebase/storage";
+        import { initSeasons, getActiveSeason, clearActiveSeasonCache, getTopFighters, getTopClubs } from './seasons.js';
 
         // ============================================================
         // FIREBASE CONFIG
@@ -1899,7 +2045,7 @@
         // ============================================================
         // ЗАГРУЗКА ДАННЫХ
         // ============================================================
-        async function loadAllData() {
+                async function loadAllData() {
             await Promise.all([
                 loadStats(),
                 loadFighters(),
@@ -1912,7 +2058,8 @@
                 loadOrdersForCommission(),
                 loadCommissions(),
                 loadDigitalProducts(),
-                loadHistory()
+                loadHistory(),
+                loadSeasons()   
             ]);
             updateDashboardChartData();
         }
@@ -3208,6 +3355,524 @@
             loadAllData();
             setTimeout(() => initDashboardChart(), 300);
         });
+
+        // ============================================================
+        // 🔧 СЕЗОНЫ: логика админки
+        // ============================================================
+        let allSeasons = [];
+        let editingSeasonId = null;
+        let activeSeasonsCache = null;
+
+        // ===== ЗАГРУЗКА =====
+        async function loadSeasons() {
+            try {
+                initSeasons(db, auth);
+                clearActiveSeasonCache();
+
+                const snapshot = await getDocs(query(collection(db, "seasons"), orderBy("startDate", "desc")));
+                allSeasons = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+                // Обновляем бейдж в sidebar
+                const active = allSeasons.filter(s => s.status === 'active');
+                const badge = document.getElementById('seasonsBadge');
+                if (badge) {
+                    badge.textContent = active.length;
+                    badge.className = active.length > 0 ? 'badge green' : 'badge';
+                }
+
+                renderSeasons();
+            } catch (e) {
+                console.error('Сезоны:', e);
+                const list = document.getElementById('seasonsList');
+                if (list) list.innerHTML = '<div style="text-align:center; padding:20px; color:#ef4444;">Ошибка загрузки: ' + e.message + '</div>';
+            }
+        }
+
+        // ===== ОТРИСОВКА =====
+        function renderSeasons() {
+            const list = document.getElementById('seasonsList');
+            if (!list) return;
+
+            const statusFilter = document.getElementById('seasonStatusFilter')?.value || '';
+            const search = document.getElementById('seasonSearch')?.value?.toLowerCase() || '';
+
+            let filtered = allSeasons;
+            if (statusFilter) filtered = filtered.filter(s => s.status === statusFilter);
+            if (search) filtered = filtered.filter(s => (s.name || '').toLowerCase().includes(search));
+
+            if (!filtered.length) {
+                list.innerHTML = '<div style="text-align:center; padding:40px; color:#666;">Нет сезонов</div>';
+                return;
+            }
+
+            const statusMap = {
+                'upcoming': { label: '📅 Ожидает', cls: 'pending' },
+                'active': { label: '🟢 Активный', cls: 'active' },
+                'finished': { label: '✅ Завершён', cls: 'approved' },
+                'paid': { label: '💰 Выплачен', cls: 'completed' }
+            };
+
+            let html = '';
+            filtered.forEach(s => {
+                const st = statusMap[s.status] || { label: s.status, cls: 'inactive' };
+                const start = s.startDate?.toDate?.()?.toLocaleDateString('ru-RU') || '—';
+                const end = s.endDate?.toDate?.()?.toLocaleDateString('ru-RU') || '—';
+
+                // Считаем призы
+                const fighterTotal = Array.isArray(s.fighterPrizes)
+                    ? s.fighterPrizes.reduce((sum, p) => sum + (p.amount || 0), 0) : 0;
+                const clubTotal = Array.isArray(s.clubPrizes)
+                    ? s.clubPrizes.reduce((sum, p) => sum + (p.amount || 0), 0) : 0;
+
+                // Кнопки действий по статусу
+                let actions = '';
+                if (s.status === 'upcoming') {
+                    actions = `
+                        <button class="btn btn-success btn-sm" onclick="window.activateSeason('${s.id}')" title="Активировать"><i class="fas fa-play"></i></button>
+                        <button class="btn btn-outline btn-sm" onclick="window.editSeason('${s.id}')" title="Редактировать"><i class="fas fa-edit"></i></button>
+                        <button class="btn btn-danger btn-sm" onclick="window.deleteSeason('${s.id}')" title="Удалить"><i class="fas fa-trash"></i></button>
+                    `;
+                } else if (s.status === 'active') {
+                    actions = `
+                        <button class="btn btn-warning btn-sm" onclick="window.finishSeason('${s.id}')" title="Завершить сезон"><i class="fas fa-flag-checkered"></i> Завершить</button>
+                        <button class="btn btn-outline btn-sm" onclick="window.editSeason('${s.id}')" title="Редактировать"><i class="fas fa-edit"></i></button>
+                    `;
+                } else if (s.status === 'finished') {
+                    actions = `
+                        <button class="btn btn-primary btn-sm" onclick="window.paySeason('${s.id}')" title="Выплатить"><i class="fas fa-money-bill-wave"></i> Выплатить</button>
+                        <button class="btn btn-outline btn-sm" onclick="window.viewSeasonWinners('${s.id}')" title="Победители"><i class="fas fa-eye"></i></button>
+                    `;
+                } else if (s.status === 'paid') {
+                    actions = `
+                        <button class="btn btn-outline btn-sm" onclick="window.viewSeasonWinners('${s.id}')" title="Победители"><i class="fas fa-eye"></i></button>
+                    `;
+                }
+
+                html += `
+                    <div class="request-card" style="align-items:flex-start;">
+                        <div class="request-info">
+                            <div class="name">
+                                <i class="fas fa-trophy" style="color:#fbbf24;"></i>
+                                ${escapeHtml(s.name || 'Сезон')}
+                                <span class="status-badge ${st.cls}" style="margin-left:8px;">${st.label}</span>
+                            </div>
+                            <div class="desc">📅 ${start} — ${end} • 🌍 ${s.season || '—'} ${s.year || ''}</div>
+                            <div class="desc">
+                                💰 Призовой фонд: <b style="color:#fbbf24;">${(s.prizePool || 0).toLocaleString()} ₽</b>
+                                ${s.sponsorName ? ` • 🤝 ${escapeHtml(s.sponsorName)}` : ''}
+                            </div>
+                            <div class="desc">
+                                🥊 Бойцам: <b style="color:#fbbf24;">${fighterTotal.toLocaleString()} ₽</b>
+                                &nbsp;•&nbsp;
+                                👥 Клубам: <b style="color:#fbbf24;">${clubTotal.toLocaleString()} ₽</b>
+                            </div>
+                            ${s.winners ? `
+                                <div class="desc" style="color:#22c55e;">
+                                    🏆 Победители определены: ${s.winners.fighters?.length || 0} бойцов, ${s.winners.clubs?.length || 0} клубов
+                                </div>
+                            ` : ''}
+                            <div class="meta" style="font-size:11px; color:#555; margin-top:4px;">
+                                ID: <code style="background:#1a1a1a; padding:1px 6px; border-radius:4px;">${s.id}</code>
+                            </div>
+                        </div>
+                        <div class="request-actions">
+                            ${actions}
+                        </div>
+                    </div>
+                `;
+            });
+
+            list.innerHTML = html;
+        }
+
+        // ===== ФОРМА =====
+        function resetSeasonForm() {
+            document.getElementById('seasonName').value = '';
+            document.getElementById('seasonSeason').value = 'winter';
+            document.getElementById('seasonYear').value = new Date().getFullYear();
+            document.getElementById('seasonStartDate').value = '';
+            document.getElementById('seasonEndDate').value = '';
+            document.getElementById('seasonId').value = '';
+            document.getElementById('seasonId').readOnly = false;
+            document.getElementById('seasonPrizePool').value = '';
+            document.getElementById('seasonPrizePoolSource').value = 'sponsor';
+            document.getElementById('seasonSponsorName').value = '';
+            document.getElementById('fighterPrize1').value = '';
+            document.getElementById('fighterPrize2').value = '';
+            document.getElementById('fighterPrize3').value = '';
+            document.getElementById('clubPrize1').value = '';
+            document.getElementById('clubPrize2').value = '';
+            document.getElementById('clubPrize3').value = '';
+            document.getElementById('seasonRules').value = '';
+            document.getElementById('seasonFormMessage').innerHTML = '';
+            document.getElementById('seasonForm').style.display = 'none';
+            document.getElementById('seasonFormTitle').innerHTML = '<i class="fas fa-plus-circle"></i> Новый сезон';
+            document.getElementById('saveSeasonBtn').innerHTML = '<i class="fas fa-save"></i> Сохранить';
+            editingSeasonId = null;
+        }
+
+        window.editSeason = function(seasonId) {
+            const s = allSeasons.find(x => x.id === seasonId);
+            if (!s) return;
+
+            editingSeasonId = seasonId;
+
+            const start = s.startDate?.toDate?.();
+            const end = s.endDate?.toDate?.();
+
+            const toDateInput = (d) => d ? d.toISOString().split('T')[0] : '';
+
+            document.getElementById('seasonName').value = s.name || '';
+            document.getElementById('seasonSeason').value = s.season || 'winter';
+            document.getElementById('seasonYear').value = s.year || new Date().getFullYear();
+            document.getElementById('seasonStartDate').value = toDateInput(start);
+            document.getElementById('seasonEndDate').value = toDateInput(end);
+            document.getElementById('seasonId').value = s.id;
+            document.getElementById('seasonId').readOnly = true;
+            document.getElementById('seasonPrizePool').value = s.prizePool || 0;
+            document.getElementById('seasonPrizePoolSource').value = s.prizePoolSource || 'sponsor';
+            document.getElementById('seasonSponsorName').value = s.sponsorName || '';
+
+            const fp = s.fighterPrizes || [];
+            document.getElementById('fighterPrize1').value = fp[0]?.amount || '';
+            document.getElementById('fighterPrize2').value = fp[1]?.amount || '';
+            document.getElementById('fighterPrize3').value = fp[2]?.amount || '';
+
+            const cp = s.clubPrizes || [];
+            document.getElementById('clubPrize1').value = cp[0]?.amount || '';
+            document.getElementById('clubPrize2').value = cp[1]?.amount || '';
+            document.getElementById('clubPrize3').value = cp[2]?.amount || '';
+
+            document.getElementById('seasonRules').value = Array.isArray(s.rules) ? s.rules.join('\n') : '';
+
+            document.getElementById('seasonForm').style.display = 'block';
+            document.getElementById('seasonFormTitle').innerHTML = '<i class="fas fa-edit"></i> Редактировать сезон';
+            document.getElementById('saveSeasonBtn').innerHTML = '<i class="fas fa-save"></i> Обновить';
+            document.getElementById('seasonFormMessage').innerHTML = '';
+
+            document.getElementById('seasonForm').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        };
+
+        document.getElementById('showAddSeasonFormBtn')?.addEventListener('click', () => {
+            resetSeasonForm();
+            document.getElementById('seasonForm').style.display = 'block';
+            document.getElementById('seasonForm').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        });
+
+        document.getElementById('cancelSeasonBtn')?.addEventListener('click', resetSeasonForm);
+
+        // ===== СОХРАНЕНИЕ =====
+        document.getElementById('saveSeasonBtn')?.addEventListener('click', async () => {
+            const name = document.getElementById('seasonName').value.trim();
+            const season = document.getElementById('seasonSeason').value;
+            const year = parseInt(document.getElementById('seasonYear').value);
+            const startStr = document.getElementById('seasonStartDate').value;
+            const endStr = document.getElementById('seasonEndDate').value;
+            const id = document.getElementById('seasonId').value.trim();
+            const prizePool = parseFloat(document.getElementById('seasonPrizePool').value) || 0;
+            const source = document.getElementById('seasonPrizePoolSource').value;
+            const sponsorName = document.getElementById('seasonSponsorName').value.trim();
+
+            const fp1 = parseFloat(document.getElementById('fighterPrize1').value) || 0;
+            const fp2 = parseFloat(document.getElementById('fighterPrize2').value) || 0;
+            const fp3 = parseFloat(document.getElementById('fighterPrize3').value) || 0;
+            const cp1 = parseFloat(document.getElementById('clubPrize1').value) || 0;
+            const cp2 = parseFloat(document.getElementById('clubPrize2').value) || 0;
+            const cp3 = parseFloat(document.getElementById('clubPrize3').value) || 0;
+
+            const rulesText = document.getElementById('seasonRules').value.trim();
+            const rules = rulesText ? rulesText.split('\n').map(r => r.trim()).filter(r => r) : [];
+
+            const msg = document.getElementById('seasonFormMessage');
+
+            // Валидация
+            if (!name) { msg.innerHTML = '<span style="color:red;">❌ Введите название</span>'; return; }
+            if (!id) { msg.innerHTML = '<span style="color:red;">❌ Введите ID сезона</span>'; return; }
+            if (!/^[a-z0-9-]+$/.test(id)) { msg.innerHTML = '<span style="color:red;">❌ ID только латиница, цифры и дефис</span>'; return; }
+            if (!startStr) { msg.innerHTML = '<span style="color:red;">❌ Укажите дату начала</span>'; return; }
+            if (!endStr) { msg.innerHTML = '<span style="color:red;">❌ Укажите дату окончания</span>'; return; }
+            if (new Date(startStr) >= new Date(endStr)) { msg.innerHTML = '<span style="color:red;">❌ Дата начала должна быть раньше окончания</span>'; return; }
+
+            try {
+                msg.innerHTML = '<div class="loading-spinner"></div> Сохранение...';
+
+                const seasonData = {
+                    name: name,
+                    season: season,
+                    year: year,
+                    startDate: Timestamp.fromDate(new Date(startStr + 'T00:00:00Z')),
+                    endDate: Timestamp.fromDate(new Date(endStr + 'T23:59:59Z')),
+                    prizePool: prizePool,
+                    prizePoolSource: source,
+                    sponsorName: sponsorName || '',
+                    fighterPrizes: [
+                        { place: 1, amount: fp1 },
+                        { place: 2, amount: fp2 },
+                        { place: 3, amount: fp3 }
+                    ],
+                    clubPrizes: [
+                        { place: 1, amount: cp1 },
+                        { place: 2, amount: cp2 },
+                        { place: 3, amount: cp3 }
+                    ],
+                    rules: rules,
+                    updatedAt: serverTimestamp()
+                };
+
+                if (editingSeasonId) {
+                    // Обновление (не трогаем status, winners, createdAt)
+                    await updateDoc(doc(db, "seasons", editingSeasonId), seasonData);
+                    await logAction('edit_season', editingSeasonId, `Обновил сезон "${name}"`);
+                    msg.innerHTML = '<span style="color:green;">✅ Сезон обновлён!</span>';
+                } else {
+                    // Создание
+                    // Проверяем, что нет сезона с таким ID
+                    const existing = await getDoc(doc(db, "seasons", id));
+                    if (existing.exists()) {
+                        msg.innerHTML = '<span style="color:red;">❌ Сезон с таким ID уже существует</span>';
+                        return;
+                    }
+
+                    seasonData.status = 'upcoming';
+                    seasonData.winners = null;
+                    seasonData.createdAt = serverTimestamp();
+                    seasonData.createdBy = currentAdminEmail || 'unknown';
+                    seasonData.finishedAt = null;
+                    seasonData.paidAt = null;
+
+                    await setDoc(doc(db, "seasons", id), seasonData);
+                    await logAction('create_season', id, `Создал сезон "${name}"`);
+                    msg.innerHTML = '<span style="color:green;">✅ Сезон создан!</span>';
+                }
+
+                setTimeout(() => {
+                    resetSeasonForm();
+                    loadSeasons();
+                }, 1000);
+
+            } catch (e) {
+                console.error(e);
+                msg.innerHTML = '<span style="color:red;">❌ Ошибка: ' + e.message + '</span>';
+            }
+        });
+
+        // ===== АКТИВАЦИЯ =====
+        window.activateSeason = async function(seasonId) {
+            if (!confirm('Активировать сезон? Только ОДИН сезон может быть активным. При заходе бойцов FRS будет обнулён.')) return;
+            try {
+                // Деактивируем все активные
+                const activeSnap = await getDocs(query(collection(db, "seasons"), where("status", "==", "active")));
+                for (const d of activeSnap.docs) {
+                    if (d.id !== seasonId) {
+                        await updateDoc(doc(db, "seasons", d.id), { status: 'upcoming' });
+                    }
+                }
+
+                // Активируем нужный
+                await updateDoc(doc(db, "seasons", seasonId), {
+                    status: 'active',
+                    activatedAt: serverTimestamp()
+                });
+
+                clearActiveSeasonCache();
+                await logAction('activate_season', seasonId, 'Активировал сезон');
+                await loadSeasons();
+                alert('✅ Сезон активирован!');
+            } catch (e) {
+                alert('Ошибка: ' + e.message);
+            }
+        };
+
+        // ===== ЗАВЕРШЕНИЕ =====
+        window.finishSeason = async function(seasonId) {
+            if (!confirm('Завершить сезон? Будут рассчитаны топ-3 бойца и топ-3 клуба, созданы награды.')) return;
+
+            try {
+                const season = allSeasons.find(s => s.id === seasonId);
+                if (!season) throw new Error('Сезон не найден');
+
+                // Проверяем, не завершён ли уже
+                if (season.status === 'finished' || season.status === 'paid') {
+                    throw new Error('Сезон уже завершён');
+                }
+
+                // Считаем топ-3
+                const topFighters = await getTopFighters(seasonId, 3);
+                const topClubs = await getTopClubs(seasonId, 3);
+
+                if (topFighters.length === 0 && topClubs.length === 0) {
+                    if (!confirm('Нет участников в сезоне. Завершить всё равно?')) return;
+                }
+
+                // Готовим winners
+                const fightersWinners = topFighters.map((f, i) => ({
+                    place: i + 1,
+                    fighterId: f.id,
+                    fighterName: f.name || 'Боец',
+                    frs: f.frs || 0,
+                    amount: season.fighterPrizes?.[i]?.amount || 0
+                }));
+
+                const clubsWinners = topClubs.map((c, i) => ({
+                    place: i + 1,
+                    clubId: c.id,
+                    clubName: c.name || 'Клуб',
+                    clubFRS: c.clubFRS || 0,
+                    memberCount: c.memberCount || 0,
+                    amount: season.clubPrizes?.[i]?.amount || 0
+                }));
+
+                // Обновляем сезон
+                await updateDoc(doc(db, "seasons", seasonId), {
+                    status: 'finished',
+                    winners: {
+                        fighters: fightersWinners,
+                        clubs: clubsWinners
+                    },
+                    finishedAt: serverTimestamp()
+                });
+
+                // Создаём rewards для бойцов
+                for (const w of fightersWinners) {
+                    if (w.amount <= 0) continue;
+
+                    const rewardId = `${seasonId}_fighter_${w.fighterId}`;
+                    await setDoc(doc(db, "season_rewards", rewardId), {
+                        seasonId: seasonId,
+                        seasonName: season.name || seasonId,
+                        recipientType: 'fighter',
+                        recipientId: w.fighterId,
+                        recipientName: w.fighterName,
+                        place: w.place,
+                        amount: w.amount,
+                        frs: w.frs,
+                        status: 'pending',
+                        createdAt: serverTimestamp()
+                    });
+                }
+
+                // Создаём rewards для клубов
+                for (const w of clubsWinners) {
+                    if (w.amount <= 0) continue;
+
+                    const rewardId = `${seasonId}_club_${w.clubId}`;
+                    await setDoc(doc(db, "season_rewards", rewardId), {
+                        seasonId: seasonId,
+                        seasonName: season.name || seasonId,
+                        recipientType: 'club',
+                        recipientId: w.clubId,
+                        recipientName: w.clubName,
+                        place: w.place,
+                        amount: w.amount,
+                        clubFRS: w.clubFRS,
+                        memberCount: w.memberCount,
+                        status: 'pending',
+                        createdAt: serverTimestamp()
+                    });
+                }
+
+                clearActiveSeasonCache();
+                await logAction('finish_season', seasonId, `Завершил сезон: ${fightersWinners.length} бойцов, ${clubsWinners.length} клубов`);
+
+                await loadSeasons();
+
+                alert(`✅ Сезон завершён!\n\n🏆 Топ-3 бойца:\n${fightersWinners.map(w => `  ${w.place}. ${w.fighterName} (${w.frs} FRS) → ${w.amount.toLocaleString()} ₽`).join('\n') || '  нет'}\n\n🏆 Топ-3 клуба:\n${clubsWinners.map(w => `  ${w.place}. ${w.clubName} (${w.clubFRS} FRS) → ${w.amount.toLocaleString()} ₽`).join('\n') || '  нет'}`);
+
+            } catch (e) {
+                console.error(e);
+                alert('Ошибка: ' + e.message);
+            }
+        };
+
+        // ===== ВЫПЛАТА =====
+        window.paySeason = async function(seasonId) {
+            if (!confirm('Отметить сезон как выплаченный? Награды станут доступны бойцам и клубам для получения.')) return;
+
+            try {
+                // Проверяем, что есть winners
+                const season = allSeasons.find(s => s.id === seasonId);
+                if (!season) throw new Error('Сезон не найден');
+                if (!season.winners) throw new Error('Нет победителей — сначала завершите сезон');
+
+                // Проверяем pending rewards
+                const rewardsSnap = await getDocs(query(
+                    collection(db, "season_rewards"),
+                    where("seasonId", "==", seasonId)
+                ));
+
+                const pending = rewardsSnap.docs.filter(d => d.data().status === 'pending');
+                if (pending.length === 0) {
+                    if (!confirm('Нет наград со статусом pending. Всё уже выплачено?')) return;
+                }
+
+                // Обновляем статус сезона
+                await updateDoc(doc(db, "seasons", seasonId), {
+                    status: 'paid',
+                    paidAt: serverTimestamp()
+                });
+
+                await logAction('pay_season', seasonId, `Выплатил сезон: ${pending.length} наград ожидают получения`);
+
+                await loadSeasons();
+
+                alert(`✅ Сезон помечен как выплаченный.\n\n${pending.length} наград со статусом pending теперь доступны бойцам и клубам для получения в их профилях.`);
+
+            } catch (e) {
+                console.error(e);
+                alert('Ошибка: ' + e.message);
+            }
+        };
+
+        // ===== ПРОСМОТР ПОБЕДИТЕЛЕЙ =====
+        window.viewSeasonWinners = function(seasonId) {
+            const s = allSeasons.find(x => x.id === seasonId);
+            if (!s || !s.winners) {
+                alert('Победители ещё не определены');
+                return;
+            }
+
+            const f = s.winners.fighters || [];
+            const c = s.winners.clubs || [];
+
+            let msg = `🏆 ${s.name}\n\n`;
+            msg += `🥊 ТОП-3 БОЙЦА:\n`;
+            f.forEach(w => {
+                msg += `  ${w.place}. ${w.fighterName} (${w.frs} FRS) → ${(w.amount || 0).toLocaleString()} ₽\n`;
+            });
+            msg += `\n👥 ТОП-3 КЛУБА:\n`;
+            c.forEach(w => {
+                msg += `  ${w.place}. ${w.clubName} (${w.clubFRS} FRS) → ${(w.amount || 0).toLocaleString()} ₽\n`;
+            });
+
+            alert(msg);
+        };
+
+        // ===== УДАЛЕНИЕ =====
+        window.deleteSeason = async function(seasonId) {
+            const s = allSeasons.find(x => x.id === seasonId);
+            if (!s) return;
+
+            if (s.status !== 'upcoming') {
+                alert('Можно удалять только сезоны со статусом "upcoming"');
+                return;
+            }
+
+            if (!confirm(`Удалить сезон "${s.name}"?`)) return;
+
+            try {
+                await deleteDoc(doc(db, "seasons", seasonId));
+                await logAction('delete_season', seasonId, `Удалил сезон "${s.name}"`);
+                await loadSeasons();
+                alert('✅ Сезон удалён');
+            } catch (e) {
+                alert('Ошибка: ' + e.message);
+            }
+        };
+
+        // ===== ФИЛЬТРЫ =====
+        document.getElementById('seasonStatusFilter')?.addEventListener('change', renderSeasons);
+        document.getElementById('seasonSearch')?.addEventListener('input', renderSeasons);
+        document.getElementById('refreshSeasonsBtn')?.addEventListener('click', loadSeasons);
 
         console.log('✅ PRORANK Admin Panel загружен!');
         console.log('📦 Разделы: Бойцы, Магазины (с заявками), Выводы, Комиссии, Цифровые товары, Цены, История, Рассылка');

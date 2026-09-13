@@ -1,0 +1,1238 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <link rel="manifest" href="/prorank-live/manifest.json">
+    <link rel="apple-touch-icon" href="/prorank-live/icons/icon-192.png">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="PRORANK">
+    <meta name="theme-color" content="#fbbf24">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="description" content="Детали сезона PRORANK — таймер, призовой фонд, топ бойцов и клубов, правила">
+    <title>Сезон | PRORANK</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700;14..32,800;14..32,900&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: radial-gradient(ellipse at 30% 40%, rgba(251, 191, 36, 0.15) 0%, transparent 60%),
+                        radial-gradient(ellipse at 70% 80%, rgba(251, 191, 36, 0.08) 0%, transparent 50%),
+                        linear-gradient(135deg, #1a1a1a 0%, #0f0f0f 40%, #1a1a1a 100%);
+            background-attachment: fixed;
+            color: #fff;
+            line-height: 1.4;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        main { flex: 1; }
+
+        .gold-top {
+            position: fixed; top: 0; left: 0; width: 100%; height: 3px;
+            background: linear-gradient(90deg, #fbbf24, #ffdd88, #fbbf24, #b8860b);
+            z-index: 1001;
+        }
+
+        .navbar {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 16px 32px;
+            background: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(16px);
+            border-bottom: 1px solid rgba(251, 191, 36, 0.25);
+            position: sticky; top: 0; z-index: 1000;
+        }
+
+        .logo {
+            font-size: 1.8rem; font-weight: 800; cursor: pointer;
+            background: linear-gradient(135deg, #ffffff, #fbbf24);
+            background-clip: text; color: transparent;
+        }
+        .logo span {
+            background: linear-gradient(135deg, #fbbf24, #ffdd77);
+            background-clip: text; color: transparent;
+        }
+
+        .menu-toggle {
+            display: none;
+            background: rgba(251,191,36,0.1);
+            border: 1px solid #fbbf24;
+            color: #fbbf24;
+            font-size: 1.6rem;
+            cursor: pointer;
+            padding: 8px 14px;
+            border-radius: 12px;
+            min-height: 44px; min-width: 44px;
+        }
+
+        .nav-links {
+            display: flex; gap: 6px;
+            background: rgba(15,15,15,0.7);
+            backdrop-filter: blur(12px);
+            padding: 5px 14px; border-radius: 60px;
+            border: 1px solid rgba(251,191,36,0.2);
+        }
+        .nav-links a {
+            color: #ddd; text-decoration: none; font-size: 0.9rem; font-weight: 500;
+            padding: 8px 18px; border-radius: 40px; transition: all 0.2s ease;
+        }
+        .nav-links a i { margin-right: 8px; color: #fbbf24; }
+        .nav-links a:hover { color: #fbbf24; background: rgba(251,191,36,0.1); }
+
+        .container {
+            max-width: 1200px; margin: 0 auto;
+            padding: 2rem 24px; width: 100%;
+        }
+
+        /* ===== ЗАГРУЗКА ===== */
+        .loading {
+            text-align: center; padding: 80px 20px; color: #888;
+        }
+        .loading-spinner {
+            display: inline-block; width: 24px; height: 24px;
+            border: 2px solid rgba(251,191,36,0.3);
+            border-top-color: #fbbf24;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* ===== HERO СЕЗОНА ===== */
+        .season-hero {
+            background: linear-gradient(135deg, rgba(251,191,36,0.15), rgba(251,191,36,0.03));
+            border: 1px solid rgba(251,191,36,0.3);
+            border-radius: 28px;
+            padding: 32px;
+            margin-bottom: 24px;
+            position: relative;
+            overflow: hidden;
+            animation: fadeInUp 0.5s ease;
+        }
+
+        .season-hero::before {
+            content: '';
+            position: absolute;
+            top: -50%; right: -20%;
+            width: 500px; height: 500px;
+            background: radial-gradient(circle, rgba(251,191,36,0.08), transparent 70%);
+            pointer-events: none;
+        }
+
+        .season-hero-top {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+
+        .season-icon-big {
+            width: 72px; height: 72px;
+            border-radius: 20px;
+            background: linear-gradient(135deg, #fbbf24, #f59e0b);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 2rem; color: #000;
+            box-shadow: 0 0 40px rgba(251,191,36,0.4);
+            flex-shrink: 0;
+        }
+
+        .season-hero-info { flex: 1; min-width: 0; }
+
+        .season-hero-name {
+            font-size: clamp(1.4rem, 4vw, 2rem);
+            font-weight: 900;
+            color: #fff;
+            letter-spacing: -0.5px;
+            margin-bottom: 4px;
+        }
+
+        .season-hero-sub {
+            font-size: 0.85rem;
+            color: #aaa;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .season-hero-sub i { color: #fbbf24; }
+
+        .season-status-badge {
+            display: inline-flex; align-items: center; gap: 6px;
+            padding: 4px 14px; border-radius: 20px;
+            font-size: 0.7rem; font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+        .season-status-badge.active {
+            background: rgba(34,197,94,0.15);
+            color: #22c55e;
+            border: 1px solid rgba(34,197,94,0.3);
+        }
+        .season-status-badge.upcoming {
+            background: rgba(251,191,36,0.15);
+            color: #fbbf24;
+            border: 1px solid rgba(251,191,36,0.3);
+        }
+        .season-status-badge.finished {
+            background: rgba(59,130,246,0.15);
+            color: #3b82f6;
+            border: 1px solid rgba(59,130,246,0.3);
+        }
+        .season-status-badge.paid {
+            background: rgba(168,85,247,0.15);
+            color: #a855f7;
+            border: 1px solid rgba(168,85,247,0.3);
+        }
+
+        /* ===== ГРИД СТАТИСТИКИ ===== */
+        .season-hero-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 14px;
+            margin-top: 20px;
+        }
+
+        .season-stat-box {
+            background: rgba(0,0,0,0.35);
+            border: 1px solid rgba(251,191,36,0.15);
+            border-radius: 16px;
+            padding: 14px 18px;
+            transition: all 0.2s ease;
+        }
+
+        .season-stat-box:hover {
+            border-color: rgba(251,191,36,0.35);
+            transform: translateY(-2px);
+        }
+
+        .season-stat-box-label {
+            font-size: 0.6rem;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .season-stat-box-value {
+            font-size: 1.3rem;
+            font-weight: 900;
+            color: #fbbf24;
+            line-height: 1;
+        }
+
+        .season-stat-box-value.timer {
+            font-family: 'Inter', monospace;
+            font-size: 1.1rem;
+            letter-spacing: 0.5px;
+        }
+
+        .season-stat-box-sub {
+            font-size: 0.65rem;
+            color: #666;
+            margin-top: 4px;
+        }
+
+        /* ===== ПАНЕЛИ ===== */
+        .season-panel {
+            background: rgba(15,15,15,0.7);
+            backdrop-filter: blur(8px);
+            border-radius: 24px;
+            padding: 24px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(251,191,36,0.15);
+            animation: fadeInUp 0.5s ease;
+        }
+
+        .season-panel:hover { border-color: rgba(251,191,36,0.3); }
+
+        .season-panel-title {
+            font-size: 1.05rem;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 18px;
+            padding-bottom: 14px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .season-panel-title i { color: #fbbf24; font-size: 1rem; }
+
+        .season-panel-title .count-badge {
+            background: rgba(251,191,36,0.12);
+            color: #fbbf24;
+            font-size: 0.65rem;
+            padding: 2px 10px;
+            border-radius: 12px;
+            font-weight: 700;
+            margin-left: auto;
+        }
+
+        /* ===== ТОП-3 БОЙЦА/КЛУБА ===== */
+        .top-podium {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 12px;
+            align-items: end;
+        }
+
+        .podium-card {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 20px;
+            padding: 20px 16px;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .podium-card:hover {
+            transform: translateY(-6px);
+            border-color: rgba(251,191,36,0.3);
+            box-shadow: 0 12px 40px rgba(0,0,0,0.4);
+        }
+
+        .podium-card.place-1 {
+            border-color: rgba(251,191,36,0.5);
+            background: linear-gradient(135deg, rgba(251,191,36,0.12), rgba(251,191,36,0.02));
+            box-shadow: 0 0 40px rgba(251,191,36,0.15);
+            transform: scale(1.05);
+            margin-bottom: 8px;
+        }
+
+        .podium-card.place-1:hover {
+            transform: scale(1.05) translateY(-6px);
+        }
+
+        .podium-card.place-2 {
+            border-color: rgba(192,192,192,0.35);
+            background: linear-gradient(135deg, rgba(192,192,192,0.08), transparent);
+        }
+
+        .podium-card.place-3 {
+            border-color: rgba(205,127,50,0.35);
+            background: linear-gradient(135deg, rgba(205,127,50,0.08), transparent);
+        }
+
+        .podium-medal {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            line-height: 1;
+        }
+
+        .podium-card.place-1 .podium-medal {
+            font-size: 3rem;
+            filter: drop-shadow(0 0 15px rgba(251,191,36,0.5));
+        }
+
+        .podium-avatar {
+            width: 72px; height: 72px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid #fbbf24;
+            margin: 0 auto 10px;
+            display: block;
+            background: #1a1a1a;
+            box-shadow: 0 0 20px rgba(251,191,36,0.2);
+        }
+
+        .podium-card.place-1 .podium-avatar {
+            width: 88px; height: 88px;
+            border-width: 4px;
+            box-shadow: 0 0 30px rgba(251,191,36,0.4);
+        }
+
+        .podium-card.place-2 .podium-avatar { border-color: #C0C0C0; }
+        .podium-card.place-3 .podium-avatar { border-color: #CD7F32; }
+
+        .podium-name {
+            font-size: 0.95rem;
+            font-weight: 800;
+            color: #fff;
+            margin-bottom: 4px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .podium-card.place-1 .podium-name { font-size: 1.05rem; }
+
+        .podium-frs {
+            font-size: 0.9rem;
+            font-weight: 800;
+            color: #fbbf24;
+            margin-bottom: 6px;
+        }
+
+        .podium-frs i { font-size: 0.7rem; }
+
+        .podium-prize {
+            display: inline-block;
+            background: linear-gradient(135deg, #22c55e, #16a34a);
+            color: #fff;
+            font-size: 0.7rem;
+            font-weight: 800;
+            padding: 4px 14px;
+            border-radius: 20px;
+            box-shadow: 0 4px 15px rgba(34,197,94,0.3);
+        }
+
+        .podium-place-label {
+            font-size: 0.6rem;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        /* ===== СПИСКИ ===== */
+        .season-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .season-list-item {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 14px;
+            padding: 12px 16px;
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+
+        .season-list-item:hover {
+            background: rgba(251,191,36,0.05);
+            border-color: rgba(251,191,36,0.2);
+            transform: translateX(4px);
+        }
+
+        .season-list-rank {
+            font-size: 1rem;
+            font-weight: 900;
+            color: #fbbf24;
+            min-width: 36px;
+            text-align: center;
+        }
+
+        .season-list-rank.gold { color: #fbbf24; text-shadow: 0 0 15px rgba(251,191,36,0.5); }
+        .season-list-rank.silver { color: #C0C0C0; }
+        .season-list-rank.bronze { color: #CD7F32; }
+        .season-list-rank.number { color: #666; font-size: 0.85rem; }
+
+        .season-list-avatar {
+            width: 44px; height: 44px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid rgba(251,191,36,0.3);
+            background: #1a1a1a;
+            flex-shrink: 0;
+        }
+
+        .season-list-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .season-list-name {
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: #fff;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            margin-bottom: 2px;
+        }
+
+        .season-list-details {
+            font-size: 0.65rem;
+            color: #888;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .season-list-details i { color: #fbbf24; font-size: 0.6rem; }
+
+        .season-list-right {
+            text-align: right;
+            flex-shrink: 0;
+        }
+
+        .season-list-frs {
+            font-size: 1rem;
+            font-weight: 900;
+            color: #fbbf24;
+            line-height: 1;
+        }
+
+        .season-list-frs i { font-size: 0.7rem; }
+
+        .season-list-frs-label {
+            font-size: 0.55rem;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            margin-top: 2px;
+        }
+
+        /* ===== ПРИЗЫ ===== */
+        .prize-table {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 10px;
+        }
+
+        .prize-card {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 14px;
+            padding: 14px 16px;
+            text-align: center;
+            transition: all 0.2s ease;
+        }
+
+        .prize-card:hover {
+            border-color: rgba(251,191,36,0.3);
+            transform: translateY(-2px);
+        }
+
+        .prize-card.place-1 {
+            border-color: rgba(251,191,36,0.4);
+            background: linear-gradient(135deg, rgba(251,191,36,0.1), transparent);
+        }
+
+        .prize-place {
+            font-size: 1.6rem;
+            line-height: 1;
+            margin-bottom: 6px;
+        }
+
+        .prize-label {
+            font-size: 0.6rem;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .prize-amount {
+            font-size: 1.1rem;
+            font-weight: 900;
+            color: #fbbf24;
+        }
+
+        /* ===== ПРАВИЛА ===== */
+        .rules-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .rule-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 12px 16px;
+            background: rgba(255,255,255,0.02);
+            border-radius: 12px;
+            border-left: 3px solid #fbbf24;
+            font-size: 0.85rem;
+            color: #ccc;
+            line-height: 1.5;
+        }
+
+        .rule-item i {
+            color: #fbbf24;
+            margin-top: 3px;
+            flex-shrink: 0;
+        }
+
+        /* ===== ПУСТЫЕ СОСТОЯНИЯ ===== */
+        .empty-state {
+            text-align: center;
+            padding: 32px 20px;
+            color: #666;
+            font-size: 0.85rem;
+        }
+
+        .empty-state i {
+            font-size: 2.5rem;
+            color: #333;
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        /* ===== ФУТЕР ===== */
+        .main-footer {
+            background: #0a0a0a;
+            border-top: 1px solid rgba(251,191,36,0.15);
+            margin-top: 40px;
+            padding: 40px 0 24px;
+        }
+
+        .footer-inner {
+            display: flex; justify-content: space-between;
+            flex-wrap: wrap; gap: 24px; margin-bottom: 24px;
+        }
+
+        .footer-logo .logo { font-size: 1.2rem; display: inline-block; }
+        .footer-logo p { font-size: 0.7rem; color: #777; margin-top: 4px; }
+
+        .footer-social { display: flex; gap: 16px; }
+        .social-icon { color: #aaa; font-size: 1.2rem; transition: all 0.2s ease; }
+        .social-icon:hover { color: #fbbf24; transform: translateY(-3px); }
+
+        .footer-links { display: flex; gap: 20px; flex-wrap: wrap; }
+        .footer-links a { color: #888; text-decoration: none; font-size: 0.7rem; transition: color 0.2s ease; }
+        .footer-links a:hover { color: #fbbf24; }
+
+        .footer-bottom {
+            text-align: center; padding-top: 20px;
+            border-top: 1px solid rgba(255,255,255,0.05);
+            font-size: 0.6rem; color: #555;
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ===== АДАПТИВ ===== */
+        @media (max-width: 768px) {
+            .navbar { padding: 12px 18px; }
+            .menu-toggle { display: block; }
+            .nav-links {
+                display: none;
+                flex-direction: column;
+                position: absolute;
+                top: 68px; left: 18px; right: 18px;
+                background: #0f0f0f;
+                border-radius: 24px;
+                padding: 20px;
+                gap: 10px;
+                border: 1px solid rgba(251,191,36,0.3);
+                z-index: 1000;
+            }
+            .nav-links.show { display: flex; }
+            .nav-links a { width: 100%; text-align: center; }
+
+            .container { padding: 1.2rem 14px; }
+
+            .season-hero { padding: 20px 18px; border-radius: 22px; }
+            .season-icon-big { width: 56px; height: 56px; font-size: 1.5rem; }
+            .season-hero-name { font-size: 1.3rem; }
+
+            .season-hero-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
+            .season-stat-box { padding: 10px 14px; }
+            .season-stat-box-value { font-size: 1.05rem; }
+            .season-stat-box-value.timer { font-size: 0.9rem; }
+
+            .season-panel { padding: 16px; border-radius: 20px; }
+            .season-panel-title { font-size: 0.95rem; margin-bottom: 14px; padding-bottom: 12px; }
+
+            .top-podium { gap: 8px; }
+            .podium-card { padding: 14px 10px; border-radius: 16px; }
+            .podium-medal { font-size: 2rem; margin-bottom: 6px; }
+            .podium-card.place-1 .podium-medal { font-size: 2.4rem; }
+            .podium-avatar { width: 56px; height: 56px; }
+            .podium-card.place-1 .podium-avatar { width: 68px; height: 68px; }
+            .podium-name { font-size: 0.8rem; }
+            .podium-card.place-1 .podium-name { font-size: 0.9rem; }
+            .podium-frs { font-size: 0.75rem; }
+            .podium-prize { font-size: 0.6rem; padding: 3px 10px; }
+
+            .season-list-item { padding: 10px 12px; gap: 10px; }
+            .season-list-avatar { width: 36px; height: 36px; }
+            .season-list-name { font-size: 0.8rem; }
+            .season-list-frs { font-size: 0.9rem; }
+
+            .prize-table { grid-template-columns: 1fr; }
+            .footer-inner { flex-direction: column; text-align: center; align-items: center; gap: 16px; }
+        }
+
+        @media (max-width: 480px) {
+            .season-hero-grid { grid-template-columns: 1fr; }
+            .top-podium { grid-template-columns: 1fr; }
+            .podium-card.place-1 { transform: none; margin-bottom: 0; }
+            .podium-card.place-1:hover { transform: translateY(-6px); }
+        }
+    </style>
+</head>
+<body>
+    <div class="gold-top"></div>
+
+    <header class="navbar">
+        <div class="logo" onclick="window.location='index.html'">PRO<span>RANK</span></div>
+        <button class="menu-toggle" id="menuToggle"><i class="fas fa-bars"></i></button>
+        <nav class="nav-links" id="navLinks"></nav>
+    </header>
+
+    <main>
+        <div class="container" id="seasonContainer">
+            <div class="loading">
+                <div class="loading-spinner"></div>
+                <p style="margin-top: 12px;">Загрузка сезона...</p>
+            </div>
+        </div>
+    </main>
+
+    <footer class="main-footer">
+        <div class="container">
+            <div class="footer-inner">
+                <div class="footer-logo">
+                    <div class="logo">PRO<span>RANK</span></div>
+                    <p>Рейтинг спортсменов-любителей</p>
+                </div>
+                <div class="footer-social">
+                    <a href="#" class="social-icon"><i class="fab fa-telegram"></i></a>
+                    <a href="#" class="social-icon"><i class="fab fa-vk"></i></a>
+                    <a href="#" class="social-icon"><i class="fab fa-youtube"></i></a>
+                    <a href="#" class="social-icon"><i class="fab fa-instagram"></i></a>
+                </div>
+                <div class="footer-links">
+                    <a href="about.html">О проекте</a>
+                    <a href="privacy.html">Конфиденциальность</a>
+                    <a href="disclaimer.html">Дисклеймер</a>
+                    <a href="contacts.html">Контакты</a>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>© 2026 PRORANK. Все права защищены.</p>
+            </div>
+        </div>
+    </footer>
+
+    <div id="mobileBottomNavContainer"></div>
+
+    <script type="importmap">
+        {
+            "imports": {
+                "firebase/app": "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js",
+                "firebase/firestore": "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js",
+                "firebase/auth": "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js"
+            }
+        }
+    </script>
+
+    <script type="module" src="header.js?v=3"></script>
+
+    <script type="module">
+        import { initializeApp } from "firebase/app";
+        import {
+            getFirestore, collection, getDocs, doc, getDoc,
+            query, where, orderBy, limit
+        } from "firebase/firestore";
+        import { getAuth } from "firebase/auth";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDUGYJY7pX7q02MS5SACMIIQXpjpQ97mPw",
+            authDomain: "proranklive.firebaseapp.com",
+            projectId: "proranklive",
+            storageBucket: "proranklive.firebasestorage.app",
+            messagingSenderId: "716836144015",
+            appId: "1:716836144015:web:f1575147750608d0f881fa"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+
+        // 🔧 Импорт модуля сезонов
+        import { initSeasons, getSeason, getActiveSeason } from './seasons.js';
+
+        let seasonId = null;
+        let seasonData = null;
+        let _timerInterval = null;
+
+        // ===== ПАРАМЕТРЫ URL =====
+        const params = new URLSearchParams(window.location.search);
+        seasonId = params.get('id');
+
+        // ===== УТИЛИТЫ =====
+        function escapeHtml(str) {
+            if (!str) return '';
+            return String(str).replace(/[&<>]/g, m => m === '&' ? '&amp;' : m === '<' ? '&lt;' : '&gt;');
+        }
+
+        function formatDate(d) {
+            if (!d) return '—';
+            const date = d.toDate ? d.toDate() : new Date(d);
+            return date.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' });
+        }
+
+        function getSeasonEmoji(season) {
+            const map = { winter: '❄️', spring: '🌸', summer: '☀️', autumn: '🍂' };
+            return map[season] || '🏆';
+        }
+
+        function getStatusBadge(status) {
+            const map = {
+                upcoming: { cls: 'upcoming', label: '📅 Скоро' },
+                active: { cls: 'active', label: '🟢 Активный' },
+                finished: { cls: 'finished', label: '✅ Завершён' },
+                paid: { cls: 'paid', label: '💰 Выплачен' }
+            };
+            return map[status] || { cls: 'upcoming', label: status };
+        }
+
+        // ===== ЗАГРУЗКА =====
+        async function loadSeasonPage() {
+            const container = document.getElementById('seasonContainer');
+
+            try {
+                initSeasons(db, auth);
+
+                if (!seasonId) {
+                    // Если ID нет — берём активный сезон
+                    const active = await getActiveSeason();
+                    if (!active) {
+                        container.innerHTML = `
+                            <div class="empty-state" style="padding:80px 20px;">
+                                <i class="fas fa-trophy"></i>
+                                <div style="font-size:1.1rem; font-weight:700; color:#fbbf24; margin-bottom:8px;">Активного сезона нет</div>
+                                <div style="color:#888; margin-bottom:20px;">Сейчас между сезонами. Следите за анонсами!</div>
+                                <a href="rating.html" class="season-banner-details-btn" style="text-decoration:none; display:inline-flex;">
+                                    <i class="fas fa-arrow-left"></i> К рейтингу
+                                </a>
+                            </div>
+                        `;
+                        return;
+                    }
+                    seasonId = active.id;
+                    seasonData = active;
+                } else {
+                    seasonData = await getSeason(seasonId);
+                    if (!seasonData) {
+                        container.innerHTML = `
+                            <div class="empty-state" style="padding:80px 20px;">
+                                <i class="fas fa-exclamation-triangle" style="color:#ef4444;"></i>
+                                <div style="font-size:1.1rem; font-weight:700; color:#ef4444; margin-bottom:8px;">Сезон не найден</div>
+                                <div style="color:#888; margin-bottom:20px;">Возможно, он был удалён</div>
+                                <a href="rating.html" class="season-banner-details-btn" style="text-decoration:none; display:inline-flex;">
+                                    <i class="fas fa-arrow-left"></i> К рейтингу
+                                </a>
+                            </div>
+                        `;
+                        return;
+                    }
+                }
+
+                await renderPage();
+
+            } catch (e) {
+                console.error('Ошибка загрузки сезона:', e);
+                container.innerHTML = `
+                    <div class="empty-state" style="padding:80px 20px;">
+                        <i class="fas fa-exclamation-triangle" style="color:#ef4444;"></i>
+                        <div style="color:#ef4444;">Ошибка загрузки: ${e.message}</div>
+                    </div>
+                `;
+            }
+        }
+
+        // ===== РЕНДЕР =====
+        async function renderPage() {
+            const container = document.getElementById('seasonContainer');
+            const s = seasonData;
+
+            const st = getStatusBadge(s.status);
+            const startDate = s.startDate?.toDate?.() || (s.startDate ? new Date(s.startDate) : null);
+            const endDate = s.endDate?.toDate?.() || (s.endDate ? new Date(s.endDate) : null);
+
+            // Считаем общий фонд
+            const fighterTotal = Array.isArray(s.fighterPrizes)
+                ? s.fighterPrizes.reduce((sum, p) => sum + (p.amount || 0), 0) : 0;
+            const clubTotal = Array.isArray(s.clubPrizes)
+                ? s.clubPrizes.reduce((sum, p) => sum + (p.amount || 0), 0) : 0;
+            const totalPool = fighterTotal + clubTotal || s.prizePool || 0;
+
+            // ===== HERO =====
+            let heroHtml = `
+                <div class="season-hero">
+                    <div class="season-hero-top">
+                        <div class="season-icon-big">${getSeasonEmoji(s.season)}</div>
+                        <div class="season-hero-info">
+                            <div class="season-hero-name">${escapeHtml(s.name || 'Сезон')}</div>
+                            <div class="season-hero-sub">
+                                <span><i class="fas fa-calendar-alt"></i> ${formatDate(startDate)} — ${formatDate(endDate)}</span>
+                                <span class="season-status-badge ${st.cls}">${st.label}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="season-hero-grid">
+                        <div class="season-stat-box">
+                            <div class="season-stat-box-label">До конца сезона</div>
+                            <div class="season-stat-box-value timer" id="seasonTimer">—</div>
+                            <div class="season-stat-box-sub" id="seasonTimerSub">—</div>
+                        </div>
+                        <div class="season-stat-box">
+                            <div class="season-stat-box-label">Призовой фонд</div>
+                            <div class="season-stat-box-value">${totalPool.toLocaleString()} ₽</div>
+                            <div class="season-stat-box-sub">${s.prizePoolSource === 'sponsor' ? '🤝 ' + (s.sponsorName || 'Спонсор') : s.prizePoolSource === 'platform' ? '🏢 Платформа' : '🎯 Смешанный'}</div>
+                        </div>
+                        <div class="season-stat-box">
+                            <div class="season-stat-box-label">Бойцам</div>
+                            <div class="season-stat-box-value">${fighterTotal.toLocaleString()} ₽</div>
+                            <div class="season-stat-box-sub">топ-3 по FRS</div>
+                        </div>
+                        <div class="season-stat-box">
+                            <div class="season-stat-box-label">Клубам</div>
+                            <div class="season-stat-box-value">${clubTotal.toLocaleString()} ₽</div>
+                            <div class="season-stat-box-sub">топ-3 по clubFRS</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            // ===== ТОП-3 (если завершён) =====
+            let winnersHtml = '';
+            if (s.winners && (s.winners.fighters?.length > 0 || s.winners.clubs?.length > 0)) {
+                winnersHtml = `
+                    ${s.winners.fighters?.length > 0 ? renderTopPodium('🥊 Топ-3 бойца сезона', s.winners.fighters, 'fighter') : ''}
+                    ${s.winners.clubs?.length > 0 ? renderTopPodium('👥 Топ-3 клуба сезона', s.winners.clubs, 'club') : ''}
+                `;
+            }
+
+            // ===== ПРИЗЫ =====
+            const prizesHtml = `
+                <div class="season-panel">
+                    <div class="season-panel-title">
+                        <i class="fas fa-gift"></i> Призы сезона
+                    </div>
+
+                    <div style="margin-bottom: 20px;">
+                        <div style="font-size:0.8rem; color:#fbbf24; font-weight:700; margin-bottom:10px;">
+                            <i class="fas fa-fist-raised"></i> Бойцам (топ-3 по FRS)
+                        </div>
+                        <div class="prize-table">
+                            ${(s.fighterPrizes || []).map((p, i) => `
+                                <div class="prize-card ${p.place === 1 ? 'place-1' : ''}">
+                                    <div class="prize-place">${p.place === 1 ? '🥇' : p.place === 2 ? '🥈' : '🥉'}</div>
+                                    <div class="prize-label">${p.place}-е место</div>
+                                    <div class="prize-amount">${(p.amount || 0).toLocaleString()} ₽</div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+
+                    <div>
+                        <div style="font-size:0.8rem; color:#fbbf24; font-weight:700; margin-bottom:10px;">
+                            <i class="fas fa-users"></i> Клубам (топ-3 по clubFRS)
+                        </div>
+                        <div class="prize-table">
+                            ${(s.clubPrizes || []).map((p, i) => `
+                                <div class="prize-card ${p.place === 1 ? 'place-1' : ''}">
+                                    <div class="prize-place">${p.place === 1 ? '🥇' : p.place === 2 ? '🥈' : '🥉'}</div>
+                                    <div class="prize-label">${p.place}-е место</div>
+                                    <div class="prize-amount">${(p.amount || 0).toLocaleString()} ₽</div>
+                                </div>
+                            `).join('')}
+                        </div>
+                        <div style="font-size:0.7rem; color:#888; margin-top:8px; text-align:center;">
+                            <i class="fas fa-info-circle" style="color:#fbbf24;"></i>
+                            Приз клуба делится между участниками пропорционально их FRS
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            // ===== ПРАВИЛА =====
+            const rules = Array.isArray(s.rules) ? s.rules : [];
+            const rulesHtml = rules.length > 0 ? `
+                <div class="season-panel">
+                    <div class="season-panel-title">
+                        <i class="fas fa-scroll"></i> Правила сезона
+                    </div>
+                    <div class="rules-list">
+                        ${rules.map(r => `
+                            <div class="rule-item">
+                                <i class="fas fa-check-circle"></i>
+                                <span>${escapeHtml(r)}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            ` : '';
+
+            // ===== ТОП-100 БОЙЦОВ / ТОП-50 КЛУБОВ (текущий сезон) =====
+            let leaderboardHtml = '';
+            if (s.status === 'active' || s.status === 'upcoming') {
+                leaderboardHtml = `
+                    <div class="season-panel">
+                        <div class="season-panel-title">
+                            <i class="fas fa-fist-raised"></i> Топ бойцов сезона
+                            <span class="count-badge" id="fightersCountBadge">загрузка...</span>
+                        </div>
+                        <div class="season-list" id="fightersLeaderboard">
+                            <div style="text-align:center; padding:20px; color:#888;"><div class="loading-spinner"></div></div>
+                        </div>
+                    </div>
+
+                    <div class="season-panel">
+                        <div class="season-panel-title">
+                            <i class="fas fa-users"></i> Топ клубов сезона
+                            <span class="count-badge" id="clubsCountBadge">загрузка...</span>
+                        </div>
+                        <div class="season-list" id="clubsLeaderboard">
+                            <div style="text-align:center; padding:20px; color:#888;"><div class="loading-spinner"></div></div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            container.innerHTML = heroHtml + winnersHtml + prizesHtml + leaderboardHtml + rulesHtml;
+
+            // Запускаем таймер
+            startTimer(endDate);
+
+            // Загружаем лидерборды асинхронно
+            if (s.status === 'active' || s.status === 'upcoming') {
+                loadFightersLeaderboard();
+                loadClubsLeaderboard();
+            }
+        }
+
+        // ===== ТОП-ПОДИУМ =====
+        function renderTopPodium(title, winners, type) {
+            const sorted = [...winners].sort((a, b) => a.place - b.place);
+
+            // Подиум: 2-1-3 (серебро слева, золото в центре, бронза справа)
+            const order = [];
+            if (sorted[1]) order.push(sorted[1]);  // 2-е
+            if (sorted[0]) order.push(sorted[0]);  // 1-е
+            if (sorted[2]) order.push(sorted[2]);  // 3-е
+
+            const medalMap = { 1: '🥇', 2: '🥈', 3: '🥉' };
+            const placeLabelMap = { 1: 'ЧЕМПИОН', 2: '2-е место', 3: '3-е место' };
+
+            return `
+                <div class="season-panel">
+                    <div class="season-panel-title">
+                        <i class="fas fa-trophy"></i> ${title}
+                    </div>
+                    <div class="top-podium">
+                        ${order.map(w => {
+                            const isFighter = type === 'fighter';
+                            const name = isFighter ? w.fighterName : w.clubName;
+                            const frs = isFighter ? w.frs : w.clubFRS;
+                            const id = isFighter ? w.fighterId : w.clubId;
+                            const avatar = isFighter
+                                ? (w.fighterAvatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(name || 'F')}&background=fbbf24&color=000&size=100`)
+                                : (w.clubLogo || `https://ui-avatars.com/api/?name=${encodeURIComponent(name || 'C')}&background=fbbf24&color=000&size=100`);
+                            const link = isFighter ? `profile.html?id=${id}` : `club-profile.html?id=${id}`;
+
+                            return `
+                                <div class="podium-card place-${w.place}" onclick="window.location='${link}'">
+                                    <div class="podium-place-label">${placeLabelMap[w.place] || w.place + '-е'}</div>
+                                    <div class="podium-medal">${medalMap[w.place] || ''}</div>
+                                    <img src="${avatar}" class="podium-avatar" onerror="this.src='https://ui-avatars.com/api/?name=?&background=fbbf24&color=000&size=100'">
+                                    <div class="podium-name">${escapeHtml(name || '—')}</div>
+                                    <div class="podium-frs"><i class="fas fa-star"></i> ${(frs || 0).toLocaleString()} ${isFighter ? 'FRS' : 'clubFRS'}</div>
+                                    ${w.amount > 0 ? `<div class="podium-prize">${w.amount.toLocaleString()} ₽</div>` : ''}
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+                </div>
+            `;
+        }
+
+        // ===== ТОП-100 БОЙЦОВ =====
+        async function loadFightersLeaderboard() {
+            const container = document.getElementById('fightersLeaderboard');
+            const badge = document.getElementById('fightersCountBadge');
+            if (!container) return;
+
+            try {
+                const q = query(
+                    collection(db, "fighters"),
+                    where("currentSeasonId", "==", seasonId),
+                    orderBy("frs", "desc"),
+                    limit(150)
+                );
+                const snap = await getDocs(q);
+
+                const all = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+                const filtered = all.filter(f => f.isPartner !== true).slice(0, 100);
+
+                if (badge) badge.textContent = `${filtered.length} бойцов`;
+
+                if (filtered.length === 0) {
+                    container.innerHTML = '<div class="empty-state"><i class="fas fa-user-slash"></i>Пока нет бойцов в этом сезоне</div>';
+                    return;
+                }
+
+                let html = '';
+                filtered.forEach((f, i) => {
+                    const rank = i + 1;
+                    let rankCls = 'number';
+                    if (rank === 1) rankCls = 'gold';
+                    else if (rank === 2) rankCls = 'silver';
+                    else if (rank === 3) rankCls = 'bronze';
+
+                    const avatar = f.avatar && f.avatar !== 'Avatar.png'
+                        ? f.avatar
+                        : `https://ui-avatars.com/api/?name=${encodeURIComponent((f.name || 'F').charAt(0))}&background=fbbf24&color=000&size=80`;
+
+                    html += `
+                        <div class="season-list-item" onclick="window.location='profile.html?id=${f.id}'">
+                            <div class="season-list-rank ${rankCls}">${rank}</div>
+                            <img src="${avatar}" class="season-list-avatar" onerror="this.src='https://ui-avatars.com/api/?name=?&background=fbbf24&color=000&size=80'">
+                            <div class="season-list-info">
+                                <div class="season-list-name">${escapeHtml(f.name || 'Боец')}</div>
+                                <div class="season-list-details">
+                                    <span><i class="fas fa-map-marker-alt"></i> ${escapeHtml(f.city || '—')}</span>
+                                    <span><i class="fas fa-fist-raised"></i> ${escapeHtml(f.sport || '—')}</span>
+                                </div>
+                            </div>
+                            <div class="season-list-right">
+                                <div class="season-list-frs"><i class="fas fa-star"></i> ${(f.frs || 0).toLocaleString()}</div>
+                                <div class="season-list-frs-label">FRS</div>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                container.innerHTML = html;
+
+            } catch (e) {
+                console.error('Ошибка загрузки топ бойцов:', e);
+                container.innerHTML = '<div class="empty-state"><i class="fas fa-exclamation-triangle" style="color:#ef4444;"></i>Ошибка загрузки</div>';
+            }
+        }
+
+        // ===== ТОП-50 КЛУБОВ =====
+        async function loadClubsLeaderboard() {
+            const container = document.getElementById('clubsLeaderboard');
+            const badge = document.getElementById('clubsCountBadge');
+            if (!container) return;
+
+            try {
+                const q = query(
+                    collection(db, "clubs"),
+                    where("currentSeasonId", "==", seasonId),
+                    where("status", "==", "approved"),
+                    orderBy("clubFRS", "desc"),
+                    limit(50)
+                );
+                const snap = await getDocs(q);
+
+                const clubs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+
+                if (badge) badge.textContent = `${clubs.length} клубов`;
+
+                if (clubs.length === 0) {
+                    container.innerHTML = '<div class="empty-state"><i class="fas fa-users-slash"></i>Пока нет клубов в этом сезоне</div>';
+                    return;
+                }
+
+                let html = '';
+                clubs.forEach((c, i) => {
+                    const rank = i + 1;
+                    let rankCls = 'number';
+                    if (rank === 1) rankCls = 'gold';
+                    else if (rank === 2) rankCls = 'silver';
+                    else if (rank === 3) rankCls = 'bronze';
+
+                    const logo = c.logo
+                        ? c.logo
+                        : `https://ui-avatars.com/api/?name=${encodeURIComponent((c.name || 'C').charAt(0))}&background=fbbf24&color=000&size=80`;
+
+                    html += `
+                        <div class="season-list-item" onclick="window.location='club-profile.html?id=${c.id}'">
+                            <div class="season-list-rank ${rankCls}">${rank}</div>
+                            <img src="${logo}" class="season-list-avatar" onerror="this.src='https://ui-avatars.com/api/?name=?&background=fbbf24&color=000&size=80'">
+                            <div class="season-list-info">
+                                <div class="season-list-name">${escapeHtml(c.name || 'Клуб')}</div>
+                                <div class="season-list-details">
+                                    <span><i class="fas fa-map-marker-alt"></i> ${escapeHtml(c.city || '—')}</span>
+                                    <span><i class="fas fa-users"></i> ${c.memberCount || 0} участников</span>
+                                </div>
+                            </div>
+                            <div class="season-list-right">
+                                <div class="season-list-frs"><i class="fas fa-star"></i> ${(c.clubFRS || 0).toLocaleString()}</div>
+                                <div class="season-list-frs-label">clubFRS</div>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                container.innerHTML = html;
+
+            } catch (e) {
+                console.error('Ошибка загрузки топ клубов:', e);
+                container.innerHTML = '<div class="empty-state"><i class="fas fa-exclamation-triangle" style="color:#ef4444;"></i>Ошибка загрузки</div>';
+            }
+        }
+
+        // ===== ТАЙМЕР =====
+        function startTimer(endDate) {
+            if (_timerInterval) clearInterval(_timerInterval);
+
+            const timerEl = document.getElementById('seasonTimer');
+            const subEl = document.getElementById('seasonTimerSub');
+            if (!timerEl) return;
+
+            if (!endDate) {
+                timerEl.textContent = '—';
+                if (subEl) subEl.textContent = 'Дата не указана';
+                return;
+            }
+
+            function update() {
+                const diff = endDate.getTime() - Date.now();
+
+                if (diff <= 0) {
+                    timerEl.textContent = 'Завершён';
+                    if (subEl) subEl.textContent = 'Сезон окончен';
+                    clearInterval(_timerInterval);
+                    return;
+                }
+
+                const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+                const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                const secs = Math.floor((diff % (1000 * 60)) / 1000);
+
+                if (days > 0) {
+                    timerEl.textContent = `${days}д ${hours}ч ${mins}м`;
+                    if (subEl) subEl.textContent = `${secs} сек`;
+                } else if (hours > 0) {
+                    timerEl.textContent = `${hours}ч ${mins}м ${secs}с`;
+                    if (subEl) subEl.textContent = 'Финишная прямая';
+                } else {
+                    timerEl.textContent = `${mins}м ${secs}с`;
+                    if (subEl) subEl.textContent = 'Последние минуты!';
+                }
+            }
+
+            update();
+            _timerInterval = setInterval(update, 1000);
+        }
+
+        // ===== ЗАПУСК =====
+        loadSeasonPage();
+
+        // Очистка при уходе
+        window.addEventListener('beforeunload', () => {
+            if (_timerInterval) clearInterval(_timerInterval);
+        });
+    </script>
+</body>
+</html>

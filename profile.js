@@ -5,6 +5,7 @@ import { ensureUserFields, getAvailableBadges, selectBadge, getSelectedBadge, AL
 import { applyAllPremiumBonuses } from './premium.js';
 import { showError, handleFirebaseError, withErrorHandling } from './error-handler.js';
 import { notifyAboutPremium } from './push-sender.js';
+import { initSeasons, getActiveSeason, getFighterReward, claimFighterReward } from './seasons.js';
 
 const firebaseConfig = {
     apiKey: "AIzaSyDUGYJY7pX7q02MS5SACMIIQXpjpQ97mPw",
@@ -494,7 +495,15 @@ async function loadAchievements() {
             `;
         }
         
-        container.innerHTML = html;
+                container.innerHTML = html;
+
+        // 🔧 ФИКС: помечаем, есть ли хоть одна полученная ачивка
+        // Если нет — в свёрнутом виде показываем первые 4 по порядку
+        const grid = document.getElementById('achievementsList');
+        if (grid) {
+            const hasEarned = grid.querySelector('.achievement-card.earned') !== null;
+            grid.classList.toggle('no-earned', !hasEarned);
+        }
     } catch (err) {
         console.error('❌ Ошибка загрузки ачивок:', err);
         container.innerHTML = `<div class="empty-state" style="text-align:center;padding:20px;color:#ef4444;">⚠️ Ошибка загрузки достижений: ${err.message}</div>`;
@@ -1019,7 +1028,8 @@ async function loadProfileData(user) {
                 // Лайки и подписки
                 await Promise.all([
                     updateLikesUI(),
-                    updateSubscribeUI()
+                    updateSubscribeUI(),
+                    loadSeasonsBlock(profileId)   // 🔧 СЕЗОНЫ
                 ]);
                 
                 // История боёв
@@ -1062,8 +1072,11 @@ async function loadProfileData(user) {
             visitorDiv.classList.remove('hidden');
         }
         
-        // ===== 12. ВКЛАДКИ =====
+               // ===== 12. ВКЛАДКИ =====
         initTabs();
+
+        // 🔧 ФИКС: инициализация сворачивания ачивок после отрисовки
+        initAchievementsToggle();
         
         // ===== 13. МОНИТОР ПРЕМИУМА =====
         startPremiumMonitor();
@@ -1448,6 +1461,215 @@ async function setupTelegramVerify() {
 window.updateHeaderBalance = updateHeaderBalance;
 window.openBadgeSelector = openBadgeSelector;
 window.addEventListener('beforeunload', () => { if (authListenerUnsub) authListenerUnsub(); });
+
+// ============================================================
+// 🔧 СЕЗОНЫ: загрузка и отображение
+// ============================================================
+async function loadSeasonsBlock(uid) {
+    const block = document.getElementById('seasonsBlock');
+    if (!block) return;
+
+    try {
+        initSeasons(db, auth);
+        const season = await getActiveSeason();
+
+        if (!season) {
+            // Нет активного сезона — блок скрыт
+            block.style.display = 'none';
+            return;
+        }
+
+        block.style.display = 'block';
+
+        // Читаем данные бойца для сезонов
+        const fighterRef = doc(db, "fighters", uid);
+        const fighterSnap = await getDoc(fighterRef);
+        if (!fighterSnap.exists()) return;
+
+        const fd = fighterSnap.data();
+
+        // Текущий сезон
+        document.getElementById('seasonCurrentName').textContent = season.name || 'Сезон';
+        document.getElementById('seasonCurrentSub').textContent = `Сезон ${season.year || ''}`.trim();
+        document.getElementById('seasonFrsValue').textContent = (fd.frs || 0).toLocaleString();
+        document.getElementById('seasonAlltimeValue').textContent = (fd.allTimeFrs || 0).toLocaleString();
+
+        // История сезонов
+        const historyList = document.getElementById('seasonHistoryList');
+        const history = Array.isArray(fd.seasonHistory) ? fd.seasonHistory : [];
+
+        if (history.length === 0) {
+            historyList.innerHTML = '<div class="season-empty"><i class="fas fa-info-circle"></i> Это ваш первый сезон</div>';
+        } else {
+            // Показываем в обратном порядке (новые сверху)
+            const sorted = [...history].reverse();
+            let html = '';
+            sorted.forEach(h => {
+                let placeBadge = '';
+                if (h.place === 1) placeBadge = '<span class="place-badge gold">🥇 1-е</span>';
+                else if (h.place === 2) placeBadge = '<span class="place-badge silver">🥈 2-е</span>';
+                else if (h.place === 3) placeBadge = '<span class="place-badge bronze">🥉 3-е</span>';
+                else if (h.place) placeBadge = `<span class="place-badge">${h.place}-е</span>`;
+
+                const prizeHtml = h.prize > 0
+                    ? `<span class="prize"><i class="fas fa-ruble-sign"></i> ${h.prize.toLocaleString()}</span>`
+                    : '';
+
+                html += `
+                    <div class="season-history-item">
+                        <div class="season-history-name">
+                            <i class="fas fa-trophy" style="color:#fbbf24; font-size:0.7rem;"></i>
+                            ${escapeHtml(h.seasonName || h.seasonId || 'Сезон')}
+                            ${placeBadge}
+                        </div>
+                        <div class="season-history-stats">
+                            <span class="frs"><i class="fas fa-star"></i> ${(h.frs || 0).toLocaleString()}</span>
+                            ${prizeHtml}
+                        </div>
+                    </div>
+                `;
+            });
+            historyList.innerHTML = html;
+        }
+
+        // Проверяем награду (pending)
+        await checkFighterReward(uid, season);
+
+    } catch (e) {
+        console.warn('⚠️ Ошибка загрузки блока сезонов:', e);
+        block.style.display = 'none';
+    }
+}
+
+// Проверка награды и показ кнопки "Забрать"
+async function checkFighterReward(uid, season) {
+    const banner = document.getElementById('seasonClaimBanner');
+    if (!banner) return;
+
+    try {
+        const reward = await getFighterReward(uid, season.id);
+
+        if (!reward || reward.status !== 'pending') {
+            banner.style.display = 'none';
+            return;
+        }
+
+        banner.style.display = 'flex';
+        document.getElementById('seasonClaimTitle').textContent = `${reward.seasonName || season.name} — ${reward.place}-е место`;
+        document.getElementById('seasonClaimAmount').textContent = (reward.amount || 0).toLocaleString() + ' ₽';
+
+        // Обработчик кнопки
+        const btn = document.getElementById('seasonClaimBtn');
+        // Убираем старый обработчик (клонируем)
+        const newBtn = btn.cloneNode(true);
+        btn.parentNode.replaceChild(newBtn, btn);
+
+        newBtn.onclick = async () => {
+            newBtn.disabled = true;
+            newBtn.innerHTML = '<div class="loading-spinner" style="width:14px;height:14px;"></div> Обработка...';
+
+            try {
+                const result = await claimFighterReward(uid, season.id);
+                showError(`🎉 Награда ${result.amount.toLocaleString()} ₽ зачислена на кошелёк!`, 'success');
+
+                banner.style.display = 'none';
+
+                // Обновляем кошелёк в хедере
+                if (window.updateFighterMoneyBalance) window.updateFighterMoneyBalance();
+
+                // Обновляем блок
+                setTimeout(() => loadSeasonsBlock(uid), 500);
+
+            } catch (e) {
+                console.error('Ошибка получения награды:', e);
+                showError('❌ ' + (e.message || 'Ошибка получения награды'), 'error');
+                newBtn.disabled = false;
+                newBtn.innerHTML = '<i class="fas fa-hand-holding-usd"></i> Забрать';
+            }
+        };
+
+    } catch (e) {
+        console.warn('⚠️ Ошибка проверки награды:', e);
+        banner.style.display = 'none';
+    }
+}
+
+// ============================================================
+// 🔧 АЧИВКИ: сворачивание (как в Duolingo)
+// ============================================================
+const ACHIEVEMENTS_COLLAPSED_KEY = 'prorank_achievements_collapsed';
+
+window.toggleAchievements = function() {
+    const section = document.getElementById('achievementsSection');
+    if (!section) return;
+
+    // 🔧 ФИКС: явное переключение (не toggle — надёжнее)
+    const currentlyCollapsed = section.classList.contains('achievements-collapsed');
+    const willBeCollapsed = !currentlyCollapsed;
+
+    if (willBeCollapsed) {
+        section.classList.add('achievements-collapsed');
+    } else {
+        section.classList.remove('achievements-collapsed');
+    }
+
+    console.log(`🔄 Ачивки: ${willBeCollapsed ? 'свёрнуты' : 'развёрнуты'}`);
+
+    try {
+        localStorage.setItem(ACHIEVEMENTS_COLLAPSED_KEY, willBeCollapsed ? '1' : '0');
+    } catch (e) {}
+
+    // Если разворачиваем — скроллим к блоку
+    if (!willBeCollapsed) {
+        setTimeout(() => {
+            section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 100);
+    }
+};
+
+// Инициализация: восстановить состояние из localStorage
+function initAchievementsToggle() {
+    const section = document.getElementById('achievementsSection');
+    if (!section) return;
+
+    const header = document.getElementById('achievementsHeaderToggle');
+    if (!header) return;
+
+    // 🔧 ФИКС: защита от двойной инициализации
+    if (header.dataset.toggleInit === '1') {
+        // уже инициализирован — только восстанавливаем состояние
+        try {
+            const saved = localStorage.getItem(ACHIEVEMENTS_COLLAPSED_KEY);
+            const isCollapsed = saved === null ? true : saved === '1';
+            section.classList.toggle('achievements-collapsed', isCollapsed);
+        } catch (e) {
+            section.classList.add('achievements-collapsed');
+        }
+        return;
+    }
+    header.dataset.toggleInit = '1';
+
+    // Клик по шапке (кроме ссылки "Все достижения")
+    header.addEventListener('click', (e) => {
+        if (e.target.closest('.achievements-link-btn')) return;
+        window.toggleAchievements();
+    });
+
+    // Восстанавливаем состояние
+    try {
+        const saved = localStorage.getItem(ACHIEVEMENTS_COLLAPSED_KEY);
+        // По умолчанию — свёрнуто (как в Duolingo)
+        const isCollapsed = saved === null ? true : saved === '1';
+        if (isCollapsed) {
+            section.classList.add('achievements-collapsed');
+        }
+    } catch (e) {
+        section.classList.add('achievements-collapsed');
+    }
+}
+
+// 🔧 ФИКС: модули грузятся после DOMContentLoaded — вызываем сразу
+initAchievementsToggle();
 
 // ===== ЗАПУСК =====
 onAuthStateChanged(auth, async (user) => {

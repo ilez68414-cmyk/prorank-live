@@ -1,6 +1,7 @@
 import { getAuth, onAuthStateChanged, signOut } from "firebase/auth";
 import { getFirestore, doc, getDoc, getDocs, collection, query, where } from "firebase/firestore";
 import { initializeApp } from "firebase/app";
+import { initSeasons, lazyResetFighter, lazyResetClub } from './seasons.js';
 
 const firebaseConfig = {
     apiKey: "AIzaSyDUGYJY7pX7q02MS5SACMIIQXpjpQ97mPw",
@@ -282,6 +283,22 @@ async function getUserRoles(userId) {
             isOrgUser = true;
             myOrgId = request.organizationId || orgRequests.docs[0].id;
             userName = request.orgName || 'Организация';
+        }
+
+        // 🔧 СЕЗОНЫ: ленивый сброс FRS при заходе
+        // ⚠️ Только для бойцов (не партнёров, не клубов-как-юзеров)
+        if (!isPartner && !isClubUser) {
+            try {
+                initSeasons(db, auth);
+                await lazyResetFighter(userId);
+                // Если боец в клубе — сбрасываем и clubFRS клуба
+                if (myClubId) {
+                    await lazyResetClub(myClubId);
+                }
+            } catch (seasonsErr) {
+                console.warn('⚠️ Сезоны: ошибка ленивого сброса', seasonsErr);
+                // Не роняем приложение — просто логируем
+            }
         }
     } catch (err) {
         console.error('Ошибка загрузки ролей:', err);
