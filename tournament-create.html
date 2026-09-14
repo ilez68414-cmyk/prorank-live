@@ -1184,6 +1184,15 @@
                 </div>
             </div>
 
+            <!-- 🔧 СЕЗОНЫ: баннер активного сезона -->
+            <div class="draft-banner" id="seasonBanner" style="display: none; background: linear-gradient(135deg, rgba(251,191,36,0.15), rgba(15,15,15,0.6)); border-color: rgba(251,191,36,0.4);">
+                <div class="draft-icon"><i class="fas fa-trophy"></i></div>
+                <div class="draft-text">
+                    <div class="draft-title">Турнир попадёт в сезон</div>
+                    <div class="draft-sub" id="seasonBannerSub">—</div>
+                </div>
+            </div>
+
             <div class="form-card">
                 <div class="form-header">
                     <div class="icon-circle"><i class="fas fa-trophy"></i></div>
@@ -1341,9 +1350,10 @@
                     <div class="field-hint">0 — бесплатное участие</div>
                 </div>
                 <div class="form-group">
-                    <label>Максимум на категорию</label>
-                    <input type="number" id="tournamentMaxParticipants" value="16" min="2" max="256">
-                    <div class="field-hint" id="maxParticipantsHint">От 2 до 256 в каждой категории</div>
+                    <label>Максимум участников <span class="required">*</span></label>
+                    <input type="number" id="tournamentMaxParticipants" value="64" min="2" max="512">
+                    <div class="field-hint" id="maxParticipantsHint">Общий лимит на весь турнир. От 2 до 512.</div>
+                    <div class="error-message">От 2 до 512</div>
                 </div>
             </div>
 
@@ -1365,7 +1375,7 @@
                                 <i class="fas fa-users"></i>
                             </div>
                             <div style="flex: 1;">
-                                <div style="font-size: 0.75rem; color: #aaa; margin-bottom: 2px;">Общая вместимость турнира</div>
+                                <div style="font-size: 0.75rem; color: #aaa; margin-bottom: 2px;">Разбивка по категориям</div>
                                 <div style="font-size: 1rem; font-weight: 800; color: #fbbf24;" id="totalCapacityText">—</div>
                                 <div style="font-size: 0.65rem; color: #888; margin-top: 2px;" id="totalCapacitySub"></div>
                             </div>
@@ -1420,6 +1430,7 @@
         import { initializeApp } from "firebase/app";
         import { getFirestore, doc, getDoc, collection, query, where, getDocs, addDoc, deleteDoc, serverTimestamp } from "firebase/firestore";
         import { getAuth, onAuthStateChanged } from "firebase/auth";
+        import { initSeasons, getActiveSeason } from './seasons.js';
 
         const firebaseConfig = {
             apiKey: "AIzaSyDUGYJY7pX7q02MS5SACMIIQXpjpQ97mPw",
@@ -1462,6 +1473,8 @@
         let uploadedImageUrl = '';
         let hasUnsavedChanges = false;
         let draftSaveTimer = null;
+        let activeSeason = null; 
+
         const DRAFT_KEY = 'prorank_tournament_draft';
         const DRAFT_MAX_AGE = 7 * 24 * 60 * 60 * 1000; // 7 дней
 
@@ -1665,55 +1678,7 @@
             img.src = url;
         }
 
-        async function uploadToCloudinary(file) {
-            imageUploadArea.classList.add('uploading');
-            uploadProgressBar.style.width = '0%';
-            uploadProgressText.textContent = 'Загрузка 0%';
-
-            const formData = new FormData();
-            formData.append('file', file);
-            formData.append('upload_preset', UPLOAD_PRESET);
-
-            try {
-                // Прогресс через XHR (реальный)
-                const progressInterval = setInterval(() => {
-                    const current = parseFloat(uploadProgressBar.style.width) || 0;
-                    if (current < 90) {
-                        uploadProgressBar.style.width = Math.min(current + 5, 90) + '%';
-                        uploadProgressText.textContent = `Загрузка ${Math.round(Math.min(current + 5, 90))}%`;
-                    }
-                }, 200);
-
-                const response = await fetch(CLOUDINARY_URL, { method: 'POST', body: formData });
-                clearInterval(progressInterval);
-
-                if (!response.ok) throw new Error('Ошибка загрузки');
-                const data = await response.json();
-
-                uploadProgressBar.style.width = '100%';
-                uploadProgressText.textContent = 'Загрузка 100%';
-
-                // Трансформация 16:9 + качество + формат
-                uploadedImageUrl = data.secure_url.replace(
-                    '/upload/',
-                    '/upload/w_1200,h_630,c_fill,g_auto,q_auto:good,f_auto/'
-                );
-
-                imagePreview.src = uploadedImageUrl;
-                imagePreview.style.display = 'block';
-                imageUploadArea.classList.remove('uploading');
-                imageUploadArea.classList.add('has-image');
-                showToast('✅ Фото загружено', 'success');
-                markDirty();
-                setTimeout(() => { uploadProgressBar.style.width = '0%'; }, 800);
-            } catch (err) {
-                console.error('Ошибка:', err);
-                imageUploadArea.classList.remove('uploading');
-                uploadProgressBar.style.width = '0%';
-                showToast('❌ Ошибка загрузки фото', 'error');
-            }
-        }
-
+        
         // ===== ШАБЛОНЫ =====
         async function loadTemplates() {
             if (!currentUserId) return;
@@ -1980,6 +1945,18 @@
                 isValid = false;
             }
 
+            // 🔧 ФИКС: валидация maxParticipants
+            const maxP = parseInt(maxPartInput.value) || 0;
+            if (maxP < 2 || maxP > 512) {
+                const group = maxPartInput.closest('.form-group');
+                if (group) {
+                    group.classList.add('error');
+                    const msgEl = group.querySelector('.error-message');
+                    if (msgEl) msgEl.textContent = 'От 2 до 512';
+                }
+                isValid = false;
+            }
+
             return isValid;
         }
 
@@ -1990,7 +1967,8 @@
             'tournamentSport': 'sportGroup',
             'tournamentDate': 'dateGroup',
             'registrationDeadline': 'deadlineGroup',
-            'tournamentCity': 'cityGroup'
+            'tournamentCity': 'cityGroup',
+            'tournamentMaxParticipants': null 
         };
         Object.entries(errorMap).forEach(([inputId, groupId]) => {
             const el = document.getElementById(inputId);
@@ -1998,6 +1976,12 @@
                 el.addEventListener('input', () => clearFieldError(groupId));
                 el.addEventListener('change', () => clearFieldError(groupId));
             }
+        });
+
+        // 🔧 ФИКС: ручная очистка ошибки для maxParticipants
+        maxPartInput.addEventListener('input', () => {
+            const group = maxPartInput.closest('.form-group');
+            if (group) group.classList.remove('error');
         });
 
         // ===== ЧЕРНОВИК =====
@@ -2191,7 +2175,7 @@
                     description: descInput.value.trim(),
                     imageUrl: uploadedImageUrl || '',
                     entryFee: parseFloat(feeInput.value) || 0,
-                    maxParticipants: parseInt(maxPartInput.value) || 16,
+                    maxParticipants: parseInt(maxPartInput.value) || 64,
                     weightClasses: selectedWeightClasses,
                     organizationId: currentOrgId,
                     organizationName: currentOrgData?.name || 'Организация',
@@ -2200,6 +2184,9 @@
                     participantCount: 0,
                     bracketGenerated: false,
                     ringsCount: parseInt(ringsInput.value) || 1,
+                    // 🔧 СЕЗОНЫ: привязка к активному сезону
+                    seasonId: activeSeason?.id || null,
+                    seasonName: activeSeason?.name || null,
                     createdAt: serverTimestamp(),
                     updatedAt: serverTimestamp()
                 });
@@ -2210,10 +2197,36 @@
 
                 createBtn.disabled = false;
                 createBtn.innerHTML = orig;
-                showToast('✅ Турнир создан!', 'success');
-                setTimeout(() => {
+
+                // 🔧 ФИКС: модалка «Что дальше?» вместо редиректа
+                const ok = await showConfirm(
+                    '✅ Турнир создан!',
+                    `
+                        <div style="text-align:center; margin-bottom: 12px;">
+                            <div style="font-size: 2rem; color: #fbbf24; margin-bottom: 8px;">
+                                <i class="fas fa-trophy"></i>
+                            </div>
+                            <div style="font-size: 0.9rem; color: #fff; font-weight: 700; margin-bottom: 4px;">
+                                ${name}
+                            </div>
+                            <div style="font-size: 0.72rem; color: #888;">
+                                ${new Date(date + 'T00:00:00').toLocaleDateString('ru-RU')} · ${cityInput.value.trim()}
+                            </div>
+                        </div>
+                        <div class="info-box" style="text-align:left;">
+                            <i class="fas fa-info-circle"></i>
+                            Что дальше? Откройте турнир — там управление заявками, сетка и LIVE.
+                        </div>
+                    `,
+                    'Открыть турнир'
+                );
+
+                if (ok) {
                     window.location.href = `tournament-details.html?id=${docRef.id}`;
-                }, 600);
+                } else {
+                    // Пользователь отменил — остаться на странице
+                    showToast('Турнир создан. Открыть можно из дашборда', 'info');
+                }
             } catch (err) {
                 console.error('Ошибка:', err);
                 createBtn.disabled = false;
@@ -2240,6 +2253,25 @@
         onAuthStateChanged(auth, async (user) => {
             if (!user) { window.location.href = 'login.html'; return; }
             currentUserId = user.uid;
+
+            // 🔧 СЕЗОНЫ: загружаем активный сезон
+            try {
+                initSeasons(db, auth);
+                activeSeason = await getActiveSeason();
+                if (activeSeason) {
+                    const banner = document.getElementById('seasonBanner');
+                    const sub = document.getElementById('seasonBannerSub');
+                    if (banner && sub) {
+                        const startDate = activeSeason.startDate?.toDate?.();
+                        const endDate = activeSeason.endDate?.toDate?.();
+                        const fmt = (d) => d ? d.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' }) : '—';
+                        sub.textContent = `${activeSeason.name} · ${fmt(startDate)} — ${fmt(endDate)}`;
+                        banner.style.display = 'flex';
+                    }
+                }
+            } catch (e) {
+                console.warn('⚠️ Не удалось загрузить активный сезон:', e);
+            }
 
             const urlParams = new URLSearchParams(window.location.search);
             let orgId = urlParams.get('id');

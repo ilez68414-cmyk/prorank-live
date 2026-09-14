@@ -220,10 +220,41 @@ export async function payTournamentEntry(
         throw new Error("Неверные параметры оплаты");
     }
 
+    // 🔧 ФИКС: защита от двойной записи
+    try {
+        const existingRegs = await getDocs(query(
+            collection(db, "tournament_registrations"),
+            where("tournamentId", "==", tournamentId),
+            where("fighterId", "==", fighterId)
+        ));
+        const active = existingRegs.docs.find(d => {
+            const s = d.data().status;
+            return s === 'pending' || s === 'approved';
+        });
+        if (active) {
+            throw new Error("Вы уже записаны на этот турнир");
+        }
+    } catch (e) {
+        if (e.message === "Вы уже записаны на этот турнир") throw e;
+        // Если запрос упал по другой причине (индексы и т.п.) — логируем, но не блокируем
+        console.warn("⚠️ payTournamentEntry: не удалось проверить дубликат", e);
+    }
+
+    // 🔧 ФИКС: запрет для забаненных бойцов
+    try {
+        const fighterDoc = await getDoc(doc(db, "fighters", fighterId));
+        if (fighterDoc.exists() && fighterDoc.data().banned === true) {
+            throw new Error("Ваш аккаунт заблокирован");
+        }
+    } catch (e) {
+        if (e.message === "Ваш аккаунт заблокирован") throw e;
+        console.warn("⚠️ payTournamentEntry: не удалось проверить бан", e);
+    }
+
     const fighterRef = doc(db, "wallet_balances", fighterId);
     const escrowRef = doc(db, "wallet_balances", ESCROW_ACCOUNT);
     const tournamentRef = doc(db, "tournaments", tournamentId);
-
+    
     await runTransaction(db, async (tx) => {
         // 1. Проверяем бойца
         const fighterSnap = await tx.get(fighterRef);
