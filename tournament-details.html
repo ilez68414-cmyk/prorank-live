@@ -2325,58 +2325,116 @@
             if (!tournamentData) return;
             const ringsCount = tournamentData.ringsCount || 1;
             const list = document.getElementById('judgesList');
+            const token = tournamentData.judgeToken || null;
 
-            let html = `
-                <div style="background: rgba(251,191,36,0.08); border: 1px solid rgba(251,191,36,0.3); border-radius: 12px; padding: 12px 14px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+            let tokenBlock = '';
+            if (!token) {
+                tokenBlock = `
+                    <div style="background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.3); border-radius: 12px; padding: 14px; margin-bottom: 12px; text-align: center;">
+                        <div style="font-size: 0.8rem; color: #fca5a5; margin-bottom: 10px;">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            Токен не создан. Ссылки судей не будут работать.
+                        </div>
+                        <button class="btn btn-primary" onclick="generateJudgeToken()">
+                            <i class="fas fa-key"></i> Создать токен
+                        </button>
+                    </div>`;
+            } else {
+                tokenBlock = `
+                    <div style="background: rgba(16,185,129,0.08); border: 1px solid rgba(16,185,129,0.3); border-radius: 12px; padding: 12px 14px; margin-bottom: 12px;">
+                        <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap;">
+                            <div style="flex: 1; min-width: 180px;">
+                                <div style="font-size: 0.62rem; color: #888; text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 3px;">Токен доступа</div>
+                                <div style="font-family: monospace; font-size: 0.85rem; color: #10b981; font-weight: 700;">${token}</div>
+                            </div>
+                            <button class="btn btn-outline btn-sm" onclick="regenerateJudgeToken()" title="Перегенерировать">
+                                <i class="fas fa-sync-alt"></i> Обновить
+                            </button>
+                        </div>
+                    </div>`;
+            }
+
+            let html = tokenBlock;
+
+            // Главный судья
+            html += `
+                <div style="background: rgba(251,191,36,0.08); border: 1px solid rgba(251,191,36,0.3); border-radius: 12px; padding: 12px 14px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; ${!token ? 'opacity:0.5;' : ''}">
                     <div style="width: 40px; height: 40px; border-radius: 10px; background: rgba(251,191,36,0.15); color: #fbbf24; display: flex; align-items: center; justify-content: center; font-size: 1rem; flex-shrink: 0;">
                         <i class="fas fa-crown"></i>
                     </div>
                     <div style="flex: 1; min-width: 180px;">
                         <div style="font-weight: 700; font-size: 0.85rem; color: #fbbf24;">Главный судья</div>
-                        <div style="font-size: 0.68rem; color: #888;">Видит все столы, может вмешаться</div>
+                        <div style="font-size: 0.68rem; color: #888;">Видит все столы, может перехватить бой</div>
                     </div>
                     <div style="display: flex; gap: 6px;">
-                        <button class="btn btn-outline btn-sm" onclick="copyJudgeLink('chief')"><i class="fas fa-copy"></i></button>
-                        <button class="btn btn-primary btn-sm" onclick="openJudgeLink('chief')"><i class="fas fa-external-link-alt"></i></button>
+                        <button class="btn btn-outline btn-sm" onclick="copyJudgeLink('chief')" ${!token ? 'disabled' : ''}><i class="fas fa-copy"></i></button>
+                        <button class="btn btn-primary btn-sm" onclick="openJudgeLink('chief')" ${!token ? 'disabled' : ''}><i class="fas fa-external-link-alt"></i></button>
                     </div>
                 </div>
             `;
 
+            // Каждый стол — панель судьи + табло
             for (let r = 1; r <= ringsCount; r++) {
                 const ringMatches = matches.filter(m => m.ringId === r && m.round === 1);
                 const completed = ringMatches.filter(m => m.status === 'completed').length;
                 const total = ringMatches.length;
 
                 html += `
-                    <div style="background: rgba(20,20,25,0.8); border: 1px solid rgba(139,92,246,0.2); border-radius: 12px; padding: 12px 14px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
-                        <div style="width: 40px; height: 40px; border-radius: 10px; background: rgba(139,92,246,0.15); color: #a78bfa; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.95rem; flex-shrink: 0;">
-                            ${r}
+                    <div style="background: rgba(20,20,25,0.8); border: 1px solid rgba(139,92,246,0.2); border-radius: 12px; padding: 12px 14px; margin-top: 8px; ${!token ? 'opacity:0.5;' : ''}">
+                        <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 10px;">
+                            <div style="width: 40px; height: 40px; border-radius: 10px; background: rgba(139,92,246,0.15); color: #a78bfa; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.95rem; flex-shrink: 0;">
+                                ${r}
+                            </div>
+                            <div style="flex: 1; min-width: 180px;">
+                                <div style="font-weight: 700; font-size: 0.85rem; color: #fff;">Стол ${r}</div>
+                                <div style="font-size: 0.68rem; color: #888;">${completed}/${total} ${plural(total, 'бой', 'боя', 'боёв')} завершено</div>
+                            </div>
                         </div>
-                        <div style="flex: 1; min-width: 180px;">
-                            <div style="font-weight: 700; font-size: 0.85rem; color: #fff;">Стол ${r}</div>
-                            <div style="font-size: 0.68rem; color: #888;">${completed}/${total} ${plural(total, 'бой', 'боя', 'боёв')} завершено</div>
-                        </div>
-                        <div style="display: flex; gap: 6px;">
-                            <button class="btn btn-outline btn-sm" onclick="copyJudgeLink(${r})"><i class="fas fa-copy"></i></button>
-                            <button class="btn btn-primary btn-sm" onclick="openJudgeLink(${r})"><i class="fas fa-external-link-alt"></i></button>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px;">
+                            <div style="background: rgba(139,92,246,0.08); border: 1px solid rgba(139,92,246,0.25); border-radius: 10px; padding: 8px 10px;">
+                                <div style="font-size: 0.6rem; color: #a78bfa; font-weight: 800; text-transform: uppercase; letter-spacing: 0.3px; margin-bottom: 6px;">
+                                    <i class="fas fa-gavel"></i> Панель судьи
+                                </div>
+                                <div style="display: flex; gap: 5px;">
+                                    <button class="btn btn-outline btn-sm" onclick="copyJudgeLink(${r})" ${!token ? 'disabled' : ''} style="flex:1;"><i class="fas fa-copy"></i> Копировать</button>
+                                    <button class="btn btn-primary btn-sm" onclick="openJudgeLink(${r})" ${!token ? 'disabled' : ''} style="flex:1;"><i class="fas fa-external-link-alt"></i> Открыть</button>
+                                </div>
+                            </div>
+                            <div style="background: rgba(59,130,246,0.08); border: 1px solid rgba(59,130,246,0.25); border-radius: 10px; padding: 8px 10px;">
+                                <div style="font-size: 0.6rem; color: #60a5fa; font-weight: 800; text-transform: uppercase; letter-spacing: 0.3px; margin-bottom: 6px;">
+                                    <i class="fas fa-tv"></i> Табло на ТВ
+                                </div>
+                                <div style="display: flex; gap: 5px;">
+                                    <button class="btn btn-outline btn-sm" onclick="copyDisplayLink(${r})" style="flex:1;"><i class="fas fa-copy"></i> Копировать</button>
+                                    <button class="btn btn-blue btn-sm" onclick="openDisplayLink(${r})" style="flex:1;background:rgba(59,130,246,0.15);border:1px solid rgba(59,130,246,0.3);color:#60a5fa;border-radius:40px;font-family:'Inter',sans-serif;font-weight:700;cursor:pointer;padding:7px 12px;font-size:0.7rem;"><i class="fas fa-external-link-alt"></i> Открыть</button>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 `;
             }
 
+            // Общее табло
             html += `
-                <div style="background: rgba(59,130,246,0.06); border: 1px solid rgba(59,130,246,0.25); border-radius: 12px; padding: 12px 14px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-top: 6px;">
-                    <div style="width: 40px; height: 40px; border-radius: 10px; background: rgba(59,130,246,0.15); color: #60a5fa; display: flex; align-items: center; justify-content: center; font-size: 1rem; flex-shrink: 0;">
-                        <i class="fas fa-tv"></i>
+                <div style="background: rgba(16,185,129,0.06); border: 1px solid rgba(16,185,129,0.25); border-radius: 12px; padding: 12px 14px; margin-top: 10px;">
+                    <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                        <div style="width: 40px; height: 40px; border-radius: 10px; background: rgba(16,185,129,0.15); color: #10b981; display: flex; align-items: center; justify-content: center; font-size: 1rem; flex-shrink: 0;">
+                            <i class="fas fa-th"></i>
+                        </div>
+                        <div style="flex: 1; min-width: 180px;">
+                            <div style="font-weight: 700; font-size: 0.85rem; color: #10b981;">Общее табло (все столы)</div>
+                            <div style="font-size: 0.68rem; color: #888;">Плитка всех столов сразу — для холла/проектора</div>
+                        </div>
+                        <div style="display: flex; gap: 6px;">
+                            <button class="btn btn-outline btn-sm" onclick="copyDisplayGridLink()"><i class="fas fa-copy"></i></button>
+                            <button class="btn btn-primary btn-sm" onclick="openDisplayGridLink()"><i class="fas fa-external-link-alt"></i></button>
+                        </div>
                     </div>
-                    <div style="flex: 1; min-width: 180px;">
-                        <div style="font-weight: 700; font-size: 0.85rem; color: #60a5fa;">Общее табло (зрители)</div>
-                        <div style="font-size: 0.68rem; color: #888;">Все бои в реальном времени</div>
-                    </div>
-                    <div style="display: flex; gap: 6px;">
-                        <button class="btn btn-outline btn-sm" onclick="copyJudgeLink('view')"><i class="fas fa-copy"></i></button>
-                        <button class="btn btn-primary btn-sm" onclick="openJudgeLink('view')"><i class="fas fa-external-link-alt"></i></button>
-                    </div>
+                </div>
+
+                <div style="background: rgba(59,130,246,0.06); border: 1px solid rgba(59,130,246,0.25); border-radius: 12px; padding: 12px 14px; margin-top: 10px; font-size: 0.72rem; color: #93c5fd; line-height: 1.5;">
+                    <i class="fas fa-info-circle"></i>
+                    <b>Как работать:</b> откройте панель судьи у него на устройстве, а табло — на ТВ у стола. Табло автоматически показывает бой, который взял судья.
                 </div>
             `;
 
@@ -2384,15 +2442,50 @@
             openModal('judgesModal');
         };
 
-        window.copyJudgeLink = function(role) {
-            const baseUrl = window.location.href.replace('tournament-details.html', 'live-judging.html').split('?')[0];
-            let url;
-            if (role === 'chief') url = `${baseUrl}?id=${tournamentId}&role=chief`;
-            else if (role === 'view') url = `${baseUrl}?id=${tournamentId}&role=view`;
-            else url = `${baseUrl}?id=${tournamentId}&ring=${role}`;
+        window.generateJudgeToken = async function() {
+            const rand = () => Math.random().toString(36).slice(2, 10);
+            const token = 'prk_' + rand() + rand().slice(0, 2);
+            try {
+                await updateDoc(doc(db, "tournaments", tournamentId), {
+                    judgeToken: token,
+                    judgeTokenCreatedAt: serverTimestamp()
+                });
+                tournamentData.judgeToken = token;
+                showToast('🔑 Токен создан', 'success');
+                openJudgesPanel();
+            } catch (e) { showToast('Ошибка: ' + e.message, 'error'); }
+        };
 
+        window.regenerateJudgeToken = async function() {
+            const ok = await showConfirm(
+                'Перегенерировать токен?',
+                '<div>Старые ссылки судей перестанут работать. Придётся отправить новые.</div>',
+                'Обновить'
+            );
+            if (!ok) return;
+            await generateJudgeToken();
+        };
+
+        function buildJudgeUrl(role) {
+            const baseUrl = window.location.href.replace('tournament-details.html', 'live-judging.html').split('?')[0];
+            const token = tournamentData.judgeToken || '';
+            if (role === 'chief') return `${baseUrl}?id=${tournamentId}&role=chief&k=${token}`;
+            return `${baseUrl}?id=${tournamentId}&ring=${role}&k=${token}`;
+        }
+
+        function buildDisplayUrl(ring) {
+            const baseUrl = window.location.href.replace('tournament-details.html', 'live-judging.html').split('?')[0];
+            return `${baseUrl}?id=${tournamentId}&ring=${ring}&role=display`;
+        }
+
+        function buildDisplayGridUrl() {
+            const baseUrl = window.location.href.replace('tournament-details.html', 'live-judging.html').split('?')[0];
+            return `${baseUrl}?id=${tournamentId}&role=display`;
+        }
+
+        function copyToClipboard(url, successMsg) {
             if (navigator.clipboard) {
-                navigator.clipboard.writeText(url).then(() => showToast('✅ Ссылка скопирована', 'success'));
+                navigator.clipboard.writeText(url).then(() => showToast(successMsg, 'success'));
             } else {
                 const t = document.createElement('textarea');
                 t.value = url;
@@ -2400,16 +2493,34 @@
                 t.select();
                 document.execCommand('copy');
                 t.remove();
-                showToast('✅ Ссылка скопирована', 'success');
+                showToast(successMsg, 'success');
             }
+        }
+
+        window.copyJudgeLink = function(role) {
+            if (!tournamentData.judgeToken) { showToast('Сначала создайте токен', 'error'); return; }
+            copyToClipboard(buildJudgeUrl(role), '✅ Ссылка судьи скопирована');
         };
 
         window.openJudgeLink = function(role) {
-            let url;
-            if (role === 'chief') url = `live-judging.html?id=${tournamentId}&role=chief`;
-            else if (role === 'view') url = `live-judging.html?id=${tournamentId}&role=view`;
-            else url = `live-judging.html?id=${tournamentId}&ring=${role}`;
-            window.open(url, '_blank');
+            if (!tournamentData.judgeToken) { showToast('Сначала создайте токен', 'error'); return; }
+            window.open(buildJudgeUrl(role), '_blank');
+        };
+
+        window.copyDisplayLink = function(ring) {
+            copyToClipboard(buildDisplayUrl(ring), `✅ Ссылка табло стола ${ring} скопирована`);
+        };
+
+        window.openDisplayLink = function(ring) {
+            window.open(buildDisplayUrl(ring), '_blank');
+        };
+
+        window.copyDisplayGridLink = function() {
+            copyToClipboard(buildDisplayGridUrl(), '✅ Ссылка общего табло скопирована');
+        };
+
+        window.openDisplayGridLink = function() {
+            window.open(buildDisplayGridUrl(), '_blank');
         };
 
         // ============================================================
