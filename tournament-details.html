@@ -865,42 +865,30 @@
             const isScheduled = tournamentData.status === 'scheduled';
 
             const approvedCount = registrations.filter(r => r.status === 'approved').length;
-            const pendingCount = registrations.filter(r => r.status === 'pending').length;
 
             let tabs = [];
 
-                if (isOwner) {
-                    // 🔧 ФИКС: организатор видит ВСЕ табы сразу, вне зависимости от наполнения
-                    tabs.push({ key: 'overview', icon: 'fa-chart-pie', label: 'Обзор' });
+            if (isOwner) {
+                // 🔧 ФИКС: организатор видит ВСЕ табы сразу
+                tabs.push({ key: 'overview', icon: 'fa-chart-pie', label: 'Обзор' });
 
-                    if (!isCompleted) {
-                        // Заявки — всегда (даже пустые), с бейджем если есть pending
-                        tabs.push({
-                            key: 'requests',
-                            icon: 'fa-user-clock',
-                            label: 'Заявки',
-                            badge: pendingCount > 0 ? pendingCount : null
-                        });
-                    }
+                // 🔧 ФИКС: таб «Заявки» убран — боец сразу в участниках
 
-                    // Участники — всегда (даже если 0)
-                    tabs.push({
-                        key: 'participants',
-                        icon: 'fa-users',
-                        label: 'Участники',
-                        count: approvedCount
-                    });
+                tabs.push({
+                    key: 'participants',
+                    icon: 'fa-users',
+                    label: 'Участники',
+                    count: approvedCount
+                });
 
-                    // Сетка — всегда пока не завершён
-                    if (!isCompleted) {
-                        tabs.push({ key: 'bracket', icon: 'fa-sitemap', label: 'Сетка' });
-                    }
+                if (!isCompleted) {
+                    tabs.push({ key: 'bracket', icon: 'fa-sitemap', label: 'Сетка' });
+                }
 
-                    // Результаты — только когда завершён
-                    if (isCompleted) {
-                        tabs.push({ key: 'results', icon: 'fa-medal', label: 'Результаты' });
-                    }
-                } else {
+                if (isCompleted) {
+                    tabs.push({ key: 'results', icon: 'fa-medal', label: 'Результаты' });
+                }
+            } else {
                 if (isRegistration) {
                     tabs.push({ key: 'overview', icon: 'fa-info-circle', label: 'Обзор' });
                     tabs.push({ key: 'participants', icon: 'fa-users', label: 'Участники', count: approvedCount });
@@ -936,7 +924,6 @@
                 btn.addEventListener('click', () => switchTab(btn.dataset.tab));
             });
 
-            // Показываем активный таб
             document.querySelectorAll('.section-content').forEach(el => el.classList.remove('active'));
             const target = document.getElementById(`tab-${currentTab}`);
             if (target) target.classList.add('active');
@@ -954,7 +941,7 @@
 
         function renderTabContent(tabKey) {
             if (tabKey === 'overview') renderOverview();
-            else if (tabKey === 'requests') renderRequests();
+            // 🔧 ФИКС: таб «Заявки» убран
             else if (tabKey === 'participants') { renderParticipants(); renderFighterParticipants(); }
             else if (tabKey === 'bracket') { renderBracket(); renderFighterBracket(); }
             else if (tabKey === 'results') { renderResults(); renderFighterResults(); }
@@ -974,16 +961,15 @@
             const t = tournamentData;
             const escrow = t.escrowAmount || 0;
             const myShare = Math.round(escrow * 0.8);
-            const pendingCount = registrations.filter(r => r.status === 'pending').length;
+            // 🔧 ФИКС: pendingCount убран — заявок больше нет
 
             if (t.status === 'registration') {
                 const progress = t.maxParticipants ? Math.round((t.participantCount || 0) / t.maxParticipants * 100) : 0;
                 return `
-                    <div class="stats-grid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:16px;">
+                    <div class="stats-grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px;">
                         <div class="stat-box" style="text-align:center;padding:12px 10px;"><div class="stat-box-label">Участников</div><div class="stat-box-value">${t.participantCount || 0}</div></div>
                         <div class="stat-box" style="text-align:center;padding:12px 10px;"><div class="stat-box-label">Собрано</div><div class="stat-box-value green">${escrow.toLocaleString('ru-RU')} ₽</div></div>
                         <div class="stat-box" style="text-align:center;padding:12px 10px;"><div class="stat-box-label">Мои 80%</div><div class="stat-box-value blue">${myShare.toLocaleString('ru-RU')} ₽</div></div>
-                        <div class="stat-box" style="text-align:center;padding:12px 10px;"><div class="stat-box-label">Заявок</div><div class="stat-box-value" style="color:${pendingCount > 0 ? '#fbbf24' : '#888'};">${pendingCount}</div></div>
                     </div>
 
                     <div class="panel">
@@ -1567,9 +1553,9 @@
                     <div class="participant-club">${escapeHtml(r.fighterClub || '—')} ${r.fighterWeight ? '· ' + r.fighterWeight + ' кг' : ''}</div>
                     ${r.weightClass ? `<div class="participant-wc">${escapeHtml(r.weightClass)}</div>` : ''}
                 </div>
-                ${tournamentData.status === 'registration' && !tournamentData.paidOutToOrganizer ? `
+                ${(tournamentData.status === 'registration' || tournamentData.status === 'scheduled') && !tournamentData.paidOutToOrganizer ? `
                     <div class="participant-actions">
-                        <button class="btn btn-danger btn-sm" onclick="removeParticipant('${r.id}')"><i class="fas fa-user-minus"></i></button>
+                        <button class="btn btn-danger btn-sm" onclick="removeParticipant('${r.id}')" title="Удалить с возвратом"><i class="fas fa-user-minus"></i></button>
                     </div>` : ''}
             </div>`).join('');
         }
@@ -1593,21 +1579,40 @@
             </div>`).join('');
         }
 
+        // 🔧 ФИКС: удаление бойца с возвратом денег
         window.removeParticipant = async function(rid) {
             const r = registrations.find(x => x.id === rid);
             if (!r) return;
-            const isPaid = r.paymentStatus === 'paid';
-            const ok = await showConfirm('Отменить одобрение?', `<div>${escapeHtml(r.fighterName)} вернётся в заявки</div>
-                ${isPaid ? '<div class="info-box">Оплата сохранится</div>' : ''}`, 'Вернуть');
+
+            const isPaid = r.paymentStatus === 'paid' && (r.paymentAmount || 0) > 0;
+            const ok = await showConfirm(
+                'Удалить бойца?',
+                `<div><strong>${escapeHtml(r.fighterName || 'Боец')}</strong> будет удалён из турнира.</div>
+                 ${isPaid ? `<div class="info-box"><i class="fas fa-info-circle"></i> Взнос ${r.paymentAmount.toLocaleString('ru-RU')} ₽ вернётся на баланс.</div>` : ''}`,
+                'Удалить'
+            );
             if (!ok) return;
+
             try {
-                await updateDoc(doc(db, "tournament_registrations", rid), { status: 'pending', processedAt: null });
+                // 1. Возврат денег
+                if (isPaid) {
+                    try {
+                        await OrganizerWallet.refundEntry(r.fighterId, r.paymentAmount, tournamentId, 'Удаление организатором');
+                        escrowAmount = Math.max(0, escrowAmount - r.paymentAmount);
+                    } catch (err) { console.error('Refund error:', err); }
+                }
+                // 2. Удаление записи
+                await deleteDoc(doc(db, "tournament_registrations", rid));
+                // 3. Счётчик
                 await updateDoc(doc(db, "tournaments", tournamentId), { participantCount: increment(-1) });
                 tournamentData.participantCount = Math.max(0, (tournamentData.participantCount || 0) - 1);
-                await loadRegistrations();
-                renderOverview(); renderRequests(); renderParticipants(); renderTabs(); renderStickyCta();
-                showToast('✅ Возвращён', 'success');
-            } catch (e) { showToast('Ошибка', 'error'); }
+                await loadTournament(tournamentId);
+                renderOverview(); renderParticipants(); renderTabs(); renderStickyCta();
+                showToast('✅ Боец удалён, деньги возвращены', 'success');
+            } catch (e) {
+                console.error(e);
+                showToast('Ошибка: ' + e.message, 'error');
+            }
         };
 
         // ============================================================
