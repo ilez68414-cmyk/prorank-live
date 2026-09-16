@@ -532,11 +532,7 @@
     <script type="module" src="header.js"></script>
     <script type="module">
         import { initializeApp } from "firebase/app";
-        import {
-            getFirestore, doc, getDoc, updateDoc, setDoc, collection,
-            query, where, getDocs, addDoc, deleteDoc, serverTimestamp,
-            increment, writeBatch
-        } from "firebase/firestore";
+        import {getFirestore, doc, getDoc, updateDoc, setDoc, collection,query, where, getDocs, addDoc, deleteDoc, serverTimestamp,increment, writeBatch, onSnapshot} from "firebase/firestore";
         import { getAuth, onAuthStateChanged } from "firebase/auth";
         import { OrganizerWallet } from "./organizer-wallet.js";
 
@@ -591,6 +587,8 @@
         let confirmResolver = null;
         let distributionMode = 'round-robin';
         let currentTab = 'overview';
+        let registrationsUnsubscribe = null;
+        let isRegistering = false;
 
         const formatDate = d => d ? new Date(d + 'T00:00:00').toLocaleDateString('ru-RU') : '—';
         const daysUntil = d => {
@@ -672,6 +670,27 @@
                 registrations = s.docs.map(d => ({ id: d.id, ...d.data() }));
                 if (currentUser) myRegistration = registrations.find(r => r.fighterId === currentUser.uid) || null;
             } catch (e) { console.error(e); }
+        }
+
+        function subscribeToRegistrations() {
+            if (!tournamentId) return;
+            if (registrationsUnsubscribe) registrationsUnsubscribe();
+            registrationsUnsubscribe = onSnapshot(
+                query(collection(db, "tournament_registrations"), where("tournamentId", "==", tournamentId)),
+                (snapshot) => {
+                    registrations = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+                    if (currentUser) myRegistration = registrations.find(r => r.fighterId === currentUser.uid) || null;
+
+                    // Перерисовка всего, что зависит от registrations
+                    try { renderTabs(); } catch (e) {}
+                    try { renderRequests(); } catch (e) {}
+                    try { renderParticipants(); } catch (e) {}
+                    try { renderFighterParticipants(); } catch (e) {}
+                    try { if (currentTab === 'overview') renderOverview(); } catch (e) {}
+                    try { renderStickyCta(); } catch (e) {}
+                },
+                (err) => console.error('Registrations snapshot:', err)
+            );
         }
 
         async function loadMatches() {
@@ -2616,36 +2635,60 @@
         };
 
         window.processRegistration = async function() {
+            // 🔧 ФИКС: защита от двойного клика
+            if (isRegistering) return;
             if (!currentUser) return;
-
-            const existing = registrations.find(r =>
-                r.fighterId === currentUser.uid &&
-                (r.status === 'approved' || r.status === 'pending')
-            );
-            if (existing) { showToast('Вы уже записаны', 'error'); closeModal('registerModal'); return; }
-
-            const weightClassStr = document.getElementById('regWeightClass')?.value || '';
-            if (!weightClassStr) { showToast('Выберите весовую категорию', 'error'); return; }
-
-            const fee = tournamentData.entryFee || 0;
-            const fighterWeight = currentFighterData?.weight || '';
-            const fighterClub = currentFighterData?.clubName || '';
-
-            let balance = 0;
-            try {
-                const balDoc = await getDoc(doc(db, "wallet_balances", currentUser.uid));
-                if (balDoc.exists()) balance = balDoc.data().available || 0;
-            } catch (e) {}
-
-            if (balance < fee) {
-                showToast(`Недостаточно средств. Доступно: ${balance} ₽, нужно: ${fee} ₽`, 'error');
-                return;
-            }
+            isRegistering = true;
 
             try {
+                // Проверка в локальном массиве (свежая, из onSnapshot)
+                const existing = registrations.find(r =>
+                    r.fighterId === currentUser.uid &&
+                    (r.status === 'approved' || r.status === 'pending')
+                );
+                if (existing) {
+                    showToast('Вы уже записаны', 'error');
+                    closeModal('registerModal');
+                    return;
+                }
+
+                const weightClassStr = document.getElementById('regWeightClass')?.value || '';
+                if (!weightClassStr) { showToast('Выберите весовую категорию', 'error'); return; }
+
+                const fee = tournamentData.entryFee || 0;
+                const fighterWeight = currentFighterData?.weight || '';
+                const fighterClub = currentFighterData?.clubName || '';
+
+                let balance = 0;
+                try {
+                    const balDoc = await getDoc(doc(db, "wallet_balances", currentUser.uid));
+                    if (balDoc.exists()) balance = balDoc.data().available || 0;
+                } catch (e) {}
+
+                if (balance < fee) {
+                    showToast(`Недостаточно средств. Доступно: ${balance} ₽, нужно: ${fee} ₽`, 'error');
+                    return;
+                }
+
+                // 🔧 ФИКС: жёсткая проверка на сервере — вдруг уже есть (например, из другой вкладки)
+                const regId = `${currentUser.uid}_${tournamentId}`;
+                const regRef = doc(db, "tournament_registrations", regId);
+                const existingDoc = await getDoc(regRef);
+                if (existingDoc.exists()) {
+                    const data = existingDoc.data();
+                    if (data.status === 'approved' || data.status === 'pending') {
+                        showToast('Вы уже записаны', 'error');
+                        closeModal('registerModal');
+                        await loadRegistrations();
+                        return;
+                    }
+                }
+
+                // Оплата
                 await OrganizerWallet.payEntry(currentUser.uid, fee, tournamentId, tournamentData.name, tournamentData.organizationId, currentFighterData?.name || 'Боец');
 
-                await addDoc(collection(db, "tournament_registrations"), {
+                // 🔧 ФИКС: детерминированный ID — вторая запись перезапишет первую
+                await setDoc(regRef, {
                     tournamentId,
                     organizationId: tournamentData.organizationId,
                     fighterId: currentUser.uid,
@@ -2675,6 +2718,8 @@
             } catch (e) {
                 console.error(e);
                 showToast('❌ ' + (e.message || 'Ошибка записи'), 'error');
+            } finally {
+                isRegistering = false;   // 🔧 ФИКС: снимаем блокировку в любом случае
             }
         };
 
@@ -2749,7 +2794,7 @@
             } else userRole = 'guest';
             escrowAmount = tournamentData.escrowAmount || 0;
             renderHeader();
-            await loadRegistrations();
+            subscribeToRegistrations();   
             await loadMatches();
 
             renderTabs();
