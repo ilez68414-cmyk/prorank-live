@@ -532,7 +532,7 @@
     <script type="module" src="header.js"></script>
     <script type="module">
         import { initializeApp } from "firebase/app";
-        import {getFirestore, doc, getDoc, updateDoc, setDoc, collection,query, where, getDocs, addDoc, deleteDoc, serverTimestamp,increment, writeBatch, onSnapshot} from "firebase/firestore";
+        import {getFirestore, doc, getDoc, updateDoc, setDoc, collection,query, where, getDocs, addDoc, deleteDoc, serverTimestamp,increment, writeBatch, onSnapshot, runTransaction} from "firebase/firestore";
         import { getAuth, onAuthStateChanged } from "firebase/auth";
         import { OrganizerWallet } from "./organizer-wallet.js";
 
@@ -588,6 +588,7 @@
         let distributionMode = 'round-robin';
         let currentTab = 'overview';
         let registrationsUnsubscribe = null;
+        let tournamentUnsubscribe = null;
         let isRegistering = false;
 
         const formatDate = d => d ? new Date(d + 'T00:00:00').toLocaleDateString('ru-RU') : '—';
@@ -680,8 +681,6 @@
                 (snapshot) => {
                     registrations = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
                     if (currentUser) myRegistration = registrations.find(r => r.fighterId === currentUser.uid) || null;
-
-                    // Перерисовка всего, что зависит от registrations
                     try { renderTabs(); } catch (e) {}
                     try { renderRequests(); } catch (e) {}
                     try { renderParticipants(); } catch (e) {}
@@ -690,6 +689,26 @@
                     try { renderStickyCta(); } catch (e) {}
                 },
                 (err) => console.error('Registrations snapshot:', err)
+            );
+        }
+
+        function subscribeToTournament() {
+            if (!tournamentId) return;
+            if (tournamentUnsubscribe) tournamentUnsubscribe();
+            tournamentUnsubscribe = onSnapshot(
+                doc(db, "tournaments", tournamentId),
+                (snap) => {
+                    if (snap.exists()) {
+                        const data = snap.data();
+                        tournamentData = { id: snap.id, ...data };
+                        escrowAmount = data.escrowAmount || 0;
+                        try { renderHero(); } catch (e) {}
+                        try { renderTopBar(); } catch (e) {}
+                        try { if (currentTab === 'overview') renderOverview(); } catch (e) {}
+                        try { renderStickyCta(); } catch (e) {}
+                    }
+                },
+                (err) => console.error('Tournament snapshot:', err)
             );
         }
 
@@ -748,11 +767,12 @@
             `;
 
             if (userRole === 'organizer' && isUserOrganizerOfTournament(currentUser?.uid) && !tournamentData.deleted) {
+                // 🔧 ФИКС: кнопка «Судьи» доступна начиная со статуса registration — токен создаётся ДО старта
+                if (['registration', 'scheduled', 'active'].includes(tournamentData.status)) {
+                    html += `<button class="top-btn-action" onclick="openJudgesPanel()"><i class="fas fa-users-cog"></i> Судьи</button>`;
+                }
                 if (tournamentData.status === 'active') {
-                    html += `
-                        <button class="top-btn-action" onclick="openJudgesPanel()"><i class="fas fa-users-cog"></i> Судьи</button>
-                        <button class="top-btn-action danger" onclick="openLive()"><i class="fas fa-circle" style="font-size:0.5rem;"></i> LIVE</button>
-                    `;
+                    html += `<button class="top-btn-action danger" onclick="openLive()"><i class="fas fa-circle" style="font-size:0.5rem;"></i> LIVE</button>`;
                 }
             }
 
@@ -819,6 +839,14 @@
                     <div class="stat-box"><div class="stat-box-label">Участников</div><div class="stat-box-value green">${t.participantCount || 0}</div><div class="stat-box-sub">из ${t.maxParticipants || 0}</div></div>
                     <div class="stat-box"><div class="stat-box-label">${deadline !== null && deadline > 0 ? 'До конца' : 'Дедлайн'}</div><div class="stat-box-value ${deadline > 0 ? 'blue' : 'red'}">${deadline !== null && deadline > 0 ? deadline + ' дн' : 'прошёл'}</div><div class="stat-box-sub">${t.registrationDeadline ? formatDate(t.registrationDeadline) : '—'}</div></div>
                 `;
+            } else if (t.status === 'scheduled') {
+                const approvedCount = registrations.filter(r => r.status === 'approved').length;
+                stats.innerHTML = `
+                    <div class="stat-box"><div class="stat-box-label">Дата</div><div class="stat-box-value">${formatDate(t.date)}</div><div class="stat-box-sub">—</div></div>
+                    <div class="stat-box"><div class="stat-box-label">Участников</div><div class="stat-box-value green">${approvedCount}</div><div class="stat-box-sub">в сетке</div></div>
+                    <div class="stat-box"><div class="stat-box-label">Столов</div><div class="stat-box-value blue">${t.ringsCount || 1}</div><div class="stat-box-sub">готовы</div></div>
+                    <div class="stat-box"><div class="stat-box-label">Статус</div><div class="stat-box-value" style="color:#a78bfa;">Сетка готова</div><div class="stat-box-sub">ждём старт</div></div>
+                `;
             } else if (t.status === 'active') {
                 const completed = matches.filter(m => m.status === 'completed').length;
                 stats.innerHTML = `
@@ -845,7 +873,6 @@
             }
         }
 
-        // Обёртка для обратной совместимости
         function renderHeader() {
             renderTopBar();
             renderHero();
@@ -869,22 +896,11 @@
             let tabs = [];
 
             if (isOwner) {
-                // 🔧 ФИКС: организатор видит ВСЕ табы сразу
                 tabs.push({ key: 'overview', icon: 'fa-chart-pie', label: 'Обзор' });
-
-                // 🔧 ФИКС: таб «Заявки» убран — боец сразу в участниках
-
-                tabs.push({
-                    key: 'participants',
-                    icon: 'fa-users',
-                    label: 'Участники',
-                    count: approvedCount
-                });
-
+                tabs.push({ key: 'participants', icon: 'fa-users', label: 'Участники', count: approvedCount });
                 if (!isCompleted) {
                     tabs.push({ key: 'bracket', icon: 'fa-sitemap', label: 'Сетка' });
                 }
-
                 if (isCompleted) {
                     tabs.push({ key: 'results', icon: 'fa-medal', label: 'Результаты' });
                 }
@@ -941,7 +957,6 @@
 
         function renderTabContent(tabKey) {
             if (tabKey === 'overview') renderOverview();
-            // 🔧 ФИКС: таб «Заявки» убран
             else if (tabKey === 'participants') { renderParticipants(); renderFighterParticipants(); }
             else if (tabKey === 'bracket') { renderBracket(); renderFighterBracket(); }
             else if (tabKey === 'results') { renderResults(); renderFighterResults(); }
@@ -961,7 +976,6 @@
             const t = tournamentData;
             const escrow = t.escrowAmount || 0;
             const myShare = Math.round(escrow * 0.8);
-            // 🔧 ФИКС: pendingCount убран — заявок больше нет
 
             if (t.status === 'registration') {
                 const progress = t.maxParticipants ? Math.round((t.participantCount || 0) / t.maxParticipants * 100) : 0;
@@ -987,6 +1001,57 @@
                         <div class="panel-header"><h3><i class="fas fa-chart-bar"></i> Прогресс набора</h3></div>
                         <div class="progress-bar"><div class="progress-fill" style="width:${progress}%;"></div></div>
                         <div class="progress-text"><span>${t.participantCount || 0} / ${t.maxParticipants || 0} участников</span><span>${progress}%</span></div>
+                    </div>
+
+                    <div class="panel">
+                        <div class="panel-header"><h3><i class="fas fa-users-cog"></i> Панель судей</h3></div>
+                        <div class="alert-block ${t.judgeToken ? 'success' : 'warning'}">
+                            <i class="fas ${t.judgeToken ? 'fa-check-circle' : 'fa-exclamation-triangle'}"></i>
+                            <div>${t.judgeToken ? '✅ Токен создан. Ссылки судей активны.' : '⚠️ Токена нет. Создайте его <b>до старта</b> — иначе старт упадёт.'}</div>
+                        </div>
+                        <button class="btn btn-outline" onclick="openJudgesPanel()"><i class="fas fa-users-cog"></i> Открыть панель судей</button>
+                    </div>
+
+                    ${renderRingsBlock()}
+                `;
+            }
+
+            if (t.status === 'scheduled') {
+                const approvedCount = registrations.filter(r => r.status === 'approved').length;
+                return `
+                    <div class="stats-grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px;">
+                        <div class="stat-box" style="text-align:center;padding:12px 10px;"><div class="stat-box-label">Участников</div><div class="stat-box-value">${approvedCount}</div></div>
+                        <div class="stat-box" style="text-align:center;padding:12px 10px;"><div class="stat-box-label">Собрано</div><div class="stat-box-value green">${escrow.toLocaleString('ru-RU')} ₽</div></div>
+                        <div class="stat-box" style="text-align:center;padding:12px 10px;"><div class="stat-box-label">Мои 80%</div><div class="stat-box-value blue">${myShare.toLocaleString('ru-RU')} ₽</div></div>
+                    </div>
+
+                    <div class="panel">
+                        <div class="panel-header"><h3><i class="fas fa-lock"></i> Эскроу</h3></div>
+                        <div class="alert-block success">
+                            <i class="fas fa-lock"></i>
+                            <div>
+                                <b>${escrow.toLocaleString('ru-RU')} ₽ в эскроу.</b> Заблокировано до старта.
+                                <br><span style="font-size:0.7rem;opacity:0.8;">После старта — 80% вам (${myShare.toLocaleString('ru-RU')} ₽), 20% платформе.</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="panel">
+                        <div class="panel-header"><h3><i class="fas fa-users-cog"></i> Панель судей</h3></div>
+                        <div class="alert-block ${t.judgeToken ? 'success' : 'warning'}">
+                            <i class="fas ${t.judgeToken ? 'fa-check-circle' : 'fa-exclamation-triangle'}"></i>
+                            <div>${t.judgeToken ? '✅ Токен создан. Ссылки судей активны.' : '⚠️ Токена нет. Создайте его <b>до старта</b> — иначе старт упадёт.'}</div>
+                        </div>
+                        <button class="btn btn-outline" onclick="openJudgesPanel()"><i class="fas fa-users-cog"></i> Открыть панель судей</button>
+                    </div>
+
+                    <div class="panel">
+                        <div class="panel-header"><h3><i class="fas fa-sitemap"></i> Сетка готова</h3></div>
+                        <div class="alert-block info">
+                            <i class="fas fa-info-circle"></i>
+                            <div>Сетка сгенерирована, бои распределены. Проверьте столы и нажмите «Начать турнир».</div>
+                        </div>
+                        <button class="btn btn-outline" onclick="switchTab('bracket')" style="margin-top:8px;"><i class="fas fa-sitemap"></i> Смотреть сетку</button>
                     </div>
 
                     ${renderRingsBlock()}
@@ -1189,13 +1254,44 @@
                 el.style.display = 'block';
                 if (t.status === 'registration' || t.status === 'scheduled') {
                     const escrow = t.escrowAmount || 0;
-                    inner.innerHTML = `
-                        <div class="sticky-info">
-                            <div class="sticky-label">В эскроу</div>
-                            <div class="sticky-value green">${escrow.toLocaleString('ru-RU')} ₽</div>
-                        </div>
-                        <button class="btn-cta" onclick="document.getElementById('changeStatusBtn')?.click()"><i class="fas fa-play"></i> Начать турнир</button>
-                    `;
+
+                    // 🔧 ФИКС: проверяем готовность турнира к старту
+                    const checks = {
+                        token: !!t.judgeToken,
+                        bracket: !!t.bracketGenerated,
+                        minParticipants: registrations.filter(r => r.status === 'approved').length >= 2,
+                        ringsAssigned: t.bracketGenerated ? matches.filter(m => m.round === 1 && m.status !== 'bye').every(m => m.ringId != null) : false,
+                        ringsCount: (t.ringsCount || 0) >= 1
+                    };
+                    const ready = Object.values(checks).every(Boolean);
+                    const missing = [];
+                    if (!checks.minParticipants) missing.push('минимум 2 участника');
+                    if (!checks.bracket) missing.push('сетка');
+                    if (!checks.ringsCount) missing.push('столы');
+                    if (!checks.ringsAssigned && checks.bracket) missing.push('распределение боёв по столам');
+                    if (!checks.token) missing.push('токен судей');
+
+                    if (ready) {
+                        inner.innerHTML = `
+                            <div class="sticky-info">
+                                <div class="sticky-label">В эскроу</div>
+                                <div class="sticky-value green">${escrow.toLocaleString('ru-RU')} ₽</div>
+                            </div>
+                            <button class="btn-cta" onclick="document.getElementById('changeStatusBtn')?.click()"><i class="fas fa-play"></i> Начать турнир</button>
+                        `;
+                    } else {
+                        inner.innerHTML = `
+                            <div class="sticky-info" style="flex:1;">
+                                <div class="sticky-label" style="color:#fca5a5;">Не готово к старту</div>
+                                <div class="sticky-value" style="font-size:0.82rem;color:#fca5a5;font-weight:600;line-height:1.3;">
+                                    Не хватает: ${missing.join(', ')}
+                                </div>
+                            </div>
+                            <button class="btn-cta" disabled style="opacity:0.45;cursor:not-allowed;background:#333;color:#888;box-shadow:none;">
+                                <i class="fas fa-lock"></i> Начать турнир
+                            </button>
+                        `;
+                    }
                 } else if (t.status === 'active') {
                     inner.innerHTML = `
                         <div class="sticky-info">
@@ -1218,7 +1314,6 @@
                 return;
             }
 
-            // Боец / гость
             if (t.status === 'registration') {
                 if (!currentUser) {
                     el.style.display = 'block';
@@ -1448,10 +1543,7 @@
             if (!ok) return;
             try {
                 if (isPaid && r.paymentAmount > 0) {
-                    try {
-                        await OrganizerWallet.refundEntry(r.fighterId, r.paymentAmount, tournamentId, `Возврат`);
-                        escrowAmount = Math.max(0, escrowAmount - r.paymentAmount);
-                    } catch (err) { console.error(err); }
+                    await OrganizerWallet.refundEntry(r.fighterId, tournamentId, `Возврат`);
                 }
                 await updateDoc(doc(db, "tournament_registrations", rid), { status: 'rejected', processedAt: new Date().toISOString() });
                 selectedRequestIds.delete(rid);
@@ -1503,7 +1595,7 @@
                 if (!r) continue;
                 try {
                     if (r.paymentStatus === 'paid' && r.paymentAmount > 0) {
-                        try { await OrganizerWallet.refundEntry(r.fighterId, r.paymentAmount, tournamentId, `Возврат`); } catch (e) {}
+                        try { await OrganizerWallet.refundEntry(r.fighterId, tournamentId, `Возврат`); } catch (e) {}
                     }
                     await updateDoc(doc(db, "tournament_registrations", id), { status: 'rejected', processedAt: new Date().toISOString() });
                     success++;
@@ -1564,7 +1656,7 @@
             const c = document.getElementById('participantsList');
             if (!c) return;
             const isOwner = userRole === 'organizer' && isUserOrganizerOfTournament(currentUser?.uid);
-            if (isOwner) return; // уже отрисовано в renderParticipants
+            if (isOwner) return;
             const a = registrations.filter(r => r.status === 'approved');
             const cnt = document.getElementById('participantsCount');
             if (cnt) cnt.textContent = `(${a.length})`;
@@ -1579,7 +1671,6 @@
             </div>`).join('');
         }
 
-        // 🔧 ФИКС: удаление бойца с возвратом денег
         window.removeParticipant = async function(rid) {
             const r = registrations.find(x => x.id === rid);
             if (!r) return;
@@ -1588,24 +1679,16 @@
             const ok = await showConfirm(
                 'Удалить бойца?',
                 `<div><strong>${escapeHtml(r.fighterName || 'Боец')}</strong> будет удалён из турнира.</div>
-                 ${isPaid ? `<div class="info-box"><i class="fas fa-info-circle"></i> Взнос ${r.paymentAmount.toLocaleString('ru-RU')} ₽ вернётся на баланс.</div>` : ''}`,
+                ${isPaid ? `<div class="info-box"><i class="fas fa-info-circle"></i> Взнос ${r.paymentAmount.toLocaleString('ru-RU')} ₽ вернётся на баланс.</div>` : ''}`,
                 'Удалить'
             );
             if (!ok) return;
 
             try {
-                // 1. Возврат денег
                 if (isPaid) {
-                    try {
-                        await OrganizerWallet.refundEntry(r.fighterId, r.paymentAmount, tournamentId, 'Удаление организатором');
-                        escrowAmount = Math.max(0, escrowAmount - r.paymentAmount);
-                    } catch (err) { console.error('Refund error:', err); }
+                    await OrganizerWallet.refundEntry(r.fighterId, tournamentId, 'Удаление организатором');
                 }
-                // 2. Удаление записи
                 await deleteDoc(doc(db, "tournament_registrations", rid));
-                // 3. Счётчик
-                await updateDoc(doc(db, "tournaments", tournamentId), { participantCount: increment(-1) });
-                tournamentData.participantCount = Math.max(0, (tournamentData.participantCount || 0) - 1);
                 await loadTournament(tournamentId);
                 renderOverview(); renderParticipants(); renderTabs(); renderStickyCta();
                 showToast('✅ Боец удалён, деньги возвращены', 'success');
@@ -1623,7 +1706,6 @@
             else window.location.href = userRole === 'organizer' ? `my-tournaments.html` : 'tournaments.html';
         });
 
-        // Скрытая кнопка для смены статуса — вызывается из sticky
         const hiddenChangeStatusBtn = document.createElement('button');
         hiddenChangeStatusBtn.id = 'changeStatusBtn';
         hiddenChangeStatusBtn.style.display = 'none';
@@ -1635,6 +1717,19 @@
             if (tournamentData.status === 'registration' || tournamentData.status === 'scheduled') {
                 const ac = registrations.filter(r => r.status === 'approved').length;
                 if (ac < 2) { showToast('❌ Минимум 2 участника', 'error'); return; }
+
+                if (!tournamentData.judgeToken) {
+                    showToast('⚠️ Создайте токен судей перед стартом (панель «Судьи»)', 'error');
+                    return;
+                }
+
+                if (tournamentData.ringsCount && tournamentData.ringsCount > 0) {
+                    const hasNoRing = matches.some(m => m.ringId == null || m.ringId === undefined);
+                    if (hasNoRing) {
+                        showToast('⚠️ Распределите бои по рингам перед стартом', 'error');
+                        return;
+                    }
+                }
 
                 const escrowStr = escrowAmount.toLocaleString('ru-RU');
                 const orgShare = Math.round(escrowAmount * 0.8).toLocaleString('ru-RU');
@@ -1654,7 +1749,11 @@
 
                     if (!tournamentData.paidOutToOrganizer && escrowAmount > 0) {
                         showToast('⏳ Выплата...', 'info');
-                        const payout = await OrganizerWallet.payoutToOrganizer(tournamentData.organizationId, tournamentId, tournamentData.name);
+                        const payout = await OrganizerWallet.payoutToOrganizer(
+                            tournamentData.organizationId || tournamentData.createdByUserId,
+                            tournamentId,
+                            tournamentData.name
+                        );
                         escrowAmount = 0;
                         showToast(`✅ Выплачено ${payout.organizerAmount.toLocaleString('ru-RU')} ₽`, 'success');
                     }
@@ -1670,10 +1769,67 @@
                     return;
                 }
             } else if (tournamentData.status === 'active') {
-                const ok = await showConfirm('Завершить турнир?', '<div>Турнир перейдёт в «завершён»</div>', 'Завершить');
+                const ringsCount = tournamentData.ringsCount || 1;
+                const closedRings = tournamentData.closedRings || {};
+
+                const openRings = [];
+                for (let r = 1; r <= ringsCount; r++) {
+                    if (closedRings[r] !== true) openRings.push(r);
+                }
+                if (openRings.length > 0) {
+                    showToast(`⚠️ Столы ещё не закрыты: ${openRings.join(', ')}`, 'error');
+                    return;
+                }
+
+                const notCompleted = matches.filter(m =>
+                    m.fighter1 && m.fighter2 &&
+                    m.status !== 'completed' && m.status !== 'bye'
+                );
+                if (notCompleted.length > 0) {
+                    showToast(`⚠️ ${notCompleted.length} боёв ещё не завершены`, 'error');
+                    return;
+                }
+
+                const ok = await showConfirm(
+                    'Завершить турнир?',
+                    `<div>Все <strong>${ringsCount}</strong> ${plural(ringsCount, 'стол', 'стола', 'столов')} закрыты, все бои проведены.</div>
+                    <div class="info-box"><i class="fas fa-flag-checkered"></i> Турнир перейдёт в статус «завершён».</div>`,
+                    'Завершить'
+                );
                 if (!ok) return;
-                await updateDoc(doc(db, "tournaments", tournamentId), { status: 'completed', completedAt: new Date().toISOString() });
-                await loadTournament(tournamentId);
+
+                try {
+                    await runTransaction(db, async (tx) => {
+                        const tRef = doc(db, "tournaments", tournamentId);
+                        const tSnap = await tx.get(tRef);
+                        if (!tSnap.exists()) throw new Error('Турнир не найден');
+                        const t = tSnap.data();
+                        if (t.status !== 'active') throw new Error('Турнир не в статусе «идёт»');
+
+                        const closedRingsNow = t.closedRings || {};
+                        const openNow = [];
+                        for (let r = 1; r <= (t.ringsCount || 1); r++) {
+                            if (closedRingsNow[r] !== true) openNow.push(r);
+                        }
+                        if (openNow.length > 0) throw new Error(`Столы не закрыты: ${openNow.join(', ')}`);
+
+                        tx.update(tRef, {
+                            status: 'completed',
+                            completedAt: new Date().toISOString(),
+                            completedBy: currentUser?.uid || null
+                        });
+                    });
+
+                    await loadTournament(tournamentId);
+                    renderHeader(); renderTabs(); renderOverview(); renderStickyCta();
+                    if (currentTab === 'bracket') renderBracket();
+                    showToast('🏁 Турнир завершён', 'success');
+                    return;
+                } catch (e) {
+                    console.error(e);
+                    showToast('Ошибка: ' + e.message, 'error');
+                    return;
+                }
             }
 
             renderHeader(); renderTabs(); renderOverview(); renderStickyCta();
@@ -1961,13 +2117,11 @@
                 const days = daysUntil(tournamentData.date);
 
                 if (!isOwner) {
-                    // Для бойца/гостя — просто заглушка
                     const msg = days > 3 ? `Сетка будет готова за 3 дня до турнира (осталось ${days} дн.)` : 'Сетка скоро будет готова!';
                     c.innerHTML = `<div class="empty-state"><i class="fas fa-sitemap"></i><h3>Сетка ещё не готова</h3><p style="color:#888;font-size:0.82rem;">${msg}</p></div>`;
                     return;
                 }
 
-                // Для организатора — подробная инструкция
                 if (approvedCount < 2) {
                     c.innerHTML = `
                         <div class="empty-state">
@@ -1988,7 +2142,6 @@
                     return;
                 }
 
-                // ≥ 2 участника — кнопка генерации
                 const autoText = days > 3
                     ? `<p style="color: #888; font-size: 0.72rem; margin-top: 8px;">Автогенерация за 3 дня до турнира — через ${days} дн.</p>`
                     : `<p style="color: #10b981; font-size: 0.72rem; margin-top: 8px;"><i class="fas fa-check-circle"></i> Готово к генерации</p>`;
@@ -2115,7 +2268,7 @@
             const cm = matches.filter(m => m.status === 'completed');
             if (!cm.length) { c.innerHTML = `<div class="empty-state"><i class="fas fa-medal"></i><h3>Пока нет боёв</h3></div>`; return; }
             c.innerHTML = cm.map(m => {
-                const typeLabel = m.winType === 'ko' ? 'Нокаут' : m.winType === 'submission' ? 'Сабмишн' : 'Решение';
+                const typeLabel = m.winType === 'ko' ? 'Нокаут' : m.winType === 'submission' ? 'Саблишн' : 'Решение';
                 return `<div class="participant-card">
                     <div class="participant-avatar"><i class="fas fa-trophy" style="color:#fbbf24;"></i></div>
                     <div style="flex:1;">
@@ -2138,7 +2291,7 @@
             if (!my.length) { c.innerHTML = `<div class="empty-state"><i class="fas fa-medal"></i><h3>Пока нет ваших боёв</h3></div>`; return; }
             c.innerHTML = my.map(m => {
                 const w = m.winner?.id === currentUser?.uid;
-                const typeLabel = m.winType === 'ko' ? 'Нокаут' : m.winType === 'submission' ? 'Сабмишн' : 'Решение';
+                const typeLabel = m.winType === 'ko' ? 'Нокаут' : m.winType === 'submission' ? 'Саблишн' : 'Решение';
                 const oppName = m.fighter1?.id === currentUser?.uid ? m.fighter2?.name : m.fighter1?.name;
                 return `<div class="participant-card" style="border-color:${w ? 'rgba(16,185,129,0.3)' : 'rgba(239,68,68,0.3)'};">
                     <div class="participant-avatar"><i class="fas ${w ? 'fa-trophy' : 'fa-times'}" style="color:${w ? '#10b981' : '#ef4444'};"></i></div>
@@ -2151,7 +2304,7 @@
         }
 
         // ============================================================
-        // RINGS (упрощённый блок)
+        // RINGS
         // ============================================================
         function renderRingsBlock() {
             const t = tournamentData;
@@ -2380,7 +2533,6 @@
 
             let html = tokenBlock;
 
-            // Главный судья
             html += `
                 <div style="background: rgba(251,191,36,0.08); border: 1px solid rgba(251,191,36,0.3); border-radius: 12px; padding: 12px 14px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; ${!token ? 'opacity:0.5;' : ''}">
                     <div style="width: 40px; height: 40px; border-radius: 10px; background: rgba(251,191,36,0.15); color: #fbbf24; display: flex; align-items: center; justify-content: center; font-size: 1rem; flex-shrink: 0;">
@@ -2397,7 +2549,6 @@
                 </div>
             `;
 
-            // Каждый стол — панель судьи + табло
             for (let r = 1; r <= ringsCount; r++) {
                 const ringMatches = matches.filter(m => m.ringId === r && m.round === 1);
                 const completed = ringMatches.filter(m => m.status === 'completed').length;
@@ -2438,7 +2589,6 @@
                 `;
             }
 
-            // Общее табло
             html += `
                 <div style="background: rgba(16,185,129,0.06); border: 1px solid rgba(16,185,129,0.25); border-radius: 12px; padding: 12px 14px; margin-top: 10px;">
                     <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
@@ -2491,20 +2641,38 @@
         };
 
         function buildJudgeUrl(role) {
-            const baseUrl = window.location.href.replace('tournament-details.html', 'live-judging.html').split('?')[0];
+            const url = new URL(window.location.href);
+            url.pathname = url.pathname.replace(/tournament-details\.html$/, 'live-judging.html');
+            url.search = '';
+            url.searchParams.set('id', tournamentId);
             const token = tournamentData.judgeToken || '';
-            if (role === 'chief') return `${baseUrl}?id=${tournamentId}&role=chief&k=${token}`;
-            return `${baseUrl}?id=${tournamentId}&ring=${role}&k=${token}`;
+            if (role === 'chief') {
+                url.searchParams.set('role', 'chief');
+                url.searchParams.set('k', token);
+            } else {
+                url.searchParams.set('ring', role);
+                url.searchParams.set('k', token);
+            }
+            return url.toString();
         }
 
         function buildDisplayUrl(ring) {
-            const baseUrl = window.location.href.replace('tournament-details.html', 'live-judging.html').split('?')[0];
-            return `${baseUrl}?id=${tournamentId}&ring=${ring}&role=display`;
+            const url = new URL(window.location.href);
+            url.pathname = url.pathname.replace(/tournament-details\.html$/, 'live-judging.html');
+            url.search = '';
+            url.searchParams.set('id', tournamentId);
+            url.searchParams.set('ring', ring);
+            url.searchParams.set('role', 'display');
+            return url.toString();
         }
 
         function buildDisplayGridUrl() {
-            const baseUrl = window.location.href.replace('tournament-details.html', 'live-judging.html').split('?')[0];
-            return `${baseUrl}?id=${tournamentId}&role=display`;
+            const url = new URL(window.location.href);
+            url.pathname = url.pathname.replace(/tournament-details\.html$/, 'live-judging.html');
+            url.search = '';
+            url.searchParams.set('id', tournamentId);
+            url.searchParams.set('role', 'display');
+            return url.toString();
         }
 
         function copyToClipboard(url, successMsg) {
@@ -2553,7 +2721,6 @@
         window.openRegisterModal = async function() {
             if (!currentUser) { window.location.href = 'login.html'; return; }
 
-            // 🔧 ФИКС: запрет двойной записи
             const existing = registrations.find(r =>
                 r.fighterId === currentUser.uid &&
                 (r.status === 'approved' || r.status === 'pending')
@@ -2640,78 +2807,30 @@
         };
 
         window.processRegistration = async function() {
-            // 🔧 ФИКС: защита от двойного клика
             if (isRegistering) return;
             if (!currentUser) return;
             isRegistering = true;
 
             try {
-                // Проверка в локальном массиве (свежая, из onSnapshot)
-                const existing = registrations.find(r =>
-                    r.fighterId === currentUser.uid &&
-                    (r.status === 'approved' || r.status === 'pending')
-                );
-                if (existing) {
-                    showToast('Вы уже записаны', 'error');
-                    closeModal('registerModal');
-                    return;
-                }
-
                 const weightClassStr = document.getElementById('regWeightClass')?.value || '';
                 if (!weightClassStr) { showToast('Выберите весовую категорию', 'error'); return; }
 
                 const fee = tournamentData.entryFee || 0;
-                const fighterWeight = currentFighterData?.weight || '';
-                const fighterClub = currentFighterData?.clubName || '';
+                const fighterWeight = currentFighterData?.weight || null;
+                const fighterClub = currentFighterData?.clubName || null;
 
-                let balance = 0;
-                try {
-                    const balDoc = await getDoc(doc(db, "wallet_balances", currentUser.uid));
-                    if (balDoc.exists()) balance = balDoc.data().available || 0;
-                } catch (e) {}
-
-                if (balance < fee) {
-                    showToast(`Недостаточно средств. Доступно: ${balance} ₽, нужно: ${fee} ₽`, 'error');
-                    return;
-                }
-
-                // 🔧 ФИКС: жёсткая проверка на сервере — вдруг уже есть (например, из другой вкладки)
-                const regId = `${currentUser.uid}_${tournamentId}`;
-                const regRef = doc(db, "tournament_registrations", regId);
-                const existingDoc = await getDoc(regRef);
-                if (existingDoc.exists()) {
-                    const data = existingDoc.data();
-                    if (data.status === 'approved' || data.status === 'pending') {
-                        showToast('Вы уже записаны', 'error');
-                        closeModal('registerModal');
-                        await loadRegistrations();
-                        return;
-                    }
-                }
-
-                // Оплата
-                await OrganizerWallet.payEntry(currentUser.uid, fee, tournamentId, tournamentData.name, tournamentData.organizationId, currentFighterData?.name || 'Боец');
-
-                // 🔧 ФИКС: детерминированный ID — вторая запись перезапишет первую
-                await setDoc(regRef, {
-                    tournamentId,
-                    organizationId: tournamentData.organizationId,
+                await OrganizerWallet.payEntry({
                     fighterId: currentUser.uid,
                     fighterName: currentFighterData?.name || 'Боец',
                     fighterWeight,
                     fighterClub,
+                    amount: fee,
+                    tournamentId,
+                    tournamentName: tournamentData.name,
+                    organizationId: tournamentData.organizationId,
                     weightClass: weightClassStr,
-                    status: 'approved',
-                    paymentStatus: 'paid',
-                    paymentAmount: fee,
-                    paymentMethod: 'balance',
-                    processedAt: serverTimestamp(),
-                    processedBy: 'system',
-                    createdAt: serverTimestamp()
+                    paymentMethod: 'balance'
                 });
-
-                await updateDoc(doc(db, "tournaments", tournamentId), { participantCount: increment(1) });
-                tournamentData.participantCount = (tournamentData.participantCount || 0) + 1;
 
                 showToast('✅ Вы записаны! Оплата прошла', 'success');
                 closeModal('registerModal');
@@ -2719,12 +2838,11 @@
                 await loadRegistrations();
                 await loadTournament(tournamentId);
                 renderOverview(); renderTabs(); renderStickyCta();
-
             } catch (e) {
                 console.error(e);
                 showToast('❌ ' + (e.message || 'Ошибка записи'), 'error');
             } finally {
-                isRegistering = false;   // 🔧 ФИКС: снимаем блокировку в любом случае
+                isRegistering = false;
             }
         };
 
@@ -2736,10 +2854,10 @@
             const ok = await showConfirm('Отменить заявку?', `<div>Ваша заявка будет отменена</div>${paid ? `<div class="info-box">${r.paymentAmount} ₽ вернётся</div>` : ''}`, 'Отменить');
             if (!ok) return;
             try {
-                if (paid && r.paymentAmount > 0) { await OrganizerWallet.refundEntry(r.fighterId, r.paymentAmount, tournamentId, 'Отмена бойцом'); }
+                if (paid && r.paymentAmount > 0) {
+                    await OrganizerWallet.refundEntry(r.fighterId, tournamentId, 'Отмена бойцом');
+                }
                 await deleteDoc(doc(db, "tournament_registrations", rid));
-                await updateDoc(doc(db, "tournaments", tournamentId), { participantCount: increment(-1) });
-                tournamentData.participantCount = Math.max(0, (tournamentData.participantCount || 0) - 1);
                 myRegistration = null;
                 await loadRegistrations(); await loadTournament(tournamentId);
                 renderOverview(); renderTabs(); renderStickyCta();
@@ -2762,7 +2880,6 @@
             } catch (e) { showToast('Ошибка', 'error'); }
         });
 
-        // CSV
         document.getElementById('exportCsvBtn')?.addEventListener('click', () => {
             const a = registrations.filter(r => r.status === 'approved');
             if (!a.length) return showToast('Нет данных', 'error');
@@ -2778,9 +2895,12 @@
 
         async function checkRegisterParam() {
             const params = new URLSearchParams(window.location.search);
-            if (params.get('register') === '1' && currentUser && !myRegistration && tournamentData.status === 'registration' && !tournamentData.deleted) {
-                setTimeout(() => openRegisterModal(), 400);
-                window.history.replaceState(null, '', `?id=${tournamentId}`);
+            if (params.get('register') === '1' && currentUser && tournamentData.status === 'registration' && !tournamentData.deleted) {
+                const existing = registrations.find(r => r.fighterId === currentUser.uid);
+                if (!existing || existing.status === 'rejected') {
+                    setTimeout(() => openRegisterModal(), 400);
+                    window.history.replaceState(null, '', `?id=${tournamentId}`);
+                }
             }
         }
 
@@ -2788,6 +2908,7 @@
 
         onAuthStateChanged(auth, async (user) => {
             currentUser = user;
+            try { await OrganizerWallet.ensureEscrowAccount(); } catch (e) { console.warn('escrow init', e); }
             const id = new URLSearchParams(window.location.search).get('id');
             if (!id) { window.location.href = 'index.html'; return; }
             await loadTournament(id);
@@ -2799,7 +2920,8 @@
             } else userRole = 'guest';
             escrowAmount = tournamentData.escrowAmount || 0;
             renderHeader();
-            subscribeToRegistrations();   
+            subscribeToRegistrations();
+            subscribeToTournament();
             await loadMatches();
 
             renderTabs();
@@ -2810,6 +2932,11 @@
             renderStickyCta();
 
             await checkRegisterParam();
+        });
+
+        window.addEventListener('beforeunload', () => {
+            if (registrationsUnsubscribe) registrationsUnsubscribe();
+            if (tournamentUnsubscribe) tournamentUnsubscribe();
         });
     </script>
 </body>

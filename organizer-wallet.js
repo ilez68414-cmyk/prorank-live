@@ -1,10 +1,3 @@
-// organizer-wallet.js
-// ============================================================
-// Модуль финансов организатора + эскроу для турниров
-// Отдельная роль. Не пересекается с wallet.js (бойцы, партнёры).
-// Все операции — через runTransaction (атомарно).
-// ============================================================
-
 import {
     getFirestore,
     doc, getDoc, setDoc, updateDoc,
@@ -19,26 +12,50 @@ const db = getFirestore();
 // ============================================================
 // КОНСТАНТЫ
 // ============================================================
+const ORG_SHARE = 0.8;
+const PLATFORM_SHARE = 0.2;
+const MIN_WITHDRAWAL = 100;
+const ESCROW_ACCOUNT = "prorank_escrow";
+const PLATFORM_ACCOUNT = "prorank_system";
 
-const ORG_SHARE = 0.8;          // 80% организатору
-const PLATFORM_SHARE = 0.2;     // 20% платформе
-const MIN_WITHDRAWAL = 100;     // минимум вывода
-const ESCROW_ACCOUNT = "prorank_escrow"; // виртуальный кошелёк эскроу
-
-// ============================================================
-// ВСПОМОГАТЕЛЬНЫЕ
-// ============================================================
-
-/**
- * Округление до копеек (чтобы не было 0.30000000004)
- */
 function round2(n) {
     return Math.round((Number(n) || 0) * 100) / 100;
 }
 
-/**
- * Записать транзакцию в общий журнал
- */
+// ============================================================
+// ИНИЦИАЛИЗАЦИЯ ЭСКРОУ
+// Вызывать один раз при деплое — создаст документ, если его нет
+// ============================================================
+export async function ensureEscrowAccount() {
+    const escrowRef = doc(db, "wallet_balances", ESCROW_ACCOUNT);
+    const snap = await getDoc(escrowRef);
+    if (!snap.exists()) {
+        await setDoc(escrowRef, {
+            userId: ESCROW_ACCOUNT,
+            userType: "system",
+            available: 0,
+            totalDeposited: 0,
+            totalReleased: 0,
+            totalRefunded: 0,
+            updatedAt: new Date()
+        });
+    }
+    const platformRef = doc(db, "wallet_balances", PLATFORM_ACCOUNT);
+    const psnap = await getDoc(platformRef);
+    if (!psnap.exists()) {
+        await setDoc(platformRef, {
+            userId: PLATFORM_ACCOUNT,
+            userType: "system",
+            available: 0,
+            totalEarned: 0,
+            updatedAt: new Date()
+        });
+    }
+}
+
+// ============================================================
+// ВСПОМОГАТЕЛЬНЫЕ
+// ============================================================
 async function logTransaction(data) {
     try {
         await addDoc(collection(db, "wallet_transactions"), {
@@ -47,42 +64,23 @@ async function logTransaction(data) {
         });
     } catch (err) {
         console.error("Ошибка записи транзакции:", err);
-        // Не бросаем — основная операция уже прошла
     }
 }
 
 // ============================================================
 // БАЗОВЫЕ ФУНКЦИИ ОРГАНИЗАТОРА
 // ============================================================
-
-/**
- * Получить баланс организатора
- * @param {string} orgId - ID организации
- * @returns {Promise<Object>} - { available, pending, totalEarned, totalWithdrawn, ... }
- */
 export async function getOrganizerBalance(orgId) {
     if (!orgId) return { available: 0, pending: 0, totalEarned: 0, totalWithdrawn: 0 };
-
     try {
         const ref = doc(db, "wallet_balances", orgId);
         const snap = await getDoc(ref);
-
-        if (snap.exists()) {
-            return snap.data();
-        }
-
-        // Создаём дефолтный кошелёк
+        if (snap.exists()) return snap.data();
         const defaultBalance = {
-            userId: orgId,
-            userType: "organizer",
-            available: 0,
-            pending: 0,
-            pendingWithdraw: 0,
-            totalEarned: 0,
-            totalWithdrawn: 0,
-            totalRefunded: 0,
-            hasPayout: false,
-            updatedAt: new Date()
+            userId: orgId, userType: "organizer",
+            available: 0, pending: 0, pendingWithdraw: 0,
+            totalEarned: 0, totalWithdrawn: 0, totalRefunded: 0,
+            hasPayout: false, updatedAt: new Date()
         };
         await setDoc(ref, defaultBalance);
         return defaultBalance;
@@ -92,14 +90,8 @@ export async function getOrganizerBalance(orgId) {
     }
 }
 
-/**
- * Получить историю транзакций организатора
- * @param {string} orgId
- * @param {number} txLimit
- */
 export async function getOrganizerTransactions(orgId, txLimit = 50) {
     if (!orgId) return [];
-
     try {
         const q = query(
             collection(db, "wallet_transactions"),
@@ -111,11 +103,7 @@ export async function getOrganizerTransactions(orgId, txLimit = 50) {
         const snap = await getDocs(q);
         return snap.docs.map(d => {
             const data = d.data();
-            return {
-                id: d.id,
-                ...data,
-                createdAt: data.createdAt?.toDate() || new Date()
-            };
+            return { id: d.id, ...data, createdAt: data.createdAt?.toDate() || new Date() };
         });
     } catch (err) {
         console.error("Ошибка получения транзакций организатора:", err);
@@ -123,13 +111,6 @@ export async function getOrganizerTransactions(orgId, txLimit = 50) {
     }
 }
 
-/**
- * Создать заявку на вывод средств
- * @param {string} orgId
- * @param {number} amount
- * @param {string} method - 'card' | 'sbp'
- * @param {string} details - реквизиты
- */
 export async function requestOrganizerWithdrawal(orgId, amount, method, details) {
     if (!orgId) throw new Error("Организация не указана");
     if (!amount || amount < MIN_WITHDRAWAL) throw new Error(`Минимум вывода — ${MIN_WITHDRAWAL} ₽`);
@@ -137,18 +118,12 @@ export async function requestOrganizerWithdrawal(orgId, amount, method, details)
 
     const balanceRef = doc(db, "wallet_balances", orgId);
 
-    // 1. Резервируем средства атомарно
     await runTransaction(db, async (tx) => {
         const snap = await tx.get(balanceRef);
         if (!snap.exists()) throw new Error("Кошелёк не найден");
-
         const data = snap.data();
         const available = data.available || 0;
-
-        if (available < amount) {
-            throw new Error(`Недостаточно средств. Доступно: ${available} ₽`);
-        }
-
+        if (available < amount) throw new Error(`Недостаточно средств. Доступно: ${available} ₽`);
         tx.update(balanceRef, {
             available: round2(available - amount),
             pendingWithdraw: round2((data.pendingWithdraw || 0) + amount),
@@ -156,25 +131,15 @@ export async function requestOrganizerWithdrawal(orgId, amount, method, details)
         });
     });
 
-    // 2. Создаём заявку
     const withdrawalRef = await addDoc(collection(db, "withdrawals"), {
-        userId: orgId,
-        userType: "organizer",
-        amount,
-        method,
-        details,
-        status: "pending",
-        createdAt: new Date(),
-        updatedAt: new Date()
+        userId: orgId, userType: "organizer",
+        amount, method, details, status: "pending",
+        createdAt: new Date(), updatedAt: new Date()
     });
 
-    // 3. Транзакция в журнал
     await logTransaction({
-        userId: orgId,
-        userType: "organizer",
-        type: "withdrawal",
-        amount,
-        status: "pending",
+        userId: orgId, userType: "organizer",
+        type: "withdrawal", amount, status: "pending",
         withdrawalId: withdrawalRef.id,
         description: `Заявка на вывод ${amount} ₽ (${method})`
     });
@@ -183,12 +148,8 @@ export async function requestOrganizerWithdrawal(orgId, amount, method, details)
 }
 
 // ============================================================
-// ЭСКРОУ И ТУРНИРНЫЕ ОПЕРАЦИИ
+// ЭСКРОУ
 // ============================================================
-
-/**
- * Получить текущий эскроу турнира
- */
 export async function getEscrowBalance(tournamentId) {
     if (!tournamentId) return 0;
     try {
@@ -202,98 +163,89 @@ export async function getEscrowBalance(tournamentId) {
     }
 }
 
-/**
- * 1. БОЕЦ ПЛАТИТ ВЗНОС
- *    Списываем с бойца, кладём в эскроу турнира
- *
- * @param {string} fighterId
- * @param {number} amount
- * @param {string} tournamentId
- * @param {string} tournamentName
- * @param {string} organizationId
- * @param {string} fighterName
- */
-export async function payTournamentEntry(
-    fighterId, amount, tournamentId, tournamentName, organizationId, fighterName
-) {
-    if (!fighterId || !amount || amount <= 0 || !tournamentId) {
-        throw new Error("Неверные параметры оплаты");
-    }
+// ============================================================
+// 🔧 ФИКС: РЕГИСТРАЦИЯ + ОПЛАТА — ОДНА АТОМАРНАЯ ОПЕРАЦИЯ
+//
+// Что делаем внутри одной транзакции:
+//   1. Проверяем турнир (существует, открыт набор, есть места)
+//   2. Проверяем дубль (по детерминированному ID)
+//   3. Проверяем баланс бойца
+//   4. Списываем у бойца
+//   5. Кладём в общий эскроу
+//   6. Увеличиваем escrowAmount турнира
+//   7. Увеличиваем participantCount
+//   8. Создаём регистрацию
+//
+// Всё — либо сработает целиком, либо не сработает вообще.
+// ============================================================
+export async function payTournamentEntry(params) {
+    const {
+        fighterId, fighterName, fighterWeight, fighterClub,
+        amount, tournamentId, tournamentName,
+        organizationId, weightClass, paymentMethod
+    } = params || {};
 
-    // 🔧 ФИКС: защита от двойной записи
-    try {
-        const existingRegs = await getDocs(query(
-            collection(db, "tournament_registrations"),
-            where("tournamentId", "==", tournamentId),
-            where("fighterId", "==", fighterId)
-        ));
-        const active = existingRegs.docs.find(d => {
-            const s = d.data().status;
-            return s === 'pending' || s === 'approved';
-        });
-        if (active) {
-            throw new Error("Вы уже записаны на этот турнир");
-        }
-    } catch (e) {
-        if (e.message === "Вы уже записаны на этот турнир") throw e;
-        // Если запрос упал по другой причине (индексы и т.п.) — логируем, но не блокируем
-        console.warn("⚠️ payTournamentEntry: не удалось проверить дубликат", e);
-    }
+    if (!fighterId || !tournamentId) throw new Error("Не указан боец или турнир");
+    if (amount == null || amount < 0) throw new Error("Неверная сумма взноса");
 
-    // 🔧 ФИКС: запрет для забаненных бойцов
-    try {
-        const fighterDoc = await getDoc(doc(db, "fighters", fighterId));
-        if (fighterDoc.exists() && fighterDoc.data().banned === true) {
-            throw new Error("Ваш аккаунт заблокирован");
-        }
-    } catch (e) {
-        if (e.message === "Ваш аккаунт заблокирован") throw e;
-        console.warn("⚠️ payTournamentEntry: не удалось проверить бан", e);
-    }
-
+    const regId = `${fighterId}_${tournamentId}`;
+    const regRef = doc(db, "tournament_registrations", regId);
     const fighterRef = doc(db, "wallet_balances", fighterId);
     const escrowRef = doc(db, "wallet_balances", ESCROW_ACCOUNT);
     const tournamentRef = doc(db, "tournaments", tournamentId);
-    
-    await runTransaction(db, async (tx) => {
-        // 1. Проверяем бойца
-        const fighterSnap = await tx.get(fighterRef);
-        if (!fighterSnap.exists()) throw new Error("Кошелёк бойца не найден");
 
+    await runTransaction(db, async (tx) => {
+        // 1. Читаем всё параллельно
+        const [tournamentSnap, regSnap, fighterSnap, escrowSnap] = await Promise.all([
+            tx.get(tournamentRef),
+            tx.get(regRef),
+            tx.get(fighterRef),
+            tx.get(escrowRef)
+        ]);
+
+        // 2. Турнир
+        if (!tournamentSnap.exists()) throw new Error("Турнир не найден");
+        const t = tournamentSnap.data();
+
+        if (t.status !== "registration") throw new Error("Набор закрыт — турнир уже начался");
+        if (t.paidOutToOrganizer) throw new Error("Оплата уже была выплачена организатору");
+        if (t.deleted) throw new Error("Турнир удалён");
+
+        const participantCount = t.participantCount || 0;
+        const maxParticipants = t.maxParticipants || 0;
+        if (maxParticipants > 0 && participantCount >= maxParticipants) {
+            throw new Error(`Мест нет. Максимум: ${maxParticipants}`);
+        }
+
+        // 3. Дубль регистрации
+        if (regSnap.exists()) {
+            const r = regSnap.data();
+            if (r.status === 'approved' || r.status === 'pending') {
+                throw new Error("Вы уже записаны на этот турнир");
+            }
+        }
+
+        // 4. Кошелёк бойца
+        if (!fighterSnap.exists()) throw new Error("Кошелёк бойца не найден");
         const fighterData = fighterSnap.data();
         const fighterAvailable = fighterData.available || 0;
-
         if (fighterAvailable < amount) {
-            throw new Error(`Недостаточно средств. Доступно: ${fighterAvailable} ₽`);
+            throw new Error(`Недостаточно средств. Доступно: ${fighterAvailable} ₽, нужно: ${amount} ₽`);
         }
 
-        // 2. Проверяем турнир
-        const tournamentSnap = await tx.get(tournamentRef);
-        if (!tournamentSnap.exists()) throw new Error("Турнир не найден");
-
-        const tournamentData = tournamentSnap.data();
-        if (tournamentData.status !== "registration") {
-            throw new Error("Приём оплаты закрыт — турнир уже начался");
-        }
-        if (tournamentData.paidOutToOrganizer) {
-            throw new Error("Оплата уже была выплачена организатору");
-        }
-
-        // 3. Проверяем эскроу-счёт
-        const escrowSnap = await tx.get(escrowRef);
+        // 5. Эскроу (создаём если нет)
         const escrowData = escrowSnap.exists()
             ? escrowSnap.data()
             : { available: 0, totalDeposited: 0, totalReleased: 0, totalRefunded: 0 };
 
-        // 4. Списываем с бойца
+        // 6. Списываем с бойца
         tx.update(fighterRef, {
             available: round2(fighterAvailable - amount),
             totalSpent: round2((fighterData.totalSpent || 0) + amount),
-            hasPurchase: true,
             updatedAt: new Date()
         });
 
-        // 5. Кладём в эскроу
+        // 7. Кладём в общий эскроу
         tx.set(escrowRef, {
             userId: ESCROW_ACCOUNT,
             userType: "system",
@@ -304,177 +256,168 @@ export async function payTournamentEntry(
             updatedAt: new Date()
         }, { merge: true });
 
-        // 6. Увеличиваем эскроу турнира
+        // 8. Увеличиваем эскроу турнира и счётчик участников
         tx.update(tournamentRef, {
-            escrowAmount: round2((tournamentData.escrowAmount || 0) + amount),
-            escrowHistory: [
-                ...(tournamentData.escrowHistory || []),
-                {
-                    action: "entry",
-                    fighterId,
-                    fighterName: fighterName || "Боец",
-                    amount,
-                    at: new Date().toISOString()
-                }
-            ],
+            escrowAmount: round2((t.escrowAmount || 0) + amount),
+            participantCount: participantCount + 1,
             updatedAt: new Date().toISOString()
+        });
+
+        // 9. Создаём регистрацию
+        tx.set(regRef, {
+            tournamentId,
+            organizationId: organizationId || t.organizationId || null,
+            fighterId,
+            fighterName: fighterName || "Боец",
+            fighterWeight: fighterWeight || null,
+            fighterClub: fighterClub || null,
+            weightClass: weightClass || null,
+            status: "approved",
+            paymentStatus: amount > 0 ? "paid" : "free",
+            paymentAmount: amount,
+            paymentMethod: paymentMethod || "balance",
+            processedAt: new Date().toISOString(),
+            processedBy: "system",
+            createdAt: new Date().toISOString()
         });
     });
 
-    // 7. Транзакции в журнал (после успешной атомарной операции)
+    // 10. Журнал (после успешной транзакции)
     await logTransaction({
-        userId: fighterId,
-        userType: "fighter",
-        type: "tournament_entry",
-        amount: -amount,
-        status: "completed",
-        relatedId: tournamentId,
-        relatedType: "tournament",
-        metadata: {
-            tournamentName,
-            organizationId,
-            description: "Оплата взноса за турнир"
-        },
-        description: `Взнос за турнир «${tournamentName}»`
+        userId: fighterId, userType: "fighter",
+        type: "tournament_entry", amount: -amount, status: "completed",
+        relatedId: tournamentId, relatedType: "tournament",
+        metadata: { tournamentName, organizationId },
+        description: `Взнос за турнир «${tournamentName || ''}»`
     });
-
     await logTransaction({
-        userId: ESCROW_ACCOUNT,
-        userType: "system",
-        type: "escrow_hold",
-        amount,
-        status: "completed",
-        relatedId: tournamentId,
-        relatedType: "tournament",
+        userId: ESCROW_ACCOUNT, userType: "system",
+        type: "escrow_hold", amount, status: "completed",
+        relatedId: tournamentId, relatedType: "tournament",
         metadata: { tournamentName, fighterId, fighterName },
-        description: `Эскроу: взнос от ${fighterName || "бойца"} за «${tournamentName}»`
+        description: `Эскроу: взнос от ${fighterName || "бойца"}`
     });
 
     return { success: true, amount };
 }
 
-/**
- * 2. ВОЗВРАТ БОЙЦУ С ЭСКРОУ (до старта турнира)
- *    Списываем с эскроу, кладём обратно бойцу
- *
- * @param {string} fighterId
- * @param {number} amount
- * @param {string} tournamentId
- * @param {string} reason
- */
-export async function refundTournamentEntry(fighterId, amount, tournamentId, reason = "Возврат взноса") {
-    if (!fighterId || !amount || amount <= 0 || !tournamentId) {
-        throw new Error("Неверные параметры возврата");
-    }
+// ============================================================
+// 🔧 ФИКС: ВОЗВРАТ — читаем сумму из регистрации, не из аргумента
+// Идемпотентно: если уже возвращено — ничего не делаем
+// ============================================================
+export async function refundTournamentEntry(fighterId, tournamentId, reason = "Возврат взноса") {
+    if (!fighterId || !tournamentId) throw new Error("Не указан боец или турнир");
 
+    const regId = `${fighterId}_${tournamentId}`;
+    const regRef = doc(db, "tournament_registrations", regId);
     const fighterRef = doc(db, "wallet_balances", fighterId);
     const escrowRef = doc(db, "wallet_balances", ESCROW_ACCOUNT);
     const tournamentRef = doc(db, "tournaments", tournamentId);
 
+    let refundedAmount = 0;
+
     await runTransaction(db, async (tx) => {
-        // 1. Проверяем эскроу
-        const escrowSnap = await tx.get(escrowRef);
-        if (!escrowSnap.exists()) throw new Error("Эскроу-счёт не найден");
+        const [regSnap, fighterSnap, escrowSnap, tournamentSnap] = await Promise.all([
+            tx.get(regRef),
+            tx.get(fighterRef),
+            tx.get(escrowRef),
+            tx.get(tournamentRef)
+        ]);
 
-        const escrowData = escrowSnap.data();
-        const escrowAvailable = escrowData.available || 0;
+        if (!regSnap.exists()) throw new Error("Регистрация не найдена");
+        const reg = regSnap.data();
 
-        if (escrowAvailable < amount) {
-            throw new Error("Недостаточно средств в эскроу");
+        // Идемпотентность
+        if (reg.paymentStatus === 'refunded') {
+            refundedAmount = 0;
+            return;
+        }
+        if (reg.paymentStatus !== 'paid' || !(reg.paymentAmount > 0)) {
+            refundedAmount = 0;
+            return;
         }
 
-        // 2. Проверяем турнир
-        const tournamentSnap = await tx.get(tournamentRef);
+        const amount = round2(reg.paymentAmount);
+        refundedAmount = amount;
+
         if (!tournamentSnap.exists()) throw new Error("Турнир не найден");
-
-        const tournamentData = tournamentSnap.data();
-
-        // ❗ Возврат только до старта
-        if (tournamentData.status === "active" || tournamentData.status === "completed") {
+        const t = tournamentSnap.data();
+        if (t.status === 'active' || t.status === 'completed') {
             throw new Error("Возврат невозможен — турнир уже начался");
         }
 
-        const currentEscrow = tournamentData.escrowAmount || 0;
-        if (currentEscrow < amount) {
+        const currentTournamentEscrow = t.escrowAmount || 0;
+        if (currentTournamentEscrow < amount) {
             throw new Error("В эскроу турнира недостаточно средств");
         }
 
-        // 3. Проверяем бойца (может не быть кошелька — создаём)
-        const fighterSnap = await tx.get(fighterRef);
+        const escrowData = escrowSnap.exists()
+            ? escrowSnap.data()
+            : { available: 0, totalDeposited: 0, totalReleased: 0, totalRefunded: 0 };
+
         const fighterData = fighterSnap.exists()
             ? fighterSnap.data()
             : { available: 0, totalRefunded: 0 };
 
-        // 4. Возвращаем бойцу
+        // 1. Возвращаем бойцу
         tx.set(fighterRef, {
-            userId: fighterId,
-            userType: "fighter",
+            userId: fighterId, userType: "fighter",
             available: round2((fighterData.available || 0) + amount),
             totalRefunded: round2((fighterData.totalRefunded || 0) + amount),
             updatedAt: new Date()
         }, { merge: true });
 
-        // 5. Списываем с эскроу
-        tx.update(escrowRef, {
-            available: round2(escrowAvailable - amount),
+        // 2. Списываем с общего эскроу
+        tx.set(escrowRef, {
+            userId: ESCROW_ACCOUNT, userType: "system",
+            available: round2((escrowData.available || 0) - amount),
+            totalDeposited: escrowData.totalDeposited || 0,
+            totalReleased: escrowData.totalReleased || 0,
             totalRefunded: round2((escrowData.totalRefunded || 0) + amount),
             updatedAt: new Date()
-        });
+        }, { merge: true });
 
-        // 6. Уменьшаем эскроу турнира
+        // 3. Уменьшаем эскроу турнира + счётчик
+        const newParticipantCount = Math.max(0, (t.participantCount || 0) - 1);
         tx.update(tournamentRef, {
-            escrowAmount: round2(currentEscrow - amount),
-            escrowHistory: [
-                ...(tournamentData.escrowHistory || []),
-                {
-                    action: "refund",
-                    fighterId,
-                    amount,
-                    reason,
-                    at: new Date().toISOString()
-                }
-            ],
+            escrowAmount: round2(currentTournamentEscrow - amount),
+            participantCount: newParticipantCount,
             updatedAt: new Date().toISOString()
         });
+
+        // 4. Помечаем регистрацию
+        tx.update(regRef, {
+            paymentStatus: 'refunded',
+            status: 'refunded',
+            refundedAt: new Date().toISOString(),
+            refundReason: reason
+        });
     });
 
-    // 7. Транзакции в журнал
-    await logTransaction({
-        userId: fighterId,
-        userType: "fighter",
-        type: "tournament_refund",
-        amount: amount,
-        status: "completed",
-        relatedId: tournamentId,
-        relatedType: "tournament",
-        description: reason
-    });
+    if (refundedAmount > 0) {
+        await logTransaction({
+            userId: fighterId, userType: "fighter",
+            type: "tournament_refund", amount: refundedAmount, status: "completed",
+            relatedId: tournamentId, relatedType: "tournament",
+            description: reason
+        });
+        await logTransaction({
+            userId: ESCROW_ACCOUNT, userType: "system",
+            type: "escrow_release", amount: -refundedAmount, status: "completed",
+            relatedId: tournamentId, relatedType: "tournament",
+            description: `Эскроу: возврат (${reason})`
+        });
+    }
 
-    await logTransaction({
-        userId: ESCROW_ACCOUNT,
-        userType: "system",
-        type: "escrow_release",
-        amount: -amount,
-        status: "completed",
-        relatedId: tournamentId,
-        relatedType: "tournament",
-        description: `Эскроу: возврат бойцу (${reason})`
-    });
-
-    return { success: true, amount };
+    return { success: true, amount: refundedAmount };
 }
 
-/**
- * 3. ОТМЕНА ТУРНИРА — возврат всем бойцам
- *    Организатор отменяет турнир (только в статусе registration)
- *
- * @param {string} tournamentId
- * @param {string} reason
- */
+// ============================================================
+// ВОЗВРАТ ВСЕХ (отмена турнира)
+// ============================================================
 export async function refundAllFromTournament(tournamentId, reason = "Турнир отменён") {
     if (!tournamentId) throw new Error("Tournament ID is required");
 
-    // 1. Загружаем все заявки с оплатой
     const regQuery = query(
         collection(db, "tournament_registrations"),
         where("tournamentId", "==", tournamentId),
@@ -483,36 +426,18 @@ export async function refundAllFromTournament(tournamentId, reason = "Турни
     const regSnap = await getDocs(regQuery);
     const registrations = regSnap.docs.map(d => ({ id: d.id, ...d.data() }));
 
-    if (!registrations.length) {
-        // Нечего возвращать, но статус всё равно меняем
-        await updateDoc(doc(db, "tournaments", tournamentId), {
-            status: "cancelled",
-            cancelledAt: new Date().toISOString(),
-            cancelReason: reason
-        });
-        return { refunded: 0 };
-    }
-
-    // 2. Возвращаем каждого
     let refunded = 0;
     const errors = [];
-
     for (const reg of registrations) {
         try {
-            await refundTournamentEntry(
-                reg.fighterId,
-                reg.paymentAmount || 0,
-                tournamentId,
-                reason
-            );
-            refunded++;
+            const res = await refundTournamentEntry(reg.fighterId, tournamentId, reason);
+            if (res.amount > 0) refunded++;
         } catch (err) {
             console.error(`Ошибка возврата ${reg.fighterId}:`, err);
             errors.push({ fighterId: reg.fighterId, error: err.message });
         }
     }
 
-    // 3. Меняем статус турнира
     await updateDoc(doc(db, "tournaments", tournamentId), {
         status: "cancelled",
         cancelledAt: new Date().toISOString(),
@@ -522,100 +447,79 @@ export async function refundAllFromTournament(tournamentId, reason = "Турни
     return { refunded, errors };
 }
 
-/**
- * 4. ВЫПЛАТА ОРГАНИЗАТОРУ ПРИ СТАРТЕ ТУРНИРА
- *    80% → организатору, 20% → PRORANK
- *    Эскроу обнуляется
- *
- * @param {string} organizerId - organizationId
- * @param {string} tournamentId
- * @param {string} tournamentName
- */
+// ============================================================
+// 🔧 ФИКС: ВЫПЛАТА ПРИ СТАРТЕ
+//
+// Работает ТОЛЬКО с tournament.escrowAmount.
+// Общий эскроу — агрегат, для отображения.
+// Если организатор не найден — кидаем понятную ошибку.
+// Защита от двойной выплаты — флаг внутри транзакции.
+// ============================================================
 export async function payoutTournamentToOrganizer(organizerId, tournamentId, tournamentName) {
-    if (!organizerId || !tournamentId) {
-        throw new Error("Неверные параметры выплаты");
-    }
+    if (!organizerId) throw new Error("Не указан организатор (organizationId пустой)");
+    if (!tournamentId) throw new Error("Не указан турнир");
 
     const tournamentRef = doc(db, "tournaments", tournamentId);
     const organizerRef = doc(db, "wallet_balances", organizerId);
     const escrowRef = doc(db, "wallet_balances", ESCROW_ACCOUNT);
-    const platformRef = doc(db, "wallet_balances", "prorank_system");
+    const platformRef = doc(db, "wallet_balances", PLATFORM_ACCOUNT);
 
-    let totalAmount = 0;
-    let organizerAmount = 0;
-    let platformAmount = 0;
+    let totalAmount = 0, organizerAmount = 0, platformAmount = 0;
 
     await runTransaction(db, async (tx) => {
-        // 1. Проверяем турнир
-        const tournamentSnap = await tx.get(tournamentRef);
+        const [tournamentSnap, orgSnap, escrowSnap, platformSnap] = await Promise.all([
+            tx.get(tournamentRef),
+            tx.get(organizerRef),
+            tx.get(escrowRef),
+            tx.get(platformRef)
+        ]);
+
         if (!tournamentSnap.exists()) throw new Error("Турнир не найден");
+        const t = tournamentSnap.data();
 
-        const tournamentData = tournamentSnap.data();
-
-        // ❗ Защита от двойной выплаты
-        if (tournamentData.paidOutToOrganizer) {
-            throw new Error("Выплата уже была произведена ранее");
-        }
-        if (tournamentData.status !== "registration" && tournamentData.status !== "scheduled") {
+        if (t.paidOutToOrganizer) throw new Error("Выплата уже была произведена");
+        if (t.status !== "registration" && t.status !== "scheduled") {
             throw new Error("Выплата возможна только при старте турнира");
         }
 
-        totalAmount = round2(tournamentData.escrowAmount || 0);
-        if (totalAmount <= 0) {
-            throw new Error("Нет средств для выплаты");
-        }
+        totalAmount = round2(t.escrowAmount || 0);
+        if (totalAmount <= 0) throw new Error("Нет средств для выплаты (эскроу турнира пуст)");
 
         organizerAmount = round2(totalAmount * ORG_SHARE);
         platformAmount = round2(totalAmount * PLATFORM_SHARE);
 
-        // 2. Проверяем эскроу
-        const escrowSnap = await tx.get(escrowRef);
-        if (!escrowSnap.exists()) throw new Error("Эскроу-счёт не найден");
+        const orgData = orgSnap.exists() ? orgSnap.data() : { available: 0, totalEarned: 0 };
+        const platformData = platformSnap.exists() ? platformSnap.data() : { available: 0, totalEarned: 0 };
+        const escrowData = escrowSnap.exists() ? escrowSnap.data() : { available: 0, totalDeposited: 0, totalReleased: 0, totalRefunded: 0 };
 
-        const escrowData = escrowSnap.data();
-        if ((escrowData.available || 0) < totalAmount) {
-            throw new Error("Недостаточно средств в общем эскроу");
-        }
-
-        // 3. Проверяем организатора
-        const orgSnap = await tx.get(organizerRef);
-        const orgData = orgSnap.exists()
-            ? orgSnap.data()
-            : { available: 0, totalEarned: 0, userType: "organizer" };
-
-        // 4. Проверяем платформу
-        const platformSnap = await tx.get(platformRef);
-        const platformData = platformSnap.exists()
-            ? platformSnap.data()
-            : { available: 0, totalEarned: 0 };
-
-        // 5. Зачисляем организатору 80%
+        // 1. Организатору 80%
         tx.set(organizerRef, {
-            userId: organizerId,
-            userType: "organizer",
+            userId: organizerId, userType: "organizer",
             available: round2((orgData.available || 0) + organizerAmount),
             totalEarned: round2((orgData.totalEarned || 0) + organizerAmount),
             hasPayout: true,
             updatedAt: new Date()
         }, { merge: true });
 
-        // 6. Зачисляем платформе 20%
+        // 2. Платформе 20%
         tx.set(platformRef, {
-            userId: "prorank_system",
-            userType: "system",
+            userId: PLATFORM_ACCOUNT, userType: "system",
             available: round2((platformData.available || 0) + platformAmount),
             totalEarned: round2((platformData.totalEarned || 0) + platformAmount),
             updatedAt: new Date()
         }, { merge: true });
 
-        // 7. Списываем с эскроу
-        tx.update(escrowRef, {
+        // 3. Списываем с общего эскроу
+        tx.set(escrowRef, {
+            userId: ESCROW_ACCOUNT, userType: "system",
             available: round2((escrowData.available || 0) - totalAmount),
+            totalDeposited: escrowData.totalDeposited || 0,
             totalReleased: round2((escrowData.totalReleased || 0) + totalAmount),
+            totalRefunded: escrowData.totalRefunded || 0,
             updatedAt: new Date()
-        });
+        }, { merge: true });
 
-        // 8. Обнуляем эскроу турнира + ставим флаг
+        // 4. Обнуляем эскроу турнира + флаги
         tx.update(tournamentRef, {
             escrowAmount: 0,
             paidOutToOrganizer: true,
@@ -626,71 +530,43 @@ export async function payoutTournamentToOrganizer(organizerId, tournamentId, tou
         });
     });
 
-    // 9. Транзакции в журнал
     await logTransaction({
-        userId: organizerId,
-        userType: "organizer",
-        type: "organizer_payout",
-        amount: organizerAmount,
-        status: "completed",
-        relatedId: tournamentId,
-        relatedType: "tournament",
+        userId: organizerId, userType: "organizer",
+        type: "organizer_payout", amount: organizerAmount, status: "completed",
+        relatedId: tournamentId, relatedType: "tournament",
         metadata: { tournamentName, share: "80%" },
-        description: `Выплата 80% за турнир «${tournamentName}»`
+        description: `Выплата 80% за «${tournamentName || ''}»`
     });
-
     await logTransaction({
-        userId: "prorank_system",
-        userType: "system",
-        type: "platform_fee",
-        amount: platformAmount,
-        status: "completed",
-        relatedId: tournamentId,
-        relatedType: "tournament",
+        userId: PLATFORM_ACCOUNT, userType: "system",
+        type: "platform_fee", amount: platformAmount, status: "completed",
+        relatedId: tournamentId, relatedType: "tournament",
         metadata: { tournamentName, share: "20%", organizerId },
-        description: `Комиссия платформы 20% за «${tournamentName}»`
+        description: `Комиссия 20% за «${tournamentName || ''}»`
     });
-
     await logTransaction({
-        userId: ESCROW_ACCOUNT,
-        userType: "system",
-        type: "escrow_release",
-        amount: -totalAmount,
-        status: "completed",
-        relatedId: tournamentId,
-        relatedType: "tournament",
+        userId: ESCROW_ACCOUNT, userType: "system",
+        type: "escrow_release", amount: -totalAmount, status: "completed",
+        relatedId: tournamentId, relatedType: "tournament",
         metadata: { tournamentName, organizerAmount, platformAmount },
-        description: `Раскрытие эскроу турнира «${tournamentName}»`
+        description: `Раскрытие эскроу «${tournamentName || ''}»`
     });
 
-    return {
-        success: true,
-        totalAmount,
-        organizerAmount,
-        platformAmount
-    };
+    return { success: true, totalAmount, organizerAmount, platformAmount };
 }
 
 // ============================================================
-// ЭКСПОРТ ВСЕГО НЕОБХОДИМОГО
+// ЭКСПОРТ
 // ============================================================
-
 export const OrganizerWallet = {
-    // Базовое
+    ensureEscrowAccount,
     getBalance: getOrganizerBalance,
     getTransactions: getOrganizerTransactions,
     requestWithdrawal: requestOrganizerWithdrawal,
-
-    // Эскроу и турниры
     getEscrowBalance,
     payEntry: payTournamentEntry,
     refundEntry: refundTournamentEntry,
     refundAll: refundAllFromTournament,
     payoutToOrganizer: payoutTournamentToOrganizer,
-
-    // Константы
-    ORG_SHARE,
-    PLATFORM_SHARE,
-    MIN_WITHDRAWAL,
-    ESCROW_ACCOUNT
+    ORG_SHARE, PLATFORM_SHARE, MIN_WITHDRAWAL, ESCROW_ACCOUNT
 };

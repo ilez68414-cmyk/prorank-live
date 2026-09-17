@@ -541,7 +541,7 @@
 
     <script type="module">
         import { initializeApp } from "firebase/app";
-        import { getFirestore, doc, getDoc, updateDoc, collection, addDoc, onSnapshot, serverTimestamp, increment } from "firebase/firestore";
+        import { getFirestore, doc, getDoc, updateDoc, setDoc, collection, addDoc, onSnapshot, serverTimestamp, increment, runTransaction } from "firebase/firestore";
 
         const firebaseConfig = {
             apiKey: "AIzaSyDUGYJY7pX7q02MS5SACMIIQXpjpQ97mPw",
@@ -590,6 +590,8 @@
         let autocloseInterval = null;
         let autocloseDeadline = null;
         let autocloseCancelled = false;
+
+        let isStartingPausing = false;
 
         // ============================================================
         // UTILS
@@ -1257,18 +1259,25 @@
         }
 
         window.startTimer = async function() {
+            if (isStartingPausing) return;
             if (!currentMatch) return;
             if (currentMatch.status === 'completed') return showToast('Бой завершён', 'error');
+            if (currentMatch.isLive) return showToast('Бой уже идёт', 'info');
+            isStartingPausing = true;
             try {
                 await updateDoc(doc(db, `tournaments/${tournamentId}/matches`, currentMatch.id), {
                     isLive: true, liveStartedAt: serverTimestamp(), liveElapsed: currentMatch.liveElapsed || 0
                 });
                 showToast('▶️ Бой начат', 'success');
-            } catch (e) { showToast('Ошибка', 'error'); }
+            } catch (e) { showToast('Ошибка: ' + e.message, 'error'); }
+            finally { isStartingPausing = false; }
         };
 
         window.pauseTimer = async function() {
+            if (isStartingPausing) return;
             if (!currentMatch) return;
+            if (!currentMatch.isLive) return showToast('Бой не идёт', 'info');
+            isStartingPausing = true;
             try {
                 const startedAt = parseTimestamp(currentMatch.liveStartedAt);
                 const elapsedNow = currentMatch.liveElapsed || 0;
@@ -1277,10 +1286,12 @@
                     isLive: false, liveStartedAt: null, liveElapsed: elapsedNow + additional
                 });
                 showToast('⏸️ Пауза', 'info');
-            } catch (e) { showToast('Ошибка', 'error'); }
+            } catch (e) { showToast('Ошибка: ' + e.message, 'error'); }
+            finally { isStartingPausing = false; }
         };
 
         window.resetTimerOnly = async function() {
+            if (isStartingPausing) return;
             if (!currentMatch) return;
             const ok = await showConfirm('Сбросить таймер?', '<div>Счёт сохранится</div>', 'Сбросить');
             if (!ok) return;
@@ -1289,7 +1300,7 @@
                     isLive: false, liveStartedAt: null, liveElapsed: 0
                 });
                 showToast('Сброшен', 'info');
-            } catch (e) { showToast('Ошибка', 'error'); }
+            } catch (e) { showToast('Ошибка: ' + e.message, 'error'); }
         };
 
         window.changeScore = async function(fighter, delta) {
@@ -1358,30 +1369,96 @@
                 const winnerData = currentMatch.fighter1.id === winnerId ? currentMatch.fighter1 : currentMatch.fighter2;
                 const loserData = currentMatch.fighter1.id === winnerId ? currentMatch.fighter2 : currentMatch.fighter1;
                 const frsWinner = winType === 'decision' ? FRS_WIN : FRS_WIN_FINISH;
-                const finalScore = { score1: currentMatch.score1 || 0, score2: currentMatch.score2 || 0 };
+                const frsLoser = FRS_LOSS;
+                const matchId = currentMatch.id;
+                const nextRound = currentMatch.round + 1;
+                const nextMatchNumber = Math.ceil(currentMatch.matchNumber / 2);
+                const nextSlot = currentMatch.matchNumber % 2 === 1 ? 'fighter1' : 'fighter2';
+                const ringId = currentMatch.ringId || null;
 
-                await updateDoc(doc(db, `tournaments/${tournamentId}/matches`, currentMatch.id), {
-                    winner: { id: winnerData.id, name: winnerData.name },
-                    winType, comment: comment || null, status: 'completed',
-                    isLive: false, liveStartedAt: null, finalScore,
-                    completedAt: new Date().toISOString()
+                await runTransaction(db, async (tx) => {
+                    const matchRef = doc(db, `tournaments/${tournamentId}/matches`, matchId);
+                    const winnerRef = doc(db, "fighters", winnerData.id);
+                    const loserRef = doc(db, "fighters", loserData.id);
+
+                    const [matchSnap, winnerSnap, loserSnap] = await Promise.all([
+                        tx.get(matchRef),
+                        tx.get(winnerRef),
+                        tx.get(loserRef)
+                    ]);
+
+                    if (!matchSnap.exists()) throw new Error('Бой не найден');
+                    const m = matchSnap.data();
+                    if (m.status === 'completed') throw new Error('Бой уже завершён');
+                    if (!m.fighter1 || !m.fighter2) throw new Error('Не оба бойца известны');
+
+                    const finalScore = { score1: m.score1 || 0, score2: m.score2 || 0 };
+
+                    // 1. Завершаем матч
+                    tx.update(matchRef, {
+                        winner: { id: winnerData.id, name: winnerData.name },
+                        winType,
+                        comment: comment || null,
+                        status: 'completed',
+                        isLive: false,
+                        liveStartedAt: null,
+                        finalScore,
+                        completedAt: new Date().toISOString(),
+                        completedBy: currentUserName || 'судья'
+                    });
+
+                    // 2. Победителю — FRS + победы + финиши
+                    const winnerDataOld = winnerSnap.exists() ? winnerSnap.data() : {};
+                    tx.set(winnerRef, {
+                        frs: (winnerDataOld.frs || 0) + frsWinner,
+                        allTimeFrs: (winnerDataOld.allTimeFrs || 0) + frsWinner,
+                        wins: (winnerDataOld.wins || 0) + 1,
+                        finishes: (winnerDataOld.finishes || 0) + (winType !== 'decision' ? 1 : 0),
+                        lastFightDate: new Date().toISOString()
+                    }, { merge: true });
+
+                    // 3. Проигравшему — FRS + поражения
+                    const loserDataOld = loserSnap.exists() ? loserSnap.data() : {};
+                    tx.set(loserRef, {
+                        frs: (loserDataOld.frs || 0) + frsLoser,
+                        allTimeFrs: (loserDataOld.allTimeFrs || 0) + frsLoser,
+                        losses: (loserDataOld.losses || 0) + 1,
+                        lastFightDate: new Date().toISOString()
+                    }, { merge: true });
+
+                    // 4. Победитель — в следующий раунд (тот же стол)
+                    //    Ищем следующий матч в БД: читаем по детерминированному пути нельзя (auto-ID),
+                    //    поэтому ищем в локальном массиве matches
+                    const nextMatch = matches.find(x =>
+                        x.round === nextRound &&
+                        x.matchNumber === nextMatchNumber &&
+                        x.weightClass === m.weightClass
+                    );
+                    if (nextMatch) {
+                        const nextRef = doc(db, `tournaments/${tournamentId}/matches`, nextMatch.id);
+                        const upd = { [nextSlot]: { id: winnerData.id, name: winnerData.name, club: winnerData.club || null } };
+                        if (ringId) upd.ringId = ringId;
+                        tx.update(nextRef, upd);
+                    }
+
+                    // 5. История боёв — детерминированный ID = ID матча, дубль невозможен
+                    const fightRef = doc(db, "fights", matchId);
+                    tx.set(fightRef, {
+                        winnerId: winnerData.id,
+                        winnerName: winnerData.name,
+                        loserId: loserData.id,
+                        loserName: loserData.name,
+                        sport: tournamentData?.sport || 'ММА',
+                        isFinish: winType !== 'decision',
+                        winType,
+                        date: new Date().toISOString(),
+                        tournamentId,
+                        tournamentName: tournamentData?.name || '',
+                        weightClass: m.weightClass || null,
+                        round: m.round,
+                        finalScore
+                    });
                 });
-
-                try { await updateDoc(doc(db, "fighters", winnerData.id), { frs: increment(frsWinner), wins: increment(1), finishes: winType !== 'decision' ? increment(1) : increment(0), lastFightDate: new Date().toISOString() }); } catch (e) {}
-                try { await updateDoc(doc(db, "fighters", loserData.id), { frs: increment(FRS_LOSS), losses: increment(1), lastFightDate: new Date().toISOString() }); } catch (e) {}
-                try { await addDoc(collection(db, "fights"), { winnerId: winnerData.id, winnerName: winnerData.name, loserId: loserData.id, loserName: loserData.name, sport: tournamentData?.sport || 'ММА', isFinish: winType !== 'decision', date: serverTimestamp(), tournamentId, tournamentName: tournamentData?.name || '' }); } catch (e) {}
-
-                const nr = currentMatch.round + 1;
-                const nm = Math.ceil(currentMatch.matchNumber / 2);
-                const nextMatch = matches.find(x => x.round === nr && x.matchNumber === nm && x.weightClass === currentMatch.weightClass);
-                if (nextMatch) {
-                    const slot = currentMatch.matchNumber % 2 === 1 ? 'fighter1' : 'fighter2';
-                    try {
-                        const upd = { [slot]: winnerData };
-                        if (currentMatch.ringId) upd.ringId = currentMatch.ringId;
-                        await updateDoc(doc(db, `tournaments/${tournamentId}/matches`, nextMatch.id), upd);
-                    } catch (e) {}
-                }
 
                 closeModal('finishModal');
                 const typeText = winType === 'decision' ? 'решением' : (winType === 'ko' ? 'нокаутом' : 'сабмишном');
@@ -1428,9 +1505,7 @@
 
             const allClosed = Array.from({ length: ringsCount }, (_, i) => closedRings[i + 1] === true).every(Boolean);
             let headerHtml = '';
-            if (allClosed && tournamentData.status === 'active') {
-                headerHtml = `<button class="btn btn-success btn-sm" onclick="finishTournament()"><i class="fas fa-flag-checkered"></i> Завершить турнир</button>`;
-            }
+
             headerActions.innerHTML = headerHtml;
 
             let html = '<div class="chief-grid">';
@@ -1483,12 +1558,22 @@
         };
 
         window.finishTournament = async function() {
+            const incomplete = matches.filter(m => m.status === 'started' || (m.isLive && m.status !== 'completed'));
+            if (incomplete.length > 0) {
+                showToast(`⚠️ ${incomplete.length} боёв ещё не завершены`, 'error');
+                return;
+            }
+            const noResult = matches.filter(m => m.status !== 'completed' && !m.winner && m.fighter1 && m.fighter2);
+            if (noResult.length > 0) {
+                showToast(`⚠️ ${noResult.length} боёв без результата`, 'error');
+                return;
+            }
             const ok = await showConfirm('Завершить турнир?', '<div>Все бои проведены. Турнир перейдёт в «завершён».</div>', 'Завершить');
             if (!ok) return;
             try {
                 await updateDoc(doc(db, "tournaments", tournamentId), { status: 'completed', completedAt: new Date().toISOString() });
                 showToast('🏁 Турнир завершён', 'success');
-            } catch (e) { showToast('Ошибка', 'error'); }
+            } catch (e) { showToast('Ошибка: ' + e.message, 'error'); }
         };
 
         // ============================================================
