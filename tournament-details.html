@@ -503,7 +503,7 @@
     <div class="modal-overlay" id="judgesModal">
         <div class="modal" style="max-width: 600px;">
             <div class="modal-header">
-                <h3><i class="fas fa-users-cog"></i> Панели судей</h3>
+                <h3><i class="fas fa-users-cog"></i> Панель судей</h3>
                 <button class="modal-close" onclick="closeModal('judgesModal')"><i class="fas fa-times"></i></button>
             </div>
             <div class="modal-body">
@@ -987,6 +987,12 @@
                     </div>
 
                     <div class="panel">
+                        <div class="panel-header"><h3><i class="fas fa-chart-bar"></i> Прогресс набора</h3></div>
+                        <div class="progress-bar"><div class="progress-fill" style="width:${progress}%;"></div></div>
+                        <div class="progress-text"><span>${t.participantCount || 0} / ${t.maxParticipants || 0} участников</span><span>${progress}%</span></div>
+                    </div>
+
+                    <div class="panel">
                         <div class="panel-header"><h3><i class="fas fa-lock"></i> Эскроу</h3></div>
                         <div class="alert-block success">
                             <i class="fas fa-lock"></i>
@@ -998,12 +1004,6 @@
                     </div>
 
                     <div class="panel">
-                        <div class="panel-header"><h3><i class="fas fa-chart-bar"></i> Прогресс набора</h3></div>
-                        <div class="progress-bar"><div class="progress-fill" style="width:${progress}%;"></div></div>
-                        <div class="progress-text"><span>${t.participantCount || 0} / ${t.maxParticipants || 0} участников</span><span>${progress}%</span></div>
-                    </div>
-
-                    <div class="panel">
                         <div class="panel-header"><h3><i class="fas fa-users-cog"></i> Панель судей</h3></div>
                         <div class="alert-block ${t.judgeToken ? 'success' : 'warning'}">
                             <i class="fas ${t.judgeToken ? 'fa-check-circle' : 'fa-exclamation-triangle'}"></i>
@@ -1012,7 +1012,7 @@
                         <button class="btn btn-outline" onclick="openJudgesPanel()"><i class="fas fa-users-cog"></i> Открыть панель судей</button>
                     </div>
 
-                    ${renderRingsBlock()}
+                    
                 `;
             }
 
@@ -1054,7 +1054,7 @@
                         <button class="btn btn-outline" onclick="switchTab('bracket')" style="margin-top:8px;"><i class="fas fa-sitemap"></i> Смотреть сетку</button>
                     </div>
 
-                    ${renderRingsBlock()}
+                   
                 `;
             }
 
@@ -1089,7 +1089,7 @@
                     </div>
                     ` : ''}
 
-                    ${renderRingsBlock()}
+                    
                 `;
             }
 
@@ -2310,102 +2310,43 @@
             const t = tournamentData;
             if (userRole !== 'organizer') return '';
             if (!isUserOrganizerOfTournament(currentUser?.uid)) return '';
+
             const ringsCount = t.ringsCount || 1;
-            const canEdit = t.status !== 'completed' && t.status !== 'cancelled' && !t.deleted;
+            const token = t.judgeToken;
+            const ringSessions = t.ringSessions || {};
+            const now = Date.now();
+            const STALE_MS = 2 * 60 * 1000;
 
-            if (!t.bracketGenerated) {
-                return `
-                    <div class="rings-config">
-                        <div class="rings-config-header">
-                            <h3><i class="fas fa-circle-nodes"></i> Столы</h3>
-                        </div>
-                        <div class="rings-controls">
-                            <div class="form-group-inline">
-                                <label>Количество столов</label>
-                                <input type="number" id="ringsCountInput" value="${ringsCount}" min="1" max="20" ${canEdit ? '' : 'disabled'}>
-                            </div>
-                            <button class="btn btn-primary btn-sm" onclick="saveRingsCount()" ${canEdit ? '' : 'disabled'}>
-                                <i class="fas fa-save"></i> Сохранить
-                            </button>
-                        </div>
-                        <div style="font-size: 0.75rem; color: #888; padding: 10px; background: rgba(0,0,0,0.2); border-radius: 10px;">
-                            <i class="fas fa-info-circle" style="color: #a78bfa;"></i>
-                            Сетка ещё не сгенерирована. После генерации сможете распределить бои по столам.
-                        </div>
-                    </div>
-                `;
-            }
-
-            const firstRoundMatches = matches.filter(m => m.round === 1 && m.status !== 'bye');
-            const byRing = {};
-            for (let i = 1; i <= ringsCount; i++) byRing[i] = [];
-            firstRoundMatches.forEach(m => {
-                const r = m.ringId || 0;
-                if (byRing[r]) byRing[r].push(m);
-            });
-            const unassigned = byRing[0]?.length || 0;
-
-            let ringsHtml = '';
-            for (let i = 1; i <= ringsCount; i++) {
-                const ringMatches = byRing[i] || [];
-                let matchesHtml = '';
-                if (ringMatches.length === 0) {
-                    matchesHtml = `<div style="font-size: 0.7rem; color: #666; padding: 6px 10px;">Нет боёв</div>`;
-                } else {
-                    matchesHtml = `<div class="ring-matches-preview">${ringMatches.map(m => `
-                        <div class="ring-match-item">
-                            <span class="m-num">Бой ${m.matchNumber}</span>
-                            <span class="m-cat">${escapeHtml(m.weightClass || '—')}</span>
-                            <span class="m-fighters">${escapeHtml(m.fighter1?.name || '—')} vs ${escapeHtml(m.fighter2?.name || '—')}</span>
-                        </div>
-                    `).join('')}</div>`;
+            let onlineCount = 0;
+            if (token && t.status === 'active') {
+                for (let r = 1; r <= ringsCount; r++) {
+                    const s = ringSessions[r];
+                    if (!s || !s.lastSeen) continue;
+                    const lastSeen = typeof s.lastSeen === 'number'
+                        ? s.lastSeen
+                        : (s.lastSeen.toMillis ? s.lastSeen.toMillis() : new Date(s.lastSeen).getTime());
+                    if (now - lastSeen < STALE_MS) onlineCount++;
                 }
-                ringsHtml += `
-                    <div class="ring-config-card">
-                        <div class="ring-config-header">
-                            <div class="ring-config-title">
-                                <span class="ring-num-badge">${i}</span>
-                                Стол ${i}
-                            </div>
-                            <span class="ring-count-badge">${ringMatches.length} ${plural(ringMatches.length, 'бой', 'боя', 'боёв')}</span>
-                        </div>
-                        ${matchesHtml}
-                    </div>
-                `;
             }
+
+            const completed = matches.filter(m => m.status === 'completed').length;
+            const total = matches.filter(m => m.round === 1 && m.status !== 'bye').length;
 
             return `
-                <div class="rings-config">
-                    <div class="rings-config-header">
-                        <h3><i class="fas fa-circle-nodes"></i> Столы и распределение боёв</h3>
+                <div class="panel">
+                    <div class="panel-header">
+                        <h3><i class="fas fa-circle-nodes"></i> Столы и судьи</h3>
                     </div>
-
-                    <div class="rings-controls">
-                        <div class="form-group-inline">
-                            <label>Количество столов</label>
-                            <input type="number" id="ringsCountInput" value="${ringsCount}" min="1" max="20" ${canEdit ? '' : 'disabled'}>
+                    <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;">
+                        <div style="font-size: 0.8rem; color: #aaa;">
+                            <b style="color: #fbbf24;">${ringsCount}</b> ${plural(ringsCount, 'стол', 'стола', 'столов')}
+                            ${token ? `· <span style="color:#10b981;">${onlineCount} онлайн</span>` : '· <span style="color:#f59e0b;">токен не создан</span>'}
+                            · ${completed}/${total} боёв
                         </div>
-                        <div class="form-group-inline">
-                            <label>Режим распределения</label>
-                            <div class="dist-mode-options">
-                                <button class="dist-mode-btn ${distributionMode === 'round-robin' ? 'active' : ''}" onclick="setDistributionMode('round-robin')" ${canEdit ? '' : 'disabled'}>
-                                    <i class="fas fa-sync-alt"></i> По очереди
-                                </button>
-                                <button class="dist-mode-btn ${distributionMode === 'by-category' ? 'active' : ''}" onclick="setDistributionMode('by-category')" ${canEdit ? '' : 'disabled'}>
-                                    <i class="fas fa-layer-group"></i> По категориям
-                                </button>
-                            </div>
-                        </div>
-                        <button class="btn btn-primary btn-sm" onclick="applyDistribution()" ${canEdit ? '' : 'disabled'}>
-                            <i class="fas fa-play"></i> Применить
+                        <button class="btn btn-outline" onclick="openJudgesPanel()">
+                            <i class="fas fa-users-cog"></i> Открыть панель
                         </button>
                     </div>
-
-                    ${unassigned > 0 ? `<div style="background: rgba(245,158,11,0.1); border: 1px solid rgba(245,158,11,0.3); border-radius: 10px; padding: 10px 14px; margin-bottom: 12px; font-size: 0.75rem; color: #fcd34d;">
-                        <i class="fas fa-exclamation-triangle"></i> Ещё ${unassigned} ${plural(unassigned, 'бой', 'боя', 'боёв')} не распределены. Нажмите «Применить».
-                    </div>` : ''}
-
-                    <div class="rings-list">${ringsHtml}</div>
                 </div>
             `;
         }
@@ -2500,14 +2441,34 @@
         // ============================================================
         window.openJudgesPanel = function() {
             if (!tournamentData) return;
-            const ringsCount = tournamentData.ringsCount || 1;
             const list = document.getElementById('judgesList');
             const token = tournamentData.judgeToken || null;
+            const isActive = tournamentData.status === 'active';
+            const bracketReady = tournamentData.bracketGenerated === true;
+            const firstRoundMatches = matches.filter(m => m.round === 1 && m.status !== 'bye');
+            const distributed = firstRoundMatches.length > 0 && firstRoundMatches.every(m => m.ringId != null);
 
+            // ===== Сессии и статусы =====
+            const now = Date.now();
+            const STALE_MS = 2 * 60 * 1000;
+            function getRingStatus(ringId) {
+                const ringSessions = tournamentData.ringSessions || {};
+                const session = ringSessions[ringId];
+                if (!session || !session.lastSeen) return { cls: 'offline', label: 'Не подключился' };
+                const lastSeen = typeof session.lastSeen === 'number'
+                    ? session.lastSeen
+                    : (session.lastSeen.toMillis ? session.lastSeen.toMillis() : new Date(session.lastSeen).getTime());
+                const diff = now - lastSeen;
+                if (diff < STALE_MS) return { cls: 'online', label: session.judgeName || 'Онлайн' };
+                const min = Math.round(diff / 60000);
+                return { cls: 'stale', label: `Был ${min} мин назад` };
+            }
+
+            // ===== 1. ТОКЕН =====
             let tokenBlock = '';
             if (!token) {
                 tokenBlock = `
-                    <div style="background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.3); border-radius: 12px; padding: 14px; margin-bottom: 12px; text-align: center;">
+                    <div style="background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.3); border-radius: 12px; padding: 14px; margin-bottom: 16px; text-align: center;">
                         <div style="font-size: 0.8rem; color: #fca5a5; margin-bottom: 10px;">
                             <i class="fas fa-exclamation-triangle"></i>
                             Токен не создан. Ссылки судей не будут работать.
@@ -2518,102 +2479,352 @@
                     </div>`;
             } else {
                 tokenBlock = `
-                    <div style="background: rgba(16,185,129,0.08); border: 1px solid rgba(16,185,129,0.3); border-radius: 12px; padding: 12px 14px; margin-bottom: 12px;">
-                        <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap;">
-                            <div style="flex: 1; min-width: 180px;">
-                                <div style="font-size: 0.62rem; color: #888; text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 3px;">Токен доступа</div>
-                                <div style="font-family: monospace; font-size: 0.85rem; color: #10b981; font-weight: 700;">${token}</div>
+                    <div style="background: rgba(16,185,129,0.08); border: 1px solid rgba(16,185,129,0.3); border-radius: 12px; padding: 12px 14px; margin-bottom: 16px;">
+                        <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                            <div style="width: 34px; height: 34px; border-radius: 10px; background: rgba(16,185,129,0.15); color: #10b981; display: flex; align-items: center; justify-content: center; font-size: 0.9rem; flex-shrink: 0;">
+                                <i class="fas fa-check"></i>
                             </div>
-                            <button class="btn btn-outline btn-sm" onclick="regenerateJudgeToken()" title="Перегенерировать">
-                                <i class="fas fa-sync-alt"></i> Обновить
+                            <div style="flex: 1; min-width: 180px;">
+                                <div style="font-weight: 700; font-size: 0.82rem; color: #10b981;">Токен создан</div>
+                                <div style="font-size: 0.68rem; color: #888; margin-top: 2px;">Все ссылки судей работают</div>
+                            </div>
+                            <button class="btn btn-success btn-sm" onclick="copyAllJudgeLinks()" title="Скопировать все ссылки">
+                                <i class="fas fa-clipboard-list"></i> Все ссылки
                             </button>
                         </div>
                     </div>`;
             }
 
-            let html = tokenBlock;
-
-            html += `
-                <div style="background: rgba(251,191,36,0.08); border: 1px solid rgba(251,191,36,0.3); border-radius: 12px; padding: 12px 14px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; ${!token ? 'opacity:0.5;' : ''}">
-                    <div style="width: 40px; height: 40px; border-radius: 10px; background: rgba(251,191,36,0.15); color: #fbbf24; display: flex; align-items: center; justify-content: center; font-size: 1rem; flex-shrink: 0;">
-                        <i class="fas fa-crown"></i>
+            // ===== 2. СТОЛЫ + СЧЁТЧИК =====
+            const ringsCount = tournamentData.ringsCount || 1;
+            const ringsHeaderBlock = `
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; gap: 10px; flex-wrap: wrap;">
+                    <div style="font-size: 0.72rem; color: #fbbf24; text-transform: uppercase; letter-spacing: 0.6px; font-weight: 800; display: flex; align-items: center; gap: 8px;">
+                        <i class="fas fa-circle-nodes"></i> Столы судей
                     </div>
-                    <div style="flex: 1; min-width: 180px;">
-                        <div style="font-weight: 700; font-size: 0.85rem; color: #fbbf24;">Главный судья</div>
-                        <div style="font-size: 0.68rem; color: #888;">Видит все столы, может перехватить бой</div>
-                    </div>
-                    <div style="display: flex; gap: 6px;">
-                        <button class="btn btn-outline btn-sm" onclick="copyJudgeLink('chief')" ${!token ? 'disabled' : ''}><i class="fas fa-copy"></i></button>
-                        <button class="btn btn-primary btn-sm" onclick="openJudgeLink('chief')" ${!token ? 'disabled' : ''}><i class="fas fa-external-link-alt"></i></button>
+                    <div style="display: flex; align-items: center; gap: 6px; background: rgba(0,0,0,0.3); border: 1px solid rgba(251,191,36,0.2); border-radius: 30px; padding: 3px 4px;">
+                        <button onclick="changeRingsCount(-1)" style="width: 28px; height: 28px; border-radius: 50%; border: none; background: rgba(255,255,255,0.05); color: #fff; cursor: pointer; font-size: 0.9rem; display: flex; align-items: center; justify-content: center; transition: 0.2s;">−</button>
+                        <span id="ringsCountLabel" style="font-size: 0.9rem; font-weight: 800; color: #fbbf24; min-width: 22px; text-align: center;">${ringsCount}</span>
+                        <button onclick="changeRingsCount(1)" style="width: 28px; height: 28px; border-radius: 50%; border: none; background: rgba(251,191,36,0.15); color: #fbbf24; cursor: pointer; font-size: 0.9rem; display: flex; align-items: center; justify-content: center; transition: 0.2s;">+</button>
                     </div>
                 </div>
             `;
 
-            for (let r = 1; r <= ringsCount; r++) {
-                const ringMatches = matches.filter(m => m.ringId === r && m.round === 1);
-                const completed = ringMatches.filter(m => m.status === 'completed').length;
-                const total = ringMatches.length;
-
-                html += `
-                    <div style="background: rgba(20,20,25,0.8); border: 1px solid rgba(139,92,246,0.2); border-radius: 12px; padding: 12px 14px; margin-top: 8px; ${!token ? 'opacity:0.5;' : ''}">
-                        <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 10px;">
-                            <div style="width: 40px; height: 40px; border-radius: 10px; background: rgba(139,92,246,0.15); color: #a78bfa; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.95rem; flex-shrink: 0;">
-                                ${r}
-                            </div>
-                            <div style="flex: 1; min-width: 180px;">
-                                <div style="font-weight: 700; font-size: 0.85rem; color: #fff;">Стол ${r}</div>
-                                <div style="font-size: 0.68rem; color: #888;">${completed}/${total} ${plural(total, 'бой', 'боя', 'боёв')} завершено</div>
-                            </div>
+            // ===== 3. РАСПРЕДЕЛЕНИЕ =====
+            let distributionBlock = '';
+            if (!bracketReady) {
+                distributionBlock = `
+                    <div style="padding: 14px; background: rgba(245,158,11,0.06); border: 1px dashed rgba(245,158,11,0.3); border-radius: 12px; margin-bottom: 16px; font-size: 0.75rem; color: #fcd34d; line-height: 1.5;">
+                        <div style="display: flex; gap: 10px; align-items: flex-start; margin-bottom: 10px;">
+                            <i class="fas fa-hourglass-half" style="color: #f59e0b; font-size: 0.95rem; margin-top: 2px; flex-shrink: 0;"></i>
+                            <div>Сначала сгенерируйте сетку во вкладке «Сетка». Без неё распределять нечего.</div>
                         </div>
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px;">
-                            <div style="background: rgba(139,92,246,0.08); border: 1px solid rgba(139,92,246,0.25); border-radius: 10px; padding: 8px 10px;">
-                                <div style="font-size: 0.6rem; color: #a78bfa; font-weight: 800; text-transform: uppercase; letter-spacing: 0.3px; margin-bottom: 6px;">
-                                    <i class="fas fa-gavel"></i> Панель судьи
-                                </div>
-                                <div style="display: flex; gap: 5px;">
-                                    <button class="btn btn-outline btn-sm" onclick="copyJudgeLink(${r})" ${!token ? 'disabled' : ''} style="flex:1;"><i class="fas fa-copy"></i> Копировать</button>
-                                    <button class="btn btn-primary btn-sm" onclick="openJudgeLink(${r})" ${!token ? 'disabled' : ''} style="flex:1;"><i class="fas fa-external-link-alt"></i> Открыть</button>
-                                </div>
+                        <button class="btn btn-outline btn-sm btn-block" onclick="closeModal('judgesModal'); switchTab('bracket');">
+                            <i class="fas fa-sitemap"></i> Перейти к сетке
+                        </button>
+                    </div>
+                `;
+            } else {
+                const unassigned = firstRoundMatches.filter(m => m.ringId == null).length;
+                const total = firstRoundMatches.length;
+                const distStatusClass = distributed ? 'ok' : 'warn';
+                const distStatusText = distributed
+                    ? `<i class="fas fa-check-circle"></i> ${total} боёв · все распределены`
+                    : `<i class="fas fa-exclamation-triangle"></i> ${total} боёв · ${unassigned} не распределено`;
+
+                distributionBlock = `
+                    <div style="margin-bottom: 16px;">
+                        <div style="font-size: 0.72rem; color: #fbbf24; text-transform: uppercase; letter-spacing: 0.6px; font-weight: 800; display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
+                            <i class="fas fa-shuffle"></i> Распределение боёв
+                        </div>
+                        <button id="distToggleBtn" class="btn btn-outline btn-block" onclick="toggleDistOptions()" style="margin-bottom: 10px;">
+                            <i class="fas fa-dice"></i> Распределить бои
+                        </button>
+                        <div id="distOptions" style="display: none;">
+                            <div style="display: flex; gap: 6px; margin-bottom: 10px;">
+                                <button class="dist-mode-btn active" data-mode="round-robin" onclick="setDistMode('round-robin')" style="flex:1; padding:10px 8px; border-radius:10px; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); color:#888; cursor:pointer; font-family:'Inter',sans-serif; font-weight:700; font-size:0.7rem; display:flex; align-items:center; justify-content:center; gap:5px; transition:0.2s;">
+                                    <i class="fas fa-sync-alt"></i> По очереди
+                                </button>
+                                <button class="dist-mode-btn" data-mode="by-category" onclick="setDistMode('by-category')" style="flex:1; padding:10px 8px; border-radius:10px; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); color:#888; cursor:pointer; font-family:'Inter',sans-serif; font-weight:700; font-size:0.7rem; display:flex; align-items:center; justify-content:center; gap:5px; transition:0.2s;">
+                                    <i class="fas fa-layer-group"></i> По категориям
+                                </button>
+                                <button class="dist-mode-btn" data-mode="random" onclick="setDistMode('random')" style="flex:1; padding:10px 8px; border-radius:10px; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); color:#888; cursor:pointer; font-family:'Inter',sans-serif; font-weight:700; font-size:0.7rem; display:flex; align-items:center; justify-content:center; gap:5px; transition:0.2s;">
+                                    <i class="fas fa-random"></i> Случайно
+                                </button>
                             </div>
-                            <div style="background: rgba(59,130,246,0.08); border: 1px solid rgba(59,130,246,0.25); border-radius: 10px; padding: 8px 10px;">
-                                <div style="font-size: 0.6rem; color: #60a5fa; font-weight: 800; text-transform: uppercase; letter-spacing: 0.3px; margin-bottom: 6px;">
-                                    <i class="fas fa-tv"></i> Табло на ТВ
-                                </div>
-                                <div style="display: flex; gap: 5px;">
-                                    <button class="btn btn-outline btn-sm" onclick="copyDisplayLink(${r})" style="flex:1;"><i class="fas fa-copy"></i> Копировать</button>
-                                    <button class="btn btn-blue btn-sm" onclick="openDisplayLink(${r})" style="flex:1;background:rgba(59,130,246,0.15);border:1px solid rgba(59,130,246,0.3);color:#60a5fa;border-radius:40px;font-family:'Inter',sans-serif;font-weight:700;cursor:pointer;padding:7px 12px;font-size:0.7rem;"><i class="fas fa-external-link-alt"></i> Открыть</button>
-                                </div>
-                            </div>
+                            <button class="btn btn-primary btn-block" onclick="applyDistributionFromModal()">
+                                <i class="fas fa-play"></i> Применить
+                            </button>
+                        </div>
+                        <div style="font-size: 0.68rem; color: ${distributed ? '#10b981' : '#f59e0b'}; margin-top: 10px;">
+                            ${distStatusText}
                         </div>
                     </div>
                 `;
             }
 
-            html += `
-                <div style="background: rgba(16,185,129,0.06); border: 1px solid rgba(16,185,129,0.25); border-radius: 12px; padding: 12px 14px; margin-top: 10px;">
-                    <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
-                        <div style="width: 40px; height: 40px; border-radius: 10px; background: rgba(16,185,129,0.15); color: #10b981; display: flex; align-items: center; justify-content: center; font-size: 1rem; flex-shrink: 0;">
-                            <i class="fas fa-th"></i>
-                        </div>
-                        <div style="flex: 1; min-width: 180px;">
-                            <div style="font-weight: 700; font-size: 0.85rem; color: #10b981;">Общее табло (все столы)</div>
-                            <div style="font-size: 0.68rem; color: #888;">Плитка всех столов сразу — для холла/проектора</div>
-                        </div>
-                        <div style="display: flex; gap: 6px;">
-                            <button class="btn btn-outline btn-sm" onclick="copyDisplayGridLink()"><i class="fas fa-copy"></i></button>
-                            <button class="btn btn-primary btn-sm" onclick="openDisplayGridLink()"><i class="fas fa-external-link-alt"></i></button>
-                        </div>
-                    </div>
-                </div>
+            // ===== 4. СПИСОК СТОЛОВ =====
+            const locked = !token;
+            let onlineCount = 0;
+            if (token) {
+                for (let r = 1; r <= ringsCount; r++) {
+                    if (getRingStatus(r).cls === 'online') onlineCount++;
+                }
+            }
 
-                <div style="background: rgba(59,130,246,0.06); border: 1px solid rgba(59,130,246,0.25); border-radius: 12px; padding: 12px 14px; margin-top: 10px; font-size: 0.72rem; color: #93c5fd; line-height: 1.5;">
+            let rows = '';
+            for (let r = 1; r <= ringsCount; r++) {
+                const status = getRingStatus(r);
+                const ringMatches = matches.filter(m => m.ringId === r && m.round === 1);
+                const done = ringMatches.filter(m => m.status === 'completed').length;
+                const total = ringMatches.length;
+
+                let borderColor = 'rgba(255,255,255,0.06)';
+                if (!locked) {
+                    if (status.cls === 'online') borderColor = 'rgba(16,185,129,0.35)';
+                    else if (status.cls === 'stale') borderColor = 'rgba(245,158,11,0.35)';
+                }
+
+                let statusColor = '#9ca3af';
+                let statusBg = 'rgba(107,114,128,0.12)';
+                if (!locked && status.cls === 'online') { statusColor = '#10b981'; statusBg = 'rgba(16,185,129,0.12)'; }
+                else if (!locked && status.cls === 'stale') { statusColor = '#f59e0b'; statusBg = 'rgba(245,158,11,0.12)'; }
+
+                const statusHtml = (!locked && isActive)
+                    ? `<span style="display:inline-flex; align-items:center; gap:5px; font-size:0.6rem; font-weight:800; padding:3px 9px; border-radius:12px; background:${statusBg}; color:${statusColor}; text-transform:uppercase; letter-spacing:0.3px;">
+                        <span style="width:5px;height:5px;border-radius:50%;background:${statusColor};"></span>
+                        ${status.label}
+                    </span>`
+                    : '';
+
+                const sendBtn = locked
+                    ? `<button class="btn btn-outline btn-sm" disabled style="opacity:0.4; cursor:not-allowed;">
+                        <i class="fas fa-lock"></i> Отправить
+                    </button>`
+                    : `<button class="btn btn-outline btn-sm" onclick="sendJudgeLink(${r})">
+                        <i class="fas fa-paper-plane"></i> Отправить
+                    </button>`;
+
+                rows += `
+                    <div style="background: rgba(20,20,25,0.6); border: 1px solid ${borderColor}; border-radius: 12px; padding: 12px 14px; margin-bottom: 8px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; ${locked ? 'opacity:0.55;' : ''}">
+                        <div style="width: 38px; height: 38px; border-radius: 10px; background: rgba(139,92,246,0.15); color: #a78bfa; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.9rem; flex-shrink: 0;">${r}</div>
+                        <div style="flex: 1; min-width: 140px;">
+                            <div style="font-size: 0.82rem; font-weight: 700; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 3px;">
+                                Стол ${r} ${statusHtml}
+                            </div>
+                            <div style="font-size: 0.65rem; color: #888;">
+                                <b style="color:#fbbf24;">${done}</b> / ${total} боёв завершено
+                            </div>
+                        </div>
+                        ${sendBtn}
+                    </div>`;
+            }
+
+            const onlineBadge = (token && isActive)
+                ? `<div style="font-size: 0.62rem; color: #10b981; font-weight: 700; margin-bottom: 10px;">${onlineCount} из ${ringsCount} онлайн</div>`
+                : '';
+
+            // ===== 5. ПЕРЕСОЗДАТЬ =====
+            const dangerBlock = token ? `
+                <div style="margin-top: 14px; padding-top: 14px; border-top: 1px solid rgba(255,255,255,0.05);">
+                    <button class="btn btn-danger btn-block" onclick="regenerateJudgeToken()" style="font-size:0.7rem;">
+                        <i class="fas fa-sync-alt"></i> Пересоздать токен · старые ссылки сломаются
+                    </button>
+                </div>
+            ` : '';
+
+            // ===== 6. ПОДСКАЗКА =====
+            const hintBlock = `
+                <div style="background: rgba(59,130,246,0.06); border: 1px solid rgba(59,130,246,0.25); border-radius: 12px; padding: 12px 14px; margin-top: 14px; font-size: 0.72rem; color: #93c5fd; line-height: 1.6;">
                     <i class="fas fa-info-circle"></i>
-                    <b>Как работать:</b> откройте панель судьи у него на устройстве, а табло — на ТВ у стола. Табло автоматически показывает бой, который взял судья.
+                    <b>Как работать:</b> нажмите «Отправить» — скопируется готовое сообщение с двумя ссылками.
+                    Судья открывает <b>панель</b> на ноутбуке, а <b>табло</b> — на втором экране (ТВ через HDMI).
                 </div>
             `;
 
-            list.innerHTML = html;
+            // ===== СБОРКА =====
+            list.innerHTML = tokenBlock + ringsHeaderBlock + distributionBlock + onlineBadge + rows + dangerBlock + hintBlock;
             openModal('judgesModal');
+        };
+
+        // ===== Счётчик столов =====
+        window.changeRingsCount = async function(delta) {
+            const current = tournamentData.ringsCount || 1;
+            const next = current + delta;
+            if (next < 1 || next > 15) {
+                showToast(delta > 0 ? 'Максимум 15 столов' : 'Минимум 1 стол', 'error');
+                return;
+            }
+            try {
+                await updateDoc(doc(db, "tournaments", tournamentId), {
+                    ringsCount: next,
+                    updatedAt: new Date().toISOString()
+                });
+                tournamentData.ringsCount = next;
+                openJudgesPanel(); // перерисовать модалку
+                showToast(`Столов: ${next}`, 'success');
+            } catch (e) {
+                showToast('Ошибка: ' + e.message, 'error');
+            }
+        };
+
+        // ===== Раскрыть/скрыть опции распределения =====
+        window.toggleDistOptions = function() {
+            const el = document.getElementById('distOptions');
+            if (!el) return;
+            el.style.display = el.style.display === 'none' ? 'block' : 'none';
+        };
+
+        // ===== Режим распределения =====
+        window.setDistMode = function(mode) {
+            document.querySelectorAll('.dist-mode-btn').forEach(b => {
+                const isActive = b.dataset.mode === mode;
+                b.style.background = isActive ? 'rgba(251,191,36,0.12)' : 'rgba(255,255,255,0.03)';
+                b.style.borderColor = isActive ? 'rgba(251,191,36,0.5)' : 'rgba(255,255,255,0.08)';
+                b.style.color = isActive ? '#fbbf24' : '#888';
+            });
+            window.__distMode = mode;
+        };
+
+        // ===== Применить распределение из модалки =====
+        window.applyDistributionFromModal = async function() {
+            const mode = window.__distMode || 'round-robin';
+            const ringsCount = tournamentData.ringsCount || 1;
+            const firstRoundMatches = matches.filter(m => m.round === 1 && m.status !== 'bye');
+            if (!firstRoundMatches.length) {
+                showToast('Нет боёв для распределения', 'error');
+                return;
+            }
+
+            const sorted = [...firstRoundMatches].sort((a, b) =>
+                (a.weightClass || '').localeCompare(b.weightClass || '') ||
+                a.matchNumber - b.matchNumber
+            );
+
+            const assignments = {};
+
+            if (mode === 'round-robin') {
+                sorted.forEach((m, i) => {
+                    assignments[m.id] = (i % ringsCount) + 1;
+                });
+            } else if (mode === 'by-category') {
+                const byCat = {};
+                sorted.forEach(m => {
+                    const cat = m.weightClass || 'Все';
+                    if (!byCat[cat]) byCat[cat] = [];
+                    byCat[cat].push(m);
+                });
+                Object.keys(byCat).forEach((cat, idx) => {
+                    const ringId = (idx % ringsCount) + 1;
+                    byCat[cat].forEach(m => { assignments[m.id] = ringId; });
+                });
+            } else if (mode === 'random') {
+                const shuffled = [...sorted].sort(() => Math.random() - 0.5);
+                shuffled.forEach((m, i) => {
+                    assignments[m.id] = (i % ringsCount) + 1;
+                });
+            }
+
+            try {
+                const batch = writeBatch(db);
+                batch.update(doc(db, "tournaments", tournamentId), {
+                    ringsCount,
+                    distributedAt: new Date().toISOString(),
+                    updatedAt: new Date().toISOString()
+                });
+                for (const [mid, ringId] of Object.entries(assignments)) {
+                    batch.update(doc(db, `tournaments/${tournamentId}/matches`, mid), { ringId });
+                }
+                await batch.commit();
+
+                await loadMatches();
+                openJudgesPanel();
+                showToast(`✅ Распределено ${sorted.length} боёв`, 'success');
+            } catch (e) {
+                console.error(e);
+                showToast('Ошибка: ' + e.message, 'error');
+            }
+        };
+
+        // ===== Изменение количества столов из модалки =====
+        window.changeRingsCount = async function(delta) {
+            const current = tournamentData.ringsCount || 1;
+            const next = current + delta;
+            if (next < 1 || next > 15) {
+                showToast(delta > 0 ? 'Максимум 15 столов' : 'Минимум 1 стол', 'error');
+                return;
+            }
+            try {
+                await updateDoc(doc(db, "tournaments", tournamentId), {
+                    ringsCount: next,
+                    updatedAt: new Date().toISOString()
+                });
+                tournamentData.ringsCount = next;
+                // перерисовать список
+                const inner = document.getElementById('ringsListInner');
+                if (inner) inner.innerHTML = window.__renderRingsList();
+                const label = document.getElementById('ringsCountLabel');
+                if (label) label.textContent = next;
+                showToast(`Столов: ${next}`, 'success');
+            } catch (e) {
+                showToast('Ошибка: ' + e.message, 'error');
+            }
+        };
+
+        // ===== Отправить одному судье =====
+        window.sendJudgeLink = function(ringId) {
+            if (!tournamentData.judgeToken) {
+                showToast('Сначала создайте токен', 'error');
+                return;
+            }
+            const token = tournamentData.judgeToken;
+            const baseUrl = window.location.origin + window.location.pathname.replace(/tournament-details\.html.*$/, 'live-judging.html');
+            const panelUrl = `${baseUrl}?id=${tournamentId}&ring=${ringId}&k=${token}`;
+            const displayUrl = `${baseUrl}?id=${tournamentId}&ring=${ringId}&role=display`;
+            const tournamentName = tournamentData.name || 'Турнир';
+
+            const text = `🥊 Стол ${ringId} · ${tournamentName}
+
+        📱 Панель судьи (открой на ноутбуке):
+        ${panelUrl}
+
+        📺 Табло (открой на втором экране через HDMI):
+        ${displayUrl}
+
+        Как настроить (2 минуты):
+        1. Подключи ТВ к ноутбуку через HDMI
+        2. Windows: Win+P → «Расширить экран»
+        3. Открой ссылку №1 — это твоя рабочая панель
+        4. Перетащи второе окно браузера на ТВ, открой ссылку №2
+        5. F11 на ТВ-окне — полный экран`;
+
+            copyToClipboard(text, `✅ Сообщение для судьи стола ${ringId} скопировано`);
+        };
+
+        // ===== Скопировать все ссылки =====
+        window.copyAllJudgeLinks = function() {
+            if (!tournamentData.judgeToken) {
+                showToast('Сначала создайте токен', 'error');
+                return;
+            }
+            const token = tournamentData.judgeToken;
+            const ringsCount = tournamentData.ringsCount || 1;
+            const baseUrl = window.location.origin + window.location.pathname.replace(/tournament-details\.html.*$/, 'live-judging.html');
+            const tournamentName = tournamentData.name || 'Турнир';
+
+            let text = `🏆 ${tournamentName}\n\nСсылки для судей и табло\n\n`;
+
+            for (let r = 1; r <= ringsCount; r++) {
+                const panelUrl = `${baseUrl}?id=${tournamentId}&ring=${r}&k=${token}`;
+                const displayUrl = `${baseUrl}?id=${tournamentId}&ring=${r}&role=display`;
+                text += `━━━ СТОЛ ${r} ━━━\n`;
+                text += `📱 Панель: ${panelUrl}\n`;
+                text += `📺 Табло: ${displayUrl}\n\n`;
+            }
+
+            text += `Как настроить: подключи ТВ по HDMI, открой панель на ноуте, табло на ТВ (Win+P → Расширить).`;
+
+            copyToClipboard(text, `✅ Все ссылки (${ringsCount} столов) скопированы`);
         };
 
         window.generateJudgeToken = async function() {
