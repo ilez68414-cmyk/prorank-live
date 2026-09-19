@@ -1186,11 +1186,7 @@
 
     <main>
         <div class="container">
-            <div class="breadcrumbs">
-                <a href="organization-dashboard.html">Дашборд</a>
-                <i class="fas fa-chevron-right"></i>
-                <span class="current">Создание турнира</span>
-            </div>
+            
 
             <!-- БАННЕР ЧЕРНОВИКА -->
             <div class="draft-banner" id="draftBanner" style="display: none;">
@@ -1251,6 +1247,12 @@
                         <i class="fas fa-weight-hanging"></i>
                         <div id="previewWeightsTags"></div>
                     </div>
+
+                    <div class="preview-weights" id="previewAge" style="display: none;">
+                        <i class="fas fa-users"></i>
+                        <div id="previewAgeTags"></div>
+                    </div>
+
                 </div>
 
                 <!-- ОСНОВНАЯ ИНФОРМАЦИЯ -->
@@ -1276,6 +1278,25 @@
                             <option value="Другое">Другое</option>
                         </select>
                         <div class="error-message">Выберите вид спорта</div>
+                    </div>
+
+                    <!-- ВОЗРАСТНЫЕ ГРУППЫ -->
+                    <div class="form-group" id="ageGroupsGroup">
+                        <label>
+                            Возрастные группы <span class="required">*</span>
+                            <span class="selected-count" id="selectedAgeCount">0 выбрано</span>
+                        </label>
+                        <div class="weight-header">
+                            <div class="weight-presets">
+                                <button type="button" class="preset-btn" data-age-preset="all"><i class="fas fa-check-double"></i> Все</button>
+                                <button type="button" class="preset-btn" data-age-preset="none"><i class="fas fa-times"></i> Сбросить</button>
+                                <button type="button" class="preset-btn" data-age-preset="kids"><i class="fas fa-child"></i> Дети и кадеты</button>
+                                <button type="button" class="preset-btn" data-age-preset="adult"><i class="fas fa-user"></i> Взрослые и старше</button>
+                            </div>
+                        </div>
+                        <div class="weight-classes-grid" id="ageGroupsGrid"></div>
+                        <div class="field-hint">Выберите возрастные группы, в которых будет проводиться турнир</div>
+                        <div class="error-message">Выберите хотя бы одну возрастную группу</div>
                     </div>
 
                     <!-- ВЕСОВЫЕ КАТЕГОРИИ -->
@@ -1480,6 +1501,15 @@
             { name: "Тяжёлая", range: "100+ кг", min: 100, max: 999 }
         ];
 
+        // ===== ВОЗРАСТНЫЕ ГРУППЫ =====
+        const AGE_GROUPS = [
+            { name: "Дети", range: "6–11 лет", min: 6, max: 11 },
+            { name: "Кадеты", range: "12–14 лет", min: 12, max: 14 },
+            { name: "Юниоры", range: "15–17 лет", min: 15, max: 17 },
+            { name: "Взрослые", range: "18–39 лет", min: 18, max: 39 },
+            { name: "Ветераны", range: "40+ лет", min: 40, max: 999 }
+        ];
+
         // ===== CLOUDINARY =====
         const CLOUD_NAME = 'dbv7bfkgy';
         const UPLOAD_PRESET = 'prorank_avatars';
@@ -1488,6 +1518,7 @@
 
         // ===== СОСТОЯНИЕ =====
         let selectedWeightClasses = [];
+        let selectedAgeGroups = [];
         let currentOrgId = null;
         let currentOrgData = null;
         let currentUserId = null;
@@ -1628,6 +1659,80 @@
             countEl.textContent = `${selectedWeightClasses.length} выбрано`;
             countEl.style.display = selectedWeightClasses.length > 0 ? 'inline-block' : 'none';
         }
+        //===== ВОЗРАСТНЫЕ ГРУППЫ =====
+        function initAgeGroupsGrid() {
+            const grid = document.getElementById('ageGroupsGrid');
+            grid.innerHTML = AGE_GROUPS.map((ag, idx) => `
+                <label class="weight-class-option" data-age-index="${idx}">
+                    <input type="checkbox" value="${ag.name} (${ag.range})">
+                    <span class="class-name">${ag.name}</span>
+                    <span class="class-range">${ag.range}</span>
+                </label>
+            `).join('');
+
+            grid.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+                cb.addEventListener('change', (e) => {
+                    const option = e.target.closest('.weight-class-option');
+                    if (e.target.checked) {
+                        option.classList.add('selected');
+                        if (!selectedAgeGroups.includes(e.target.value)) {
+                            selectedAgeGroups.push(e.target.value);
+                        }
+                    } else {
+                        option.classList.remove('selected');
+                        selectedAgeGroups = selectedAgeGroups.filter(a => a !== e.target.value);
+                    }
+                    updateSelectedAgeCount();
+                    updatePreview();
+                    markDirty();
+                });
+            });
+
+            document.querySelectorAll('[data-age-preset]').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const preset = btn.dataset.agePreset;
+                    const checkboxes = grid.querySelectorAll('input[type="checkbox"]');
+
+                    if (preset === 'all') {
+                        checkboxes.forEach(cb => {
+                            cb.checked = true;
+                            cb.closest('.weight-class-option').classList.add('selected');
+                        });
+                        selectedAgeGroups = AGE_GROUPS.map(a => `${a.name} (${a.range})`);
+                    } else if (preset === 'none') {
+                        checkboxes.forEach(cb => {
+                            cb.checked = false;
+                            cb.closest('.weight-class-option').classList.remove('selected');
+                        });
+                        selectedAgeGroups = [];
+                    } else if (preset === 'kids') {
+                        checkboxes.forEach((cb, i) => {
+                            const isKid = i <= 1; // Дети, Кадеты
+                            cb.checked = isKid;
+                            cb.closest('.weight-class-option').classList.toggle('selected', isKid);
+                        });
+                        selectedAgeGroups = AGE_GROUPS.slice(0, 2).map(a => `${a.name} (${a.range})`);
+                    } else if (preset === 'adult') {
+                        checkboxes.forEach((cb, i) => {
+                            const isAdult = i >= 3; // Взрослые, Ветераны
+                            cb.checked = isAdult;
+                            cb.closest('.weight-class-option').classList.toggle('selected', isAdult);
+                        });
+                        selectedAgeGroups = AGE_GROUPS.slice(3).map(a => `${a.name} (${a.range})`);
+                    }
+
+                    updateSelectedAgeCount();
+                    updatePreview();
+                    markDirty();
+                });
+            });
+        }
+
+        function updateSelectedAgeCount() {
+            const countEl = document.getElementById('selectedAgeCount');
+            countEl.textContent = `${selectedAgeGroups.length} выбрано`;
+            countEl.style.display = selectedAgeGroups.length > 0 ? 'inline-block' : 'none';
+        }
 
         // ===== ФОТО =====
         imageUploadArea.addEventListener('click', () => {
@@ -1699,6 +1804,56 @@
             img.src = url;
         }
 
+        async function uploadToCloudinary(file) {
+            imageUploadArea.classList.add('uploading');
+            uploadProgressBar.style.width = '0%';
+            uploadProgressText.textContent = 'Загрузка 0%';
+
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('upload_preset', UPLOAD_PRESET);
+
+            try {
+                const xhr = new XMLHttpRequest();
+                xhr.open('POST', CLOUDINARY_URL);
+
+                xhr.upload.onprogress = (e) => {
+                    if (e.lengthComputable) {
+                        const percent = Math.round((e.loaded / e.total) * 100);
+                        uploadProgressBar.style.width = percent + '%';
+                        uploadProgressText.textContent = `Загрузка ${percent}%`;
+                    }
+                };
+
+                const result = await new Promise((resolve, reject) => {
+                    xhr.onload = () => {
+                        if (xhr.status >= 200 && xhr.status < 300) {
+                            try { resolve(JSON.parse(xhr.responseText)); }
+                            catch (e) { reject(new Error('Неверный ответ от Cloudinary')); }
+                        } else {
+                            reject(new Error('Ошибка загрузки: ' + xhr.status));
+                        }
+                    };
+                    xhr.onerror = () => reject(new Error('Сеть недоступна'));
+                    xhr.send(formData);
+                });
+
+                uploadedImageUrl = result.secure_url;
+                imagePreview.src = uploadedImageUrl;
+                imagePreview.style.display = 'block';
+                imageUploadArea.classList.add('has-image');
+                markDirty();
+                updateFormProgress();
+                showToast('✅ Фото загружено', 'success');
+            } catch (err) {
+                console.error('Cloudinary:', err);
+                showToast('❌ Ошибка загрузки фото: ' + err.message, 'error');
+            } finally {
+                imageUploadArea.classList.remove('uploading');
+                uploadProgressBar.style.width = '0%';
+                uploadProgressText.textContent = 'Загрузка 0%';
+            }
+        }
         
         // ===== ШАБЛОНЫ =====
         async function loadTemplates() {
@@ -1754,6 +1909,16 @@
                     updateSelectedCount();
                 }
 
+                if (t.ageGroups && Array.isArray(t.ageGroups)) {
+                    selectedAgeGroups = [...new Set(t.ageGroups)];
+                    document.querySelectorAll('#ageGroupsGrid input[type="checkbox"]').forEach(cb => {
+                        const isSel = selectedAgeGroups.includes(cb.value);
+                        cb.checked = isSel;
+                        cb.closest('.weight-class-option').classList.toggle('selected', isSel);
+                    });
+                    updateSelectedAgeCount();
+                }
+
                 if (t.imageUrl) {
                     uploadedImageUrl = t.imageUrl;
                     imagePreview.src = t.imageUrl;
@@ -1803,6 +1968,7 @@
                     entryFee: parseFloat(feeInput.value) || 0,
                     maxParticipants: parseInt(maxPartInput.value) || 16,
                     weightClasses: selectedWeightClasses,
+                    ageGroups: selectedAgeGroups,
                     imageUrl: uploadedImageUrl || '',
                     createdAt: serverTimestamp()
                 });
@@ -1837,6 +2003,22 @@
             } else {
                 weightsDiv.style.display = 'none';
             }
+            // Возрастные группы в предпросмотре
+            const previewAge = document.getElementById('previewAge');
+            const previewAgeTags = document.getElementById('previewAgeTags');
+            if (previewAge && previewAgeTags) {
+                if (selectedAgeGroups.length > 0) {
+                    previewAge.style.display = 'flex';
+                    const showAge = selectedAgeGroups.slice(0, 3);
+                    const restAge = selectedAgeGroups.length - showAge.length;
+                    previewAgeTags.innerHTML = showAge.map(a => {
+                        const short = a.replace(/\s*\(.*\)/, '');
+                        return `<span class="preview-weight-tag">${short}</span>`;
+                    }).join('') + (restAge > 0 ? `<span class="preview-weight-more">+${restAge}</span>` : '');
+                } else {
+                    previewAge.style.display = 'none';
+                }
+            }
         }
 
         // ===== ОБЩАЯ ВМЕСТИМОСТЬ =====
@@ -1860,6 +2042,7 @@
                 nameInput.value.trim().length > 0,
                 sportSelect.value !== '',
                 selectedWeightClasses.length > 0,
+                selectedAgeGroups.length > 0,
                 dateInput.value !== '',
                 deadlineInput.value !== '',
                 cityInput.value.trim().length > 0,
@@ -1925,6 +2108,12 @@
                 setFieldError('weightClassesGroup', 'Выберите хотя бы одну весовую категорию');
                 isValid = false;
             }
+
+            if (selectedAgeGroups.length === 0) {
+                setFieldError('ageGroupsGroup', 'Выберите хотя бы одну возрастную группу');
+                isValid = false;
+            }
+
             if (dateInput.value === '') {
                 setFieldError('dateGroup', 'Выберите дату турнира');
                 isValid = false;
@@ -2005,6 +2194,10 @@
             if (group) group.classList.remove('error');
         });
 
+        document.getElementById('ageGroupsGrid')?.addEventListener('change', () => {
+            clearFieldError('ageGroupsGroup');
+        });
+
         // ===== ЧЕРНОВИК =====
         function markDirty() {
             hasUnsavedChanges = true;
@@ -2030,6 +2223,7 @@
                     fee: feeInput.value,
                     maxParticipants: maxPartInput.value,
                     weightClasses: selectedWeightClasses,
+                    ageGroups: selectedAgeGroups,
                     imageUrl: uploadedImageUrl,
                     savedAt: Date.now()
                 };
@@ -2076,6 +2270,16 @@
                     cb.closest('.weight-class-option').classList.toggle('selected', isSel);
                 });
                 updateSelectedCount();
+            }
+
+            if (Array.isArray(draft.ageGroups)) {
+                selectedAgeGroups = [...new Set(draft.ageGroups)];
+                document.querySelectorAll('#ageGroupsGrid input[type="checkbox"]').forEach(cb => {
+                    const isSel = selectedAgeGroups.includes(cb.value);
+                    cb.checked = isSel;
+                    cb.closest('.weight-class-option').classList.toggle('selected', isSel);
+                });
+                updateSelectedAgeCount();
             }
 
             if (draft.imageUrl) {
@@ -2198,6 +2402,7 @@
                     entryFee: parseFloat(feeInput.value) || 0,
                     maxParticipants: parseInt(maxPartInput.value) || 64,
                     weightClasses: selectedWeightClasses,
+                    ageGroups: selectedAgeGroups,
                     organizationId: currentOrgId,
                     organizationName: currentOrgData?.name || 'Организация',
                     createdByUserId: currentUserId,
@@ -2319,7 +2524,9 @@
 
         // ===== ИНИЦИАЛИЗАЦИЯ =====
         initWeightClassesGrid();
+        initAgeGroupsGrid();
         updateSelectedCount();
+        updateSelectedAgeCount();
         updateFormProgress();
 
         // Показать черновик при загрузке
