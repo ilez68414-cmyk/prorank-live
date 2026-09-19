@@ -515,6 +515,16 @@
         </div>
     </div>
 
+    <div class="modal-overlay" id="startChecklistModal">
+        <div class="modal" style="max-width: 480px;">
+            <div class="modal-header">
+                <h3><i class="fas fa-clipboard-check"></i> Что нужно для старта</h3>
+                <button class="modal-close" onclick="closeModal('startChecklistModal')"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body" id="startChecklistBody" style="padding: 0;"></div>
+        </div>
+    </div>
+
     <div id="mobileBottomNavContainer"></div>
 
     <!-- STICKY CTA -->
@@ -1280,13 +1290,17 @@
                             <button class="btn-cta" onclick="document.getElementById('changeStatusBtn')?.click()"><i class="fas fa-play"></i> Начать турнир</button>
                         `;
                     } else {
+                        const missingCount = missing.length;
                         inner.innerHTML = `
-                            <div class="sticky-info" style="flex:1;">
+                            <div class="sticky-info" style="flex:1; min-width:0;">
                                 <div class="sticky-label" style="color:#fca5a5;">Не готово к старту</div>
                                 <div class="sticky-value" style="font-size:0.82rem;color:#fca5a5;font-weight:600;line-height:1.3;">
-                                    Не хватает: ${missing.join(', ')}
+                                    Осталось шагов: ${missingCount}
                                 </div>
                             </div>
+                            <button onclick="openStartChecklist()" title="Что нужно для старта" style="background:transparent;border:none;color:#fbbf24;cursor:pointer;padding:10px;font-size:1.3rem;display:flex;align-items:center;justify-content:center;transition:opacity 0.2s;" onmouseover="this.style.opacity='0.7'" onmouseout="this.style.opacity='1'">
+                                <i class="fas fa-info-circle"></i>
+                            </button>
                             <button class="btn-cta" disabled style="opacity:0.45;cursor:not-allowed;background:#333;color:#888;box-shadow:none;">
                                 <i class="fas fa-lock"></i> Начать турнир
                             </button>
@@ -2434,6 +2448,132 @@
                 console.error(e);
                 showToast('Ошибка: ' + e.message, 'error');
             }
+        };
+
+        window.openStartChecklist = function() {
+            if (!tournamentData) return;
+            const t = tournamentData;
+            const approvedCount = registrations.filter(r => r.status === 'approved').length;
+            const firstRoundMatches = matches.filter(m => m.round === 1 && m.status !== 'bye');
+            const ringsAssigned = t.bracketGenerated && firstRoundMatches.length > 0 && firstRoundMatches.every(m => m.ringId != null);
+            const ringsCount = t.ringsCount || 1;
+
+            // 🔧 Проверки готовности
+            const items = [
+                {
+                    key: 'participants',
+                    ready: approvedCount >= 2,
+                    title: 'Участники',
+                    desc: approvedCount >= 2
+                        ? `${approvedCount} ${plural(approvedCount, 'боец', 'бойца', 'бойцов')} записано`
+                        : `Нужно минимум 2 бойца, сейчас: ${approvedCount}`,
+                    action: () => { closeModal('startChecklistModal'); switchTab('participants'); },
+                    actionLabel: 'К участникам'
+                },
+                {
+                    key: 'bracket',
+                    ready: !!t.bracketGenerated,
+                    title: 'Сетка',
+                    desc: t.bracketGenerated
+                        ? `Сетка сгенерирована (${matches.length} ${plural(matches.length, 'бой', 'боя', 'боёв')})`
+                        : 'Сгенерируйте сетку — она создаст все бои автоматически',
+                    action: () => { closeModal('startChecklistModal'); switchTab('bracket'); },
+                    actionLabel: 'К сетке'
+                },
+                {
+                    key: 'rings',
+                    ready: ringsCount >= 1,
+                    title: 'Столы',
+                    desc: `Настроено столов: ${ringsCount}`,
+                    action: () => { closeModal('startChecklistModal'); openJudgesPanel(); },
+                    actionLabel: 'Открыть панель'
+                },
+                {
+                    key: 'distribution',
+                    ready: ringsAssigned,
+                    title: 'Распределение боёв',
+                    desc: !t.bracketGenerated
+                        ? 'Сначала сгенерируйте сетку'
+                        : ringsAssigned
+                            ? 'Все бои распределены по столам'
+                            : 'Распределите бои — в панели столов & судей',
+                    action: () => { closeModal('startChecklistModal'); openJudgesPanel(); },
+                    actionLabel: 'Распределить'
+                },
+                {
+                    key: 'token',
+                    ready: !!t.judgeToken,
+                    title: 'Токен судей',
+                    desc: t.judgeToken
+                        ? 'Токен создан, ссылки судей работают'
+                        : 'Создайте токен, чтобы судьи могли подключиться',
+                    action: () => { closeModal('startChecklistModal'); openJudgesPanel(); },
+                    actionLabel: 'Создать токен'
+                }
+            ];
+
+            const readyCount = items.filter(i => i.ready).length;
+            const totalCount = items.length;
+            const allReady = readyCount === totalCount;
+
+            let html = `
+                <div style="padding: 0 0 14px; margin-bottom: 14px; border-bottom: 1px solid rgba(255,255,255,0.06);">
+                    <div style="display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap;">
+                        <div style="font-size: 0.78rem; color: #aaa;">Готовность турнира</div>
+                        <div style="font-size: 0.82rem; font-weight: 800; color: ${allReady ? '#10b981' : '#fbbf24'};">
+                            ${readyCount} / ${totalCount}
+                        </div>
+                    </div>
+                    <div style="margin-top: 8px; height: 6px; background: rgba(255,255,255,0.06); border-radius: 10px; overflow: hidden;">
+                        <div style="height: 100%; width: ${Math.round((readyCount / totalCount) * 100)}%; background: linear-gradient(90deg, #fbbf24, #ffdd77); border-radius: 10px; transition: width 0.4s;"></div>
+                    </div>
+                </div>
+
+                <div style="display: flex; flex-direction: column; gap: 10px;">
+            `;
+
+            items.forEach(item => {
+                const iconColor = item.ready ? '#10b981' : '#f59e0b';
+                const iconBg = item.ready ? 'rgba(16,185,129,0.15)' : 'rgba(245,158,11,0.12)';
+                const iconName = item.ready ? 'fa-check' : 'fa-hourglass-half';
+                const borderColor = item.ready ? 'rgba(16,185,129,0.25)' : 'rgba(245,158,11,0.25)';
+                const bg = item.ready ? 'rgba(16,185,129,0.04)' : 'rgba(245,158,11,0.04)';
+
+                html += `
+                    <div style="background: ${bg}; border: 1px solid ${borderColor}; border-radius: 12px; padding: 12px 14px; display: flex; align-items: flex-start; gap: 12px;">
+                        <div style="width: 32px; height: 32px; border-radius: 9px; background: ${iconBg}; color: ${iconColor}; display: flex; align-items: center; justify-content: center; font-size: 0.85rem; flex-shrink: 0;">
+                            <i class="fas ${iconName}"></i>
+                        </div>
+                        <div style="flex: 1; min-width: 0;">
+                            <div style="font-size: 0.8rem; font-weight: 700; color: ${item.ready ? '#10b981' : '#fff'}; margin-bottom: 3px;">${item.title}</div>
+                            <div style="font-size: 0.68rem; color: #888; line-height: 1.4;">${item.desc}</div>
+                        </div>
+                        ${!item.ready ? `<button class="btn btn-outline btn-sm" onclick="(${item.action.toString()})()" style="flex-shrink: 0; font-size: 0.65rem;">${item.actionLabel}</button>` : ''}
+                    </div>
+                `;
+            });
+
+            html += `</div>`;
+
+            if (allReady) {
+                html += `
+                    <div style="background: rgba(16,185,129,0.08); border: 1px solid rgba(16,185,129,0.3); border-radius: 12px; padding: 12px 14px; margin-top: 14px; font-size: 0.78rem; color: #6ee7b7; text-align: center; line-height: 1.5;">
+                        <i class="fas fa-check-circle" style="color: #10b981; font-size: 1rem;"></i>
+                        <div style="margin-top: 4px; font-weight: 700;">Всё готово!</div>
+                        <div style="font-size: 0.68rem; color: #aaa; margin-top: 2px;">Можно начинать турнир</div>
+                    </div>
+                `;
+            } else {
+                html += `
+                    <div style="background: rgba(59,130,246,0.06); border: 1px solid rgba(59,130,246,0.25); border-radius: 12px; padding: 12px 14px; margin-top: 14px; font-size: 0.72rem; color: #93c5fd; line-height: 1.5;">
+                        <i class="fas fa-info-circle"></i>
+                        Выполните все шаги, чтобы разблокировать кнопку «Начать турнир».
+                    </div>
+                `;
+            }
+
+            document.getElementById('startChecklistBody').innerHTML = html;
+            openModal('startChecklistModal');
         };
 
         // ============================================================
