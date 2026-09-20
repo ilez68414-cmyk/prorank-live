@@ -183,8 +183,8 @@ export async function sendTestNotification() {
         const registration = await navigator.serviceWorker.ready;
         registration.showNotification('🔔 PRORANK', {
             body: 'Тестовое уведомление! Всё работает 🎉',
-            icon: '/icons/icon-192.png',
-            badge: '/icons/icon-192.png',
+            icon: '/prorank-live/icons/icon-192.png',
+            badge: '/prorank-live/icons/icon-192.png',
             vibrate: [200, 100, 200]
         });
         console.log('✅ Тестовое уведомление отправлено');

@@ -1671,18 +1671,36 @@
   OneSignalDeferred.push(async function(OneSignal) {
     await OneSignal.init({
       appId: "7ec0f0b2-e126-480b-b928-d0d6eaeab3a0",
-      serviceWorkerPath: "/prorank-live/OneSignalSDKWorker.js" // ← ЭТО ВАЖНО!
+      // OneSignal-воркер вынесен в отдельный scope (/prorank-live/onesignal/),
+      // чтобы он не вытеснял PWA-воркер /prorank-live/sw.js (офлайн-режим).
+      serviceWorkerPath: "/prorank-live/onesignal/OneSignalSDKWorker.js",
+      serviceWorkerParam: { scope: "/prorank-live/onesignal/" }
     });
   });
 </script>
-<!-- Проверка поддержки Service Workers (для будущих пуш-уведомлений) -->
+<!-- ===== Регистрация Service Worker (PWA / офлайн-режим) =====
+     Воркер /prorank-live/sw.js кэширует интерфейс и открывает локальную копию
+     сайта, когда интернета нет. Повторную регистрацию делает header.js —
+     это безопасно, регистрация идемпотентна. -->
 <script>
-    // Безопасная проверка: наличие navigator и 'serviceWorker' в нём.
-    // Сам SW не регистрируем — только проверяем готовность браузера к пушам.
-    if (typeof navigator !== 'undefined' && 'serviceWorker' in navigator) {
-        console.log('ProRank готов к пушам');
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', function () {
+            navigator.serviceWorker.getRegistration('/prorank-live/')
+                .then(function (existing) {
+                    if (existing && existing.active) {
+                        console.log('✅ Service Worker уже активен:', existing.scope);
+                        return null;
+                    }
+                    return navigator.serviceWorker
+                        .register('/prorank-live/sw.js', { scope: '/prorank-live/' })
+                        .then(function (registration) {
+                            console.log('✅ Service Worker зарегистрирован:', registration.scope);
+                        });
+                })
+                .catch(function (err) { console.error('❌ SW error:', err); });
+        });
     } else {
-        console.warn('⚠️ Service Worker не поддерживается — пуш-уведомления недоступны');
+        console.warn('⚠️ Service Worker не поддерживается — офлайн-режим и пуши недоступны');
     }
 </script>
 </body>

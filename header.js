@@ -496,11 +496,93 @@ window.addEventListener('appinstalled', () => {
     if (banner) banner.style.display = 'none';
 });
 
-if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/prorank-live/sw-v2.js').catch(err => console.error('SW error:', err));
-    });
+// ===== SERVICE WORKER (PWA / офлайн-режим) =====
+// Единый воркер приложения: кэш интерфейса, офлайн-плашка, push.
+const SW_URL = '/prorank-live/sw.js';
+const SW_SCOPE = '/prorank-live/';
+
+function registerServiceWorker() {
+    navigator.serviceWorker.register(SW_URL, { scope: SW_SCOPE })
+        .then(registration => {
+            console.log('✅ Service Worker зарегистрирован:', registration.scope);
+            registration.addEventListener('updatefound', () => {
+                const installing = registration.installing;
+                if (!installing) return;
+                installing.addEventListener('statechange', () => {
+                    if (installing.state === 'installed' && navigator.serviceWorker.controller) {
+                        console.log('🔄 Загружена новая версия приложения — обновите страницу');
+                    }
+                });
+            });
+        })
+        .catch(err => console.error('❌ SW error:', err));
 }
+
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', registerServiceWorker);
+}
+
+// ===== ПЛАШКА «ОФЛАЙН-РЕЖИМ. ПРОВЕРЬТЕ СЕТЬ» =====
+// Показывается, если связь пропала уже во время работы с приложением.
+// При загрузке страницы без интернета такую же плашку добавляет sw.js.
+const OFFLINE_BANNER_ID = 'prorankOfflineBanner';
+
+function injectOfflineBannerStyles() {
+    if (document.getElementById('prorankOfflineBannerStyles')) return;
+    const styles = document.createElement('style');
+    styles.id = 'prorankOfflineBannerStyles';
+    styles.textContent = `
+        #prorankOfflineBanner { position: fixed !important; top: 0 !important; left: 0 !important; right: 0 !important; z-index: 2147483000 !important; display: flex !important; align-items: center !important; gap: 10px !important; padding: 10px 14px !important; margin: 0 !important; box-sizing: border-box !important; font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important; font-size: 13px !important; font-weight: 600 !important; line-height: 1.35 !important; letter-spacing: .2px !important; color: #fbbf24 !important; background: linear-gradient(135deg, #1a1a1a 0%, #0f0f0f 60%, #1a1a1a 100%) !important; border-bottom: 1px solid rgba(251,191,36,.35) !important; box-shadow: 0 8px 24px rgba(0,0,0,.55) !important; transform: translateY(-110%) !important; transition: transform .35s ease, color .35s ease !important; }
+        #prorankOfflineBanner.prorank-offline-visible { transform: translateY(0) !important; }
+        #prorankOfflineBanner.prorank-offline-restored { color: #4ade80 !important; border-bottom-color: rgba(74,222,128,.45) !important; }
+        #prorankOfflineBanner .prorank-offline-dot { width: 9px !important; height: 9px !important; min-width: 9px !important; border-radius: 50% !important; background: #fbbf24 !important; animation: prorankOfflinePulse 1.6s ease-out infinite !important; }
+        #prorankOfflineBanner.prorank-offline-restored .prorank-offline-dot { background: #4ade80 !important; animation: none !important; }
+        #prorankOfflineBanner .prorank-offline-text { flex: 1 1 auto !important; color: inherit !important; text-align: left !important; }
+        #prorankOfflineBanner .prorank-offline-retry { flex: 0 0 auto !important; padding: 7px 16px !important; border: 1px solid rgba(251,191,36,.45) !important; border-radius: 40px !important; background: rgba(251,191,36,.12) !important; color: #fbbf24 !important; font: inherit !important; font-size: 12px !important; font-weight: 700 !important; cursor: pointer !important; }
+        @keyframes prorankOfflinePulse { 0% { box-shadow: 0 0 0 0 rgba(251,191,36,.55); } 70% { box-shadow: 0 0 0 10px rgba(251,191,36,0); } 100% { box-shadow: 0 0 0 0 rgba(251,191,36,0); } }
+        @media (max-width: 420px) { #prorankOfflineBanner { font-size: 12px !important; padding: 9px 12px !important; gap: 8px !important; } #prorankOfflineBanner .prorank-offline-retry { padding: 6px 13px !important; } }
+    `;
+    document.head.appendChild(styles);
+}
+
+function showOfflineBanner() {
+    if (document.getElementById(OFFLINE_BANNER_ID)) return;
+    injectOfflineBannerStyles();
+    const banner = document.createElement('div');
+    banner.id = OFFLINE_BANNER_ID;
+    banner.setAttribute('role', 'status');
+    banner.setAttribute('aria-live', 'polite');
+    banner.innerHTML = '<span class="prorank-offline-dot"></span>' +
+        '<span class="prorank-offline-text">Офлайн-режим. Проверьте сеть</span>' +
+        '<button type="button" class="prorank-offline-retry">Обновить</button>';
+    const retry = banner.querySelector('.prorank-offline-retry');
+    if (retry) retry.onclick = () => window.location.reload();
+    (document.body || document.documentElement).appendChild(banner);
+    requestAnimationFrame(() => banner.classList.add('prorank-offline-visible'));
+}
+
+function hideOfflineBanner() {
+    const banner = document.getElementById(OFFLINE_BANNER_ID);
+    if (!banner) return;
+    banner.classList.add('prorank-offline-restored');
+    const label = banner.querySelector('.prorank-offline-text');
+    if (label) label.textContent = 'Соединение восстановлено. Обновите страницу';
+    setTimeout(() => { if (banner.parentNode) banner.parentNode.removeChild(banner); }, 4000);
+}
+
+// Проверка связи «в лоб» — запрос уходит мимо кэша Service Worker
+function probeConnection() {
+    fetch(window.location.href, { method: 'HEAD', cache: 'no-store' })
+        .then(() => hideOfflineBanner())
+        .catch(() => showOfflineBanner());
+}
+
+window.addEventListener('offline', showOfflineBanner);
+window.addEventListener('online', probeConnection);
+if (navigator.onLine === false) showOfflineBanner();
+setInterval(() => {
+    if (document.getElementById(OFFLINE_BANNER_ID)) probeConnection();
+}, 20000);
 
 function createTransitionElement() {
     if (document.querySelector('.page-transition')) return document.querySelector('.page-transition');
