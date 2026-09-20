@@ -681,6 +681,47 @@
             });
         }
 
+        // ============================================================
+        // 🔧 HEARTBEAT СУДЬИ
+        // ============================================================
+        let judgeHeartbeatInterval = null;
+        let judgeHeartbeatRing = null;
+
+        async function startJudgeHeartbeat(ring) {
+            if (!tournamentId || !ring) return;
+            judgeHeartbeatRing = ring;
+            const name = currentUserName || localStorage.getItem(JUDGE_NAME_KEY) || 'Судья';
+
+            const write = async (online) => {
+                try {
+                    // 🔧 Пишем в ПОЛЕ документа турнира, а не в подколлекцию
+                    await updateDoc(doc(db, "tournaments", tournamentId), {
+                        [`ringSessions.${ring}`]: {
+                            ring: ring,
+                            judgeName: name,
+                            online: online,
+                            lastSeen: Date.now(),
+                            updatedAt: new Date().toISOString()
+                        }
+                    });
+                } catch (e) {
+                    console.warn('heartbeat error:', e);
+                }
+            };
+
+            await write(true);
+
+            if (judgeHeartbeatInterval) clearInterval(judgeHeartbeatInterval);
+            judgeHeartbeatInterval = setInterval(() => write(true), 30000);
+
+            const goOffline = () => {
+                if (judgeHeartbeatInterval) clearInterval(judgeHeartbeatInterval);
+                write(false);
+            };
+            window.addEventListener('beforeunload', goOffline);
+            window.addEventListener('pagehide', goOffline);
+        }
+
         function checkToken() {
             if (!urlToken || !tournamentData) return false;
             const t = tournamentData.judgeToken;
@@ -749,6 +790,7 @@
                 myRing = parseInt(urlRing);
                 if (!myRing || myRing < 1) { showDeny('Неверный номер стола.'); return; }
                 userRole = 'judge';
+                startJudgeHeartbeat(myRing);
                 currentUserName = localStorage.getItem(JUDGE_NAME_KEY) || '';
                 subscribeToMatches();
                 subscribeToTournament();

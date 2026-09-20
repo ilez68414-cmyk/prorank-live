@@ -906,7 +906,7 @@
 
         function renderTournamentCard(t) {
             const progress = t.maxParticipants ? Math.round((t.participantCount || 0) / t.maxParticipants * 100) : 0;
-            const pendingCount = allRequests.filter(r => r.tournamentId === t.id).length;
+            const pendingCount = 0;
             const isActive = t.status === 'active';
             const statusLabels = { registration: 'Набор', scheduled: 'Сетка', active: 'LIVE', completed: 'Завершён', cancelled: 'Отменён' };
 
@@ -947,7 +947,6 @@
                     <div style="position: relative;">
                         ${coverHtml}
                         <span class="card-status-badge ${t.status}">${statusLabels[t.status] || t.status}</span>
-                        ${pendingCount > 0 ? `<span class="card-pending-badge"><i class="fas fa-bell"></i> ${pendingCount}</span>` : ''}
                         ${t.paidOutToOrganizer ? `<span class="card-paid-badge"><i class="fas fa-check"></i> Оплачено</span>` : ''}
                     </div>
                     <div class="card-body">
@@ -1065,166 +1064,6 @@
             div.textContent = str || '';
             return div.innerHTML;
         }
-
-        // ============================================================
-
-        window.toggleRequestSelection = (rid, checked) => {
-            if (checked) selectedRequestIds.add(rid);
-            else selectedRequestIds.delete(rid);
-            updateBulkBar();
-        };
-
-        function updateBulkBar() {
-            const bar = document.getElementById('bulkBar');
-            const cnt = document.getElementById('selectedCount');
-            if (!bar) return;
-            if (selectedRequestIds.size > 0) {
-                bar.style.display = 'flex';
-                cnt.textContent = selectedRequestIds.size;
-            } else {
-                bar.style.display = 'none';
-            }
-        }
-
-        window.clearSelection = () => {
-            selectedRequestIds.clear();
-            renderRequests();
-        };
-
-        // ============================================================
-        // ОДОБРЕНИЕ / ОТКЛОНЕНИЕ
-        // ============================================================
-        window.approveRequest = async function(rid) {
-            const r = allRequests.find(x => x.id === rid);
-            if (!r) return;
-            if (r.paymentAmount > 0 && r.paymentStatus !== 'paid') {
-                showToast('❌ Боец ещё не оплатил взнос', 'error');
-                return;
-            }
-            try {
-                await updateDoc(doc(db, "tournament_registrations", rid), {
-                    status: 'approved',
-                    processedAt: new Date().toISOString()
-                });
-                await updateDoc(doc(db, "tournaments", r.tournamentId), { participantCount: increment(1) });
-                const t = allTournaments.find(x => x.id === r.tournamentId);
-                if (t) t.participantCount = (t.participantCount || 0) + 1;
-                selectedRequestIds.delete(rid);
-                showToast('✅ Боец принят', 'success');
-                renderActiveTournaments();
-            } catch (err) {
-                console.error(err);
-                showToast('Ошибка: ' + err.message, 'error');
-            }
-        };
-
-        window.rejectRequest = async function(rid) {
-            const r = allRequests.find(x => x.id === rid);
-            if (!r) return;
-            const isPaid = r.paymentStatus === 'paid';
-            const ok = await showConfirm(
-                'Отклонить заявку?',
-                `<div>Боец <strong>${r.fighterName}</strong> будет исключён.</div>
-                ${isPaid ? '<div class="info-box"><i class="fas fa-info-circle"></i> Взнос вернётся на баланс бойца</div>' : ''}`,
-                'Отклонить'
-            );
-            if (!ok) return;
-            try {
-                if (isPaid && r.paymentAmount > 0) {
-                    try {
-                        await OrganizerWallet.refundEntry(r.fighterId, r.paymentAmount, r.tournamentId, 'Возврат за отклонённую заявку');
-                        const t = allTournaments.find(x => x.id === r.tournamentId);
-                        if (t) t.escrowAmount = Math.max(0, (t.escrowAmount || 0) - r.paymentAmount);
-                    } catch (e) { console.error('Refund error:', e); }
-                }
-                await updateDoc(doc(db, "tournament_registrations", rid), {
-                    status: 'rejected',
-                    processedAt: new Date().toISOString()
-                });
-                selectedRequestIds.delete(rid);
-                showToast('Заявка отклонена', 'info');
-                renderFinance(); renderActiveTournaments();
-            } catch (err) {
-                console.error(err);
-                showToast('Ошибка: ' + err.message, 'error');
-            }
-        };
-
-        window.bulkApprove = async function() {
-            if (!selectedRequestIds.size) return;
-            const ids = Array.from(selectedRequestIds);
-            const paid = allRequests.filter(r => ids.includes(r.id) && r.paymentStatus === 'paid');
-            const notPaid = ids.filter(id => {
-                const r = allRequests.find(x => x.id === id);
-                return r && r.paymentStatus !== 'paid';
-            });
-
-            if (!paid.length) {
-                showToast('❌ Нет оплаченных заявок среди выбранных', 'error');
-                return;
-            }
-
-            const ok = await showConfirm(
-                'Принять заявки?',
-                `<div>Принять <strong>${paid.length}</strong> ${plural(paid.length, 'заявку', 'заявки', 'заявок')}?</div>
-                ${notPaid.length ? `<div class="warning-box"><i class="fas fa-exclamation-triangle"></i> ${notPaid.length} ${plural(notPaid.length, 'заявка', 'заявки', 'заявок')} без оплаты будут пропущены</div>` : ''}`,
-                'Принять'
-            );
-            if (!ok) return;
-
-            let success = 0, errors = 0;
-            for (const r of paid) {
-                try {
-                    await updateDoc(doc(db, "tournament_registrations", r.id), {
-                        status: 'approved',
-                        processedAt: new Date().toISOString()
-                    });
-                    await updateDoc(doc(db, "tournaments", r.tournamentId), { participantCount: increment(1) });
-                    const t = allTournaments.find(x => x.id === r.tournamentId);
-                    if (t) t.participantCount = (t.participantCount || 0) + 1;
-                    success++;
-                } catch (err) { errors++; }
-            }
-            selectedRequestIds.clear();
-            showToast(`✅ Принято: ${success}${errors ? ` · Ошибок: ${errors}` : ''}${notPaid.length ? ` · Пропущено: ${notPaid.length}` : ''}`, 'success');
-            renderActiveTournaments();
-        };
-
-        window.bulkReject = async function() {
-            if (!selectedRequestIds.size) return;
-            const ids = Array.from(selectedRequestIds);
-            const withMoney = allRequests.filter(r => ids.includes(r.id) && r.paymentStatus === 'paid' && r.paymentAmount > 0);
-            const refundTotal = withMoney.reduce((s, r) => s + (r.paymentAmount || 0), 0);
-
-            const ok = await showConfirm(
-                'Отклонить заявки?',
-                `<div>Отклонить <strong>${ids.length}</strong> ${plural(ids.length, 'заявку', 'заявки', 'заявок')}?</div>
-                ${refundTotal ? `<div class="info-box"><i class="fas fa-info-circle"></i> Вернётся бойцам: <strong>${fmtMoney(refundTotal)}</strong></div>` : ''}`,
-                'Отклонить'
-            );
-            if (!ok) return;
-
-            let success = 0, errors = 0;
-            for (const id of ids) {
-                const r = allRequests.find(x => x.id === id);
-                if (!r) continue;
-                try {
-                    if (r.paymentStatus === 'paid' && r.paymentAmount > 0) {
-                        try {
-                            await OrganizerWallet.refundEntry(r.fighterId, r.paymentAmount, r.tournamentId, 'Возврат за отклонённую заявку');
-                        } catch (e) { console.error(e); }
-                    }
-                    await updateDoc(doc(db, "tournament_registrations", id), {
-                        status: 'rejected',
-                        processedAt: new Date().toISOString()
-                    });
-                    success++;
-                } catch (err) { errors++; }
-            }
-            selectedRequestIds.clear();
-            showToast(`Отклонено: ${success}${errors ? ` · Ошибок: ${errors}` : ''}`, 'info');
-            renderFinance(); renderActiveTournaments();
-        };
 
         // ============================================================
         // СТАРТ ТУРНИРА
@@ -1460,7 +1299,7 @@
         // ОТПИСКА
         // ============================================================
         window.addEventListener('beforeunload', () => {
-            if (requestsUnsubscribe) requestsUnsubscribe();
+            if (tournamentsUnsubscribe) tournamentsUnsubscribe();
         });
 
         // ============================================================

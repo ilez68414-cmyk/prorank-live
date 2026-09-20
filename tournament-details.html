@@ -368,6 +368,11 @@
             .match-fighter .fighter-avatar { width: 28px; height: 28px; font-size: 0.75rem; }
             .match-fighter .fighter-name { font-size: 0.7rem; }
         }
+        /* 🔧 ФИКС: скрыть нижнюю мобильную навигацию на этой странице */
+        #mobileBottomNavContainer,
+        .mobile-bottom-nav {
+            display: none !important;
+        }
     </style>
 </head>
 <body>
@@ -451,7 +456,10 @@
 
             <div class="section-content" id="tab-bracket">
                 <div class="panel">
-                    <div class="panel-header"><h3><i class="fas fa-sitemap"></i> Сетка боёв</h3></div>
+                    <div class="panel-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+                        <h3><i class="fas fa-sitemap"></i> Сетка боёв</h3>
+                        <div id="bracketHeaderActions"></div>
+                    </div>
                     <div id="bracketCategoryFilters" class="category-filters"></div>
                     <div id="bracketContainer"></div>
                 </div>
@@ -558,12 +566,6 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
         const auth = getAuth(app);
-
-        window.openLive = function(tid) {
-            const id = tid || tournamentId;
-            if (!id) { showToast('ID турнира не определён', 'error'); return; }
-            window.open(`live-judging.html?id=${id}`, '_blank');
-        };
 
         const FRS_WIN = 100, FRS_WIN_FINISH = 150, FRS_LOSS = -50;
         const WEIGHT_CLASSES = [
@@ -786,12 +788,8 @@
             `;
 
             if (userRole === 'organizer' && isUserOrganizerOfTournament(currentUser?.uid) && !tournamentData.deleted) {
-                // 🔧 ФИКС: кнопка «Судьи» доступна начиная со статуса registration — токен создаётся ДО старта
                 if (['registration', 'scheduled', 'active'].includes(tournamentData.status)) {
                     html += `<button class="top-btn-action" onclick="openJudgesPanel()"><i class="fas fa-users-cog"></i> Судьи</button>`;
-                }
-                if (tournamentData.status === 'active') {
-                    html += `<button class="top-btn-action danger" onclick="openLive()"><i class="fas fa-circle" style="font-size:0.5rem;"></i> LIVE</button>`;
                 }
             }
 
@@ -867,11 +865,13 @@
                     <div class="stat-box"><div class="stat-box-label">Статус</div><div class="stat-box-value" style="color:#a78bfa;">Сетка готова</div><div class="stat-box-sub">ждём старт</div></div>
                 `;
             } else if (t.status === 'active') {
-                const completed = matches.filter(m => m.status === 'completed').length;
+                // 🔧 Бои считаем только из матчей 1-го раунда или без bye, чтобы не было 0/0
+                const realMatches = matches.filter(m => m.status !== 'bye');
+                const completed = realMatches.filter(m => m.status === 'completed').length;
                 stats.innerHTML = `
-                    <div class="stat-box"><div class="stat-box-label">Столов</div><div class="stat-box-value">${t.ringsCount || 1}</div><div class="stat-box-sub">активны</div></div>
-                    <div class="stat-box"><div class="stat-box-label">Боёв</div><div class="stat-box-value green">${completed}/${matches.length}</div><div class="stat-box-sub">проведено</div></div>
                     <div class="stat-box"><div class="stat-box-label">Участников</div><div class="stat-box-value blue">${t.participantCount || 0}</div><div class="stat-box-sub">в турнире</div></div>
+                    <div class="stat-box"><div class="stat-box-label">Боёв</div><div class="stat-box-value green">${completed}/${realMatches.length}</div><div class="stat-box-sub">проведено</div></div>
+                    <div class="stat-box"><div class="stat-box-label">Дата</div><div class="stat-box-value">${formatDate(t.date)}</div><div class="stat-box-sub">—</div></div>
                     <div class="stat-box"><div class="stat-box-label">Статус</div><div class="stat-box-value red">LIVE</div><div class="stat-box-sub">сейчас</div></div>
                 `;
             } else if (t.status === 'completed') {
@@ -1078,20 +1078,46 @@
             }
 
             if (t.status === 'active') {
-                const completed = matches.filter(m => m.status === 'completed').length;
+                const realMatches = matches.filter(m => m.status !== 'bye');
+                const completed = realMatches.filter(m => m.status === 'completed').length;
+                const remaining = realMatches.length - completed;
+                const ringsCount = t.ringsCount || 1;
+
+                // Считаем онлайн-столы
+                const ringSessions = t.ringSessions || {};
+                let onlineRings = 0;
+                const now = Date.now();
+                const STALE = 2 * 60 * 1000;
+                for (let r = 1; r <= ringsCount; r++) {
+                    const s = ringSessions[r];
+                    if (!s || !s.lastSeen) continue;
+                    const lastSeen = typeof s.lastSeen === 'number' ? s.lastSeen : new Date(s.lastSeen).getTime();
+                    if (now - lastSeen < STALE) onlineRings++;
+                }
+
                 return `
-                    <div class="stats-grid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:16px;">
-                        <div class="stat-box" style="text-align:center;padding:12px 10px;"><div class="stat-box-label">Столов</div><div class="stat-box-value">${t.ringsCount || 1}</div></div>
-                        <div class="stat-box" style="text-align:center;padding:12px 10px;"><div class="stat-box-label">Боёв</div><div class="stat-box-value green">${completed}/${matches.length}</div></div>
-                        <div class="stat-box" style="text-align:center;padding:12px 10px;"><div class="stat-box-label">Осталось</div><div class="stat-box-value blue">${matches.length - completed}</div></div>
-                        <div class="stat-box" style="text-align:center;padding:12px 10px;"><div class="stat-box-label">Статус</div><div class="stat-box-value red">LIVE</div></div>
+                    <div class="stats-grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px;">
+                        <div class="stat-box" style="text-align:center;padding:12px 10px;">
+                            <div class="stat-box-label">Столов</div>
+                            <div class="stat-box-value">${ringsCount}</div>
+                            <div class="stat-box-sub" style="font-size:0.6rem;color:#10b981;">${onlineRings} онлайн</div>
+                        </div>
+                        <div class="stat-box" style="text-align:center;padding:12px 10px;">
+                            <div class="stat-box-label">Проведено</div>
+                            <div class="stat-box-value green">${completed}</div>
+                            <div class="stat-box-sub" style="font-size:0.6rem;color:#888;">из ${realMatches.length}</div>
+                        </div>
+                        <div class="stat-box" style="text-align:center;padding:12px 10px;">
+                            <div class="stat-box-label">Осталось</div>
+                            <div class="stat-box-value blue">${remaining}</div>
+                            <div class="stat-box-sub" style="font-size:0.6rem;color:#888;">${plural(remaining, 'бой', 'боя', 'боёв')}</div>
+                        </div>
                     </div>
 
                     <div class="panel">
                         <div class="panel-header"><h3><i class="fas fa-play"></i> Управление</h3></div>
                         <div style="display:flex; gap:8px; flex-wrap:wrap;">
-                            <button class="btn btn-primary" onclick="openLive()"><i class="fas fa-tower-broadcast"></i> Открыть LIVE</button>
-                            <button class="btn btn-outline" onclick="openJudgesPanel()"><i class="fas fa-users-cog"></i> Судьи</button>
+                            <button class="btn btn-outline" onclick="openJudgesPanel()"><i class="fas fa-users-cog"></i> Столы и судьи</button>
                         </div>
                     </div>
 
@@ -1107,8 +1133,6 @@
                         </div>
                     </div>
                     ` : ''}
-
-                    
                 `;
             }
 
@@ -1668,10 +1692,14 @@
                     <div class="participant-club">${escapeHtml(r.fighterClub || '—')} ${r.fighterWeight ? '· ' + r.fighterWeight + ' кг' : ''}</div>
                     ${r.ageGroup || r.weightClass ? `<div class="participant-wc">${r.ageGroup ? escapeHtml(r.ageGroup) + ' · ' : ''}${r.weightClass ? escapeHtml(r.weightClass) : ''}</div>` : ''}
                 </div>
-                ${(tournamentData.status === 'registration' || tournamentData.status === 'scheduled') && !tournamentData.paidOutToOrganizer ? `
-                    <div class="participant-actions">
-                        <button class="btn btn-danger btn-sm" onclick="removeParticipant('${r.id}')" title="Удалить с возвратом"><i class="fas fa-user-minus"></i></button>
-                    </div>` : ''}
+                    <div class="participant-actions" style="display:flex; gap:6px;">
+                    ${(tournamentData.status === 'registration' || tournamentData.status === 'scheduled') && !tournamentData.paidOutToOrganizer ? `
+                        <button class="btn btn-danger btn-sm" onclick="removeParticipant('${r.id}')" title="Удалить с возвратом взноса"><i class="fas fa-user-minus"></i> Удалить</button>
+                    ` : ''}
+                    ${(tournamentData.status === 'active' || tournamentData.status === 'scheduled') ? `
+                        <button class="btn btn-outline btn-sm" onclick="withdrawParticipant('${r.id}')" title="Снять с турнира без возврата взноса"><i class="fas fa-user-slash"></i> Снять</button>
+                    ` : ''}
+                </div>
             </div>`).join('');
         }
 
@@ -1715,6 +1743,103 @@
                 await loadTournament(tournamentId);
                 renderOverview(); renderParticipants(); renderTabs(); renderStickyCta();
                 showToast('✅ Боец удалён, деньги возвращены', 'success');
+            } catch (e) {
+                console.error(e);
+                showToast('Ошибка: ' + e.message, 'error');
+            }
+        };
+
+        // ============================================================
+        // 🔧 СНЯТИЕ БОЙЦА С ТУРНИРА (после взвешивания / не пришёл)
+        // ============================================================
+        window.withdrawParticipant = async function(rid) {
+            const r = registrations.find(x => x.id === rid);
+            if (!r) return;
+
+            const ok = await showConfirm(
+                'Снять бойца с турнира?',
+                `<div><strong>${escapeHtml(r.fighterName || 'Боец')}</strong> снимается с турнира.</div>
+                 <div class="warning-box"><i class="fas fa-exclamation-triangle"></i> Взнос <b>не возвращается</b>. Это снятие в день турнира (не сделал вес / не пришёл).</div>
+                 <div class="info-box"><i class="fas fa-info-circle"></i> Если бой ещё не начался — соперник автоматически проходит в следующий раунд.</div>`,
+                'Снять с турнира'
+            );
+            if (!ok) return;
+
+            try {
+                // 1. Помечаем регистрацию как withdrawn
+                await updateDoc(doc(db, "tournament_registrations", rid), {
+                    status: 'withdrawn',
+                    withdrawnAt: new Date().toISOString(),
+                    withdrawnBy: currentUser?.uid || 'organizer'
+                });
+
+                // 2. Счётчик участников
+                await updateDoc(doc(db, "tournaments", tournamentId), {
+                    participantCount: increment(-1)
+                });
+
+                // 3. Ищем матчи, где участвует этот боец, ещё не начатые
+                const affectedMatches = matches.filter(m =>
+                    (m.fighter1?.id === r.fighterId || m.fighter2?.id === r.fighterId) &&
+                    m.status === 'pending' &&
+                    !m.isLive
+                );
+
+                const batch = writeBatch(db);
+                let byeProcessed = 0;
+
+                for (const m of affectedMatches) {
+                    // Если боец в fighter1 — очищаем fighter1, оставляем fighter2 = bye
+                    // Логика: если соперник остался один — он автоматически проходит
+                    const opponent = m.fighter1?.id === r.fighterId ? m.fighter2 : m.fighter1;
+                    const slotToClear = m.fighter1?.id === r.fighterId ? 'fighter1' : 'fighter2';
+
+                    if (opponent) {
+                        // Соперник остался один — bye
+                        batch.update(doc(db, `tournaments/${tournamentId}/matches`, m.id), {
+                            [slotToClear]: null,
+                            status: 'bye',
+                            winner: opponent,
+                            byeReason: 'opponent_withdrew',
+                            updatedAt: new Date().toISOString()
+                        });
+                        byeProcessed++;
+
+                        // Переносим соперника в следующий раунд
+                        const nr = m.round + 1;
+                        const nm = Math.ceil(m.matchNumber / 2);
+                        const nextMatch = matches.find(x =>
+                            x.round === nr &&
+                            x.matchNumber === nm &&
+                            x.weightClass === m.weightClass
+                        );
+                        if (nextMatch) {
+                            const nextSlot = m.matchNumber % 2 === 1 ? 'fighter1' : 'fighter2';
+                            const upd = { [nextSlot]: opponent };
+                            if (m.ringId) upd.ringId = m.ringId;
+                            batch.update(doc(db, `tournaments/${tournamentId}/matches`, nextMatch.id), upd);
+                        }
+                    } else {
+                        // Оба не пришли — матч отменяется
+                        batch.update(doc(db, `tournaments/${tournamentId}/matches`, m.id), {
+                            status: 'cancelled',
+                            cancelReason: 'both_withdrew',
+                            updatedAt: new Date().toISOString()
+                        });
+                    }
+                }
+
+                if (affectedMatches.length > 0) {
+                    await batch.commit();
+                }
+
+                await loadRegistrations();
+                await loadTournament(tournamentId);
+                await loadMatches();
+                renderOverview(); renderParticipants(); renderTabs(); renderStickyCta();
+                if (currentTab === 'bracket') renderBracket();
+
+                showToast(`✅ ${r.fighterName} снят с турнира${byeProcessed ? ` · ${byeProcessed} ${plural(byeProcessed, 'бой', 'боя', 'боёв')} закрыто bye` : ''}`, 'success');
             } catch (e) {
                 console.error(e);
                 showToast('Ошибка: ' + e.message, 'error');
@@ -1876,13 +2001,11 @@
 
             // 🔧 ФИКС: группировка по ageGroup + weightClass
             if (hasAgeGroups) {
-                // Для каждой комбинации возраст+вес — своя мини-сетка
                 ageGroups.forEach(ag => {
                     classes.forEach(wc => {
                         groups[`${ag}|${wc}`] = [];
                     });
                 });
-                // Если у турнира нет весовых — только по возрасту
                 if (classes.length === 0) {
                     ageGroups.forEach(ag => {
                         groups[`${ag}|Все`] = [];
@@ -1906,6 +2029,12 @@
             }
 
             const mkF = f => f ? { id: f.fighterId, name: f.fighterName, club: f.fighterClub, weight: f.fighterWeight } : null;
+
+            for (const [cat, fighters] of Object.entries(groups)) {
+                if (fighters.length < 2) continue;
+                fighters.sort(() => Math.random() - 0.5);
+                const bs = Math.pow(2, Math.ceil(Math.log2(fighters.length)));
+                const rounds = Math.log2(bs);
 
                 for (let i = 0; i < bs / 2; i++) {
                     const f1 = fighters[i * 2] || null;
@@ -1947,7 +2076,7 @@
                             }
                         });
                     }
-                
+                }
             }
 
             for (let i = 0; i < operations.length; i += BATCH_LIMIT) {
@@ -1966,6 +2095,69 @@
             await propagateByes();
             showToast('✅ Сетка сгенерирована!', 'success');
         }
+
+        // ============================================================
+        // 🔧 ПЕРЕГЕНЕРАЦИЯ СЕТКИ (удаляет старые бои, создаёт новые)
+        // ============================================================
+        window.regenerateBracket = async function() {
+            const approvedCount = registrations.filter(r => r.status === 'approved').length;
+            if (approvedCount < 2) {
+                showToast('❌ Нужно минимум 2 участника', 'error');
+                return;
+            }
+
+            const oldCount = matches.length;
+            const ok = await showConfirm(
+                'Перегенерировать сетку?',
+                `<div>Все текущие бои (<b>${oldCount}</b>) будут удалены и созданы заново.</div>
+                 <div class="warning-box"><i class="fas fa-exclamation-triangle"></i> Распределение по столам сбросится. Результаты боёв (если были) потеряются.</div>
+                 <div class="info-box"><i class="fas fa-info-circle"></i> В новой сетке будут учтены все <b>${approvedCount}</b> ${plural(approvedCount, 'боец', 'бойца', 'бойцов')}, включая тех, кто записался после первой генерации.</div>`,
+                'Перегенерировать'
+            );
+            if (!ok) return;
+
+            try {
+                showToast('⏳ Удаление старых боёв...', 'info');
+
+                // 1. Удаляем все матчи турнира
+                const matchesRef = collection(db, `tournaments/${tournamentId}/matches`);
+                const snapshot = await getDocs(matchesRef);
+
+                if (snapshot.docs.length > 0) {
+                    // Батчами по 450
+                    let batch = writeBatch(db);
+                    let count = 0;
+                    for (const d of snapshot.docs) {
+                        batch.delete(d.ref);
+                        count++;
+                        if (count >= 450) {
+                            await batch.commit();
+                            batch = writeBatch(db);
+                            count = 0;
+                        }
+                    }
+                    if (count > 0) await batch.commit();
+                }
+
+                showToast(`✅ Удалено старых боёв: ${snapshot.docs.length}`, 'success');
+                showToast('⏳ Генерация новой сетки...', 'info');
+
+                // 2. Сбрасываем флаг и генерируем заново
+                await updateDoc(doc(db, "tournaments", tournamentId), {
+                    bracketGenerated: false,
+                    updatedAt: new Date().toISOString()
+                });
+                tournamentData.bracketGenerated = false;
+
+                await loadMatches();
+                await generateBracket();
+
+                showToast('✅ Сетка перегенерирована!', 'success');
+            } catch (e) {
+                console.error(e);
+                showToast('❌ Ошибка: ' + e.message, 'error');
+            }
+        };
 
         async function propagateByes() {
             const byeMatches = matches.filter(m => m.status === 'bye' && m.round === 1 && m.winner);
@@ -2023,11 +2215,13 @@
             if (totalRounds >= 3) roundNames[totalRounds - 2] = '1/4 ФИНАЛА';
             if (totalRounds >= 4) roundNames[totalRounds - 3] = '1/8 ФИНАЛА';
 
-            const buildMatchCard = (m, isFinal = false) => {
+                const buildMatchCard = (m, isFinal = false) => {
                 const isMy = currentUser && (m.fighter1?.id === currentUser.uid || m.fighter2?.id === currentUser.uid);
-                const canClick = clickable && m.status === 'pending' && m.fighter1 && m.fighter2;
+                // 🔧 ФИКС: результаты вводит ТОЛЬКО судья через live-judging.html.
+                // Организатор в сетке не может кликать на бои.
+                const canClick = false;
                 const isBye = m.status === 'bye';
-                return `<div class="match-card ${m.status} ${canClick ? 'clickable' : ''} ${isMy ? 'my-match' : ''} ${isBye ? 'bye-match' : ''} ${isFinal ? 'final-match' : ''}" ${canClick ? `onclick="openResultModal('${m.id}')"` : ''}>
+                return `<div class="match-card ${m.status} ${isMy ? 'my-match' : ''} ${isBye ? 'bye-match' : ''} ${isFinal ? 'final-match' : ''}">
                     <div class="match-number">БОЙ ${m.matchNumber}${isMy ? ' · ВАШ' : ''}</div>
                     ${[m.fighter1, m.fighter2].map((f, idx) => {
                         const isW = m.winner && f && m.winner.id === f.id;
@@ -2178,6 +2372,25 @@
             if (!c) return;
             const isOwner = userRole === 'organizer' && isUserOrganizerOfTournament(currentUser?.uid);
 
+            // 🔧 ФИКС: кнопка «Перегенерировать» — только организатору, только до старта
+            const actionsContainer = document.getElementById('bracketHeaderActions');
+            if (actionsContainer) {
+                const canRegenerate = isOwner
+                    && tournamentData.bracketGenerated
+                    && tournamentData.status === 'registration'
+                    && !tournamentData.paidOutToOrganizer
+                    && matches.length > 0;
+
+                if (canRegenerate) {
+                    actionsContainer.innerHTML = `
+                        <button class="btn btn-outline btn-sm" onclick="regenerateBracket()" title="Удалить старые бои и создать новые">
+                            <i class="fas fa-sync-alt"></i> Перегенерировать
+                        </button>
+                    `;
+                } else {
+                    actionsContainer.innerHTML = '';
+                }
+            }
             if (!tournamentData.bracketGenerated && !matches.length) {
                 const approvedCount = registrations.filter(r => r.status === 'approved').length;
                 const days = daysUntil(tournamentData.date);
@@ -2272,11 +2485,15 @@
         window.manualGenerateBracket = async function() {
             const ac = registrations.filter(r => r.status === 'approved').length;
             if (ac < 2) { showToast('❌ Нужно минимум 2', 'error'); return; }
-            const ok = await showConfirm('Сгенерировать сетку?', '<div>После генерации набор закроется</div>', 'Сгенерировать');
+            const ok = await showConfirm(
+                'Сгенерировать сетку?',
+                '<div>Сетка создаст все бои на основе текущих участников.</div><div class="info-box"><i class="fas fa-info-circle"></i> Набор <b>не закроется</b> — новые бойцы смогут записаться. Для них потребуется перегенерация сетки.</div>',
+                'Сгенерировать'
+            );
             if (!ok) return;
             try {
                 await generateBracket();
-                await updateDoc(doc(db, "tournaments", tournamentId), { status: 'scheduled', updatedAt: new Date().toISOString() });
+                // 🔧 ФИКС: статус НЕ меняем на scheduled — турнир остаётся в registration
                 await loadTournament(tournamentId);
                 renderHeader(); renderTabs(); renderOverview(); renderBracket(); renderStickyCta();
             } catch (e) { showToast('Ошибка: ' + e.message, 'error'); }
@@ -2559,7 +2776,7 @@
                         ? 'Сначала сгенерируйте сетку'
                         : ringsAssigned
                             ? 'Все бои распределены по столам'
-                            : 'Распределите бои — в панели столов & судей',
+                            : 'Распределите бои — в Панели судей',
                     action: () => { closeModal('startChecklistModal'); openJudgesPanel(); },
                     actionLabel: 'Распределить'
                 },
@@ -2741,7 +2958,7 @@
                             <i class="fas fa-shuffle"></i> Распределение боёв
                         </div>
                         <button id="distToggleBtn" class="btn btn-outline btn-block" onclick="toggleDistOptions()" style="margin-bottom: 10px;">
-                            <i class="fas fa-dice"></i> Распределить бои
+                            <i class="fas fa-dice"></i> ${distributed ? 'Перераспределить бои' : 'Распределить бои'}
                         </button>
                         <div id="distOptions" style="display: none;">
                             <div style="display: flex; gap: 6px; margin-bottom: 10px;">
@@ -2846,8 +3063,77 @@
             `;
 
             // ===== СБОРКА =====
-            list.innerHTML = tokenBlock + ringsHeaderBlock + distributionBlock + onlineBadge + rows + dangerBlock + hintBlock;
+            list.innerHTML = tokenBlock + ringsHeaderBlock + distributionBlock + `<div id="ringsListInner">${onlineBadge}${rows}</div>` + dangerBlock + hintBlock;
             openModal('judgesModal');
+
+            // 🔧 Сохраняем функцию рендера списка для точечной перерисовки
+            window.__renderRingsListInPanel = function() {
+                const token2 = tournamentData.judgeToken || null;
+                const isActive2 = tournamentData.status === 'active';
+                const locked2 = !token2;
+                const ringsCount2 = tournamentData.ringsCount || 1;
+
+                let onlineCount2 = 0;
+                if (token2) {
+                    for (let r = 1; r <= ringsCount2; r++) {
+                        if (getRingStatus(r).cls === 'online') onlineCount2++;
+                    }
+                }
+
+                let rows2 = '';
+                for (let r = 1; r <= ringsCount2; r++) {
+                    const status = getRingStatus(r);
+                    const ringMatches = matches.filter(m => m.ringId === r && m.round === 1);
+                    const done = ringMatches.filter(m => m.status === 'completed').length;
+                    const total = ringMatches.length;
+
+                    let borderColor = 'rgba(255,255,255,0.06)';
+                    if (!locked2) {
+                        if (status.cls === 'online') borderColor = 'rgba(16,185,129,0.35)';
+                        else if (status.cls === 'stale') borderColor = 'rgba(245,158,11,0.35)';
+                    }
+
+                    let statusColor = '#9ca3af';
+                    let statusBg = 'rgba(107,114,128,0.12)';
+                    if (!locked2 && status.cls === 'online') { statusColor = '#10b981'; statusBg = 'rgba(16,185,129,0.12)'; }
+                    else if (!locked2 && status.cls === 'stale') { statusColor = '#f59e0b'; statusBg = 'rgba(245,158,11,0.12)'; }
+
+                    const statusHtml = (!locked2 && isActive2)
+                        ? `<span style="display:inline-flex; align-items:center; gap:5px; font-size:0.6rem; font-weight:800; padding:3px 9px; border-radius:12px; background:${statusBg}; color:${statusColor}; text-transform:uppercase; letter-spacing:0.3px;">
+                            <span style="width:5px;height:5px;border-radius:50%;background:${statusColor};"></span>
+                            ${status.label}
+                        </span>`
+                        : '';
+
+                    const sendBtn = locked2
+                        ? `<button class="btn btn-outline btn-sm" disabled style="opacity:0.4; cursor:not-allowed;">
+                            <i class="fas fa-lock"></i> Отправить
+                        </button>`
+                        : `<button class="btn btn-outline btn-sm" onclick="sendJudgeLink(${r})">
+                            <i class="fas fa-paper-plane"></i> Отправить
+                        </button>`;
+
+                    rows2 += `
+                        <div style="background: rgba(20,20,25,0.6); border: 1px solid ${borderColor}; border-radius: 12px; padding: 12px 14px; margin-bottom: 8px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; ${locked2 ? 'opacity:0.55;' : ''}">
+                            <div style="width: 38px; height: 38px; border-radius: 10px; background: rgba(139,92,246,0.15); color: #a78bfa; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.9rem; flex-shrink: 0;">${r}</div>
+                            <div style="flex: 1; min-width: 140px;">
+                                <div style="font-size: 0.82rem; font-weight: 700; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 3px;">
+                                    Стол ${r} ${statusHtml}
+                                </div>
+                                <div style="font-size: 0.65rem; color: #888;">
+                                    <b style="color:#fbbf24;">${done}</b> / ${total} боёв завершено
+                                </div>
+                            </div>
+                            ${sendBtn}
+                        </div>`;
+                }
+
+                const onlineBadge2 = (token2 && isActive2)
+                    ? `<div style="font-size: 0.62rem; color: #10b981; font-weight: 700; margin-bottom: 10px;">${onlineCount2} из ${ringsCount2} онлайн</div>`
+                    : '';
+
+                return onlineBadge2 + rows2;
+            };
         };
 
         // ===== Счётчик столов =====
@@ -2864,7 +3150,16 @@
                     updatedAt: new Date().toISOString()
                 });
                 tournamentData.ringsCount = next;
-                openJudgesPanel(); // перерисовать модалку
+
+                // 🔧 Мгновенная перерисовка
+                const label = document.getElementById('ringsCountLabel');
+                if (label) label.textContent = next;
+
+                const inner = document.getElementById('ringsListInner');
+                if (inner && typeof window.__renderRingsListInPanel === 'function') {
+                    inner.innerHTML = window.__renderRingsListInPanel();
+                }
+
                 showToast(`Столов: ${next}`, 'success');
             } catch (e) {
                 showToast('Ошибка: ' + e.message, 'error');
@@ -2950,7 +3245,7 @@
         };
 
         // ===== Изменение количества столов из модалки =====
-        window.changeRingsCount = async function(delta) {
+                window.changeRingsCount = async function(delta) {
             const current = tournamentData.ringsCount || 1;
             const next = current + delta;
             if (next < 1 || next > 15) {
@@ -2963,11 +3258,15 @@
                     updatedAt: new Date().toISOString()
                 });
                 tournamentData.ringsCount = next;
-                // перерисовать список
-                const inner = document.getElementById('ringsListInner');
-                if (inner) inner.innerHTML = window.__renderRingsList();
+
                 const label = document.getElementById('ringsCountLabel');
                 if (label) label.textContent = next;
+
+                const inner = document.getElementById('ringsListInner');
+                if (inner && typeof window.__renderRingsListInPanel === 'function') {
+                    inner.innerHTML = window.__renderRingsListInPanel();
+                }
+
                 showToast(`Столов: ${next}`, 'success');
             } catch (e) {
                 showToast('Ошибка: ' + e.message, 'error');
@@ -3361,10 +3660,10 @@
                 userRole = isUserOrganizerOfTournament(user.uid) ? 'organizer' : 'fighter';
             } else userRole = 'guest';
             escrowAmount = tournamentData.escrowAmount || 0;
+            await loadMatches();
             renderHeader();
             subscribeToRegistrations();
             subscribeToTournament();
-            await loadMatches();
 
             renderTabs();
             renderOverview();
