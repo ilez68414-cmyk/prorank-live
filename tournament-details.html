@@ -578,6 +578,15 @@
             { name:"Полутяжёлая", range:"90–99 кг", min:90, max:99 },
             { name:"Тяжёлая", range:"100+ кг", min:100, max:999 }
         ];
+
+        const AGE_GROUPS = [
+            { name: "Дети", range: "6–11 лет", min: 6, max: 11 },
+            { name: "Кадеты", range: "12–14 лет", min: 12, max: 14 },
+            { name: "Юниоры", range: "15–17 лет", min: 15, max: 17 },
+            { name: "Взрослые", range: "18–39 лет", min: 18, max: 39 },
+            { name: "Ветераны", range: "40+ лет", min: 40, max: 999 }
+        ];
+
         const BATCH_LIMIT = 450;
 
         let tournamentId = null;
@@ -1657,7 +1666,7 @@
                 <div class="participant-info">
                     <div class="participant-name">${escapeHtml(r.fighterName || 'Боец')}</div>
                     <div class="participant-club">${escapeHtml(r.fighterClub || '—')} ${r.fighterWeight ? '· ' + r.fighterWeight + ' кг' : ''}</div>
-                    ${r.weightClass ? `<div class="participant-wc">${escapeHtml(r.weightClass)}</div>` : ''}
+                    ${r.ageGroup || r.weightClass ? `<div class="participant-wc">${r.ageGroup ? escapeHtml(r.ageGroup) + ' · ' : ''}${r.weightClass ? escapeHtml(r.weightClass) : ''}</div>` : ''}
                 </div>
                 ${(tournamentData.status === 'registration' || tournamentData.status === 'scheduled') && !tournamentData.paidOutToOrganizer ? `
                     <div class="participant-actions">
@@ -1680,7 +1689,7 @@
                 <div class="participant-info">
                     <div class="participant-name">${escapeHtml(r.fighterName || 'Боец')}</div>
                     <div class="participant-club">${escapeHtml(r.fighterClub || '—')} ${r.fighterWeight ? '· ' + r.fighterWeight + ' кг' : ''}</div>
-                    ${r.weightClass ? `<div class="participant-wc">${escapeHtml(r.weightClass)}</div>` : ''}
+                    ${r.ageGroup || r.weightClass ? `<div class="participant-wc">${r.ageGroup ? escapeHtml(r.ageGroup) + ' · ' : ''}${r.weightClass ? escapeHtml(r.weightClass) : ''}</div>` : ''}
                 </div>
             </div>`).join('');
         }
@@ -1859,11 +1868,33 @@
             if (approved.length < 2) return;
 
             const classes = tournamentData.weightClasses || [];
+            const ageGroups = tournamentData.ageGroups || [];
+            const hasAgeGroups = ageGroups.length > 0;
             const mc = collection(db, `tournaments/${tournamentId}/matches`);
             const operations = [];
             const groups = {};
 
-            if (classes.length > 0) {
+            // 🔧 ФИКС: группировка по ageGroup + weightClass
+            if (hasAgeGroups) {
+                // Для каждой комбинации возраст+вес — своя мини-сетка
+                ageGroups.forEach(ag => {
+                    classes.forEach(wc => {
+                        groups[`${ag}|${wc}`] = [];
+                    });
+                });
+                // Если у турнира нет весовых — только по возрасту
+                if (classes.length === 0) {
+                    ageGroups.forEach(ag => {
+                        groups[`${ag}|Все`] = [];
+                    });
+                }
+                approved.forEach(f => {
+                    const ag = f.ageGroup || null;
+                    const wc = getFighterWeightClass(f.fighterWeight, classes);
+                    const key = `${ag}|${wc || 'Все'}`;
+                    if (groups[key]) groups[key].push(f);
+                });
+            } else if (classes.length > 0) {
                 classes.forEach(c => groups[c] = []);
                 approved.forEach(f => {
                     const wc = getFighterWeightClass(f.fighterWeight, classes);
@@ -1876,12 +1907,6 @@
 
             const mkF = f => f ? { id: f.fighterId, name: f.fighterName, club: f.fighterClub, weight: f.fighterWeight } : null;
 
-            for (const [cat, fighters] of Object.entries(groups)) {
-                if (fighters.length < 2) continue;
-                fighters.sort(() => Math.random() - 0.5);
-                const bs = Math.pow(2, Math.ceil(Math.log2(fighters.length)));
-                const rounds = Math.log2(bs);
-
                 for (let i = 0; i < bs / 2; i++) {
                     const f1 = fighters[i * 2] || null;
                     const f2 = fighters[i * 2 + 1] || null;
@@ -1890,8 +1915,13 @@
                         type: 'set',
                         ref: doc(mc),
                         data: {
-                            tournamentId, weightClass: cat, round: 1, matchNumber: i + 1,
-                            fighter1: mkF(f1), fighter2: mkF(f2),
+                            tournamentId,
+                            ageGroup: hasAgeGroups ? cat.split('|')[0] : null,
+                            weightClass: hasAgeGroups ? cat.split('|')[1] : cat,
+                            round: 1,
+                            matchNumber: i + 1,
+                            fighter1: mkF(f1),
+                            fighter2: mkF(f2),
                             winner: bye ? { id: bye.fighterId, name: bye.fighterName, club: bye.fighterClub } : null,
                             status: bye ? 'bye' : 'pending',
                             createdAt: serverTimestamp()
@@ -1903,10 +1933,21 @@
                         operations.push({
                             type: 'set',
                             ref: doc(mc),
-                            data: { tournamentId, weightClass: cat, round: r, matchNumber: m + 1, fighter1: null, fighter2: null, winner: null, status: 'pending', createdAt: serverTimestamp() }
+                            data: {
+                                tournamentId,
+                                ageGroup: hasAgeGroups ? cat.split('|')[0] : null,
+                                weightClass: hasAgeGroups ? cat.split('|')[1] : cat,
+                                round: r,
+                                matchNumber: m + 1,
+                                fighter1: null,
+                                fighter2: null,
+                                winner: null,
+                                status: 'pending',
+                                createdAt: serverTimestamp()
+                            }
                         });
                     }
-                }
+                
             }
 
             for (let i = 0; i < operations.length; i += BATCH_LIMIT) {
@@ -1940,7 +1981,14 @@
             await loadMatches();
         }
 
-        function getCategoriesInMatches() { return [...new Set(matches.map(m => m.weightClass))].filter(Boolean); }
+            function getCategoriesInMatches() {
+                // 🔧 ФИКС: возвращаем комбинированные теги «Возраст · Весовая»
+                const hasAge = Array.isArray(tournamentData.ageGroups) && tournamentData.ageGroups.length > 0;
+                if (hasAge) {
+                    return [...new Set(matches.map(m => `${m.ageGroup || '—'}|${m.weightClass || '—'}`))].filter(k => k !== '—|—');
+                }
+                return [...new Set(matches.map(m => m.weightClass))].filter(Boolean);
+            }
 
         function renderCategoryFilters(containerId) {
             const cats = getCategoriesInMatches();
@@ -1949,7 +1997,11 @@
             if (cats.length <= 1) { c.innerHTML = ''; return; }
             c.innerHTML = cats.map(cat => {
                 const safe = cat.replace(/'/g, "\\'");
-                return `<button class="cat-filter-btn ${selectedCategory === cat ? 'active' : ''}" onclick="filterCategory('${safe}')">${escapeHtml(cat)}</button>`;
+                // 🔧 ФИКС: если это комбинированный тег «Возраст|Весовая», показываем красиво
+                const label = cat.includes('|')
+                    ? cat.split('|').map(p => p.replace(/\s*\(.*\)/, '')).join(' · ')
+                    : cat;
+                return `<button class="cat-filter-btn ${selectedCategory === cat ? 'active' : ''}" onclick="filterCategory('${safe}')">${escapeHtml(label)}</button>`;
             }).join('');
         }
 
@@ -2148,9 +2200,6 @@
                             <p style="color: #888; font-size: 0.72rem; margin-top: 10px;">
                                 Как только наберётся 2+ участника — здесь появится кнопка «Сгенерировать»
                             </p>
-                            <button class="btn btn-outline" onclick="switchTab('participants')" style="margin-top: 16px;">
-                                <i class="fas fa-users"></i> К участникам
-                            </button>
                         </div>
                     `;
                     return;
@@ -2184,7 +2233,14 @@
             }
             if (!matches.length) { c.innerHTML = `<div class="empty-state"><i class="fas fa-sitemap"></i><h3>Сетка пуста</h3></div>`; return; }
             renderCategoryFilters('bracketCategoryFilters');
-            const fm = selectedCategory ? matches.filter(m => m.weightClass === selectedCategory) : matches;
+                const fm = selectedCategory
+                ? matches.filter(m => {
+                    if (selectedCategory.includes('|')) {
+                        return `${m.ageGroup || '—'}|${m.weightClass || '—'}` === selectedCategory;
+                    }
+                    return m.weightClass === selectedCategory;
+                })
+                : matches;
             c.innerHTML = buildBracketHtml(fm, isOwner);
             scheduleDrawLines();
         }
@@ -2201,7 +2257,14 @@
                 return;
             }
             renderCategoryFilters('bracketCategoryFilters');
-            const fm = selectedCategory ? matches.filter(m => m.weightClass === selectedCategory) : matches;
+                const fm = selectedCategory
+                ? matches.filter(m => {
+                    if (selectedCategory.includes('|')) {
+                        return `${m.ageGroup || '—'}|${m.weightClass || '—'}` === selectedCategory;
+                    }
+                    return m.weightClass === selectedCategory;
+                })
+                : matches;
             c.innerHTML = buildBracketHtml(fm, false);
             scheduleDrawLines();
         }
@@ -3108,11 +3171,29 @@
                 `<option value="${wc}" ${wc === suggestedWeightClass ? 'selected' : ''}>${escapeHtml(wc)}</option>`
             ).join('');
 
+            // 🔧 Возрастные группы турнира
+            const tournamentAgeGroups = Array.isArray(tournamentData.ageGroups) ? tournamentData.ageGroups : [];
+            const hasAgeGroups = tournamentAgeGroups.length > 0;
+
+            const ageOptions = tournamentAgeGroups.map(ag =>
+                `<option value="${ag}">${escapeHtml(ag)}</option>`
+            ).join('');
+
             document.getElementById('registerModalContent').innerHTML = `
                 <div class="reg-info-row"><span class="label">Турнир</span><span class="value">${escapeHtml(tournamentData.name)}</span></div>
                 <div class="reg-info-row"><span class="label">Дата</span><span class="value">${formatDate(tournamentData.date)}</span></div>
                 <div class="reg-info-row"><span class="label">Ваш вес</span><span class="value">${fighterWeight > 0 ? fighterWeight + ' кг' : 'Не указан'}</span></div>
                 <div class="reg-info-row"><span class="label">Ваш спорт</span><span class="value">${escapeHtml(fighterSport || '—')}</span></div>
+
+                ${hasAgeGroups ? `
+                <div class="form-group" style="margin-top:14px;">
+                    <label>Возрастная группа *</label>
+                    <select id="regAgeGroup" class="form-select">
+                        <option value="">-- Выберите возрастную группу --</option>
+                        ${ageOptions}
+                    </select>
+                </div>
+                ` : ''}
 
                 <div class="form-group" style="margin-top:14px;">
                     <label>Весовая категория *</label>
@@ -3166,6 +3247,15 @@
                 const weightClassStr = document.getElementById('regWeightClass')?.value || '';
                 if (!weightClassStr) { showToast('Выберите весовую категорию', 'error'); return; }
 
+                // 🔧 Возрастная группа (если у турнира есть группы)
+                const tournamentAgeGroups = Array.isArray(tournamentData.ageGroups) ? tournamentData.ageGroups : [];
+                const hasAgeGroups = tournamentAgeGroups.length > 0;
+                let ageGroupStr = null;
+                if (hasAgeGroups) {
+                    ageGroupStr = document.getElementById('regAgeGroup')?.value || '';
+                    if (!ageGroupStr) { showToast('Выберите возрастную группу', 'error'); return; }
+                }
+
                 const fee = tournamentData.entryFee || 0;
                 const fighterWeight = currentFighterData?.weight || null;
                 const fighterClub = currentFighterData?.clubName || null;
@@ -3180,6 +3270,7 @@
                     tournamentName: tournamentData.name,
                     organizationId: tournamentData.organizationId,
                     weightClass: weightClassStr,
+                    ageGroup: ageGroupStr,
                     paymentMethod: 'balance'
                 });
 

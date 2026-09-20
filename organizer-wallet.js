@@ -182,7 +182,7 @@ export async function payTournamentEntry(params) {
     const {
         fighterId, fighterName, fighterWeight, fighterClub,
         amount, tournamentId, tournamentName,
-        organizationId, weightClass, paymentMethod
+        organizationId, weightClass, ageGroup, paymentMethod
     } = params || {};
 
     if (!fighterId || !tournamentId) throw new Error("Не указан боец или турнир");
@@ -272,6 +272,7 @@ export async function payTournamentEntry(params) {
             fighterWeight: fighterWeight || null,
             fighterClub: fighterClub || null,
             weightClass: weightClass || null,
+            ageGroup: ageGroup || null,
             status: "approved",
             paymentStatus: amount > 0 ? "paid" : "free",
             paymentAmount: amount,
