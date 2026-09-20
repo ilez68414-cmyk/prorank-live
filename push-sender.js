@@ -42,7 +42,7 @@ export async function getUserPushSubscription(userId) {
 }
 
 // ===== ОТПРАВИТЬ PUSH (БЕЗ ПРОВЕРКИ НА СЕБЯ) =====
-export async function sendPushNotification(userId, title, body, url = '/', icon = '/icons/icon-192.png') {
+export async function sendPushNotification(userId, title, body, url = '/', icon = '/prorank-live/icons/icon-192.png') {
     if (!userId) {
         console.warn('⚠️ Не указан userId');
         return false;

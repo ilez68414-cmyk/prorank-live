@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <link rel="manifest" href="/manifest.json">
-    <link rel="apple-touch-icon" href="/icons/icon-192.png">
+    <link rel="manifest" href="/prorank-live/manifest.json">
+    <link rel="apple-touch-icon" href="/prorank-live/icons/icon-192.png">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="PRORANK">
@@ -2664,7 +2664,10 @@ console.log('✅ Чат с голосовыми сообщениями (Cloudina
         OneSignalDeferred.push(async function(OneSignal) {
             await OneSignal.init({
                 appId: "7ec0f0b2-e126-480b-b928-d0d6eaeab3a0",
-                serviceWorkerPath: "/prorank-live/OneSignalSDKWorker.js"
+                // Отдельный scope, чтобы OneSignal-воркер не вытеснял
+                // PWA-воркер /prorank-live/sw.js (офлайн-режим)
+                serviceWorkerPath: "/prorank-live/onesignal/OneSignalSDKWorker.js",
+                serviceWorkerParam: { scope: "/prorank-live/onesignal/" }
             });
         });
     </script>
