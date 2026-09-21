@@ -46,9 +46,14 @@ service cloud.firestore {
       return request.auth.uid;
     }
 
-    // Админ — только по кастомному claim (ставится через Admin SDK)
+    // Админ — только по кастомному claim (ставится через Admin SDK).
+    // 🔧ФИКС: раньше было `request.auth.token.admin == true`, но у обычного
+    // пользователя свойства `admin` в токене нет — обращение к нему даёт
+    // ошибку вычисления ("Property admin is undefined on object"), которая
+    // пишется в лог правил и делает всю ветку правила ошибочной.
+    // `.get('admin', false)` возвращает false без ошибки.
     function isAdmin() {
-      return signedIn() && request.auth.token.admin == true;
+      return signedIn() && request.auth.token.get('admin', false) == true;
     }
 
     function isSelf(id) {
@@ -142,7 +147,12 @@ service cloud.firestore {
         'status', 'winner', 'winType', 'comment', 'finalScore',
         'completedAt', 'completedBy',
         // стол и продвижение победителя в следующий раунд
-        'ringId', 'fighter1', 'fighter2', 'updatedAt'
+        'ringId', 'fighter1', 'fighter2', 'updatedAt',
+        // 🔧ФИКС: снятие бойца с турнира (tournament-details.html →
+        // withdrawParticipant) закрывает матч как bye или как cancelled.
+        // Без этих полей правка матча отклонялась, если её делал не
+        // организатор (например, судья по ссылке со стола).
+        'byeReason', 'cancelReason'
       ];
     }
 
@@ -381,7 +391,18 @@ service cloud.firestore {
         'tournamentId', 'organizationId', 'fighterId', 'fighterName',
         'fighterClub', 'fighterCity', 'weightClass', 'status', 'paymentStatus',
         'paymentId', 'amount', 'entryFee', 'paidAt', 'refundedAt', 'approvedAt',
-        'approvedBy', 'rejectedReason', 'createdAt', 'updatedAt', 'deleted'
+        'approvedBy', 'rejectedReason', 'createdAt', 'updatedAt', 'deleted',
+        // 🔧ФИКС: поля, которые реально пишет транзакция оплаты взноса
+        // (organizer-wallet.js → payTournamentEntry: fighterWeight, ageGroup,
+        // paymentAmount, paymentMethod, processedAt, processedBy). Без них
+        // создание регистрации отклонялось правилами — оплата взноса
+        // бойцом падала с permission-denied.
+        'fighterWeight', 'ageGroup', 'paymentAmount', 'paymentMethod',
+        'processedAt', 'processedBy',
+        // 🔧ФИКС: поля возврата и снятия бойца
+        // (refundEntry → refundedBy/refundReason, withdrawParticipant →
+        // withdrawnAt/withdrawnBy).
+        'refundReason', 'refundedBy', 'withdrawnAt', 'withdrawnBy'
       ];
     }
 
@@ -389,14 +410,41 @@ service cloud.firestore {
       // Список участников виден всем (страница турнира, протоколы)
       allow read: if true;
       allow create: if isAdmin() || (signedIn()
+        // 🔧ФИКС (проверено эмулятором): без этой проверки любой
+        // авторизованный мог создать заявку с чужим fighterId
+        // (правило проверяло только набор полей). Единственный
+        // легитимный сценарий создания — боец оплачивает свой взнос
+        // (tournament-details.html → OrganizerWallet.payEntry с
+        // fighterId = currentUser.uid), поэтому требование безопасно.
+        // keys().hasAll проверяет наличие поля заранее: иначе обращение к
+        // отсутствующему fighterId даёт ошибку вычисления в логе правил.
+        && request.resource.data.keys().hasAll(['fighterId'])
+        && request.resource.data.fighterId == currentUid()
         && request.resource.data.keys().hasOnly(registrationFields()));
       // Обновляет организатор (заявки) либо сам боец (в т.ч. возврат взноса)
       allow update: if isAdmin()
         || (signedIn() && (
-             request.resource.data.fighterId == currentUid()
-             || orgUserId(request.resource.data.organizationId) == currentUid()
+             (request.resource.data.keys().hasAll(['fighterId'])
+              && request.resource.data.fighterId == currentUid())
+             || (has(request.resource.data, 'organizationId')
+                 && request.resource.data.organizationId != null
+                 && orgUserId(request.resource.data.organizationId) == currentUid())
            ));
-      allow delete: if isAdmin();
+      // 🔧ФИКС: удалять регистрацию может не только админ:
+      //   • организатор («Удалить бойца» в tournament-details.html → removeParticipant);
+      //   • сам боец (отмена собственной заявки → cancelMyRegistration).
+      // Раньше стояло только isAdmin(), поэтому оба сценария падали
+      // с permission-denied, а взнос при этом уже возвращался.
+      // resource != null — чтобы повторное удаление уже удалённой заявки
+      // давало deny, а не ошибку вычисления.
+      allow delete: if isAdmin()
+        || (signedIn() && resource != null && (
+             (resource.data.keys().hasAll(['fighterId'])
+              && resource.data.fighterId == currentUid())
+             || (has(resource.data, 'organizationId')
+                 && resource.data.organizationId != null
+                 && orgUserId(resource.data.organizationId) == currentUid())
+           ));
     }
 // ===================== ПОЛЬЗОВАТЕЛИ =====================
     // users/{uid} — зеркало профиля (друзья, настройки, лайки и т.п.)

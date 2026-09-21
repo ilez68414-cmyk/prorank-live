@@ -838,8 +838,12 @@
                     <i class="fas fa-trash-alt"></i>
                 </button>` : '';
 
+            // 🔧ФИКС: ссылка ведёт на публичное табло турнира (role=display).
+            // Без роли live-judging.html перебрасывал обратно на страницу
+            // турнира, поэтому кнопка LIVE не работала. Секретную ссылку судьи
+            // (?ring=N&k=ТОКЕН) по-прежнему выдаёт организатор на странице турнира.
             const liveBtnHtml = (t.status === 'active' && !isArchived) ? `
-                <button class="btn-icon-action live" onclick="event.stopPropagation(); window.open('live-judging.html?id=${t.id}', '_blank')" title="LIVE судейство">
+                <button class="btn-icon-action live" onclick="event.stopPropagation(); window.open('live-judging.html?id=${t.id}&role=display', '_blank')" title="LIVE табло">
                     <i class="fas fa-tower-broadcast"></i>
                 </button>` : '';
 

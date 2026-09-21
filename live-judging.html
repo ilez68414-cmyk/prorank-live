@@ -354,6 +354,40 @@
             .history-panel { margin-top: 12px; }
             .history-item:hover { background: rgba(251,191,36,0.06); }
         }
+
+        /* 🔧ФИКС: ШИРОКИЕ ЭКРАНЫ (ноутбук от 1024px и мониторы).
+           Панель судьи получает больше места и двухколоночную раскладку:
+           список боёв стола и история действий идут рядом, а не друг под
+           другом, — судье не нужно прокручивать страницу. На планшетах и
+           телефонах (ветки max-width: 768px и min-width: 769px выше) раскладка
+           не меняется. */
+        @media (min-width: 1024px) {
+            #judgeView { max-width: 1280px; }
+
+            /* Список боёв стола — в две колонки */
+            .matches-list {
+                display: grid;
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                gap: 12px;
+            }
+
+            /* Обзор столов главного судьи — чуть шире плитки */
+            .chief-grid { grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); }
+
+            /* Общее табло всех столов — крупные плитки под монитор/ТВ */
+            .display-grid { grid-template-columns: repeat(auto-fit, minmax(460px, 1fr)); }
+
+            /* История действий — две колонки вместо одной длинной строки */
+            .history-list {
+                display: grid;
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                gap: 6px;
+            }
+
+            /* Кнопки таймера и счёта — чуть крупнее под мышь */
+            .timer-btn { min-height: 44px; padding: 10px 18px; }
+            .judge-tip { font-size: 0.82rem; }
+        }
     </style>
 </head>
 <body>

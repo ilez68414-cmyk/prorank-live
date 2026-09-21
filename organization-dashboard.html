@@ -426,14 +426,50 @@
             <!-- ===== TAB ANALYTICS ===== -->
             <div id="tab-analytics" style="display: none;">
                 <!-- Сводка аналитики -->
-                <div class="analytics-summary" id="analyticsSummary"></div>
+                <div class="analytics-summary" id="analyticsSummary">
+                    <div class="analytics-card">
+                        <div class="ac-icon trophy"><i class="fas fa-trophy"></i></div>
+                        <div class="ac-label">Всего турниров</div>
+                        <div class="ac-value" id="analTotalTournaments">0</div>
+                    </div>
+                    <div class="analytics-card">
+                        <div class="ac-icon users"><i class="fas fa-users"></i></div>
+                        <div class="ac-label">Участников</div>
+                        <div class="ac-value" id="analTotalParticipants">0</div>
+                    </div>
+                    <div class="analytics-card">
+                        <div class="ac-icon money"><i class="fas fa-flag-checkered"></i></div>
+                        <div class="ac-label">Завершено</div>
+                        <div class="ac-value" id="analCompleted">0</div>
+                    </div>
+                    <div class="analytics-card">
+                        <div class="ac-icon rate"><i class="fas fa-percent"></i></div>
+                        <div class="ac-label">Средняя заполненность</div>
+                        <div class="ac-value" id="analAvgFill">0%</div>
+                    </div>
+                </div>
 
                 <!-- Турниры: подробная таблица -->
                 <div class="panel">
                     <div class="panel-header">
                         <h3><i class="fas fa-list-alt"></i> Разбивка по турнирам</h3>
                     </div>
-                    <div id="analyticsTable"></div>
+                    <div style="overflow-x: auto;">
+                        <table class="analytics-table">
+                            <thead>
+                                <tr>
+                                    <th>Турнир</th>
+                                    <th>Статус</th>
+                                    <th>Участники</th>
+                                    <th>Заполнено</th>
+                                    <th>Эскроу</th>
+                                </tr>
+                            </thead>
+                            <tbody id="analTableBody">
+                                <tr><td colspan="5" style="text-align:center;padding:20px;color:#888;">Загрузка...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
 
@@ -982,7 +1018,13 @@
         // НАВИГАЦИЯ
         // ============================================================
         window.openTournament = id => window.location.href = `tournament-details.html?id=${id}`;
-        window.openLive = id => window.open(`live-judging.html?id=${id}`, '_blank');
+        // 🔧ФИКС: раньше кнопка LIVE открывала live-judging.html?id=... без роли
+        // и без стола. Панель судьи требует секретную ссылку (?ring=N&k=ТОКЕН),
+        // которую выдаёт организатор, поэтому boot() не находил роль и
+        // перебрасывал обратно на tournament-details.html — кнопка выглядела
+        // «мёртвой». Теперь LIVE открывает публичное табло всех столов турнира
+        // (role=display) — тот же экран, что и по ссылке «Табло» из панели столов.
+        window.openLive = id => window.open(`live-judging.html?id=${id}&role=display`, '_blank');
 
         // ============================================================
         // ТАБЫ
@@ -1051,7 +1093,7 @@
                     completed: 'Завершён',
                     cancelled: 'Отменён'
                 }[t.status] || t.status;
-                const statusClass = t.status === 'active' ? 'badge-success' : t.status === 'registration' ? 'badge-info' : 'badge-default';
+                const statusClass = `at-status ${t.status}`;
 
                 return `
                     <tr>
@@ -1059,7 +1101,7 @@
                             <div class="anal-tournament-name">${escapeHtml(t.name)}</div>
                             <div class="anal-tournament-date">${formatDate(t.date)}</div>
                         </td>
-                        <td><span class="badge ${statusClass}">${statusLabel}</span></td>
+                        <td><span class="${statusClass}">${statusLabel}</span></td>
                         <td>${t.participantCount || 0} / ${t.maxParticipants || '—'}</td>
                         <td>${fillRate}${fillRate !== '—' ? '%' : ''}</td>
                         <td>${fmtMoney(t.escrowAmount || 0)}</td>

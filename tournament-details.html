@@ -425,31 +425,9 @@
                 <div id="overviewContent"></div>
             </div>
 
-            <div class="section-content" id="tab-requests">
-                <div class="panel">
-                    <div class="panel-header">
-                        <h3><i class="fas fa-user-clock"></i> Заявки <span id="requestsTotalBadge" style="font-size:0.7rem;color:#888;font-weight:500;"></span></h3>
-                        <div class="panel-actions">
-                            <button class="btn btn-outline btn-sm" id="exportCsvBtn"><i class="fas fa-file-csv"></i> CSV</button>
-                        </div>
-                    </div>
-
-                    <div class="requests-toolbar">
-                        <input type="text" id="searchRequest" placeholder="🔍 Поиск по имени...">
-                    </div>
-
-                    <div class="bulk-bar" id="bulkBar" style="display:none;">
-                        <div class="info">Выбрано: <strong id="selectedCount">0</strong></div>
-                        <div class="actions">
-                            <button class="btn btn-success btn-sm" onclick="bulkApprove()"><i class="fas fa-check"></i> Принять</button>
-                            <button class="btn btn-danger btn-sm" onclick="bulkReject()"><i class="fas fa-times"></i> Отклонить</button>
-                            <button class="btn btn-outline btn-sm" onclick="clearSelection()">Сбросить</button>
-                        </div>
-                    </div>
-
-                    <div id="requestsList"></div>
-                </div>
-            </div>
+            <!-- 🔧 ФИКС: вкладка "Заявки" удалена — она была недоступна (renderTabs её не создавал),
+                 а весь её код (renderRequests/approveRequest/rejectRequest/bulkApprove/bulkReject/
+                 approveAll/clearSelection/toggleRequestSelection/updateBulkBar) был мёртвым. -->
 
             <div class="section-content" id="tab-participants">
                 <div class="panel">
@@ -484,12 +462,8 @@
     </main>
 
     <!-- Модалки -->
-    <div class="modal-overlay" id="resultModal">
-        <div class="modal">
-            <div class="modal-header"><h3><i class="fas fa-trophy"></i> Результат боя</h3><button class="modal-close" onclick="closeModal('resultModal')"><i class="fas fa-times"></i></button></div>
-            <div id="resultModalContent"></div>
-        </div>
-    </div>
+    <!-- 🔧 ФИКС: #resultModal удалён — модалку открывал только openResultModal(),
+         который нигде не вызывался (результат боя фиксирует судья в live-judging.html) -->
 
     <div class="modal-overlay" id="broadcastModal">
         <div class="modal">
@@ -610,7 +584,6 @@
         let myOrgId = null;
         let myRegistration = null;
         let selectedCategory = null;
-        let selectedRequestIds = new Set();
         let escrowAmount = 0;
         let drawLinesTimer = null;
         let resizeTimer = null;
@@ -712,7 +685,7 @@
                     registrations = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
                     if (currentUser) myRegistration = registrations.find(r => r.fighterId === currentUser.uid) || null;
                     try { renderTabs(); } catch (e) {}
-                    try { renderRequests(); } catch (e) {}
+                    // 🔧 ФИКС: renderRequests() убран — вкладки "Заявки" больше нет
                     try { renderParticipants(); } catch (e) {}
                     try { renderFighterParticipants(); } catch (e) {}
                     try { if (currentTab === 'overview') renderOverview(); } catch (e) {}
@@ -1483,209 +1456,6 @@
 
             el.style.display = 'none';
         }
-
-        // ============================================================
-        // ЗАЯВКИ
-        // ============================================================
-        function renderRequests() {
-            const c = document.getElementById('requestsList');
-            if (!c) return;
-            const search = (document.getElementById('searchRequest')?.value || '').toLowerCase().trim();
-            let pending = registrations.filter(r => r.status === 'pending');
-            if (search) pending = pending.filter(r => (r.fighterName || '').toLowerCase().includes(search));
-
-            const badge = document.getElementById('requestsTotalBadge');
-            if (badge) badge.textContent = `(${pending.length})`;
-
-            if (!pending.length) {
-                c.innerHTML = `
-                    <div class="empty-state">
-                        <i class="fas fa-user-clock" style="color: #fbbf24;"></i>
-                        <h3>${search ? 'Ничего не найдено' : 'Пока нет заявок'}</h3>
-                        <p style="color: #888; font-size: 0.75rem; margin-top: 8px;">
-                            ${search ? 'Попробуйте изменить поиск' : 'Как только бойцы запишутся — они появятся здесь автоматически'}
-                        </p>
-                    </div>
-                `;
-                updateBulkBar();
-                return;
-            }
-
-            c.innerHTML = `
-                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:8px;">
-                    <label style="display:flex;align-items:center;gap:8px;font-size:0.72rem;color:#ccc;cursor:pointer;">
-                        <input type="checkbox" id="selectAllReqs" style="width:16px;height:16px;accent-color:#fbbf24;">
-                        Выбрать все
-                    </label>
-                    <button class="btn btn-success btn-sm" onclick="approveAll()"><i class="fas fa-check-double"></i> Принять все (${pending.length})</button>
-                </div>
-            ` + pending.map(r => {
-                const isPaid = r.paymentStatus === 'paid';
-                const checked = selectedRequestIds.has(r.id) ? 'checked' : '';
-                const isLegacyPending = r.paymentMethod === 'card' && r.paymentStatus === 'pending';
-                return `<div class="request-row ${isPaid ? '' : 'not-paid'}">
-                    <input type="checkbox" class="request-checkbox" data-rid="${r.id}" ${checked} onchange="toggleRequestSelection('${r.id}', this.checked)">
-                    <div class="request-avatar">${(r.fighterName || 'Б')[0].toUpperCase()}</div>
-                    <div class="request-info">
-                        <div class="request-name">${escapeHtml(r.fighterName || 'Боец')}</div>
-                        <div class="request-meta">
-                            ${r.fighterWeight ? `<span><i class="fas fa-weight-hanging"></i> ${r.fighterWeight} кг</span>` : ''}
-                            ${r.fighterClub ? `<span><i class="fas fa-building"></i> ${escapeHtml(r.fighterClub)}</span>` : ''}
-                            ${r.weightClass ? `<span><i class="fas fa-layer-group"></i> ${escapeHtml(r.weightClass)}</span>` : ''}
-                            <span class="payment-badge ${isPaid ? 'paid' : 'pending'}">
-                                <i class="fas ${isPaid ? 'fa-check-circle' : 'fa-hourglass-half'}"></i>
-                                ${isPaid ? 'Оплачено' : 'Не оплачено'}
-                            </span>
-                            ${isLegacyPending ? `<span class="payment-badge" style="background:rgba(245,158,11,0.15);color:#f59e0b;border:1px solid rgba(245,158,11,0.3);"><i class="fas fa-exclamation-triangle"></i> Легаси</span>` : ''}
-                        </div>
-                    </div>
-                    <div class="request-actions">
-                        <button class="req-btn approve" onclick="approveRequest('${r.id}')" ${isPaid ? '' : 'disabled'}><i class="fas fa-check"></i></button>
-                        <button class="req-btn reject" onclick="rejectRequest('${r.id}')"><i class="fas fa-times"></i></button>
-                    </div>
-                </div>`;
-            }).join('');
-
-            const selectAll = document.getElementById('selectAllReqs');
-            if (selectAll) {
-                selectAll.checked = pending.every(r => selectedRequestIds.has(r.id));
-                selectAll.addEventListener('change', e => {
-                    if (e.target.checked) pending.forEach(r => selectedRequestIds.add(r.id));
-                    else selectedRequestIds.clear();
-                    renderRequests();
-                });
-            }
-            updateBulkBar();
-        }
-
-        function updateBulkBar() {
-            const bar = document.getElementById('bulkBar');
-            const cnt = document.getElementById('selectedCount');
-            if (!bar) return;
-            if (selectedRequestIds.size > 0) { bar.style.display = 'flex'; cnt.textContent = selectedRequestIds.size; }
-            else bar.style.display = 'none';
-        }
-
-        window.toggleRequestSelection = (rid, checked) => {
-            if (checked) selectedRequestIds.add(rid);
-            else selectedRequestIds.delete(rid);
-            updateBulkBar();
-        };
-
-        window.clearSelection = () => { selectedRequestIds.clear(); renderRequests(); };
-        document.getElementById('searchRequest')?.addEventListener('input', renderRequests);
-
-        window.approveRequest = async function(rid) {
-            const r = registrations.find(x => x.id === rid);
-            if (!r) return;
-            if (r.paymentAmount > 0 && r.paymentStatus !== 'paid') {
-                showToast('❌ Боец ещё не оплатил взнос', 'error');
-                return;
-            }
-            try {
-                await updateDoc(doc(db, "tournament_registrations", rid), { status: 'approved', processedAt: new Date().toISOString() });
-                await updateDoc(doc(db, "tournaments", tournamentId), { participantCount: increment(1) });
-                tournamentData.participantCount = (tournamentData.participantCount || 0) + 1;
-                selectedRequestIds.delete(rid);
-                await loadRegistrations();
-                renderOverview(); renderRequests(); renderParticipants(); renderTabs(); renderStickyCta();
-                showToast('✅ Боец принят', 'success');
-            } catch (e) { showToast('Ошибка: ' + e.message, 'error'); }
-        };
-
-        window.rejectRequest = async function(rid) {
-            const r = registrations.find(x => x.id === rid);
-            if (!r) return;
-            const isPaid = r.paymentStatus === 'paid';
-            const ok = await showConfirm('Отклонить заявку?', `<div>Боец <strong>${escapeHtml(r.fighterName)}</strong> будет исключён.</div>
-                ${isPaid ? '<div class="info-box"><i class="fas fa-info-circle"></i> Взнос вернётся на баланс</div>' : ''}`, 'Отклонить');
-            if (!ok) return;
-            try {
-                if (isPaid && r.paymentAmount > 0) {
-                    await OrganizerWallet.refundEntry(r.fighterId, tournamentId, `Возврат`);
-                }
-                await updateDoc(doc(db, "tournament_registrations", rid), { status: 'rejected', processedAt: new Date().toISOString() });
-                selectedRequestIds.delete(rid);
-                await loadRegistrations();
-                await loadTournament(tournamentId);
-                renderOverview(); renderRequests(); renderTabs(); renderStickyCta();
-                showToast('Заявка отклонена', 'info');
-            } catch (e) { showToast('Ошибка', 'error'); }
-        };
-
-        window.bulkApprove = async function() {
-            if (!selectedRequestIds.size) return;
-            const ids = Array.from(selectedRequestIds);
-            const paid = registrations.filter(r => ids.includes(r.id) && r.paymentStatus === 'paid');
-            const notPaid = ids.filter(id => { const r = registrations.find(x => x.id === id); return r && r.paymentStatus !== 'paid'; });
-            if (!paid.length) { showToast('❌ Нет оплаченных заявок', 'error'); return; }
-
-            const ok = await showConfirm('Принять заявки?', `<div>Принять <strong>${paid.length}</strong> ${plural(paid.length, 'заявку', 'заявки', 'заявок')}?</div>
-                ${notPaid.length ? `<div class="warning-box">${notPaid.length} без оплаты пропущены</div>` : ''}`, 'Принять');
-            if (!ok) return;
-
-            let success = 0;
-            for (const r of paid) {
-                try {
-                    await updateDoc(doc(db, "tournament_registrations", r.id), { status: 'approved', processedAt: new Date().toISOString() });
-                    await updateDoc(doc(db, "tournaments", tournamentId), { participantCount: increment(1) });
-                    success++;
-                } catch (err) {}
-            }
-            selectedRequestIds.clear();
-            await loadRegistrations(); await loadTournament(tournamentId);
-            renderOverview(); renderRequests(); renderParticipants(); renderTabs(); renderStickyCta();
-            showToast(`✅ Принято: ${success}`, 'success');
-        };
-
-        window.bulkReject = async function() {
-            if (!selectedRequestIds.size) return;
-            const ids = Array.from(selectedRequestIds);
-            const withMoney = registrations.filter(r => ids.includes(r.id) && r.paymentStatus === 'paid' && r.paymentAmount > 0);
-            const refundTotal = withMoney.reduce((s, r) => s + (r.paymentAmount || 0), 0);
-
-            const ok = await showConfirm('Отклонить заявки?', `<div>Отклонить <strong>${ids.length}</strong>?</div>
-                ${refundTotal ? `<div class="info-box">Вернётся: <strong>${refundTotal.toLocaleString('ru-RU')} ₽</strong></div>` : ''}`, 'Отклонить');
-            if (!ok) return;
-
-            let success = 0;
-            for (const id of ids) {
-                const r = registrations.find(x => x.id === id);
-                if (!r) continue;
-                try {
-                    if (r.paymentStatus === 'paid' && r.paymentAmount > 0) {
-                        try { await OrganizerWallet.refundEntry(r.fighterId, tournamentId, `Возврат`); } catch (e) {}
-                    }
-                    await updateDoc(doc(db, "tournament_registrations", id), { status: 'rejected', processedAt: new Date().toISOString() });
-                    success++;
-                } catch (err) {}
-            }
-            selectedRequestIds.clear();
-            await loadRegistrations(); await loadTournament(tournamentId);
-            renderOverview(); renderRequests(); renderTabs(); renderStickyCta();
-            showToast(`Отклонено: ${success}`, 'info');
-        };
-
-        window.approveAll = async function() {
-            const pendingPaid = registrations.filter(r => r.status === 'pending' && r.paymentStatus === 'paid');
-            const pendingNotPaid = registrations.filter(r => r.status === 'pending' && r.paymentStatus !== 'paid');
-            if (!pendingPaid.length) { showToast('❌ Нет оплаченных', 'error'); return; }
-            const ok = await showConfirm('Принять все оплаченные?', `<div>Принять <strong>${pendingPaid.length}</strong>?</div>
-                ${pendingNotPaid.length ? `<div class="warning-box">${pendingNotPaid.length} без оплаты останутся</div>` : ''}`, 'Принять все');
-            if (!ok) return;
-
-            let success = 0;
-            for (const r of pendingPaid) {
-                try {
-                    await updateDoc(doc(db, "tournament_registrations", r.id), { status: 'approved', processedAt: new Date().toISOString() });
-                    await updateDoc(doc(db, "tournaments", tournamentId), { participantCount: increment(1) });
-                    success++;
-                } catch (err) {}
-            }
-            await loadRegistrations(); await loadTournament(tournamentId);
-            renderOverview(); renderRequests(); renderParticipants(); renderTabs(); renderStickyCta();
-            showToast(`✅ Принято: ${success}`, 'success');
-        };
 
         // ============================================================
         // УЧАСТНИКИ
@@ -2511,60 +2281,8 @@
             } catch (e) { showToast('Ошибка: ' + e.message, 'error'); }
         };
 
-        window.openResultModal = function(mid) {
-            const m = matches.find(x => x.id === mid);
-            if (!m || !m.fighter1 || !m.fighter2) return;
-            document.getElementById('resultModalContent').innerHTML = `
-                <div class="form-group"><label>Победитель</label><select id="modalWinnerId" class="form-select">
-                    <option value="${m.fighter1.id}">${escapeHtml(m.fighter1.name)}</option>
-                    <option value="${m.fighter2.id}">${escapeHtml(m.fighter2.name)}</option>
-                </select></div>
-                <div class="form-group"><label>Тип победы</label><select id="modalWinType" class="form-select">
-                    <option value="decision">Решением (+100 FRS)</option>
-                    <option value="ko">Нокаут / TKO (+150 FRS)</option>
-                    <option value="submission">Сабмишн (+150 FRS)</option>
-                </select><div class="frs-hint"><i class="fas fa-info-circle"></i> Проигравшему −50 FRS</div></div>
-                <div class="form-group"><label>Комментарий</label><textarea id="modalComment" placeholder="2 раунд, удушающий..."></textarea></div>
-                <button class="btn btn-primary btn-large" onclick="confirmMatchResult('${mid}')" style="width:100%;justify-content:center;"><i class="fas fa-check"></i> Подтвердить</button>
-            `;
-            openModal('resultModal');
-        };
-
-        window.confirmMatchResult = async function(mid) {
-            try {
-                const m = matches.find(x => x.id === mid);
-                if (!m || !m.fighter1 || !m.fighter2) throw new Error('Не оба бойца известны');
-                const winnerId = document.getElementById('modalWinnerId').value;
-                const winType = document.getElementById('modalWinType').value;
-                const comment = document.getElementById('modalComment').value.trim();
-                const winnerData = m.fighter1.id === winnerId ? m.fighter1 : m.fighter2;
-                const loserData = m.fighter1.id === winnerId ? m.fighter2 : m.fighter1;
-                const frsWinner = winType === 'decision' ? FRS_WIN : FRS_WIN_FINISH;
-
-                await updateDoc(doc(db, `tournaments/${tournamentId}/matches`, mid), {
-                    winner: { id: winnerData.id, name: winnerData.name },
-                    winType, comment: comment || null, status: 'completed',
-                    completedAt: new Date().toISOString()
-                });
-
-                try { await updateDoc(doc(db, "fighters", winnerData.id), { frs: increment(frsWinner), wins: increment(1), finishes: winType !== 'decision' ? increment(1) : increment(0), lastFightDate: new Date().toISOString() }); } catch (e) {}
-                try { await updateDoc(doc(db, "fighters", loserData.id), { frs: increment(FRS_LOSS), losses: increment(1), lastFightDate: new Date().toISOString() }); } catch (e) {}
-                try { await addDoc(collection(db, "fights"), { winnerId: winnerData.id, winnerName: winnerData.name, loserId: loserData.id, loserName: loserData.name, sport: tournamentData.sport || 'ММА', isFinish: winType !== 'decision', date: serverTimestamp(), tournamentId, tournamentName: tournamentData.name }); } catch (e) {}
-
-                const nr = m.round + 1;
-                const nm = Math.ceil(m.matchNumber / 2);
-                const nextMatch = matches.find(x => x.round === nr && x.matchNumber === nm && x.weightClass === m.weightClass);
-                if (nextMatch) {
-                    const slot = m.matchNumber % 2 === 1 ? 'fighter1' : 'fighter2';
-                    await updateDoc(doc(db, `tournaments/${tournamentId}/matches`, nextMatch.id), { [slot]: winnerData });
-                }
-
-                closeModal('resultModal');
-                await loadMatches();
-                renderBracket(); renderResults(); renderOverview();
-                showToast(`✅ ${winnerData.name} победил!`, 'success');
-            } catch (e) { showToast('Ошибка: ' + e.message, 'error'); }
-        };
+        // 🔧 ФИКС: openResultModal() и confirmMatchResult() удалены — их не вызывал ни один
+        // элемент интерфейса (ввод результата идёт через панель судьи live-judging.html).
 
         function renderResults() {
             const c = document.getElementById('resultsContainer');
@@ -2612,50 +2330,8 @@
         // ============================================================
         // RINGS
         // ============================================================
-        function renderRingsBlock() {
-            const t = tournamentData;
-            if (userRole !== 'organizer') return '';
-            if (!isUserOrganizerOfTournament(currentUser?.uid)) return '';
-
-            const ringsCount = t.ringsCount || 1;
-            const token = t.judgeToken;
-            const ringSessions = t.ringSessions || {};
-            const now = Date.now();
-            const STALE_MS = 2 * 60 * 1000;
-
-            let onlineCount = 0;
-            if (token && t.status === 'active') {
-                for (let r = 1; r <= ringsCount; r++) {
-                    const s = ringSessions[r];
-                    if (!s || !s.lastSeen) continue;
-                    const lastSeen = typeof s.lastSeen === 'number'
-                        ? s.lastSeen
-                        : (s.lastSeen.toMillis ? s.lastSeen.toMillis() : new Date(s.lastSeen).getTime());
-                    if (now - lastSeen < STALE_MS) onlineCount++;
-                }
-            }
-
-            const completed = matches.filter(m => m.status === 'completed').length;
-            const total = matches.filter(m => m.round === 1 && m.status !== 'bye').length;
-
-            return `
-                <div class="panel">
-                    <div class="panel-header">
-                        <h3><i class="fas fa-circle-nodes"></i> Столы и судьи</h3>
-                    </div>
-                    <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;">
-                        <div style="font-size: 0.8rem; color: #aaa;">
-                            <b style="color: #fbbf24;">${ringsCount}</b> ${plural(ringsCount, 'стол', 'стола', 'столов')}
-                            ${token ? `· <span style="color:#10b981;">${onlineCount} онлайн</span>` : '· <span style="color:#f59e0b;">токен не создан</span>'}
-                            · ${completed}/${total} боёв
-                        </div>
-                        <button class="btn btn-outline" onclick="openJudgesPanel()">
-                            <i class="fas fa-users-cog"></i> Открыть панель
-                        </button>
-                    </div>
-                </div>
-            `;
-        }
+        // 🔧 ФИКС: renderRingsBlock() удалён — функция не вызывалась ни разу
+        // (блок «Столы и судьи» в обзоре заменён компактной плашкой).
 
         window.setDistributionMode = function(mode) {
             distributionMode = mode;
@@ -3256,34 +2932,8 @@
             }
         };
 
-        // ===== Изменение количества столов из модалки =====
-                window.changeRingsCount = async function(delta) {
-            const current = tournamentData.ringsCount || 1;
-            const next = current + delta;
-            if (next < 1 || next > 15) {
-                showToast(delta > 0 ? 'Максимум 15 столов' : 'Минимум 1 стол', 'error');
-                return;
-            }
-            try {
-                await updateDoc(doc(db, "tournaments", tournamentId), {
-                    ringsCount: next,
-                    updatedAt: new Date().toISOString()
-                });
-                tournamentData.ringsCount = next;
-
-                const label = document.getElementById('ringsCountLabel');
-                if (label) label.textContent = next;
-
-                const inner = document.getElementById('ringsListInner');
-                if (inner && typeof window.__renderRingsListInPanel === 'function') {
-                    inner.innerHTML = window.__renderRingsListInPanel();
-                }
-
-                showToast(`Столов: ${next}`, 'success');
-            } catch (e) {
-                showToast('Ошибка: ' + e.message, 'error');
-            }
-        };
+        // 🔧 ФИКС: дубликат window.changeRingsCount удалён
+        // (рабочая версия — выше, сразу после openJudgesPanel)
 
         // ===== Отправить одному судье =====
         window.sendJudgeLink = function(ringId) {
@@ -3633,18 +3283,8 @@
             } catch (e) { showToast('Ошибка', 'error'); }
         });
 
-        document.getElementById('exportCsvBtn')?.addEventListener('click', () => {
-            const a = registrations.filter(r => r.status === 'approved');
-            if (!a.length) return showToast('Нет данных', 'error');
-            const csv = ['Имя,Вес,Клуб,Категория,Оплата'];
-            a.forEach(r => csv.push(`"${r.fighterName || ''}","${r.fighterWeight || ''}","${r.fighterClub || ''}","${r.weightClass || ''}","${r.paymentStatus || ''}"`));
-            const blob = new Blob(['\uFEFF' + csv.join('\n')], { type: 'text/csv;charset=utf-8;' });
-            const link = document.createElement('a');
-            link.href = URL.createObjectURL(blob);
-            link.download = `participants_${new Date().toISOString().slice(0, 10)}.csv`;
-            link.click();
-            showToast('✅ Скачано', 'success');
-        });
+        // 🔧 ФИКС: обработчик #exportCsvBtn удалён вместе с вкладкой «Заявки»
+        // (кнопки больше нет в разметке, обработчик был мёртвым).
 
         async function checkRegisterParam() {
             const params = new URLSearchParams(window.location.search);
