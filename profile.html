@@ -9,6 +9,15 @@
     <meta name="theme-color" content="#fbbf24">
     <meta name="mobile-web-app-capable" content="yes">
     <meta charset="UTF-8">
+<!--🔧ФИКС: preconnect -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="dns-prefetch" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="dns-prefetch" href="https://fonts.gstatic.com">
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+    <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com">
+    <link rel="preconnect" href="https://www.gstatic.com" crossorigin>
+    <link rel="dns-prefetch" href="https://www.gstatic.com">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="description" content="Профиль спортсмена PRORANK — статистика, достижения, история боёв">
     <title>Профиль | PRORANK</title>
@@ -3097,7 +3106,9 @@
     const cancelProfileBtn = document.getElementById('cancelProfileBtn');
     const editBio = document.getElementById('editBio');
     
-    const BOT_TOKEN = '8527160088:AAGc2311QFkp6F7-Jx5k8MJfqlpvbueSl5E';
+    //🔧ФИКС: жёсткий BOT_TOKEN вырезан из инлайнового скрипта (был виден в
+    // исходнике страницы). Берём ключ из окружения — window.ENV_BOT_TOKEN.
+    const BOT_TOKEN = window.ENV_BOT_TOKEN || "";
     
     let currentProfileUserId = null;
     
@@ -3298,7 +3309,9 @@
             }
 
             // Уведомление в Telegram
-            if (targetData.telegramId) {
+            //🔧ФИКС: без заданного window.ENV_BOT_TOKEN запрос не уходит —
+            // жёсткого ключа бота в инлайновом скрипте больше нет.
+            if (targetData.telegramId && BOT_TOKEN) {
                 try {
                     await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
                         method: 'POST',
@@ -3423,27 +3436,12 @@
         notificationToggleBtn.addEventListener('click', handleNotificationToggle);
     }
 
-    // ===== ПРОВЕРКА СТАТУСА ДРУЗЕЙ =====
-async function checkFriendStatus(profileUserId) {
-    const user = auth.currentUser;
-    if (!user || user.uid === profileUserId) return;
-    
-    try {
-        const friendDoc = await getDoc(doc(db, "users", user.uid, "friends", profileUserId));
-        const btn = document.getElementById('btnAddFriend');
-        if (!btn) return;
-        
-        if (friendDoc.exists()) {
-            btn.classList.add('friend');
-            btn.innerHTML = `<i class="fas fa-user-check"></i><span class="friend-text">В друзьях</span>`;
-        } else {
-            btn.classList.remove('friend');
-            btn.innerHTML = `<i class="fas fa-user-plus"></i><span class="friend-text">Добавить в друзья</span>`;
-        }
-    } catch (err) {
-        console.error('Ошибка проверки друзей:', err);
-    }
-}
+    //🔧ФИКС: здесь была ВТОРАЯ копия функции checkFriendStatus (стр. 3440–3459).
+    // Из-за дубля объявления в одном module-скрипте браузер падал с
+    // SyntaxError «Identifier 'checkFriendStatus' has already been declared»,
+    // и ПОЛНЫЙ inline-модуль profile.html (600 строк) не выполнялся вообще.
+    // Копия удалена — рабочая версия ниже, она же экспортируется в window.
+
     // ============================================================
     // ОСТАЛЬНЫЕ ФУНКЦИИ
     // ============================================================

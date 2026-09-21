@@ -9,6 +9,15 @@
     <meta name="theme-color" content="#fbbf24">
     <meta name="mobile-web-app-capable" content="yes">
     <meta charset="UTF-8">
+<!--🔧ФИКС: preconnect -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="dns-prefetch" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="dns-prefetch" href="https://fonts.gstatic.com">
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+    <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com">
+    <link rel="preconnect" href="https://www.gstatic.com" crossorigin>
+    <link rel="dns-prefetch" href="https://www.gstatic.com">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Мои турниры | PRORANK</title>
     <link rel="stylesheet" href="style.css">
@@ -635,6 +644,37 @@
             { key: 'archived', title: 'Архив', icon: 'fa-box-archive', color: '#9ca3af', bg: 'rgba(107,114,128,0.12)', hint: 'Скрытые', filter: t => t.deleted }
         ];
 
+        // 🔧ФИКС (XSS): раньше данные из Firestore вставлялись в innerHTML «как есть».
+        // Через имя турнира или ссылку на обложку можно было внедрить свой тег
+        // или атрибут (src="x" onerror="..."). Теперь всё экранируется.
+        function escapeHtml(value) {
+            if (value === null || value === undefined) return '';
+            return String(value)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
+        // 🔧ФИКС (XSS): в src допускаются только http(s) и относительные пути.
+        function safeImageUrl(url) {
+            if (!url) return '';
+            const raw = String(url).trim();
+            if (!/^(https?:\/\/|\/\/|\/|\.\/|\.\.\/)/i.test(raw)) return '';
+            return escapeHtml(raw);
+        }
+
+        // 🔧ФИКС (XSS): значение для inline-обработчика (onclick="fn('...')").
+        // Здесь два контекста сразу: JS-строка внутри HTML-атрибута, поэтому
+        // сначала экранируем для JS (\ и '), затем для HTML (& " < >).
+        function jsAttrStr(value) {
+            const raw = (value === null || value === undefined) ? '' : String(value);
+            const jsSafe = raw.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+            return escapeHtml(jsSafe);
+        }
+
+
         function renderSections() {
             const container = document.getElementById('sectionsContainer');
 
@@ -746,8 +786,12 @@
             const statusLabel = isArchived ? 'Архив' : (statusLabels[t.status] || t.status);
             const statusClass = isArchived ? 'archived' : t.status;
 
-            const coverHtml = t.imageUrl
-                ? `<div class="card-cover"><img src="${t.imageUrl}" alt="${t.name}" onerror="this.parentElement.classList.add('no-image'); this.outerHTML='<i class=\\'fas fa-trophy\\'></i>'"></div>`
+            //🔧ФИКС (XSS): обложка и заголовок прогоняются через safeImageUrl()
+            // и escapeHtml() — раньше подставленная ссылка в src="${t.imageUrl}"
+            // могла внедрить произвольный атрибут/обработчик.
+            const coverUrl = safeImageUrl(t.imageUrl);
+            const coverHtml = coverUrl
+                ? `<div class="card-cover"><img src="${coverUrl}" alt="${escapeHtml(t.name || 'Турнир')}" onerror="this.parentElement.classList.add('no-image'); this.outerHTML='<i class=\\'fas fa-trophy\\'></i>'"></div>`
                 : `<div class="card-cover no-image"><i class="fas fa-trophy"></i></div>`;
 
             const liveBadgeHtml = (t.status === 'active' && !isArchived)
@@ -756,12 +800,14 @@
             const pendingBadgeHtml = (t.pendingCount > 0 && !isArchived)
                 ? `<span class="pending-badge"><i class="fas fa-bell"></i> ${t.pendingCount}</span>` : '';
 
+            //🔧ФИКС (XSS): имя победителя и параметры кнопки удаления экранируются —
+            // раньше кавычка в названии турнира могла «разорвать» onclick-атрибут.
             const winnerHtml = (t.status === 'completed' && t.winner && !isArchived) ? `
                 <div class="winner-badge">
                     <i class="fas fa-trophy"></i>
                     <div class="winner-text">
                         <div class="winner-label">Победитель</div>
-                        <div class="winner-name">${t.winner.name}</div>
+                        <div class="winner-name">${escapeHtml(t.winner.name)}</div>
                     </div>
                 </div>` : '';
 
@@ -788,7 +834,7 @@
 
             const canDelete = !isArchived && (t.status === 'completed' || t.status === 'cancelled' || (t.participantCount || 0) === 0);
             const deleteBtnHtml = canDelete ? `
-                <button class="btn-icon-action delete" onclick="event.stopPropagation(); openDeleteModal('${t.id}', '${(t.name || '').replace(/'/g, "\\'")}')" title="Удалить">
+                <button class="btn-icon-action delete" onclick="event.stopPropagation(); openDeleteModal('${jsAttrStr(t.id)}', '${jsAttrStr(t.name || '')}')" title="Удалить">
                     <i class="fas fa-trash-alt"></i>
                 </button>` : '';
 
@@ -803,7 +849,8 @@
                 </button>`;
 
             // Объединённая инфо-строка: дата • город
-            const dateCityStr = [formatDate(t.date), t.city].filter(x => x && x !== '—').join(' • ') || '—';
+            //🔧ФИКС (XSS): город из данных турнира экранируется до сборки строки.
+            const dateCityStr = [formatDate(t.date), escapeHtml(t.city)].filter(x => x && x !== '—').join(' • ') || '—';
 
             return `
                 <div class="tournament-card ${isArchived ? 'is-archived' : ''}" onclick="window.location.href='tournament-details.html?id=${t.id}'">
@@ -821,10 +868,10 @@
                         ${winnerHtml}
                     </div>
                     <div class="card-body">
-                        <div class="tournament-name" title="${t.name}">${t.name}</div>
+                        <div class="tournament-name" title="${escapeHtml(t.name)}">${escapeHtml(t.name)}</div>
                         <div class="card-info">
                             <span><i class="fas fa-calendar-alt"></i> ${dateCityStr}</span>
-                            <span><i class="fas fa-users"></i> ${t.participantCount || 0}${t.maxParticipants ? '/' + t.maxParticipants : ''} • ${t.sport || '—'} • ${t.entryFee || 0}₽</span>
+                            <span><i class="fas fa-users"></i> ${t.participantCount || 0}${t.maxParticipants ? '/' + t.maxParticipants : ''} • ${escapeHtml(t.sport || '—')} • ${t.entryFee || 0}₽</span>
                         </div>
                         ${matchesStatsHtml}
                         ${progressHtml}
@@ -852,9 +899,12 @@
             pendingDelete = { id: tournamentId, name, mode, stats };
 
             const body = document.getElementById('deleteModalBody');
+            //🔧ФИКС (XSS): название турнира вставляется в innerHTML только
+            // после экранирования — оно приходит из данных Firestore.
+            const safeName = escapeHtml(name);
             if (mode === 'soft') {
                 body.innerHTML = `
-                    <div>Вы собираетесь <strong>архивировать</strong> турнир «<strong>${name}</strong>».</div>
+                    <div>Вы собираетесь <strong>архивировать</strong> турнир «<strong>${safeName}</strong>».</div>
                     <div class="info-box">
                         <i class="fas fa-info-circle"></i>
                         Было <strong>${stats.completed} ${plural(stats.completed, 'бой', 'боя', 'боёв')}</strong>.
@@ -864,7 +914,7 @@
                 `;
             } else {
                 body.innerHTML = `
-                    <div>Полностью удалить турнир «<strong>${name}</strong>»?</div>
+                    <div>Полностью удалить турнир «<strong>${safeName}</strong>»?</div>
                     <div class="warning-box">
                         <i class="fas fa-exclamation-triangle"></i>
                         Боёв не было. Данные удалятся <strong>навсегда</strong> — турнир, заявки, уведомления.

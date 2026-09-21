@@ -1,5 +1,5 @@
 /* ============================================================================
-   PRORANK — Service Worker (PWA Core) · v3.0.0
+   PRORANK — Service Worker (PWA Core) · v3.1.0
    ----------------------------------------------------------------------------
    Что делает этот файл:
      1) Кэширует оболочку приложения (index.html, style.css, скрипты, иконки),
@@ -25,15 +25,25 @@
        1. КОНСТАНТЫ И КОНФИГУРАЦИЯ
        ======================================================================= */
 
-    const SW_VERSION = '3.0.0';
+    //🔧ФИКС: версия поднята до 3.1.0 — после перехода картинок на WebP нужно
+    // гарантированно выкинуть старые кэши у пользователей (activate чистит их).
+    const SW_VERSION = '3.1.0';
     const CACHE_PREFIX = 'prorank-cache';
     const CORE_CACHE = CACHE_PREFIX + '-core-v' + SW_VERSION;      // оболочка
     const PAGES_CACHE = CACHE_PREFIX + '-pages-v' + SW_VERSION;    // страницы
     const RUNTIME_CACHE = CACHE_PREFIX + '-runtime-v' + SW_VERSION; // всё остальное
-    const KEEP_CACHES = [CORE_CACHE, PAGES_CACHE, RUNTIME_CACHE];
+    //🔧ФИКС: отдельный кэш под картинки контента (обложки турниров, товары).
+    // Отдельный — чтобы тяжёлая графика не вытесняла код интерфейса.
+    const IMAGE_CACHE = CACHE_PREFIX + '-img-v' + SW_VERSION;
+    const KEEP_CACHES = [CORE_CACHE, PAGES_CACHE, RUNTIME_CACHE, IMAGE_CACHE];
 
     const NAV_TIMEOUT = 5000;          // мс ожидания сети при загрузке страницы
+    //🔧ФИКС: если сеть не ответила за это время, мгновенно отдаём локальную
+    // копию страницы (сайт открывается за ~0.1 сек), а сеть продолжает
+    // обновлять кэш в фоне — свежесть контента не теряется.
+    const NAV_RACE_MS = 700;
     const MAX_RUNTIME_ITEMS = 150;     // лимит файлов в runtime-кэше
+    const MAX_IMAGE_ITEMS = 120;       // лимит картинок контента в кэше
     const BANNER_ID = 'prorankOfflineBanner';
 
     // Корень приложения = scope воркера (/prorank-live/). Поэтому пути не
@@ -48,15 +58,51 @@
     // Это минимум, который позволяет интерфейсу открыться без интернета.
     const CORE_ASSETS = [
         '',                       // каталог /prorank-live/ (отдаёт index.html)
+
+        // ── Оболочка приложения ──────────────────────────────────────────
         'index.html',
         'offline.html',
         'style.css',
         'manifest.json',
+
+        // 🔧ФИКС: раньше кэшировались только 4 JS-файла, поэтому переходы по
+        // разделам каждый раз тянули модули из сети. Теперь вся общая обвязка
+        // (модули интерфейса и PWA) кладётся в кэш при первой установке —
+        // повторные открытия и навигация происходят мгновенно.
+        // Мёртвые script.js / fix-prompt.js / virtual-list.js / print-utils.js
+        // удалены из проекта и отсюда тоже — нечего скачивать.
         'header.js',
         'seasons.js',
-        'script.js',
-        'fix-prompt.js',
         'error-handler.js',
+        'premium.js',
+        'payment.js',
+        'wallet.js',
+        'organizer-wallet.js',
+        'push-notifications.js',
+        'push-sender.js',
+        'voice-recorder.js',
+        'voice-uploader.js',
+
+        // 🔧ФИКС: основные экраны кэшируются заранее (Cache First для статики
+        // + мгновенная отдача навигации при медленной сети).
+        'login.html',
+        'tournaments.html',
+        'tournament-details.html',
+        'tournament-create.html',
+        'live-judging.html',
+        'my-tournaments.html',
+        'catalog.html',
+        'favorites.html',
+        'profile.html',
+        'profile.js',
+        'rating.html',
+        'leagues.html',
+        'achievements.html',
+        'challenges.html',
+        'wallet.html',
+        'chats.html',
+
+        // ── Иконки (мелкие PNG для PWA) ──────────────────────────────────
         'Avatar.png',
         'icons/icon-48.png',
         'icons/icon-72.png',
@@ -66,7 +112,7 @@
         'icons/icon-152.png',
         'icons/icon-192.png',
         'icons/icon-384.png',
-        'icons/icon-512.png'
+        'icons/icon-512.webp'
     ].map(appUrl);
 
     // Хосты с живыми данными: кэш здесь только вредит.
@@ -92,6 +138,17 @@
         'fonts.gstatic.com'
     ];
 
+    //🔧ФИКС: хосты, с которых приходят картинки контента (обложки турниров,
+    // фото товаров). Кэшируем ТОЛЬКО запросы destination === 'image' и в
+    // отдельный кэш — чтобы офлайн-режим показывал реальные изображения,
+    // а не заглушки, и чтобы графика не вытесняла код интерфейса.
+    const CONTENT_IMAGE_HOSTS = [
+        'res.cloudinary.com',
+        'firebasestorage.googleapis.com'
+    ];
+    const isContentImage = (url, request) =>
+        request.destination === 'image' && CONTENT_IMAGE_HOSTS.indexOf(url.hostname) !== -1;
+
     const log = (...args) => console.log('[PRORANK SW]', ...args);
 
     const isHttp = (url) => url.protocol === 'http:' || url.protocol === 'https:';
@@ -113,6 +170,15 @@
         const timer = setTimeout(() => controller.abort(), ms);
         const options = Object.assign({ signal: controller.signal }, init || {});
         return fetch(request, options).finally(() => clearTimeout(timer));
+    }
+
+    //🔧ФИКС: «гонка» с сетью — нужна, чтобы отдать локальную копию, если
+    // сеть отвечает дольше NAV_RACE_MS, и не держать пользователя в ожидании.
+    const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+    //🔧ФИКС: единая точка поиска локальной копии страницы во всех кэшах
+    function matchCachedPage(request) {
+        return caches.match(request, { ignoreSearch: true }).catch(() => null);
     }
 
     // Аккуратно чистим runtime-кэш, чтобы он не разросся бесконечно
@@ -265,12 +331,50 @@
     async function handleNavigation(event) {
         const request = event.request;
 
-        try {
+        //🔧ФИКС: сеть и локальная копия работают параллельно, чтобы убрать
+        // «белый экран» на медленной сети:
+        //   • сеть ответила быстро        → отдаём свежую страницу как есть;
+        //   • сеть молчит дольше 0.7 сек  → мгновенно отдаём локальную копию,
+        //     а сеть в фоне обновляет кэш для следующего визита;
+        //   • сети нет совсем             → локальная копия + плашка офлайна.
+        const cached = await matchCachedPage(request);
+
+        let networkFailed = false;
+        const networkPromise = (async () => {
             const preloaded = event.preloadResponse ? await event.preloadResponse : null;
-            const response = preloaded || await fetchWithTimeout(request, NAV_TIMEOUT);
+            return preloaded || await fetchWithTimeout(request, NAV_TIMEOUT);
+        })().catch((error) => {
+            networkFailed = true;
+            log('Сеть для страницы недоступна:', request.url, '(' + (error && error.message) + ')');
+            return null;
+        });
+
+        if (cached) {
+            const fresh = await Promise.race([networkPromise, delay(NAV_RACE_MS)]);
+
+            if (fresh && fresh.ok) {
+                putInCache(PAGES_CACHE, request, fresh.clone(), 40);
+                return fresh;
+            }
+
+            // Ответ сети, если он всё-таки придёт позже, тихо уходит в кэш
+            networkPromise.then((response) => {
+                if (response && response.ok) putInCache(PAGES_CACHE, request, response.clone(), 40);
+            }).catch(() => null);
+
+            if (networkFailed || navigator.onLine === false) {
+                log('Отдаём локальную копию с плашкой офлайна:', request.url);
+                return withOfflineBanner(cached);
+            }
+
+            // Сеть медленная, но живая — плашку не показываем, страница работает
+            return cached;
+        }
+
+        try {
+            const response = await networkPromise;
 
             if (response && response.ok) {
-                // Свежую страницу складываем в кэш — она пригодится в офлайне
                 putInCache(PAGES_CACHE, request, response.clone(), 40);
                 return response; // онлайн: страница отдаётся ровно как есть
             }
@@ -325,6 +429,18 @@
             return;
         }
         if (!isHttp(url)) return;              // chrome-extension:// и прочее
+
+        //🔧ФИКС: картинки контента (обложки турниров, фото товаров) кладём в
+        // отдельный кэш — в офлайне они видны, при повторном визите отдаются
+        // мгновенно, а код интерфейса ими не вытесняется.
+        if (isContentImage(url, request)) {
+            event.respondWith(cacheFirst(request, IMAGE_CACHE, {
+                ignoreSearch: false,
+                maxItems: MAX_IMAGE_ITEMS
+            }));
+            return;
+        }
+
         if (isLiveData(url)) return;           // Firebase / API / аналитика — только сеть
         // Явный запрет кэша (например, проверка связи) — всегда в сеть
         if (request.cache === 'no-store') return;

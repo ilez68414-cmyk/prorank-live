@@ -9,6 +9,15 @@
     <meta name="theme-color" content="#fbbf24">
     <meta name="mobile-web-app-capable" content="yes">
     <meta charset="UTF-8">
+<!--🔧ФИКС: preconnect -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="dns-prefetch" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="dns-prefetch" href="https://fonts.gstatic.com">
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+    <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com">
+    <link rel="preconnect" href="https://www.gstatic.com" crossorigin>
+    <link rel="dns-prefetch" href="https://www.gstatic.com">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Турнир | PRORANK</title>
     <link rel="stylesheet" href="style.css">
@@ -867,10 +876,13 @@
             } else if (t.status === 'active') {
                 // 🔧 Бои считаем только из матчей 1-го раунда или без bye, чтобы не было 0/0
                 const realMatches = matches.filter(m => m.status !== 'bye');
-                const completed = realMatches.filter(m => m.status === 'completed').length;
+                //ФИКС: убрано дублирование данных между renderHero и renderOverviewOwner.
+                // В hero остался только СЧЁТЧИК БОЁВ — сколько всего боёв в сетке,
+                // плюс статус турнира (LIVE). Детализация «Проведено»/«Осталось»
+                // и список столов показываются ТОЛЬКО в overview (renderOverviewOwner).
                 stats.innerHTML = `
                     <div class="stat-box"><div class="stat-box-label">Участников</div><div class="stat-box-value blue">${t.participantCount || 0}</div><div class="stat-box-sub">в турнире</div></div>
-                    <div class="stat-box"><div class="stat-box-label">Боёв</div><div class="stat-box-value green">${completed}/${realMatches.length}</div><div class="stat-box-sub">проведено</div></div>
+                    <div class="stat-box"><div class="stat-box-label">Боёв</div><div class="stat-box-value green">${realMatches.length}</div><div class="stat-box-sub">всего в сетке</div></div>
                     <div class="stat-box"><div class="stat-box-label">Дата</div><div class="stat-box-value">${formatDate(t.date)}</div><div class="stat-box-sub">—</div></div>
                     <div class="stat-box"><div class="stat-box-label">Статус</div><div class="stat-box-value red">LIVE</div><div class="stat-box-sub">сейчас</div></div>
                 `;
@@ -3660,6 +3672,9 @@
                 userRole = isUserOrganizerOfTournament(user.uid) ? 'organizer' : 'fighter';
             } else userRole = 'guest';
             escrowAmount = tournamentData.escrowAmount || 0;
+            //ФИКС: await loadMatches() вызывается СТРОГО ДО renderHeader().
+            // Так массив matches гарантированно заполнен к первому рендеру —
+            // раньше hero/сетка успевали отрисоваться с пустым matches (0/0).
             await loadMatches();
             renderHeader();
             subscribeToRegistrations();

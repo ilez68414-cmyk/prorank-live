@@ -2,6 +2,15 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
+<!--🔧ФИКС: preconnect -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="dns-prefetch" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="dns-prefetch" href="https://fonts.gstatic.com">
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+    <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com">
+    <link rel="preconnect" href="https://www.gstatic.com" crossorigin>
+    <link rel="dns-prefetch" href="https://www.gstatic.com">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>LIVE Судейство | PRORANK</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
@@ -300,6 +309,50 @@
             .display-fighter { padding: 20px; }
             .chief-grid { grid-template-columns: 1fr; }
             .display-grid-container { padding: 100px 16px 20px; }
+        }
+
+        /* 🔧ФИКС: ПАНЕЛЬ СУДЬИ ПОД НОУТБУК (мышь + клавиатура).
+           На экранах от 769px компоновка становится компактной: таймер и счёт
+           занимают меньше вертикали, кнопки ниже, появляются :hover-эффекты и
+           «рука» курсора. На смартфонах (ветка max-width: 768px выше) всё
+           остаётся крупным — там удобнее попадать пальцем. Цвета и общая
+           структура разметки не меняются. */
+        @media (min-width: 769px) {
+            #judgeView { max-width: 1080px; margin: 0 auto; }
+
+            /* Компактный таймер */
+            .timer-display { padding: 18px; margin: 14px 0; }
+            .timer-value { font-size: clamp(3rem, 7vw, 4.6rem); }
+            .timer-label { margin-top: 4px; }
+            .timer-controls { margin-top: 10px; gap: 6px; }
+            .timer-btn { min-height: 40px; padding: 9px 16px; font-size: 0.78rem; }
+            .timer-btn:hover:not(:disabled) {
+                transform: translateY(-2px);
+                filter: brightness(1.12);
+                box-shadow: 0 6px 18px rgba(0,0,0,0.45);
+            }
+
+            /* Компактное табло счёта */
+            .scoreboard { gap: 12px; margin: 14px 0; }
+            .fighter-panel { padding: 14px; }
+            .fighter-panel .fighter-avatar { width: 50px; height: 50px; font-size: 1.2rem; }
+            .fighter-panel .score-value { font-size: 2.6rem; }
+            .score-btn { padding: 10px 6px; font-size: 0.92rem; }
+            .score-btn:hover {
+                transform: translateY(-2px);
+                filter: brightness(1.15);
+                box-shadow: 0 6px 16px rgba(0,0,0,0.4);
+            }
+            .score-btn.plus1:hover { background: rgba(251,191,36,0.28); }
+            .score-btn.plus2:hover { background: rgba(16,185,129,0.28); }
+            .score-btn.minus:hover { background: rgba(239,68,68,0.20); }
+
+            /* Списки боёв и общие кнопки — под работу мышкой */
+            .match-card { transition: transform 0.15s ease, border-color 0.2s ease, background 0.2s ease; }
+            .match-card:hover { transform: translateY(-2px); border-color: rgba(251,191,36,0.45); }
+            .btn:hover { filter: brightness(1.12); }
+            .history-panel { margin-top: 12px; }
+            .history-item:hover { background: rgba(251,191,36,0.06); }
         }
     </style>
 </head>
@@ -682,23 +735,28 @@
         }
 
         // ============================================================
-        // 🔧 HEARTBEAT СУДЬИ
+        // HEARTBEAT СУДЬИ
         // ============================================================
+        // Пишется ТОЛЬКО для роли judge: табло (display) статус не отправляет.
+        // Каждые 30 секунд обновляем ringSessions.<стол> { online, lastSeen },
+        // а при уходе со страницы (beforeunload / pagehide) ставим online: false.
         let judgeHeartbeatInterval = null;
-        let judgeHeartbeatRing = null;
 
         async function startJudgeHeartbeat(ring) {
             if (!tournamentId || !ring) return;
-            judgeHeartbeatRing = ring;
-            const name = currentUserName || localStorage.getItem(JUDGE_NAME_KEY) || 'Судья';
+
+            //🔧ФИКС: имя судьи читается на КАЖДОМ тике, а не один раз при входе.
+            // Раньше имя фиксировалось до того, как судья вводил его в модалке,
+            // поэтому на табло организатора висело «Судья» до перезагрузки.
+            const currentJudgeName = () =>
+                currentUserName || localStorage.getItem(JUDGE_NAME_KEY) || 'Судья';
 
             const write = async (online) => {
                 try {
-                    // 🔧 Пишем в ПОЛЕ документа турнира, а не в подколлекцию
                     await updateDoc(doc(db, "tournaments", tournamentId), {
                         [`ringSessions.${ring}`]: {
                             ring: ring,
-                            judgeName: name,
+                            judgeName: currentJudgeName(),
                             online: online,
                             lastSeen: Date.now(),
                             updatedAt: new Date().toISOString()
@@ -715,7 +773,7 @@
             judgeHeartbeatInterval = setInterval(() => write(true), 30000);
 
             const goOffline = () => {
-                if (judgeHeartbeatInterval) clearInterval(judgeHeartbeatInterval);
+                if (judgeHeartbeatInterval) { clearInterval(judgeHeartbeatInterval); judgeHeartbeatInterval = null; }
                 write(false);
             };
             window.addEventListener('beforeunload', goOffline);
@@ -1225,6 +1283,12 @@
             document.body.classList.remove('display-mode');
             renderJudgeUI();
             startTimerInterval();
+            //🔧ФИКС: одноразовая подсказка про горячие клавиши — чтобы судья
+            // за ноутбуком сразу знал, что можно работать без мышки.
+            if (!window.__judgeHotkeyHintShown) {
+                window.__judgeHotkeyHintShown = true;
+                showToast('️ Enter — старт · Пробел — пауза · 1/2 — баллы · Esc — отмена', 'info');
+            }
         }
 
         function renderJudgeUI() {
@@ -1877,6 +1941,80 @@
             stopAutocloseCountdown();
             if (winnerDisplayTimer) clearTimeout(winnerDisplayTimer);
         });
+
+        // ============================================================
+        // 🔧ФИКС: ГОРЯЧИЕ КЛАВИШИ СУДЬИ (ноутбук / ПК)
+        // ============================================================
+        // Enter  — старт боя
+        // Пробел — пауза
+        // 1      — +1 балл красному бойцу
+        // 2      — +1 балл синему бойцу
+        // Esc    — отмена последнего действия (или закрытие открытой модалки)
+        //
+        // Работает ТОЛЬКО для роли judge и только в режиме судьи (currentMode
+        // === 'judge'). Табло (display, display-ring, display-grid) и главный
+        // судья (chief) клавиши не перехватывают — их сценарии не меняются.
+        // Хоткеи дергают те же функции, что и кнопки на экране, поэтому
+        // транзакции takeAndJudge / confirmFinish работают как раньше.
+
+        function isTypingTarget(el) {
+            if (!el) return false;
+            const tag = (el.tagName || '').toLowerCase();
+            return tag === 'input' || tag === 'textarea' || tag === 'select' ||
+                   el.isContentEditable === true;
+        }
+
+        function topOpenModalId() {
+            const overlays = document.querySelectorAll('.modal-overlay.show');
+            return overlays.length ? overlays[overlays.length - 1].id : null;
+        }
+
+        async function handleJudgeHotkey(e) {
+            if (userRole !== 'judge') return;
+            if (currentMode !== 'judge') return;
+            if (isTypingTarget(document.activeElement)) return;
+            if (e.ctrlKey || e.metaKey || e.altKey) return;
+
+            const modalId = topOpenModalId();
+
+            // Esc: сначала закрываем модалку, и только потом отменяем действие
+            if (e.key === 'Escape') {
+                if (modalId === 'confirmModal') { e.preventDefault(); closeConfirm(false); return; }
+                if (modalId === 'finishModal') { e.preventDefault(); closeModal('finishModal'); return; }
+                if (modalId) return;
+                e.preventDefault();
+                if (typeof window.undoLast === 'function') await window.undoLast();
+                return;
+            }
+
+            // Пока открыта любая модалка — «боевые» клавиши молчат
+            if (modalId) return;
+            if (!currentMatch) return;
+            if (currentMatch.status === 'completed') return;
+
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                if (typeof window.startTimer === 'function') await window.startTimer();
+                return;
+            }
+            if (e.key === ' ' || e.code === 'Space') {
+                e.preventDefault();   // чтобы страница не прокручивалась
+                if (typeof window.pauseTimer === 'function') await window.pauseTimer();
+                return;
+            }
+            if (e.key === '1' || e.code === 'Digit1' || e.code === 'Numpad1') {
+                e.preventDefault();
+                if (typeof window.changeScore === 'function') await window.changeScore(1, 1);
+                return;
+            }
+            if (e.key === '2' || e.code === 'Digit2' || e.code === 'Numpad2') {
+                e.preventDefault();
+                if (typeof window.changeScore === 'function') await window.changeScore(2, 1);
+                return;
+            }
+        }
+
+        window.addEventListener('keydown', handleJudgeHotkey);
 
         boot();
     </script>

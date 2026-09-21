@@ -10,6 +10,17 @@
     <meta name="theme-color" content="#fbbf24">
     <meta name="mobile-web-app-capable" content="yes">
     <meta charset="UTF-8">
+<!--🔧ФИКС: preconnect -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="dns-prefetch" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="dns-prefetch" href="https://fonts.gstatic.com">
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+    <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com">
+    <link rel="preconnect" href="https://cdn.onesignal.com" crossorigin>
+    <link rel="dns-prefetch" href="https://cdn.onesignal.com">
+    <link rel="preconnect" href="https://www.gstatic.com" crossorigin>
+    <link rel="dns-prefetch" href="https://www.gstatic.com">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="theme-color" content="#fbbf24">
     <meta name="description" content="PRORANK — рейтинговая платформа для спортсменов-любителей. Участвуй в спаррингах, покупай экипировку, становись лучшим!">
@@ -1237,7 +1248,11 @@
         }
     </script>
     <script type="module" src="header.js?v=3"></script>
-    <script src="/prorank-live/fix-prompt.js"></script>
+    <!-- 🔧ФИКС: удалён мёртвый fix-prompt.js — он перехватывал
+         BeforeInstallPromptEvent.prompt() и всегда возвращал «dismissed»,
+         из-за чего кнопка установки PWA в header.js (строка 483) не работала,
+         а в браузерах без BeforeInstallPromptEvent (Safari/Firefox) скрипт
+         падал с TypeError прямо в <head>. -->
     <script type="module">
         import { initializeApp } from "firebase/app";
         import { getFirestore, collection, getDocs, query, orderBy, limit, doc, getDoc, where } from "firebase/firestore";

@@ -10,6 +10,15 @@
     <meta name="theme-color" content="#fbbf24">
     <meta name="mobile-web-app-capable" content="yes">
     <meta charset="UTF-8">
+<!--🔧ФИКС: preconnect -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="dns-prefetch" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="dns-prefetch" href="https://fonts.gstatic.com">
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+    <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com">
+    <link rel="preconnect" href="https://www.gstatic.com" crossorigin>
+    <link rel="dns-prefetch" href="https://www.gstatic.com">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="theme-color" content="#fbbf24">
     <meta name="description" content="Каталог товаров PRORANK — экипировка, спорт-пит, одежда, аксессуары">
@@ -1591,35 +1600,35 @@
         <div class="categories-scroll" id="categoriesScroll">
             <button class="category-chip active" data-category="all">
                 <div class="cat-icon">
-                    <img src="category-icons/all.png" alt="Все" class="category-icon" 
+                    <img src="category-icons/all.webp" alt="Все" class="category-icon" 
                         onerror="this.style.display='none';this.parentElement.innerHTML='🏪'">
                 </div>
                 <span>Все</span>
             </button>
             <button class="category-chip" data-category="equipment">
                 <div class="cat-icon">
-                    <img src="category-icons/equipment.png" alt="Экипировка" class="category-icon" 
+                    <img src="category-icons/equipment.webp" alt="Экипировка" class="category-icon" 
                         onerror="this.style.display='none';this.parentElement.innerHTML='🥊'">
                 </div>
                 <span>Экипировка</span>
             </button>
             <button class="category-chip" data-category="sportpit">
                 <div class="cat-icon">
-                    <img src="category-icons/sportpit.png" alt="Спорт-пит" class="category-icon" 
+                    <img src="category-icons/sportpit.webp" alt="Спорт-пит" class="category-icon" 
                         onerror="this.style.display='none';this.parentElement.innerHTML='💪'">
                 </div>
                 <span>Спорт-пит</span>
             </button>
             <button class="category-chip" data-category="clothing">
                 <div class="cat-icon">
-                    <img src="category-icons/clothing.png" alt="Одежда" class="category-icon" 
+                    <img src="category-icons/clothing.webp" alt="Одежда" class="category-icon" 
                         onerror="this.style.display='none';this.parentElement.innerHTML='👕'">
                 </div>
                 <span>Одежда</span>
             </button>
             <button class="category-chip" data-category="accessories">
                 <div class="cat-icon">
-                    <img src="category-icons/accessories.png" alt="Аксессуары" class="category-icon" 
+                    <img src="category-icons/accessories.webp" alt="Аксессуары" class="category-icon" 
                         onerror="this.style.display='none';this.parentElement.innerHTML='⌚'">
                 </div>
                 <span>Аксессуары</span>
@@ -1912,11 +1921,14 @@
                 const btn = document.createElement('button');
                 btn.className = 'store-avatar';
                 btn.dataset.store = partner.id;
+                //🔧ФИКС (XSS): название магазина вставляется в innerHTML и alt
+                // только после экранирования — оно приходит из Firestore.
+                const safePartnerName = escapeHtml(partner.name || 'Магазин');
                 btn.innerHTML = `
                     <div class="store-avatar-img">
-                        <img src="https://ui-avatars.com/api/?name=${encodeURIComponent(partner.name.substring(0,2))}&background=fbbf24&color=000&size=64" alt="${partner.name}">
+                        <img src="https://ui-avatars.com/api/?name=${encodeURIComponent((partner.name || '?').substring(0,2))}&background=fbbf24&color=000&size=64" alt="${safePartnerName}">
                     </div>
-                    <span class="store-name">${partner.name}</span>
+                    <span class="store-name">${safePartnerName}</span>
                 `;
                 storesContainer.appendChild(btn);
             });
@@ -2153,9 +2165,14 @@
                     `;
                 }
             } else if (stock > 0) {
+                //🔧ФИКС (XSS): JSON товара лежит в одинарных кавычках атрибута,
+                // поэтому одиночная кавычка в названии товара могла «закрыть»
+                // data-product и внедрить свой атрибут/тег. Экранируем JSON:
+                // dataset.product декодирует HTML-сущности, JSON.parse работает.
+                const cartJson = escapeHtml(JSON.stringify(productForCart));
                 buyButtons = `
-                    <button class="btn-add-to-cart" data-product='${JSON.stringify(productForCart)}'><i class="fas fa-cart-plus"></i> В корзину</button>
-                    <button class="btn-buy-now" data-product='${JSON.stringify(productForCart)}'><i class="fas fa-bolt"></i> Купить</button>
+                    <button class="btn-add-to-cart" data-product='${cartJson}'><i class="fas fa-cart-plus"></i> В корзину</button>
+                    <button class="btn-buy-now" data-product='${cartJson}'><i class="fas fa-bolt"></i> Купить</button>
                 `;
             } else {
                 buyButtons = `
@@ -2163,12 +2180,20 @@
                 `;
             }
             
+            //🔧ФИКС (XSS): id товара, ссылка на картинку и alt-текст экранируются.
+            // Раньше в data-product-id и src="${product.image}" подставлялись
+            // значения из Firestore «как есть» — кавычка в них могла добавить
+            // свой атрибут (например onerror) и выполнить чужой JS.
+            const safeProductId = escapeHtml(product.id);
+            const safeImage = safeImageUrl(product.image);
+            const safeTitle = escapeHtml(product.name);
+
             html += `
-                <div class="product-card" data-product-id="${product.id}">
+                <div class="product-card" data-product-id="${safeProductId}">
                     <div class="product-image-wrap">
-                        ${product.image ? `<img src="${product.image}" class="product-image" loading="lazy" onerror="this.src='https://placehold.co/300x200/1a1a1a/fbbf24?text=No+Image'">` : '<div class="product-image" style="display:flex;align-items:center;justify-content:center;background:#1a1a1a;height:100%;"><i class="fas fa-image" style="font-size: 2rem; color: #555;"></i></div>'}
+                        ${safeImage ? `<img src="${safeImage}" alt="${safeTitle}" class="product-image" loading="lazy" onerror="this.src='https://placehold.co/300x200/1a1a1a/fbbf24?text=No+Image'">` : '<div class="product-image" style="display:flex;align-items:center;justify-content:center;background:#1a1a1a;height:100%;"><i class="fas fa-image" style="font-size: 2rem; color: #555;"></i></div>'}
                         ${badgeHtml}
-                        ${!isSeller ? `<button class="product-favorite ${isFavorite ? 'active' : ''}" data-product-id="${product.id}">
+                        ${!isSeller ? `<button class="product-favorite ${isFavorite ? 'active' : ''}" data-product-id="${safeProductId}">
                             <i class="${isFavorite ? 'fas' : 'far'} fa-heart"></i>
                         </button>` : ''}
                     </div>
@@ -2338,8 +2363,11 @@
         document.getElementById('modalProductStore').innerHTML = `<i class="fas fa-store"></i> ${escapeHtml(storeName)}`;
         
         const modalImage = document.getElementById('modalProductImage');
-        if (product.image) {
-            modalImage.src = product.image;
+        //ФИКС (XSS): ссылка на картинку проверяется по схеме (только http(s)
+        // и относительные пути) — мусорные схемы в src не попадают.
+        const modalImageUrl = safeImageUrl(product.image);
+        if (modalImageUrl) {
+            modalImage.src = modalImageUrl;
             modalImage.style.display = 'block';
         } else {
             modalImage.style.display = 'none';
@@ -2432,9 +2460,26 @@
         applyFilters();
     }
 
+    //🔧ФИКС (XSS): экранирование теперь покрывает и кавычки — значения
+    // попадают не только в текст, но и в HTML-атрибуты (src, data-*, alt).
     function escapeHtml(str) {
-        if (!str) return '';
-        return String(str).replace(/[&<>]/g, m => m === '&' ? '&amp;' : m === '<' ? '&lt;' : '&gt;');
+        if (str === null || str === undefined) return '';
+        return String(str)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+    }
+
+    //🔧ФИКС (XSS через ${product.image}): в src картинки товара допускаются
+    // только http(s)-ссылки и относительные пути. Всё остальное (javascript:,
+    // data:, попытки закрыть атрибут кавычкой) отбрасывается.
+    function safeImageUrl(url) {
+        if (!url) return '';
+        const raw = String(url).trim();
+        if (!/^(https?:\/\/|\/\/|\/|\.\/|\.\.\/)/i.test(raw)) return '';
+        return escapeHtml(raw);
     }
 
     // ===== EVENTS =====

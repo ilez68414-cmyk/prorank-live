@@ -2,6 +2,17 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
+<!--🔧ФИКС: preconnect -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="dns-prefetch" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="dns-prefetch" href="https://fonts.gstatic.com">
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+    <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com">
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+    <link rel="dns-prefetch" href="https://cdn.jsdelivr.net">
+    <link rel="preconnect" href="https://www.gstatic.com" crossorigin>
+    <link rel="dns-prefetch" href="https://www.gstatic.com">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
     <!-- ===== SEO / META ===== -->
@@ -37,7 +48,10 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700;14..32,800;14..32,900&display=swap" rel="stylesheet">
 
     <!-- ===== CHART.JS ===== -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js">
+    <!-- 🔧ФИКС: добавлен defer — 200 КБ Chart.js больше не блокируют отрисовку
+         панели, скрипт выполняется после разбора DOM и до inline-модуля,
+         который его использует (initDashboardChart). -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js" defer>
     </script>
 
     <style>
@@ -1205,8 +1219,10 @@
         <div class="login-box">
             <div class="logo">PRO<span>RANK</span></div>
             <div class="subtitle">Вход в панель управления</div>
-            <input type="email" id="loginEmail" placeholder="Email" value="admin@prorank.ru">
-            <input type="password" id="loginPassword" placeholder="Пароль" value="admin123">
+            <!-- 🔧ФИКС: префилл логина/пароля admin@prorank.ru / admin123 удалён —
+                 учётные данные были видны в исходнике страницы. Поля пустые. -->
+            <input type="email" id="loginEmail" placeholder="Email" autocomplete="username">
+            <input type="password" id="loginPassword" placeholder="Пароль" autocomplete="current-password">
             <button class="btn-login" id="loginBtn"><i class="fas fa-sign-in-alt"></i> Войти</button>
             <div class="error" id="loginError"></div>
         </div>
@@ -1883,7 +1899,9 @@
         const db = getFirestore(app);
         const auth = getAuth(app);
         const storage = getStorage(app);
-        const BOT_TOKEN = '8527160088:AAGc2311QFkp6F7-Jx5k8MJfqlpvbueSl5E';
+        //🔧ФИКС: жёсткий BOT_TOKEN вырезан — ключ бота лежал в открытом виде
+        // в HTML админки. Теперь берётся из окружения: window.ENV_BOT_TOKEN.
+        const BOT_TOKEN = window.ENV_BOT_TOKEN || "";
 
         // ============================================================
         // СОСТОЯНИЕ
@@ -1965,6 +1983,23 @@
 
             try {
                 const userCredential = await signInWithEmailAndPassword(auth, email, password);
+                //🔧ФИКС: после входа проверяем кастомный claim `admin`.
+                // Без него панель не показываем и сразу разлогиниваем —
+                // иначе любой зарегистрированный боец мог открыть админку.
+                let isAdmin = false;
+                try {
+                    const tokenResult = await userCredential.user.getIdTokenResult();
+                    isAdmin = tokenResult?.claims?.admin === true;
+                } catch (e) {
+                    console.warn('Проверка claims админа не удалась:', e);
+                }
+
+                if (!isAdmin) {
+                    await signOut(auth);
+                    loginError.textContent = '❌ Доступ запрещён: нет прав администратора';
+                    return;
+                }
+
                 currentAdminEmail = userCredential.user.email;
                 loginContainer.classList.add('hidden');
                 adminContainer.classList.add('visible');
@@ -3195,10 +3230,20 @@
             }
 
             let sent = 0;
+            //🔧ФИКС: если токен бота не задан (window.ENV_BOT_TOKEN пуст),
+            // рассылку не отправляем — раньше здесь стоял жёсткий ключ в открытом виде.
+            if (!BOT_TOKEN) {
+                document.getElementById('broadcastResult').innerHTML =
+                    '<span style="color:#f59e0b;">⚠️ Токен бота не задан (window.ENV_BOT_TOKEN) — рассылка не отправлена</span>';
+                await logAction('broadcast', null, `Рассылка "${subject}" не отправлена: нет токена бота`);
+                return;
+            }
             for (const docSnap of fightersSnapshot.docs) {
                 const telegramId = docSnap.data().telegramId;
-                if (telegramId) {
+                if (telegramId && BOT_TOKEN) {
                     try {
+                        //🔧ФИКС: ключ бота больше не зашит в код — он берётся
+                        // из window.ENV_BOT_TOKEN (см. объявление выше).
                         await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
@@ -3331,21 +3376,48 @@
         // ============================================================
         // AUTH STATE
         // ============================================================
+        //🔧ФИКС: доступ в панель теперь закрыт на уровне клиента по кастомному
+        // claim `admin` в ID-токене. Одного факта «пользователь залогинен»
+        // больше недостаточно: контейнер админки становится видимым ТОЛЬКО
+        // если getIdTokenResult().claims.admin === true.
+        // (Реальную защиту данных даёт firestore.rules — клиентская проверка
+        // нужна, чтобы честный пользователь не видел пустую панель и ошибки.)
         onAuthStateChanged(auth, async (user) => {
-            if (user) {
-                currentAdminEmail = user.email;
-                loginContainer.classList.add('hidden');
-                adminContainer.classList.add('visible');
-                adminEmail.textContent = user.email;
-                adminName.textContent = 'Администратор';
-                await loadAllData();
-                setTimeout(() => {
-                    initDashboardChart();
-                }, 300);
-            } else {
+            if (!user) {
+                currentAdminEmail = null;
                 loginContainer.classList.remove('hidden');
                 adminContainer.classList.remove('visible');
+                return;
             }
+
+            let isAdmin = false;
+            try {
+                const tokenResult = await user.getIdTokenResult();
+                isAdmin = tokenResult?.claims?.admin === true;
+            } catch (e) {
+                console.warn('Не удалось проверить claims админа:', e);
+                isAdmin = false;
+            }
+
+            if (!isAdmin) {
+                // Не админ — сразу выходим и показываем ошибку на форме входа
+                adminContainer.classList.remove('visible');
+                loginContainer.classList.remove('hidden');
+                try { await signOut(auth); } catch (e) { /* уже вышли */ }
+                const err = document.getElementById('loginError');
+                if (err) err.textContent = 'Доступ запрещён: у аккаунта нет прав администратора.';
+                return;
+            }
+
+            currentAdminEmail = user.email;
+            loginContainer.classList.add('hidden');
+            adminContainer.classList.add('visible');
+            adminEmail.textContent = user.email;
+            adminName.textContent = 'Администратор';
+            await loadAllData();
+            setTimeout(() => {
+                initDashboardChart();
+            }, 300);
         });
 
         // ============================================================
@@ -3875,8 +3947,7 @@
         document.getElementById('refreshSeasonsBtn')?.addEventListener('click', loadSeasons);
 
         console.log('✅ PRORANK Admin Panel загружен!');
-        console.log('📦 Разделы: Бойцы, Магазины (с заявками), Выводы, Комиссии, Цифровые товары, Цены, История, Рассылка');
-        console.log('📧 admin@prorank.ru / admin123');
+        //🔧ФИКС: удалён вывод логина и пароля администратора в консоль браузера.
     </script>
 </body>
 </html>

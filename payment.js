@@ -23,9 +23,24 @@ const auth = getAuth();
 // ============================================================
 // КОНФИГУРАЦИЯ ЮKASSA
 // ============================================================
-const YOOKASSA_SHOP_ID = 'ВАШ_SHOP_ID';           // ← ВСТАВИТЬ
-const YOOKASSA_SECRET_KEY = 'ВАШ_SECRET_KEY';     // ← ВСТАВИТЬ
-const YOOKASSA_AGENT_ID = 'ВАШ_AGENT_ID';         // ← Твой shopId в ЮKassa (получишь после подключения)
+//🔧ФИКС: все ключи ЮKassa вырезаны из кода и берутся из окружения.
+// SECRET_KEY — это секрет магазина: он не должен попадать в репозиторий
+// и в клиентский бандл. Значения задаются снаружи, например:
+//     window.ENV_YOOKASSA_SHOP_ID     = '123456';
+//     window.ENV_YOOKASSA_SECRET_KEY  = '...';
+// Правильное решение для продакшена — вынести подпись запросов на backend.
+const YOOKASSA_SHOP_ID = window.ENV_YOOKASSA_SHOP_ID || '';
+const YOOKASSA_SECRET_KEY = window.ENV_YOOKASSA_SECRET_KEY || '';
+const YOOKASSA_AGENT_ID = window.ENV_YOOKASSA_AGENT_ID || '';
+
+//🔧ФИКС: единая точка получения Basic-авторизации. Если ключи не заданы,
+// запрос к api.yookassa.ru не уйдёт «с мусором», а упадёт понятной ошибкой.
+function yookassaAuth() {
+    if (!YOOKASSA_SHOP_ID || !YOOKASSA_SECRET_KEY) {
+        throw new Error('ЮKassa не настроена: задайте window.ENV_YOOKASSA_SHOP_ID и window.ENV_YOOKASSA_SECRET_KEY');
+    }
+    return btoa(YOOKASSA_SHOP_ID + ':' + YOOKASSA_SECRET_KEY);
+}
 
 const PLATFORM_COMMISSION = 0.10; // 10% комиссия платформы
 const PAYMENT_MODE = 'test'; // 'test' или 'production'
@@ -308,7 +323,7 @@ export async function createPayment(productId, userId) {
             headers: {
                 'Content-Type': 'application/json',
                 'Idempotence-Key': orderId,
-                'Authorization': `Basic ${btoa(YOOKASSA_SHOP_ID + ':' + YOOKASSA_SECRET_KEY)}`
+                'Authorization': `Basic ${yookassaAuth()}`
             },
             body: JSON.stringify({
                 amount: {
@@ -441,7 +456,7 @@ export async function createMarketplacePayment(productId, buyerId, sellerId, pri
             headers: {
                 'Content-Type': 'application/json',
                 'Idempotence-Key': orderId,
-                'Authorization': `Basic ${btoa(YOOKASSA_SHOP_ID + ':' + YOOKASSA_SECRET_KEY)}`
+                'Authorization': `Basic ${yookassaAuth()}`
             },
             body: JSON.stringify({
                 amount: {
@@ -544,7 +559,7 @@ export async function confirmMarketplaceOrder(orderId) {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Basic ${btoa(YOOKASSA_SHOP_ID + ':' + YOOKASSA_SECRET_KEY)}`
+                'Authorization': `Basic ${yookassaAuth()}`
             },
             body: JSON.stringify({
                 amount: {
@@ -612,7 +627,7 @@ export async function cancelMarketplaceOrder(orderId, reason = 'Отменено
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Basic ${btoa(YOOKASSA_SHOP_ID + ':' + YOOKASSA_SECRET_KEY)}`
+                'Authorization': `Basic ${yookassaAuth()}`
             }
         });
         
@@ -658,7 +673,7 @@ export async function createDepositPayment(userId, amount, description = 'Поп
             headers: {
                 'Content-Type': 'application/json',
                 'Idempotence-Key': orderId,
-                'Authorization': `Basic ${btoa(YOOKASSA_SHOP_ID + ':' + YOOKASSA_SECRET_KEY)}`
+                'Authorization': `Basic ${yookassaAuth()}`
             },
             body: JSON.stringify({
                 amount: {
@@ -778,7 +793,7 @@ export async function checkPaymentStatus(paymentId) {
         const response = await fetch(`https://api.yookassa.ru/v3/payments/${paymentId}`, {
             method: 'GET',
             headers: {
-                'Authorization': `Basic ${btoa(YOOKASSA_SHOP_ID + ':' + YOOKASSA_SECRET_KEY)}`
+                'Authorization': `Basic ${yookassaAuth()}`
             }
         });
 

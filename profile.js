@@ -20,7 +20,10 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const auth = getAuth(app);
 
-const BOT_TOKEN = '8527160088:AAGc2311QFkp6F7-Jx5k8MJfqlpvbueSl5E';
+//🔧ФИКС: жёсткий BOT_TOKEN вырезан — он лежал в открытом виде в клиентском JS
+// и был доступен любому пользователю. Теперь ключ приходит из окружения
+// (window.ENV_BOT_TOKEN), а если его нет — Telegram-уведомления просто не шлём.
+const BOT_TOKEN = window.ENV_BOT_TOKEN || "";
 const BOT_USERNAME = 'ProRankBot';
 const CLOUD_NAME = 'dbv7bfkgy';
 const UPLOAD_PRESET = 'prorank_avatars';
@@ -305,14 +308,14 @@ function updateLeagueDisplay(frs) {
 
 function getLeagueImagePath(leagueName) {
     const leagueMap = {
-        'БРОНЗОВАЯ': 'bronze.png',
-        'СЕРЕБРЯНАЯ': 'silver.png',
-        'ЗОЛОТАЯ': 'gold.png',
-        'АЛМАЗНАЯ': 'diamond.png',
-        'ЭЛИТНАЯ': 'elite.png',
-        'ЛЕГЕНДАРНАЯ': 'legendary.png'
+        'БРОНЗОВАЯ': 'bronze.webp',
+        'СЕРЕБРЯНАЯ': 'silver.webp',
+        'ЗОЛОТАЯ': 'gold.webp',
+        'АЛМАЗНАЯ': 'diamond.webp',
+        'ЭЛИТНАЯ': 'elite.webp',
+        'ЛЕГЕНДАРНАЯ': 'legendary.webp'
     };
-    return `./league-icons/${leagueMap[leagueName] || 'bronze.png'}`;
+    return `./league-icons/${leagueMap[leagueName] || 'bronze.webp'}`;
 }
 
 async function uploadAvatar(file, userId) {
@@ -469,7 +472,7 @@ async function loadAchievements() {
         let html = '';
         for (const ach of allAchievements) {
             const earned = earnedIds.has(ach.id);
-            const iconPath = `./achiev-icons/${ach.id}.png`;
+            const iconPath = `./achiev-icons/${ach.id}.webp`;
             
             let rewardHtml = '';
             if (ach.reward && ach.reward.amount) {
@@ -564,7 +567,9 @@ async function checkAndAwardAchievements(userId) {
                 isNegative: ach.isNegative || false
             });
             
-            if (user.telegramId) {
+            //🔧ФИКС: без заданного window.ENV_BOT_TOKEN Telegram-уведомление
+            // не отправляем — жёсткого ключа в коде больше нет.
+            if (user.telegramId && BOT_TOKEN) {
                 await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },

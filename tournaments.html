@@ -2,6 +2,15 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
+<!--🔧ФИКС: preconnect -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="dns-prefetch" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="dns-prefetch" href="https://fonts.gstatic.com">
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+    <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com">
+    <link rel="preconnect" href="https://www.gstatic.com" crossorigin>
+    <link rel="dns-prefetch" href="https://www.gstatic.com">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Турниры | PRORANK</title>
     <link rel="stylesheet" href="style.css">
@@ -696,6 +705,29 @@
         ];
 
         // ===== РЕНДЕР =====
+        // 🔧ФИКС (XSS): раньше данные из Firestore вставлялись в innerHTML «как есть»,
+        // поэтому имя турнира или ссылка на картинку могли внедрить чужой тег/атрибут
+        // (например src="x" onerror="..."). Теперь всё непроверенное экранируется.
+        function escapeHtml(value) {
+            if (value === null || value === undefined) return '';
+            return String(value)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
+        // 🔧ФИКС (XSS): в src допускаются только http(s) и относительные пути —
+        // javascript:, data: и попытки «закрыть» атрибут отбрасываются.
+        function safeImageUrl(url) {
+            if (!url) return '';
+            const raw = String(url).trim();
+            if (!/^(https?:\/\/|\/\/|\/|\.\/|\.\.\/)/i.test(raw)) return '';
+            return escapeHtml(raw);
+        }
+
+
         function renderSections() {
             const container = document.getElementById('sectionsContainer');
             const resultsCountEl = document.getElementById('resultsCount');
@@ -849,8 +881,11 @@
             }
 
             // Обложка
-            const coverHtml = t.imageUrl
-                ? `<div class="card-cover"><img src="${t.imageUrl}" alt="${t.name}" onerror="this.parentElement.classList.add('no-image'); this.outerHTML='<i class=\\'fas fa-trophy\\'></i>'"></div>`
+            //🔧ФИКС (XSS): URL картинки проходит через safeImageUrl(), имя — через
+            // escapeHtml(), поэтому «подставленная» ссылка не может вырваться из src.
+            const coverUrl = safeImageUrl(t.imageUrl);
+            const coverHtml = coverUrl
+                ? `<div class="card-cover"><img src="${coverUrl}" alt="${escapeHtml(t.name || 'Турнир')}" onerror="this.parentElement.classList.add('no-image'); this.outerHTML='<i class=\\'fas fa-trophy\\'></i>'"></div>`
                 : `<div class="card-cover no-image"><i class="fas fa-trophy"></i></div>`;
 
             // LIVE-бейдж
@@ -870,12 +905,13 @@
             }
 
             // Победитель
+            //🔧ФИКС (XSS): имя победителя экранируется перед вставкой в innerHTML.
             const winnerHtml = (t.status === 'completed' && t.winner) ? `
                 <div class="winner-badge">
                     <i class="fas fa-trophy"></i>
                     <div class="winner-text">
                         <div class="winner-label">Победитель</div>
-                        <div class="winner-name">${t.winner.name}</div>
+                        <div class="winner-name">${escapeHtml(t.winner.name)}</div>
                     </div>
                 </div>
             ` : '';
@@ -907,12 +943,12 @@
                         ${winnerHtml}
                     </div>
                     <div class="card-body">
-                        <div class="tournament-name">${t.name}</div>
-                        <div class="tournament-org"><i class="fas fa-building"></i> ${t.organizationName || 'Организатор'}</div>
+                        <div class="tournament-name">${escapeHtml(t.name)}</div>
+                        <div class="tournament-org"><i class="fas fa-building"></i> ${escapeHtml(t.organizationName || 'Организатор')}</div>
                         <div class="card-info">
                             <span><i class="fas fa-calendar-alt"></i> ${formatDate(t.date)}</span>
-                            <span><i class="fas fa-map-marker-alt"></i> ${t.city || '—'}</span>
-                            <span><i class="fas fa-fist-raised"></i> ${t.sport || '—'}</span>
+                            <span><i class="fas fa-map-marker-alt"></i> ${escapeHtml(t.city || '—')}</span>
+                            <span><i class="fas fa-fist-raised"></i> ${escapeHtml(t.sport || '—')}</span>
                         </div>
                         ${showProgress ? `
                             <div class="progress-bar">
