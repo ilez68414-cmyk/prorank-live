@@ -785,8 +785,12 @@
             if (!match) return 0;
             const duration = match.roundDuration || DEFAULT_ROUND_DURATION;
             const elapsed = match.liveElapsed || 0;
-            if (!match.isLive || !match.liveStartedAt) return Math.max(0, duration - elapsed);
-            const startedAt = parseTimestamp(match.liveStartedAt);
+            if (!match.isLive) return Math.max(0, duration - elapsed);
+            // 🔧 Приоритет — клиентская метка старта (Date.now() судьи). И панель,
+            // и табло считают от одного числа → идут синхронно без задержки сервера.
+            const startedAt = match.liveStartedAtClient
+                ? Number(match.liveStartedAtClient)
+                : parseTimestamp(match.liveStartedAt);
             if (!startedAt) return Math.max(0, duration - elapsed);
             const additional = Math.max(0, Math.floor((Date.now() - startedAt) / 1000));
             return Math.max(0, duration - elapsed - additional);
@@ -1481,7 +1485,10 @@
             isStartingPausing = true;
             try {
                 await updateDoc(doc(db, `tournaments/${tournamentId}/matches`, currentMatch.id), {
-                    isLive: true, liveStartedAt: serverTimestamp(), liveElapsed: currentMatch.liveElapsed || 0
+                    isLive: true,
+                    liveStartedAt: serverTimestamp(),
+                    liveStartedAtClient: Date.now(),
+                    liveElapsed: currentMatch.liveElapsed || 0
                 });
                 showToast('▶️ Бой начат', 'success');
             } catch (e) { showToast('Ошибка: ' + e.message, 'error'); }
@@ -1498,7 +1505,10 @@
                 const elapsedNow = currentMatch.liveElapsed || 0;
                 const additional = startedAt ? Math.max(0, Math.floor((Date.now() - startedAt) / 1000)) : 0;
                 await updateDoc(doc(db, `tournaments/${tournamentId}/matches`, currentMatch.id), {
-                    isLive: false, liveStartedAt: null, liveElapsed: elapsedNow + additional
+                    isLive: false,
+                    liveStartedAt: null,
+                    liveStartedAtClient: null,
+                    liveElapsed: elapsedNow + additional
                 });
                 showToast('⏸️ Пауза', 'info');
             } catch (e) { showToast('Ошибка: ' + e.message, 'error'); }
@@ -1512,7 +1522,10 @@
             if (!ok) return;
             try {
                 await updateDoc(doc(db, `tournaments/${tournamentId}/matches`, currentMatch.id), {
-                    isLive: false, liveStartedAt: null, liveElapsed: 0
+                    isLive: false,
+                    liveStartedAt: null,
+                    liveStartedAtClient: null,
+                    liveElapsed: 0
                 });
                 showToast('Сброшен', 'info');
             } catch (e) { showToast('Ошибка: ' + e.message, 'error'); }
@@ -2041,6 +2054,42 @@
                 el.classList.toggle('warning', remaining <= 10);
             });
         }, 1000);
+
+        // 🔧 ФИКС: резервный опрос боя на табло.
+        // Если WebChannel (onSnapshot) упал — табло всё равно получает свежие
+        // liveStartedAtClient / liveElapsed / score1 / score2 каждые 2 секунды
+        // и тикает синхронно с панелью судьи. Работает только на табло
+        // (display / display-ring), панель судьи не затрагивает.
+        setInterval(async () => {
+            if (currentMode !== 'display' && currentMode !== 'display-ring') return;
+            if (!tournamentId) return;
+            // Опрашиваем бой ЭТОГО табло: кандидата стола или бой из URL.
+            // Именно так ловится случай «канал упал до snapshot'а старта»,
+            // когда matches ещё не знает, что бой стал live.
+            const targets = [];
+            const addTarget = m => { if (m && m.id && !targets.some(t => t.id === m.id)) targets.push(m); };
+            if (currentMode === 'display-ring') {
+                const cand = pickActiveMatchForRing(displayRing);
+                if (cand && cand.status !== 'completed') addTarget(cand);
+            }
+            if (currentMode === 'display') addTarget(currentMatch);
+            if (!targets.length) return;
+            let applied = false;
+            for (const target of targets) {
+                try {
+                    const snap = await getDoc(doc(db, `tournaments/${tournamentId}/matches`, target.id));
+                    if (!snap.exists()) continue;
+                    const fresh = { id: snap.id, ...snap.data() };
+                    const idx = matches.findIndex(m => m.id === fresh.id);
+                    if (idx !== -1) matches[idx] = fresh;
+                    if (currentMode === 'display' && currentMatch && currentMatch.id === fresh.id) currentMatch = fresh;
+                    applied = true;
+                } catch (e) { /* тихо: резервный канал не должен шуметь */ }
+            }
+            if (!applied) return;
+            if (currentMode === 'display') renderDisplaySingleView();
+            else renderDisplayRingView();
+        }, 2000);
 
         window.addEventListener('beforeunload', () => {
             if (matchesUnsubscribe) matchesUnsubscribe();
