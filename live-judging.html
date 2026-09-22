@@ -781,6 +781,80 @@
             return 0;
         }
 
+        // ============================================================
+        // 🔧 МГНОВЕННАЯ СИНХРОНИЗАЦИЯ ПАНЕЛИ СУДЬИ И ТАБЛО (0 мс)
+        // ============================================================
+        // BroadcastChannel передаёт сообщения между ОКНАМИ ОДНОГО БРАУЗЕРА
+        // на одном устройстве (ноутбук + HDMI-монитор = два окна Chrome).
+        // Панель судьи после каждого успешного updateDoc мгновенно отдаёт
+        // состояние боя табло — без ожидания Firestore, задержка 0 мс.
+        //
+        // Между РАЗНЫМИ устройствами канал не работает: там синхронизацию
+        // продолжают обычный onSnapshot и резервный опрос (500 мс) ниже.
+        // Firestore-логика при этом не меняется.
+        const syncChannel = ('BroadcastChannel' in window) ? new BroadcastChannel('prorank_match_sync') : null;
+        let lastSyncBroadcastAt = 0;  // когда табло последний раз получило состояние от панели
+
+        function broadcastMatchUpdate(match, source = 'judge') {
+            if (!syncChannel || !match || !match.id) return;
+            try {
+                syncChannel.postMessage({
+                    type: 'match_update',
+                    source,
+                    matchId: match.id,
+                    payload: {
+                        isLive: match.isLive,
+                        liveStartedAt: match.liveStartedAt,
+                        liveStartedAtClient: match.liveStartedAtClient,
+                        liveElapsed: match.liveElapsed,
+                        score1: match.score1,
+                        score2: match.score2,
+                        status: match.status,
+                        winner: match.winner || null,
+                        finalScore: match.finalScore || null,
+                        winType: match.winType || null,
+                        comment: match.comment || null,
+                        judgeName: match.judgeName || null,
+                        judgeId: match.judgeId || null
+                    },
+                    at: Date.now()
+                });
+            } catch (e) { /* тихо */ }
+        }
+
+        // Применение присланного из панели состояния на табло (мгновенно)
+        function applyBroadcastMatchUpdate(matchId, upd) {
+            if (!matchId || !upd) return;
+            lastSyncBroadcastAt = Date.now();
+            const idx = matches.findIndex(m => m.id === matchId);
+            if (idx !== -1) matches[idx] = { ...matches[idx], ...upd };
+
+            if (currentMode === 'display') {
+                if (!currentMatch || currentMatch.id !== matchId) return;
+                const prevStatus = currentMatch.status;
+                currentMatch = { ...currentMatch, ...upd };
+                renderDisplaySingleView();
+                if (prevStatus !== 'completed' && currentMatch.status === 'completed') showWinnerOnDisplay();
+                return;
+            }
+
+            if (currentMode === 'display-ring') {
+                // Чужой стол игнорируем, чтобы не дёргать своё табло зря
+                if (idx === -1 || matches[idx].ringId !== displayRing) return;
+                renderDisplayRingView();  // pickActiveMatchForRing сам возьмёт live/следующий бой
+            }
+        }
+
+        if (syncChannel) {
+            syncChannel.onmessage = (e) => {
+                const data = e && e.data;
+                if (!data || data.type !== 'match_update') return;
+                if (data.source === 'display') return;      // не обрабатываем свои же
+                if (currentMode !== 'display' && currentMode !== 'display-ring') return;
+                applyBroadcastMatchUpdate(data.matchId, data.payload);
+            };
+        }
+
         function calculateRemaining(match) {
             if (!match) return 0;
             const duration = match.roundDuration || DEFAULT_ROUND_DURATION;
@@ -1327,14 +1401,19 @@
             if (m.judgeName && m.judgeName !== currentUserName) { showToast('Бой занят', 'error'); return; }
             if (!currentUserName) { showToast('Введите имя', 'error'); return; }
             try {
+                const takenAt = new Date().toISOString();
                 await updateDoc(doc(db, `tournaments/${tournamentId}/matches`, mid), {
                     judgeId: 'judge_' + currentUserName,
                     judgeName: currentUserName,
-                    judgeTakenAt: new Date().toISOString()
+                    judgeTakenAt: takenAt
                 });
                 autocloseCancelled = false;
                 stopAutocloseCountdown();
                 await loadMatchById(mid);
+                // 🔧 Мгновенная синхронизация: табло стола сразу видит, что бой взят
+                const takenIdx = matches.findIndex(x => x.id === mid);
+                if (takenIdx !== -1 && currentMatch) matches[takenIdx] = { ...matches[takenIdx], ...currentMatch };
+                if (currentMatch) broadcastMatchUpdate(currentMatch, 'judge');
                 showJudgeView();
                 showToast('✅ Бой взят', 'success');
             } catch (e) { showToast('Ошибка: ' + e.message, 'error'); }
@@ -1366,6 +1445,12 @@
             if (!ok) return;
             try {
                 await updateDoc(doc(db, `tournaments/${tournamentId}/matches`, mid), { judgeId: null, judgeName: null, judgeTakenAt: null });
+                // 🔧 Мгновенная синхронизация: табло стола сразу видит освобождение
+                const relIdx = matches.findIndex(x => x.id === mid);
+                if (relIdx !== -1) matches[relIdx] = { ...matches[relIdx], judgeId: null, judgeName: null, judgeTakenAt: null };
+                if (currentMatch && currentMatch.id === mid) Object.assign(currentMatch, { judgeId: null, judgeName: null, judgeTakenAt: null });
+                const relTarget = relIdx !== -1 ? matches[relIdx] : (currentMatch && currentMatch.id === mid ? currentMatch : null);
+                if (relTarget) broadcastMatchUpdate(relTarget, 'judge');
                 showToast('Бой освобождён', 'info');
             } catch (e) { showToast('Ошибка', 'error'); }
         };
@@ -1484,12 +1569,17 @@
             if (currentMatch.isLive) return showToast('Бой уже идёт', 'info');
             isStartingPausing = true;
             try {
+                const clientStamp = Date.now();
                 await updateDoc(doc(db, `tournaments/${tournamentId}/matches`, currentMatch.id), {
                     isLive: true,
                     liveStartedAt: serverTimestamp(),
-                    liveStartedAtClient: Date.now(),
+                    liveStartedAtClient: clientStamp,
                     liveElapsed: currentMatch.liveElapsed || 0
                 });
+                // 🔧 Мгновенно применяем локально и отдаём табло по BroadcastChannel
+                currentMatch.isLive = true;
+                currentMatch.liveStartedAtClient = clientStamp;
+                broadcastMatchUpdate(currentMatch, 'judge');
                 showToast('▶️ Бой начат', 'success');
             } catch (e) { showToast('Ошибка: ' + e.message, 'error'); }
             finally { isStartingPausing = false; }
@@ -1504,12 +1594,19 @@
                 const startedAt = parseTimestamp(currentMatch.liveStartedAt);
                 const elapsedNow = currentMatch.liveElapsed || 0;
                 const additional = startedAt ? Math.max(0, Math.floor((Date.now() - startedAt) / 1000)) : 0;
+                const pausedElapsed = elapsedNow + additional;
                 await updateDoc(doc(db, `tournaments/${tournamentId}/matches`, currentMatch.id), {
                     isLive: false,
                     liveStartedAt: null,
                     liveStartedAtClient: null,
-                    liveElapsed: elapsedNow + additional
+                    liveElapsed: pausedElapsed
                 });
+                // 🔧 Мгновенно применяем локально и отдаём табло по BroadcastChannel
+                currentMatch.isLive = false;
+                currentMatch.liveStartedAt = null;
+                currentMatch.liveStartedAtClient = null;
+                currentMatch.liveElapsed = pausedElapsed;
+                broadcastMatchUpdate(currentMatch, 'judge');
                 showToast('⏸️ Пауза', 'info');
             } catch (e) { showToast('Ошибка: ' + e.message, 'error'); }
             finally { isStartingPausing = false; }
@@ -1527,6 +1624,12 @@
                     liveStartedAtClient: null,
                     liveElapsed: 0
                 });
+                // 🔧 Мгновенно применяем локально и отдаём табло по BroadcastChannel
+                currentMatch.isLive = false;
+                currentMatch.liveStartedAt = null;
+                currentMatch.liveStartedAtClient = null;
+                currentMatch.liveElapsed = 0;
+                broadcastMatchUpdate(currentMatch, 'judge');
                 showToast('Сброшен', 'info');
             } catch (e) { showToast('Ошибка: ' + e.message, 'error'); }
         };
@@ -1548,6 +1651,10 @@
                 await updateDoc(doc(db, `tournaments/${tournamentId}/matches`, currentMatch.id), {
                     [field]: increment(delta), scoreHistory: trimmed
                 });
+                // 🔧 Мгновенно применяем локально и отдаём табло по BroadcastChannel
+                currentMatch[field] = newScore;
+                currentMatch.scoreHistory = trimmed;
+                broadcastMatchUpdate(currentMatch, 'judge');
             } catch (e) { showToast('Ошибка', 'error'); }
         };
 
@@ -1562,6 +1669,10 @@
                 await updateDoc(doc(db, `tournaments/${tournamentId}/matches`, currentMatch.id), {
                     [field]: last.prevScore, scoreHistory: newHistory
                 });
+                // 🔧 Мгновенно применяем локально и отдаём табло по BroadcastChannel
+                currentMatch[field] = last.prevScore;
+                currentMatch.scoreHistory = newHistory;
+                broadcastMatchUpdate(currentMatch, 'judge');
                 showToast(`Отменено`, 'info');
             } catch (e) { showToast('Ошибка', 'error'); }
         };
@@ -1687,6 +1798,20 @@
                         finalScore
                     });
                 });
+
+                // 🔧 Мгновенная синхронизация: табло показывает финиш и победителя сразу
+                currentMatch.winner = { id: winnerData.id, name: winnerData.name };
+                currentMatch.winType = winType;
+                currentMatch.comment = comment || null;
+                currentMatch.status = 'completed';
+                currentMatch.isLive = false;
+                currentMatch.liveStartedAt = null;
+                currentMatch.liveStartedAtClient = null;
+                currentMatch.finalScore = currentMatch.finalScore || {
+                    score1: currentMatch.score1 || 0,
+                    score2: currentMatch.score2 || 0
+                };
+                broadcastMatchUpdate(currentMatch, 'judge');
 
                 closeModal('finishModal');
                 const typeText = winType === 'decision' ? 'решением' : (winType === 'ko' ? 'нокаутом' : 'сабмишном');
@@ -2057,9 +2182,12 @@
 
         // 🔧 ФИКС: резервный опрос боя на табло.
         // Если WebChannel (onSnapshot) упал — табло всё равно получает свежие
-        // liveStartedAtClient / liveElapsed / score1 / score2 каждые 2 секунды
+        // liveStartedAtClient / liveElapsed / score1 / score2 каждые 0.5 секунды
         // и тикает синхронно с панелью судьи. Работает только на табло
         // (display / display-ring), панель судьи не затрагивает.
+        // Основной канал синхронизации внутри одного браузера — BroadcastChannel
+        // (0 мс, см. broadcastMatchUpdate выше); этот опрос нужен, когда панель
+        // и табло находятся на РАЗНЫХ устройствах.
         setInterval(async () => {
             if (currentMode !== 'display' && currentMode !== 'display-ring') return;
             if (!tournamentId) return;
@@ -2075,10 +2203,13 @@
             if (currentMode === 'display') addTarget(currentMatch);
             if (!targets.length) return;
             let applied = false;
+            const reqStart = Date.now();
             for (const target of targets) {
                 try {
                     const snap = await getDoc(doc(db, `tournaments/${tournamentId}/matches`, target.id));
                     if (!snap.exists()) continue;
+                    // Пока шёл getDoc, панель прислала более свежее состояние — не откатываем его
+                    if (lastSyncBroadcastAt > reqStart) break;
                     const fresh = { id: snap.id, ...snap.data() };
                     const idx = matches.findIndex(m => m.id === fresh.id);
                     if (idx !== -1) matches[idx] = fresh;
@@ -2089,7 +2220,7 @@
             if (!applied) return;
             if (currentMode === 'display') renderDisplaySingleView();
             else renderDisplayRingView();
-        }, 2000);
+        }, 500);
 
         window.addEventListener('beforeunload', () => {
             if (matchesUnsubscribe) matchesUnsubscribe();
@@ -2098,6 +2229,7 @@
             stopTimerInterval();
             stopAutocloseCountdown();
             if (winnerDisplayTimer) clearTimeout(winnerDisplayTimer);
+            if (syncChannel) syncChannel.close();
         });
 
         // ============================================================
