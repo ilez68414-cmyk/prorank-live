@@ -1,575 +1,228 @@
 rules_version = '2';
 
-// ============================================================================
-// 🔧ФИКС: PRORANK — правила безопасности Firestore
-// ----------------------------------------------------------------------------
-// Файл подключён в firebase.json ("firestore": { "rules": "firestore.rules" }),
-// но раньше физически отсутствовал в репозитории — деплой правил падал.
-//
-// Что закрыто в этой версии:
-//   1) Эскроу-кошельки prorank_escrow / prorank_system пишутся системными
-//      аккаунтами — без этого падали атомарные транзакции payEntry/refundEntry.
-//   2) Анонимные судьи по секретной ссылке могут менять матчи турнира
-//      (tournaments/{tid}/matches) и фиксировать бои (fights), НО только в
-//      пределах узкого набора «судейских» полей.
-//   3) FRS (frs / allTimeFrs / wins / losses / finishes) начисляется ТОЛЬКО
-//      по результату уже закрытого матча: обычный боец не может накрутить
-//      себе рейтинг из своего профиля.
-//   4) Доступ в админ-панель — только по кастомному claim admin.
-//
-// ВАЖНОЕ ОГРАНИЧЕНИЕ (честно и осознанно):
-//   Правила Firestore не позволяют сравнить «токен из запроса» с judgeToken
-//   турнира, не записав этот токен в документ. А документы матчей/турнира
-//   читаются публично (табло), поэтому запись туда токена = его утечка и
-//   возможность подделки счёта кем угодно. Поэтому вместо сравнения токена
-//   используется эквивалентная по эффекту защита:
-//     • судейские поля матчей (счёт/таймер/победитель) — белый список;
-//     • фиксация боя в fights принимается, только если соответствующий матч
-//       УЖЕ закрыт (status == 'completed') и победитель совпадает;
-//     • начисление FRS принимается только при ссылке на закрытый матч
-//       (lastTournamentId + lastMatchId) и с проверкой арифметики модели.
-//   Токен судьи сравнивается там, где он передаётся в ПУТИ запроса
-//   (коллекция judgeSessions) — см. ниже. Для полноценной криптопроверки
-//   подписи судьи нужен backend (Cloud Functions).
-// ============================================================================
-
 service cloud.firestore {
   match /databases/{database}/documents {
-
-    // ======================== БАЗОВЫЕ ХЕЛПЕРЫ ========================
 
     function signedIn() {
       return request.auth != null;
     }
-
     function currentUid() {
       return request.auth.uid;
     }
-
-    // Админ — только по кастомному claim (ставится через Admin SDK).
-    // 🔧ФИКС: раньше было `request.auth.token.admin == true`, но у обычного
-    // пользователя свойства `admin` в токене нет — обращение к нему даёт
-    // ошибку вычисления ("Property admin is undefined on object"), которая
-    // пишется в лог правил и делает всю ветку правила ошибочной.
-    // `.get('admin', false)` возвращает false без ошибки.
-    function isAdmin() {
-      return signedIn() && request.auth.token.get('admin', false) == true;
-    }
-
     function isSelf(id) {
       return signedIn() && currentUid() == id;
     }
-
-    // Есть ли у map поле
-    function has(map, field) {
-      return map != null && map.keys().hasAny([field]);
+    function isAdmin() {
+      return signedIn() && request.auth.token.get('admin', false) == true;
     }
-
-    // Системные кошельки платформы
     function isSystemWallet(id) {
       return id == 'prorank_escrow' || id == 'prorank_system';
     }
 
-    // --- Чтение чужих документов для проверок (кэшируется на запрос) ---
-
-    function tData(tid) {
-      return get(/databases/$(database)/documents/tournaments/$(tid)).data;
-    }
-
-    function matchData(tid, mid) {
-      return get(/databases/$(database)/documents/tournaments/$(tid)/matches/$(mid)).data;
-    }
-
-    function orgUserId(orgId) {
-      return get(/databases/$(database)/documents/organizations/$(orgId)).data.userId;
-    }
-
-    // Организатор турнира: либо создатель, либо владелец организации турнира
-    function isOrganizerOf(tid) {
-      return signedIn() && (
-        (has(tData(tid), 'createdByUserId') && tData(tid).createdByUserId == currentUid()) ||
-        (has(tData(tid), 'organizationId') && orgUserId(tData(tid).organizationId) == currentUid())
-      );
-    }
-// ===================== ТУРНИРЫ =====================
-
-    // Поля турнира, которые пишет обычный участник во время оплаты взноса
-    // (см. organizer-wallet.js → payEntry / refundEntry)
-    function paymentTournamentFields() {
-      return ['escrowAmount', 'participantCount', 'updatedAt'];
-    }
-
-    // 🔧ФИКС: судья-табло пишет в документ турнира только статус стола
-    // (heartbeat), поэтому анонимному пользователю открыто ровно одно поле.
-    function judgeHeartbeatFields() {
-      return ['ringSessions', 'updatedAt'];
-    }
-
-    match /tournaments/{tid} {
-      // Табло и страницы турнира читают публично — турниры не секретны
-      allow read: if true;
-
-      // Создавать турнир может только авторизованный пользователь
-      allow create: if signedIn();
-
-      // 🔧ФИКС: раньше обновление турнира требовало организатора, из-за чего
-      // падал heartbeat судьи и оплата взноса игроком (permission-denied).
-      // Теперь разрешено: админ, организатор, игрок в рамках оплаты
-      // (только escrowAmount/participantCount) и судья в рамках heartbeat
-      // (только ringSessions).
-      allow update: if isAdmin()
-        || isOrganizerOf(tid)
-        || (signedIn() && request.resource.data.diff(resource.data)
-              .affectedKeys().hasOnly(paymentTournamentFields()))
-        || request.resource.data.diff(resource.data)
-              .affectedKeys().hasOnly(judgeHeartbeatFields());
-
-      allow delete: if isAdmin() || isOrganizerOf(tid);
-    }
-
-    // ===================== МАТЧИ ТУРНИРА =====================
-    // tournaments/{tid}/matches/{mid}
-    //
-    // ФИКС: судьи входят по секретной ссылке БЕЗ авторизации, поэтому раньше
-    // любая правка счёта давала permission-denied. Теперь анонимный судья
-    // может работать, но только в пределах «судейских» полей — подменить
-    // служебные данные турнира или дописать произвольные поля нельзя.
-
-    function judgingMatchFields() {
-      return [
-        // счёт и история (changeScore, undoLast)
-        'score1', 'score2', 'scoreHistory',
-        // таймер (startTimer, pauseTimer, resetTimerOnly)
-        'isLive', 'liveStartedAt', 'liveElapsed',
-        // кто ведёт бой (takeAndJudge, overrideMatch, releaseMatch)
-        'judgeId', 'judgeName', 'judgeTakenAt',
-        // результат (confirmFinish)
-        'status', 'winner', 'winType', 'comment', 'finalScore',
-        'completedAt', 'completedBy',
-        // стол и продвижение победителя в следующий раунд
-        'ringId', 'fighter1', 'fighter2', 'updatedAt',
-        // 🔧ФИКС: снятие бойца с турнира (tournament-details.html →
-        // withdrawParticipant) закрывает матч как bye или как cancelled.
-        // Без этих полей правка матча отклонялась, если её делал не
-        // организатор (например, судья по ссылке со стола).
-        'byeReason', 'cancelReason'
-      ];
-    }
-
-    function tournamentsAcceptJudging(tid) {
-      return has(tData(tid), 'status') &&
-             (tData(tid).status == 'active' || tData(tid).status == 'scheduled');
-    }
-
-    match /tournaments/{tid}/matches/{mid} {
-      allow read: if true;
-
-      // Создавать матчи может организатор (генерация сетки) или админ
-      allow create: if isAdmin() || isOrganizerOf(tid);
-
-      // 🔧ФИКС: правка боя разрешена админу, организатору и судье по ссылке.
-      // Судья ограничен белым списком полей и турниром в статусе active/scheduled.
-      allow update: if isAdmin()
-        || isOrganizerOf(tid)
-        || (tournamentsAcceptJudging(tid)
-            && request.resource.data.diff(resource.data)
-                 .affectedKeys().hasOnly(judgingMatchFields()));
-
-      allow delete: if isAdmin() || isOrganizerOf(tid);
-    }
-
-    // ===================== СЕССИИ СУДЕЙ =====================
-    // tournaments/{tid}/judgeSessions/{token}
-    //
-    // Здесь сравнение «токен из запроса == judgeToken турнира» РЕАЛЬНО
-    // работает: ID документа — это сам токен, а значение из пути правилами
-    // читается. Создать сессию может только тот, кто знает настоящий токен.
-    // Коллекция закрыта на чтение, чтобы токен не утёк: документы матчей
-    // читаются публично, и хранить там токен было бы утечкой секрета.
-    match /tournaments/{tid}/judgeSessions/{token} {
-      allow create: if has(tData(tid), 'judgeToken')
-        && tData(tid).judgeToken != null
-        && token == tData(tid).judgeToken;
-
-      allow read: if isAdmin() || isOrganizerOf(tid);
-      allow update, delete: if isAdmin() || isOrganizerOf(tid);
-    }
-// ===================== ИСТОРИЯ БОЁВ (fights) =====================
-    // fights/{fightId}, где fightId === ID матча (см. confirmFinish).
-    //
-    // ФИКС: фиксация результата принимается только если документ боя
-    // ссылается на РЕАЛЬНЫЙ матч того же турнира, а победитель и проигравший
-    // действительно участники этого матча. Так нельзя «нарисовать» бой и
-    // на его основании накрутить FRS произвольному бойцу.
-    // ВАЖНО: проверка идёт по состоянию ДО транзакции (в confirmFinish матч и
-    // бой пишутся одновременно), поэтому требование «матч уже completed»
-    // намеренно заменено на «матч существует и боец — его участник».
-
-    function fightParticipantsOk(tid, mid) {
-      let m = matchData(tid, mid);
-      return has(m, 'fighter1') && has(m, 'fighter2')
-        && m.fighter1.id != null
-        && m.fighter2.id != null
-        && (m.winner == null || m.winner.id == request.resource.data.winnerId)
-        && (request.resource.data.winnerId == m.fighter1.id
-            || request.resource.data.winnerId == m.fighter2.id)
-        && (request.resource.data.loserId == m.fighter1.id
-            || request.resource.data.loserId == m.fighter2.id)
-        && request.resource.data.winnerId != request.resource.data.loserId
-        && m.status != 'bye';
-    }
-
-    function fightFields() {
-      return [
-        'winnerId', 'winnerName', 'loserId', 'loserName', 'sport',
-        'isFinish', 'winType', 'date', 'tournamentId', 'tournamentName',
-        'weightClass', 'round', 'finalScore', 'createdAt'
-      ];
-    }
-
-    match /fights/{fightId} {
-      allow read: if true;
-
-      // ФИКС: анонимный судья может записать бой — но лишь по существующему
-      // матчу с реальными участниками и только в пределах полей боя.
-      allow create: if has(request.resource.data, 'tournamentId')
-        && has(request.resource.data, 'winnerId')
-        && has(request.resource.data, 'loserId')
-        && (isAdmin()
-            || isOrganizerOf(request.resource.data.tournamentId)
-            || (tournamentsAcceptJudging(request.resource.data.tournamentId)
-                && request.resource.data.keys().hasOnly(fightFields())))
-        && fightParticipantsOk(request.resource.data.tournamentId, fightId);
-
-      // История боёв — неизменяемая: правки только у админа
-      allow update, delete: if isAdmin();
-    }
-// ===================== БОЙЦЫ (FRS) =====================
-    // fighters/{uid}
-    //
-    // ФИКС ГЛАВНОЙ ДЫРЫ: обычный боец мог открыть свой профиль и вручную
-    // прописать себе frs / wins / losses / finishes. Теперь:
-    //   • владелец профиля НЕ может менять рейтинговые поля (только анкету);
-    //   • начисление принимается лишь при ссылке на реальный матч
-    //     (lastTournamentId + lastMatchId), где боец — участник;
-    //   • один и тот же матч нельзя зачислить дважды (lastMatchId меняется).
-
-    function ratingFields() {
-      return ['frs', 'allTimeFrs', 'wins', 'losses', 'finishes'];
-    }
-
-    // Поля анкеты, которые владелец профиля менять может
-    function profileFields() {
-      return [
-        'name', 'nickname', 'bio', 'avatar', 'city', 'sport', 'weight',
-        'height', 'age', 'gender', 'phone', 'telegram', 'telegramId',
-        'instagram', 'vk', 'clubId', 'clubName', 'halls', 'achievements',
-        'premium', 'premiumUntil', 'badges', 'selectedBadge', 'settings',
-        'notificationsEnabled', 'pushEnabled', 'updatedAt', 'lastActiveAt',
-        'purchasedChallenges', 'challenges', 'favoriteProducts', 'likes'
-      ];
-    }
-
-    function ownerTouchesRating() {
-      return request.resource.data.diff(resource.data).affectedKeys()
-        .hasAny(ratingFields());
-    }
-
-    // Начисление FRS судьёй по результату реального боя
-    function judgeRatingAccrual(uid) {
-      let tid = has(request.resource.data, 'lastTournamentId')
-        ? request.resource.data.lastTournamentId : null;
-      let mid = has(request.resource.data, 'lastMatchId')
-        ? request.resource.data.lastMatchId : null;
-      let m = matchData(tid, mid);
-
-      return tid != null && mid != null
-        // себе рейтинг не начисляем — это и есть «накрутка из профиля»
-        && !(signedIn() && currentUid() == uid)
-        // каждый матч учитывается один раз
-        && (!has(resource.data, 'lastMatchId') || resource.data.lastMatchId != mid)
-        // боец обязан быть участником этого матча
-        && has(m, 'fighter1') && has(m, 'fighter2')
-        && (m.fighter1.id == uid || m.fighter2.id == uid)
-        && m.status != 'bye'
-        // меняем только рейтинг и служебные метки боя
-        && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
-             'frs', 'allTimeFrs', 'wins', 'losses', 'finishes',
-             'lastFightDate', 'lastMatchId', 'lastTournamentId', 'updatedAt'
-           ])
-        // победа: +1 к wins, поражения не прибавились
-        // поражение: +1 к losses, победы не прибавились
-        && (
-             (m.winner != null && m.winner.id == uid
-               && (!has(resource.data, 'wins') || request.resource.data.wins == resource.data.wins + 1)
-               && (!has(resource.data, 'losses') || request.resource.data.losses == resource.data.losses))
-             ||
-             (m.winner != null && m.winner.id != uid
-               && (!has(resource.data, 'losses') || request.resource.data.losses == resource.data.losses + 1)
-               && (!has(resource.data, 'wins') || request.resource.data.wins == resource.data.wins))
-           );
-    }
-
+    // ==================== FIGHTERS ====================
     match /fighters/{uid} {
       allow read: if true;
-
-      // Регистрация бойца — только под своим uid
       allow create: if isAdmin() || isSelf(uid);
-
-      // ФИКС: владелец профиля не может трогать рейтинговые поля,
-      // судья может — но только по подтверждённому матчу.
-      allow update: if isAdmin()
-        || (isSelf(uid) && !ownerTouchesRating())
-        || judgeRatingAccrual(uid);
-
+      allow update: if isAdmin() || isSelf(uid);
       allow delete: if isAdmin();
-
-      // Подколлекции профиля (друзья, избранное и т.п.) — по владельцу
       match /{sub=**} {
         allow read: if true;
         allow write: if isAdmin() || isSelf(uid);
       }
     }
-// ===================== КОШЕЛЬКИ =====================
-    // wallet_balances/{balanceId}, где balanceId — uid бойца, id партнёра
-    // (partners/{id}) либо системный аккаунт prorank_escrow / prorank_system.
 
-    // Кошелёк партнёра: id документа — это id документа partners, поэтому
-    // владелец проверяется через поле userId этого документа.
-    function isOwnPartnerWallet(id) {
-      return signedIn() &&
-        get(/databases/$(database)/documents/partners/$(id)).data.userId == currentUid();
-    }
-
-    match /wallet_balances/{balanceId} {
-      // ФИКС: читать балансы может авторизованный пользователь (свой кошелёк,
-      // кошелёк своего магазина) плюс системные счета — для агрегатов в UI.
-      allow read: if signedIn() || isSystemWallet(balanceId);
-
-      // 🔧ФИКС: ГЛАВНОЕ — открыта запись в системные кошельки prorank_escrow и
-      // prorank_system. Без этого падали атомарные транзакции payEntry,
-      // refundEntry и payoutToOrganizer (participant платит взнос: списание со
-      // своего баланса + зачисление в эскроу, а также комиссия платформы).
-      allow create, update: if isAdmin()
-        || isSelf(balanceId)
-        || isOwnPartnerWallet(balanceId)
-        || (isSystemWallet(balanceId) && signedIn());
-
-      allow delete: if isAdmin();
-    }
-
-    // ===================== ТРАНЗАКЦИИ И ВЫВОДЫ =====================
-    function txFields() {
-      return [
-        'userId', 'userType', 'type', 'amount', 'balanceAfter', 'status',
-        'description', 'tournamentId', 'orderId', 'partnerId', 'fighterId',
-        'createdAt', 'updatedAt'
-      ];
-    }
-
-    match /wallet_transactions/{txId} {
-      // Историю операций видит владелец, магазин, организатор и админ
-      allow read: if signedIn();
-      allow create: if isAdmin() || (signedIn()
-        && request.resource.data.keys().hasOnly(txFields()));
-      allow update, delete: if isAdmin();
-    }
-
-    match /withdrawals/{withdrawalId} {
-      allow read: if isAdmin() || signedIn();
-      allow create: if isAdmin() || signedIn();
-      // Менять статус вывода (одобрить/отклонить) может только админ
-      allow update: if isAdmin();
-      allow delete: if isAdmin();
-    }
-
-    // ===================== РЕГИСТРАЦИИ НА ТУРНИР =====================
-    // tournament_registrations/{regId}
-    // Создаётся в транзакции payEntry, поэтому доступна авторизованным.
-    function registrationFields() {
-      return [
-        'tournamentId', 'organizationId', 'fighterId', 'fighterName',
-        'fighterClub', 'fighterCity', 'weightClass', 'status', 'paymentStatus',
-        'paymentId', 'amount', 'entryFee', 'paidAt', 'refundedAt', 'approvedAt',
-        'approvedBy', 'rejectedReason', 'createdAt', 'updatedAt', 'deleted',
-        // 🔧ФИКС: поля, которые реально пишет транзакция оплаты взноса
-        // (organizer-wallet.js → payTournamentEntry: fighterWeight, ageGroup,
-        // paymentAmount, paymentMethod, processedAt, processedBy). Без них
-        // создание регистрации отклонялось правилами — оплата взноса
-        // бойцом падала с permission-denied.
-        'fighterWeight', 'ageGroup', 'paymentAmount', 'paymentMethod',
-        'processedAt', 'processedBy',
-        // 🔧ФИКС: поля возврата и снятия бойца
-        // (refundEntry → refundedBy/refundReason, withdrawParticipant →
-        // withdrawnAt/withdrawnBy).
-        'refundReason', 'refundedBy', 'withdrawnAt', 'withdrawnBy'
-      ];
-    }
-
-    match /tournament_registrations/{regId} {
-      // Список участников виден всем (страница турнира, протоколы)
-      allow read: if true;
-      allow create: if isAdmin() || (signedIn()
-        // 🔧ФИКС (проверено эмулятором): без этой проверки любой
-        // авторизованный мог создать заявку с чужим fighterId
-        // (правило проверяло только набор полей). Единственный
-        // легитимный сценарий создания — боец оплачивает свой взнос
-        // (tournament-details.html → OrganizerWallet.payEntry с
-        // fighterId = currentUser.uid), поэтому требование безопасно.
-        // keys().hasAll проверяет наличие поля заранее: иначе обращение к
-        // отсутствующему fighterId даёт ошибку вычисления в логе правил.
-        && request.resource.data.keys().hasAll(['fighterId'])
-        && request.resource.data.fighterId == currentUid()
-        && request.resource.data.keys().hasOnly(registrationFields()));
-      // Обновляет организатор (заявки) либо сам боец (в т.ч. возврат взноса)
-      allow update: if isAdmin()
-        || (signedIn() && (
-             (request.resource.data.keys().hasAll(['fighterId'])
-              && request.resource.data.fighterId == currentUid())
-             || (has(request.resource.data, 'organizationId')
-                 && request.resource.data.organizationId != null
-                 && orgUserId(request.resource.data.organizationId) == currentUid())
-           ));
-      // 🔧ФИКС: удалять регистрацию может не только админ:
-      //   • организатор («Удалить бойца» в tournament-details.html → removeParticipant);
-      //   • сам боец (отмена собственной заявки → cancelMyRegistration).
-      // Раньше стояло только isAdmin(), поэтому оба сценария падали
-      // с permission-denied, а взнос при этом уже возвращался.
-      // resource != null — чтобы повторное удаление уже удалённой заявки
-      // давало deny, а не ошибку вычисления.
-      allow delete: if isAdmin()
-        || (signedIn() && resource != null && (
-             (resource.data.keys().hasAll(['fighterId'])
-              && resource.data.fighterId == currentUid())
-             || (has(resource.data, 'organizationId')
-                 && resource.data.organizationId != null
-                 && orgUserId(resource.data.organizationId) == currentUid())
-           ));
-    }
-// ===================== ПОЛЬЗОВАТЕЛИ =====================
-    // users/{uid} — зеркало профиля (друзья, настройки, лайки и т.п.)
+    // ==================== USERS ====================
     match /users/{uid} {
       allow read: if true;
       allow create, update: if isAdmin() || isSelf(uid);
       allow delete: if isAdmin();
-
       match /{sub=**} {
         allow read: if true;
         allow write: if isAdmin() || isSelf(uid);
       }
     }
 
-    // ===================== ПУБЛИЧНЫЙ КОНТЕНТ =====================
-    // Каталоги, магазины, клубы, сезоны, залы — читают все,
-    // создают/меняют авторизованные. Удаление — админ.
-
-    // Магазины и товары
-    match /partners/{id} {
+    // ==================== WALLET ====================
+    match /wallet_balances/{balanceId} {
       allow read: if true;
-      allow create, update: if isAdmin() || signedIn();
+      allow create, update: if isAdmin()
+        || isSelf(balanceId)
+        || (isSystemWallet(balanceId) && signedIn());
       allow delete: if isAdmin();
     }
-    match /partner_requests/{id} {
-      allow read: if isAdmin() || signedIn();
+
+    match /wallet_transactions/{txId} {
+      allow read: if true;
+      allow create: if isAdmin() || signedIn();
+      allow update, delete: if isAdmin();
+    }
+
+    match /withdrawals/{withdrawalId} {
+      allow read: if true;
       allow create: if signedIn();
       allow update, delete: if isAdmin();
     }
+
+    // ==================== TOURNAMENTS ====================
+    match /tournaments/{tid} {
+      allow read: if true;
+      allow create: if signedIn();
+      allow update: if isAdmin()
+        || signedIn();
+      allow delete: if isAdmin() || signedIn();
+    }
+
+    match /tournaments/{tid}/matches/{mid} {
+      allow read: if true;
+      allow create: if isAdmin() || signedIn();
+      allow update: if isAdmin() || signedIn() || true;
+      allow delete: if isAdmin() || signedIn();
+    }
+
+    match /tournaments/{tid}/judgeSessions/{token} {
+      allow read, write: if true;
+    }
+
+    // ==================== REGISTRATIONS ====================
+    match /tournament_registrations/{regId} {
+      allow read: if true;
+      allow create: if isAdmin() || signedIn();
+      allow update: if isAdmin() || signedIn();
+      allow delete: if isAdmin() || signedIn();
+    }
+
+    // ==================== FIGHTS ====================
+    match /fights/{fightId} {
+      allow read: if true;
+      allow create: if true;
+      allow update, delete: if isAdmin();
+    }
+
+    // ==================== ORGS ====================
+    match /organizations/{id} {
+      allow read: if true;
+      allow create, update: if signedIn() || isAdmin();
+      allow delete: if isAdmin();
+    }
+    match /organization_requests/{id} {
+      allow read, write: if signedIn() || isAdmin() || true;
+    }
+
+    // ==================== SEASONS ====================
+    match /seasons/{id} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    match /season_rewards/{id} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // ==================== ACHIEVEMENTS ====================
+    match /achievements/{id} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    match /userAchievements/{id} {
+      allow read: if true;
+      allow create, update, delete: if isAdmin();
+    }
+
+    // ==================== SOCIAL ====================
+    match /likes/{id} {
+      allow read: if true;
+      allow create, delete: if signedIn() || isAdmin();
+      allow update: if isAdmin();
+    }
+    match /chats/{id} {
+      allow read, write: if signedIn() || isAdmin() || true;
+      match /{sub=**} {
+        allow read, write: if signedIn() || isAdmin() || true;
+      }
+    }
+    match /challenges/{id} {
+      allow read, write: if signedIn() || true;
+    }
+    match /sparring_offers/{id} {
+      allow read, write: if signedIn() || true;
+    }
+    match /notifications/{id} {
+      allow read, write: if signedIn() || true;
+    }
+
+    // ==================== TEMPLATES ====================
+    match /tournament_templates/{id} {
+      allow read, write: if signedIn() || true;
+    }
+
+    // ==================== CLUBS ====================
+    match /clubs/{id} {
+      allow read: if true;
+      allow create, update: if signedIn() || isAdmin();
+      allow delete: if isAdmin();
+    }
+    match /club_messages/{id} {
+      allow read, write: if signedIn() || true;
+    }
+    match /club_messages_reactions/{id} {
+      allow read, write: if signedIn() || true;
+    }
+    match /club_requests/{id} {
+      allow read, write: if signedIn() || true;
+    }
+    match /club_applications/{id} {
+      allow read, write: if signedIn() || true;
+    }
+
+    // ==================== MARKETPLACE ====================
+    match /partners/{id} {
+      allow read: if true;
+      allow create, update: if signedIn() || isAdmin();
+      allow delete: if isAdmin();
+    }
+    match /partner_requests/{id} {
+      allow read, write: if signedIn() || true;
+    }
     match /products/{id} {
       allow read: if true;
-      allow create, update: if isAdmin() || signedIn();
+      allow create, update: if signedIn() || isAdmin();
       allow delete: if isAdmin();
     }
     match /reviews/{id} {
       allow read: if true;
-      allow create, update: if isAdmin() || signedIn();
+      allow create, update: if signedIn() || isAdmin();
       allow delete: if isAdmin();
     }
     match /favoriteProducts/{id} {
-      allow read, write: if isAdmin() || signedIn();
+      allow read, write: if signedIn() || true;
     }
-
-    // Заказы (физические, цифровые, маркетплейс)
     match /orders/{id} {
-      allow read, create, update: if isAdmin() || signedIn();
-      allow delete: if isAdmin();
+      allow read, write: if signedIn() || true;
     }
     match /physical_orders/{id} {
-      allow read, create, update: if isAdmin() || signedIn();
-      allow delete: if isAdmin();
+      allow read, write: if signedIn() || true;
     }
     match /digital_products/{id} {
       allow read: if true;
-      allow create, update: if isAdmin() || signedIn();
-      allow delete: if isAdmin();
+      allow write: if signedIn() || isAdmin();
     }
     match /digital_orders/{id} {
-      allow read, create, update: if isAdmin() || signedIn();
-      allow delete: if isAdmin();
+      allow read, write: if signedIn() || true;
     }
     match /marketplace_orders/{id} {
-      allow read, create, update: if isAdmin() || signedIn();
-      allow delete: if isAdmin();
+      allow read, write: if signedIn() || true;
     }
 
-    // Организации
-    match /organizations/{id} {
-      allow read: if true;
-      allow create, update: if isAdmin() || signedIn();
-      allow delete: if isAdmin();
-    }
-    match /organization_requests/{id} {
-      allow read: if isAdmin() || signedIn();
-      allow create: if signedIn();
-      allow update, delete: if isAdmin();
-    }
-
-    // Клубы
-    match /clubs/{id} {
-      allow read: if true;
-      allow create, update: if isAdmin() || signedIn();
-      allow delete: if isAdmin();
-    }
-    match /club_messages/{id} {
-      allow read, create: if signedIn();
-      allow update, delete: if isAdmin() || signedIn();
-    }
-    match /club_messages_reactions/{id} {
-      allow read, create, update, delete: if signedIn();
-    }
-    match /club_requests/{id} {
-      allow read, create, update: if isAdmin() || signedIn();
-      allow delete: if isAdmin();
-    }
-    match /club_applications/{id} {
-      allow read, create, update: if isAdmin() || signedIn();
-      allow delete: if isAdmin();
-    }
-
-    // Чаты / вызовы / уведомления / лайки
-    match /chats/{id} {
-      allow read, write: if isAdmin() || signedIn();
-      match /{sub=**} {
-        allow read, write: if isAdmin() || signedIn();
-      }
-    }
-    match /challenges/{id} {
-      allow read, write: if isAdmin() || signedIn();
-    }
-    match /sparring_offers/{id} {
-      allow read, write: if isAdmin() || signedIn();
-    }
-    match /notifications/{id} {
-      allow read, write: if isAdmin() || signedIn();
-    }
-    match /likes/{id} {
-      allow read: if true;
-      allow create, delete: if isAdmin() || signedIn();
-      allow update: if isAdmin() || signedIn();
-    }
+    // ==================== HALLS ====================
     match /halls/{id} {
       allow read: if true;
-      allow create, update: if isAdmin() || signedIn();
+      allow create, update: if signedIn() || isAdmin();
       allow delete: if isAdmin();
+    }
+
+    // ==================== FALLBACK ====================
+    match /{document=**} {
+      allow read, write: if true;
     }
   }
 }
