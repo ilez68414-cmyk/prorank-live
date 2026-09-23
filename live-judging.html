@@ -453,6 +453,137 @@
             .display-ring-tile-timer { line-height: 1.4; }
             .judge-grid { gap: 24px; }
         }
+        /* ============================================================
+           🔧ФИКС: ФИНАЛЬНАЯ ДОВОДКА СУДЕЙСКОЙ ПАНЕЛИ, КНОПОК НАЧИСЛЕНИЯ
+           БАЛЛОВ И ТАБЛО (ТОЛЬКО ВИЗУАЛ — логика судейства, таймеров,
+           очков и транзакций не тронута).
+           Палитра: чёрный + золото #fbbf24. Красный оставлен только как
+           аварийный сигнал (последние секунды раунда и кнопка «−1»).
+           Все селекторы с префиксом #judgeView / #displayView / #ringView,
+           поэтому они корректно перебивают прежние правила и @media-блоки
+           выше по файлу без !important.
+           ============================================================ */
+
+        /* --- ШАПКА ПАНЕЛИ: монолитный центрированный блок --- */
+        #judgeView { text-align: center; }
+        #judgeView .judge-header { justify-content: center; text-align: center; gap: 10px 18px; }
+        #judgeView .judge-header > div:first-child { display: flex; flex-direction: column; align-items: center; gap: 3px; }
+        #judgeView .judge-header .weight { letter-spacing: 2px; }
+        #judgeView .judge-header .meta { line-height: 1.4; }
+        #judgeView .judge-header .round-duration { justify-content: center; padding: 5px 12px; border-radius: 30px; border: 1px solid rgba(251,191,36,0.25); background: rgba(251,191,36,0.06); color: #fbbf24; }
+        #judgeView .judge-header .round-duration i { color: #fbbf24; }
+
+        /* --- ТАЙМЕР: идеальный центр по обеим осям, кнопки — одной группой --- */
+        #judgeView .timer-display { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; margin: 0 0 16px; padding: 22px 18px; border-radius: 24px; }
+        #judgeView .timer-block { display: flex; flex-direction: column; align-items: center; gap: 4px; text-align: center; }
+        #judgeView .timer-value { line-height: 1; text-shadow: 0 0 40px rgba(251,191,36,0.35); }
+        #judgeView .timer-label { margin-top: 0; text-align: center; letter-spacing: 3px; }
+        #judgeView .timer-controls { display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 0; flex-wrap: wrap; }
+        #judgeView .timer-btn { cursor: pointer; justify-content: center; text-align: center; border: 1px solid transparent; transition: transform .15s ease, background .2s ease, border-color .2s ease, box-shadow .2s ease, color .2s ease; }
+        #judgeView .timer-btn.start { background: #fbbf24; color: #0a0a0a; box-shadow: 0 6px 18px rgba(251,191,36,0.22); }
+        #judgeView .timer-btn.pause { background: rgba(251,191,36,0.12); border-color: #fbbf24; color: #fbbf24; }
+        #judgeView .timer-btn.reset,
+        #judgeView .timer-btn.undo { background: rgba(251,191,36,0.06); border-color: rgba(251,191,36,0.3); color: #fbbf24; }
+        #judgeView .timer-btn.finish { background: rgba(251,191,36,0.14); border-color: rgba(251,191,36,0.55); color: #fbbf24; }
+        #judgeView .timer-btn:hover:not(:disabled) { transform: translateY(-2px); filter: brightness(1.1); box-shadow: 0 8px 22px rgba(0,0,0,0.5); }
+        #judgeView .timer-btn.pause:hover:not(:disabled),
+        #judgeView .timer-btn.finish:hover:not(:disabled) { background: #fbbf24; color: #0a0a0a; }
+        #judgeView .timer-btn:active:not(:disabled) { transform: scale(0.97); }
+        #judgeView .timer-btn:focus-visible { outline: 2px solid #fbbf24; outline-offset: 2px; }
+        /* неактивные кнопки не должны выглядеть кликабельными */
+        #judgeView .timer-btn:disabled { opacity: 0.4; cursor: not-allowed; filter: none; }
+        #judgeView .timer-btn:disabled:hover { transform: none; box-shadow: none; }
+        /* бегущий таймер — золото; красный остаётся только аварийным сигналом */
+        #judgeView .timer-value.running { color: #fbbf24; }
+
+        /* --- ТАБЛО СЧЁТА: строгая симметрия «красный | VS | синий» --- */
+        #judgeView .scoreboard { grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); gap: 12px; align-items: stretch; margin: 0; }
+        #judgeView .fighter-panel { padding: 16px 14px; gap: 8px; text-align: center; align-items: center; justify-content: flex-start; min-width: 0; }
+        #judgeView .fighter-panel .fighter-name { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; line-height: 1.4; }
+        #judgeView .fighter-panel .score-value { margin: 2px 0 4px; min-width: 2ch; }
+        #judgeView .score-buttons { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; width: 100%; }
+        #judgeView .score-btn { display: flex; align-items: center; justify-content: center; text-align: center; line-height: 1; cursor: pointer; border-radius: 14px; transition: transform .12s ease, background .2s ease, border-color .2s ease, box-shadow .2s ease; }
+        #judgeView .score-btn.plus1 { background: #fbbf24; color: #0a0a0a; border-color: #fbbf24; }
+        #judgeView .score-btn.plus2 { background: rgba(251,191,36,0.12); color: #fbbf24; border-color: rgba(251,191,36,0.5); }
+        #judgeView .score-btn.minus { background: rgba(239,68,68,0.08); color: #ef4444; border-color: rgba(239,68,68,0.22); }
+        #judgeView .score-btn:hover { transform: translateY(-2px); filter: brightness(1.12); box-shadow: 0 6px 16px rgba(0,0,0,0.45); }
+        #judgeView .score-btn:active { transform: scale(0.95); }
+        #judgeView .score-btn:focus-visible { outline: 2px solid #fbbf24; outline-offset: 2px; }
+        #judgeView .vs-divider { align-self: center; width: 44px; height: 44px; border-radius: 50%; border: 1px solid rgba(251,191,36,0.35); background: rgba(251,191,36,0.06); color: #fbbf24; font-size: 0.85rem; letter-spacing: 1px; }
+
+        /* --- ИСТОРИЯ ДЕЙСТВИЙ, ПОДСКАЗКА, ВОЗВРАТ К СПИСКУ --- */
+        #judgeView .history-panel h4 { justify-content: center; text-align: center; }
+        #judgeView .history-item { align-items: center; gap: 8px; }
+        #judgeView .history-item > span:first-child { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        #judgeView .judge-back-row { display: flex; justify-content: center; gap: 8px; margin-top: 16px; }
+        #judgeView .judge-back-row .btn { max-width: 420px; width: 100%; }
+        #judgeView .judge-tip { text-align: left; align-items: flex-start; }
+
+        /* --- СПИСОК БОЁВ СТОЛА: ровная симметричная карточка --- */
+        #ringView .match-header { justify-content: center; }
+        #ringView .match-meta { justify-content: center; width: 100%; }
+        #ringView .m-fighter .info { text-align: center; }
+        #ringView .match-actions { justify-content: center; }
+        #ringView .match-actions .btn { flex: 1 1 auto; min-width: 120px; max-width: 320px; }
+
+        /* --- ТАБЛО: равные по высоте панели бойцов, VS и таймер строго по центру --- */
+        #displayView .display-fighters { align-items: stretch; }
+        #displayView .display-fighter { display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        #displayView .display-vs { align-self: center; }
+        #displayView .display-timer,
+        #displayView .display-status { margin-left: auto; margin-right: auto; }
+
+        /* --- НОУТБУКИ И ПК (≥769px): компактно, собрано, под работу мышкой --- */
+        @media (min-width: 769px) {
+            #judgeView { max-width: 1080px; margin: 0 auto; padding: 16px 20px 30px; }
+            #judgeView .judge-header { margin-bottom: 12px; padding: 12px 18px; border-radius: 16px; }
+            #judgeView .timer-display { padding: 16px 22px; margin-bottom: 12px; gap: 12px; }
+            #judgeView .timer-value { font-size: clamp(3.4rem, 7vw, 4.4rem); }
+            #judgeView .timer-controls { gap: 8px; }
+            #judgeView .timer-btn { min-height: 44px; padding: 10px 18px; font-size: 0.8rem; }
+            #judgeView .scoreboard { gap: 14px; }
+            #judgeView .fighter-panel { padding: 16px; }
+            #judgeView .fighter-panel .fighter-avatar { width: 50px; height: 50px; font-size: 1.2rem; }
+            #judgeView .fighter-panel .score-value { font-size: 2.6rem; }
+            #judgeView .score-btn { min-height: 44px; font-size: 0.95rem; }
+            #judgeView .vs-divider { width: 40px; height: 40px; }
+            #judgeView .judge-tip { align-items: center; }
+        }
+
+        /* --- МОНИТОРЫ (≥1024px): таймер и кнопки — одной сбалансированной группой по центру --- */
+        @media (min-width: 1024px) {
+            #judgeView { max-width: 1280px; }
+            #judgeView .timer-display { flex-direction: row; justify-content: center; align-items: center; gap: clamp(24px, 3vw, 56px); padding: 20px 28px; }
+            #judgeView .timer-controls { margin-left: 0; margin-top: 0; justify-content: center; flex-wrap: wrap; }
+            #judgeView .judge-grid { gap: 18px; }
+            #judgeView .judge-main-col { gap: 14px; }
+        }
+
+        /* --- СМАРТФОНЫ (≤768px): крупные кнопки под палец, выверенные отступы --- */
+        @media (max-width: 768px) {
+            #judgeView { padding: 14px 12px 26px; }
+            #judgeView .judge-header { padding: 12px 14px; border-radius: 16px; }
+            #judgeView .timer-display { padding: 18px 14px; }
+            #judgeView .timer-controls { gap: 8px; }
+            #judgeView .timer-btn { flex: 1 1 calc(50% - 4px); min-height: 56px; padding: 12px 14px; font-size: 0.88rem; }
+            #judgeView .timer-btn.reset,
+            #judgeView .timer-btn.undo { flex: 1 1 calc(25% - 6px); min-height: 50px; }
+            #judgeView .timer-btn.finish { flex: 1 1 100%; min-height: 58px; font-size: 0.95rem; }
+            #judgeView .scoreboard { grid-template-columns: 1fr; gap: 10px; }
+            #judgeView .vs-divider { width: auto; height: 32px; border-radius: 30px; border-style: dashed; background: transparent; letter-spacing: 2px; }
+            #judgeView .fighter-panel { padding: 16px 14px; }
+            #judgeView .score-buttons { gap: 8px; }
+            #judgeView .score-btn { min-height: 58px; font-size: 1.15rem; border-radius: 16px; }
+            #judgeView .history-item { font-size: 0.72rem; }
+            #judgeView .judge-back-row .btn { max-width: none; }
+            #ringView .match-actions .btn { min-width: 0; }
+        }
+
+        /* --- УЗКИЕ ТЕЛЕФОНЫ (≤480px): табло всех столов без горизонтального выезда --- */
+        @media (max-width: 480px) {
+            .display-grid { grid-template-columns: minmax(0, 1fr); }
+            .display-grid-container { padding: 84px 12px 16px; }
+        }
     </style>
 </head>
 <body>
@@ -582,8 +713,10 @@
             </div>
         </div>
 
-        <div style="display: flex; gap: 8px; margin-top: 16px;">
-            <button class="btn btn-outline btn-block" onclick="backToRing()"><i class="fas fa-list"></i> К списку боёв стола</button>
+        <!--🔧ФИКС: строка возврата к списку боёв — класс вместо инлайн-стиля,
+             чтобы кнопка идеально центрировалась на ПК и растягивалась на телефоне -->
+        <div class="judge-back-row">
+            <button class="btn btn-outline" onclick="backToRing()"><i class="fas fa-list"></i> К списку боёв стола</button>
         </div>
 
         <div class="judge-tip">
@@ -703,7 +836,9 @@
 
     <script type="module">
         import { initializeApp } from "firebase/app";
-        import { getFirestore, doc, getDoc, updateDoc, setDoc, collection, addDoc, onSnapshot, serverTimestamp, increment, runTransaction } from "firebase/firestore";
+        //🔧ФИКС: добавлен getDocs — нужен фоновому авто-завершению турнира
+        // для свежей серверной проверки боёв перед закрытием (см. ниже).
+        import { getFirestore, doc, getDoc, getDocs, updateDoc, setDoc, collection, addDoc, onSnapshot, serverTimestamp, increment, runTransaction } from "firebase/firestore";
 
         const firebaseConfig = {
             apiKey: "AIzaSyDUGYJY7pX7q02MS5SACMIIQXpjpQ97mPw",
@@ -1093,6 +1228,13 @@
                 },
                 (err) => console.error('Matches:', err)
             );
+
+            //🔧ФИКС: во всех ролях, где страница и так следит за боями (судья стола,
+            // главный судья, табло), включаем фоновый контроль статуса турнира —
+            // авто-завершение по таймеру, если организатор забыл нажать «Завершить».
+            // Судейство, таймеры раундов, очки и транзакции это не затрагивает
+            // (см. блок «АВТО-ЗАВЕРШЕНИЕ ТУРНИРА ПО ТАЙМЕРУ» ниже).
+            startTournamentAutoFinishWatch();
         }
 
         function subscribeToTournament() {
@@ -1930,6 +2072,142 @@
         };
 
         // ============================================================
+        // 🔧ФИКС: АВТО-ЗАВЕРШЕНИЕ ТУРНИРА ПО ТАЙМЕРУ (фоновый контроль статуса)
+        // ============================================================
+        // Задача: если все запланированные бои турнирной сетки завершены
+        // (matches.filter(m => m.status !== 'completed').length === 0), а
+        // организатор забыл нажать «Завершить» — турнир закрывается сам.
+        //
+        // Логика судейства, таймеров раундов, начисления очков и транзакции
+        // takeAndJudge / changeScore / confirmFinish / startTimer / pauseTimer
+        // НЕ ТРОНУТЫ. Работает так:
+        //   1) страница и так получает matches через onSnapshot во всех ролях;
+        //   2) как только ВСЕ бои проведены — берём время финиша последнего боя
+        //      (completedAt), а если метки нет — момент обнаружения;
+        //   3) ждём дедлайн 30–45 минут (порог выводится из id турнира, поэтому
+        //      любые открытые окна считают его одинаково);
+        //   4) по дедлайну закрываем турнир ТЕМ ЖЕ путём, что и кнопка
+        //      «Завершить»: runTransaction → status: 'completed' + completedAt,
+        //      поэтому распределения эскроу/выплат срабатывают как обычно.
+        const AUTOFINISH_MIN_MINUTES = 30;   // нижняя граница окна из ТЗ
+        const AUTOFINISH_MAX_MINUTES = 45;   // верхняя граница окна из ТЗ
+        const AUTOFINISH_CHECK_MS = 30000;   // период фоновой проверки
+        let autoFinishInterval = null;
+        let autoFinishDetectedAt = 0;        // когда впервые увидели «все бои финишировали»
+        let autoFinishNoticeShown = false;   // чтобы не спамить тостом
+        let autoFinishInProgress = false;    // защита от параллельных закрытий
+
+        // Детерминированный дедлайн 30–45 минут по id турнира:
+        // одинаковый во всех окнах/вкладках — лишних записей не будет.
+        function autoFinishDelayMs() {
+            const key = String(tournamentId || 'prorank');
+            let hash = 0;
+            for (let i = 0; i < key.length; i++) hash = (hash * 31 + key.charCodeAt(i)) % 1000003;
+            const extraMinutes = hash % (AUTOFINISH_MAX_MINUTES - AUTOFINISH_MIN_MINUTES + 1);
+            return (AUTOFINISH_MIN_MINUTES + extraMinutes) * 60 * 1000;
+        }
+
+        // Все запланированные бои проведены?
+        function areAllMatchesFinished(list) {
+            const arr = Array.isArray(list) ? list : (Array.isArray(matches) ? matches : []);
+            if (!arr.length) return false;
+            // Прямое условие из ТЗ: matches.filter(m => m.status !== 'completed').length === 0
+            if (arr.every(m => m && m.status === 'completed')) return true;
+            // «Запланированный» бой = оба бойца известны; bye и снятые бои не считаем
+            const planned = arr.filter(m => m && m.fighter1 && m.fighter2 && m.status !== 'bye' && m.status !== 'cancelled');
+            if (!planned.length) return false;
+            return planned.every(m => m.status === 'completed');
+        }
+
+        // Время финиша последнего проведённого боя (мс) или 0
+        function lastMatchFinishAt(list) {
+            const arr = Array.isArray(list) ? list : (Array.isArray(matches) ? matches : []);
+            let last = 0;
+            arr.forEach(m => {
+                if (!m || m.status !== 'completed') return;
+                const t = parseTimestamp(m.completedAt);
+                if (t > last) last = t;
+            });
+            return last;
+        }
+
+        // Фоновая проверка (раз в 30 с) — ничего не делает, пока бои не закончились
+        async function autoFinishTick() {
+            if (autoFinishInProgress) return;
+            if (!tournamentId || !tournamentData) return;
+            // Турнир уже не «идёт» — контроль больше не нужен
+            if (tournamentData.status !== 'active') { stopTournamentAutoFinishWatch(); return; }
+            if (!areAllMatchesFinished()) { autoFinishDetectedAt = 0; autoFinishNoticeShown = false; return; }
+
+            const finishedAt = lastMatchFinishAt() || autoFinishDetectedAt || (autoFinishDetectedAt = Date.now());
+            const leftMs = finishedAt + autoFinishDelayMs() - Date.now();
+
+            // Один раз сообщаем судье/организатору, что закрытие произойдёт само
+            if (leftMs > 0 && !autoFinishNoticeShown && userRole !== 'display') {
+                autoFinishNoticeShown = true;
+                showToast(`⏱ Все бои проведены — турнир закроется автоматически через ~${Math.max(1, Math.round(leftMs / 60000))} мин`, 'info');
+            }
+            if (leftMs > 0) return;   // окно 30–45 минут ещё не истекло
+            await runTournamentAutoFinish();
+        }
+
+        // Закрытие турнира: тот же результат, что у кнопки «Завершить»
+        // (status: 'completed' в одной транзакции) — эскроу/выплаты не ломаются.
+        async function runTournamentAutoFinish() {
+            if (autoFinishInProgress) return;
+            autoFinishInProgress = true;
+            try {
+                // 1. Свежая проверка боёв на сервере: фоновое (свёрнутое) окно
+                //    не должно закрыть турнир по устаревшему снапшоту.
+                const snap = await getDocs(collection(db, `tournaments/${tournamentId}/matches`));
+                const fresh = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+                if (!areAllMatchesFinished(fresh)) throw new Error('Есть незавершённые бои');
+
+                // 2. Транзакция — как у кнопки «Завершить» (status → completed)
+                await runTransaction(db, async (tx) => {
+                    const tRef = doc(db, "tournaments", tournamentId);
+                    const tSnap = await tx.get(tRef);
+                    if (!tSnap.exists()) throw new Error('Турнир не найден');
+                    const t = tSnap.data();
+                    if (t.status !== 'active') throw new Error('Турнир уже не в статусе «идёт»');
+
+                    // Все бои проведены → столы тоже считаются закрытыми
+                    const closedRings = { ...(t.closedRings || {}) };
+                    for (let r = 1; r <= (t.ringsCount || 1); r++) closedRings[r] = true;
+
+                    tx.update(tRef, {
+                        status: 'completed',
+                        completedAt: new Date().toISOString(),
+                        completedBy: null,
+                        closedRings,
+                        autoCompleted: true,
+                        autoCompletedAt: new Date().toISOString(),
+                        autoCompletedBy: 'live-judging'
+                    });
+                });
+
+                tournamentData.status = 'completed';
+                stopTournamentAutoFinishWatch();
+                if (userRole !== 'display') showToast('🏁 Все бои проведены — турнир завершён автоматически', 'success');
+            } catch (e) {
+                // тихо: это фоновая подстраховка, она не должна мешать судейству
+                console.warn('Авто-завершение турнира:', e && e.message ? e.message : e);
+            } finally {
+                autoFinishInProgress = false;
+            }
+        }
+
+        function startTournamentAutoFinishWatch() {
+            if (autoFinishInterval) return;
+            autoFinishInterval = setInterval(() => { autoFinishTick().catch(() => {}); }, AUTOFINISH_CHECK_MS);
+            autoFinishTick().catch(() => {});   // мгновенная проверка, если бои уже давно закончились
+        }
+
+        function stopTournamentAutoFinishWatch() {
+            if (autoFinishInterval) { clearInterval(autoFinishInterval); autoFinishInterval = null; }
+        }
+
+        // ============================================================
         // ТАБЛО СТОЛА (авто)
         // ============================================================
         function showDisplayRingView() {
@@ -2228,6 +2506,8 @@
             if (singleMatchUnsubscribe) singleMatchUnsubscribe();
             stopTimerInterval();
             stopAutocloseCountdown();
+            //🔧ФИКС: гасим и фоновый контроль авто-завершения турнира
+            stopTournamentAutoFinishWatch();
             if (winnerDisplayTimer) clearTimeout(winnerDisplayTimer);
             if (syncChannel) syncChannel.close();
         });
