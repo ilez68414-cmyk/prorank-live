@@ -21,6 +21,9 @@ let fighterMoneyIndicator = null;
 let partnerWalletIndicator = null;
 let deferredPrompt = null;
 
+// ===== ПУТЬ К ЛОГОТИПУ (поменяй если файл называется иначе) =====
+const LOGO_SRC = 'icons/icon-192.png';
+
 // ===== ГЛОБАЛЬНЫЕ СТИЛИ ДЛЯ МОДАЛКИ ДЕЙСТВИЙ =====
 function injectQuickActionsStyles() {
     if (document.getElementById('quickActionsStyles')) return;
@@ -43,6 +46,289 @@ function injectQuickActionsStyles() {
 }
 injectQuickActionsStyles();
 
+// ===== СТИЛИ ДЛЯ ЛОАДЕРОВ =====
+function injectLoaderStyles() {
+    if (document.getElementById('prorankLoaderStyles')) return;
+    const styles = document.createElement('style');
+    styles.id = 'prorankLoaderStyles';
+    styles.textContent = `
+        /* ===== APP LOADER (полноэкранный) ===== */
+        #prorankAppLoader{
+            position:fixed;inset:0;z-index:9999;
+            background:#07070a;
+            display:grid;place-items:center;
+            opacity:1;visibility:visible;
+            transition:opacity 0.7s ease,visibility 0.7s ease,transform 0.7s ease;
+        }
+        #prorankAppLoader::before{
+            content:'';position:absolute;inset:0;
+            background:radial-gradient(circle at 50% 45%,rgba(251,191,36,0.10) 0%,transparent 60%);
+            pointer-events:none;
+        }
+        #prorankAppLoader.hidden{
+            opacity:0;visibility:hidden;transform:scale(1.04);pointer-events:none;
+        }
+        .app-loader-inner{
+            position:relative;display:flex;flex-direction:column;align-items:center;
+            gap:22px;padding:24px;width:100%;max-width:340px;
+        }
+        .app-loader-logo{
+            width:64px;height:64px;border-radius:20px;
+            display:grid;place-items:center;overflow:hidden;
+            box-shadow:0 0 40px rgba(251,191,36,0.4);
+            animation:appLoaderPulse 2.4s ease infinite;
+            position:relative;
+        }
+        .app-loader-logo img{width:100%;height:100%;object-fit:cover;display:block}
+        .app-loader-logo::after{
+            content:'';position:absolute;inset:-6px;border-radius:26px;
+            border:1px solid rgba(251,191,36,0.25);
+            animation:appLoaderRing 2.4s ease infinite;pointer-events:none;
+        }
+        @keyframes appLoaderPulse{
+            0%,100%{box-shadow:0 0 40px rgba(251,191,36,0.4)}
+            50%{box-shadow:0 0 64px rgba(251,191,36,0.7)}
+        }
+        @keyframes appLoaderRing{
+            0%,100%{transform:scale(1);opacity:0.6}
+            50%{transform:scale(1.08);opacity:0.2}
+        }
+        .app-loader-name{
+            font-size:26px;font-weight:800;letter-spacing:-0.02em;
+            color:#f5f5f7;animation:appLoaderFade 0.6s ease 0.05s both;
+        }
+        .app-loader-name span{color:#fbbf24}
+        .app-loader-bar{
+            width:100%;height:3px;border-radius:100px;
+            background:rgba(255,255,255,0.08);overflow:hidden;position:relative;
+            animation:appLoaderFade 0.6s ease 0.1s both;
+        }
+        .app-loader-fill{
+            height:100%;width:0%;
+            background:linear-gradient(90deg,#b45309 0%,#fbbf24 50%,#fde68a 100%);
+            border-radius:100px;box-shadow:0 0 14px rgba(251,191,36,0.6);
+            transition:width 0.45s cubic-bezier(0.4,0,0.2,1);position:relative;
+        }
+        .app-loader-fill::after{
+            content:'';position:absolute;top:0;right:0;bottom:0;width:50px;
+            background:linear-gradient(90deg,transparent,rgba(255,255,255,0.7));
+            animation:appLoaderShimmer 1.6s ease infinite;
+        }
+        @keyframes appLoaderShimmer{
+            0%{transform:translateX(-50px)}100%{transform:translateX(50px)}
+        }
+        .app-loader-percent{
+            font-family:'Bebas Neue',sans-serif;font-size:38px;
+            color:#fbbf24;letter-spacing:0.06em;line-height:1;
+            animation:appLoaderFade 0.6s ease 0.15s both;
+        }
+        .app-loader-status{
+            font-size:12px;color:#71717a;letter-spacing:0.06em;
+            text-transform:uppercase;font-weight:500;text-align:center;
+            animation:appLoaderFade 0.6s ease 0.2s both;min-height:16px;
+        }
+        @keyframes appLoaderFade{
+            from{opacity:0;transform:translateY(8px)}
+            to{opacity:1;transform:translateY(0)}
+        }
+
+        /* ===== NAV LOADER (компактный) ===== */
+        #prorankNavLoader{
+            position:fixed;inset:0;z-index:9998;
+            display:grid;place-items:center;
+            background:rgba(7,7,10,0.82);
+            backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+            opacity:1;visibility:visible;
+            transition:opacity 0.35s ease,visibility 0.35s ease;
+        }
+        #prorankNavLoader.hidden{
+            opacity:0;visibility:hidden;pointer-events:none;
+        }
+        .nav-loader-inner{
+            display:flex;flex-direction:column;align-items:center;
+            gap:14px;padding:20px;
+            animation:navLoaderIn 0.35s cubic-bezier(0.4,0,0.2,1) both;
+        }
+        @keyframes navLoaderIn{
+            from{opacity:0;transform:translateY(6px) scale(0.96)}
+            to{opacity:1;transform:translateY(0) scale(1)}
+        }
+        .nav-loader-logo{
+            width:44px;height:44px;border-radius:14px;
+            display:grid;place-items:center;overflow:hidden;
+            box-shadow:0 0 28px rgba(251,191,36,0.45);
+            animation:navLoaderPulse 1.6s ease infinite;
+        }
+        .nav-loader-logo img{width:100%;height:100%;object-fit:cover;display:block}
+        @keyframes navLoaderPulse{
+            0%,100%{box-shadow:0 0 28px rgba(251,191,36,0.45);transform:scale(1)}
+            50%{box-shadow:0 0 44px rgba(251,191,36,0.7);transform:scale(1.04)}
+        }
+        .nav-loader-bar{
+            width:120px;height:3px;border-radius:100px;
+            background:rgba(255,255,255,0.08);overflow:hidden;position:relative;
+        }
+        .nav-loader-fill{
+            height:100%;width:0%;
+            background:linear-gradient(90deg,#b45309 0%,#fbbf24 50%,#fde68a 100%);
+            border-radius:100px;box-shadow:0 0 10px rgba(251,191,36,0.6);
+            transition:width 0.4s cubic-bezier(0.4,0,0.2,1);position:relative;
+        }
+        .nav-loader-fill::after{
+            content:'';position:absolute;top:0;right:0;bottom:0;width:30px;
+            background:linear-gradient(90deg,transparent,rgba(255,255,255,0.8));
+            animation:navShimmer 1.2s ease infinite;
+        }
+        @keyframes navShimmer{
+            0%{transform:translateX(-30px)}100%{transform:translateX(30px)}
+        }
+        .nav-loader-text{
+            font-size:11px;color:#a1a1aa;
+            letter-spacing:0.12em;text-transform:uppercase;font-weight:600;
+        }
+    `;
+    document.head.appendChild(styles);
+}
+injectLoaderStyles();
+
+// ===== APP LOADER (полноэкранный, для входа) =====
+const AppLoader = {
+    el: null, fill: null, percent: null, status: null,
+    value: 0, visible: false, minDuration: 600, startTime: 0,
+
+    _ensure(){
+        if (this.el) return;
+        injectLoaderStyles();
+        const div = document.createElement('div');
+        div.id = 'prorankAppLoader';
+        div.style.display = 'none';
+        div.innerHTML = `
+            <div class="app-loader-inner">
+                <div class="app-loader-logo"><img src="${LOGO_SRC}" alt="PRORANK"></div>
+                <div class="app-loader-name">PRO<span>RANK</span></div>
+                <div class="app-loader-bar"><div class="app-loader-fill"></div></div>
+                <div class="app-loader-percent">0%</div>
+                <div class="app-loader-status">Запуск</div>
+            </div>
+        `;
+        document.body.appendChild(div);
+        this.el = div;
+        this.fill = div.querySelector('.app-loader-fill');
+        this.percent = div.querySelector('.app-loader-percent');
+        this.status = div.querySelector('.app-loader-status');
+    },
+
+    start(){
+        this._ensure();
+        this.value = 0;
+        this.startTime = Date.now();
+        this.fill.style.width = '0%';
+        this.percent.textContent = '0%';
+        this.status.textContent = 'Запуск';
+        this.el.style.display = 'grid';
+        this.el.classList.remove('hidden');
+        this.visible = true;
+        void this.el.offsetWidth;
+    },
+
+    set(v, text){
+        if (!this.visible) return;
+        this.value = Math.max(this.value, Math.min(100, v));
+        this.fill.style.width = this.value + '%';
+        this.percent.textContent = Math.round(this.value) + '%';
+        if (text) this.status.textContent = text;
+    },
+
+    finish(){
+        if (!this.visible) return;
+        this.set(100, 'Готово');
+        const elapsed = Date.now() - this.startTime;
+        const wait = Math.max(0, this.minDuration - elapsed);
+        setTimeout(() => {
+            this.el.classList.add('hidden');
+            this.visible = false;
+            setTimeout(() => { if (this.el) this.el.style.display = 'none'; }, 800);
+        }, 250 + wait);
+    },
+
+    error(text){
+        if (!this.visible) return;
+        this.set(100, text || 'Ошибка');
+        const elapsed = Date.now() - this.startTime;
+        const wait = Math.max(0, this.minDuration - elapsed);
+        setTimeout(() => {
+            this.el.classList.add('hidden');
+            this.visible = false;
+            setTimeout(() => { if (this.el) this.el.style.display = 'none'; }, 800);
+        }, 350 + wait);
+    }
+};
+
+// ===== NAV LOADER (компактный, для переходов) =====
+const NavLoader = {
+    el: null, fill: null,
+    value: 0, visible: false,
+
+    _ensure(){
+        if (this.el) return;
+        injectLoaderStyles();
+        const div = document.createElement('div');
+        div.id = 'prorankNavLoader';
+        div.className = 'hidden';
+        div.innerHTML = `
+            <div class="nav-loader-inner">
+                <div class="nav-loader-logo"><img src="${LOGO_SRC}" alt="PRORANK"></div>
+                <div class="nav-loader-bar"><div class="nav-loader-fill"></div></div>
+                <div class="nav-loader-text">Загрузка</div>
+            </div>
+        `;
+        document.body.appendChild(div);
+        this.el = div;
+        this.fill = div.querySelector('.nav-loader-fill');
+    },
+
+    start(){
+        this._ensure();
+        this.value = 0;
+        this.fill.style.transition = 'none';
+        this.fill.style.width = '0%';
+        this.el.classList.remove('hidden');
+        this.visible = true;
+        void this.fill.offsetWidth;
+        this.fill.style.transition = 'width 0.4s cubic-bezier(0.4,0,0.2,1)';
+        requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+                this.value = 25;
+                this.fill.style.width = '25%';
+            });
+        });
+    },
+
+    grow(target = 70){
+        if (!this.visible) return;
+        setTimeout(() => {
+            this.value = target;
+            this.fill.style.width = target + '%';
+        }, 200);
+    },
+
+    finish(){
+        if (!this.visible) return;
+        this.fill.style.transition = 'width 0.25s ease-out';
+        this.fill.style.width = '100%';
+        setTimeout(() => {
+            this.el.classList.add('hidden');
+            this.visible = false;
+            setTimeout(() => {
+                this.fill.style.transition = 'none';
+                this.fill.style.width = '0%';
+                this.value = 0;
+            }, 400);
+        }, 350);
+    }
+};
+
+// ===== УТИЛИТЫ =====
 function getCurrentPage() {
     const path = window.location.pathname;
     const page = path.split('/').pop();
@@ -246,7 +532,7 @@ function ensureMobileNavContainer() {
     return container;
 }
 
-// ===== ИСПРАВЛЕННАЯ ЛОГИКА ОПРЕДЕЛЕНИЯ РОЛЕЙ =====
+// ===== ОПРЕДЕЛЕНИЕ РОЛЕЙ =====
 async function getUserRoles(userId) {
     let isPartner = false;
     let isClubUser = false;
@@ -256,7 +542,6 @@ async function getUserRoles(userId) {
     let userName = 'Пользователь';
 
     try {
-        // 1. Проверяем бойца/партнера (независимо от остального)
         const userDoc = await getDoc(doc(db, "fighters", userId));
         if (userDoc.exists()) {
             isPartner = userDoc.data()?.isPartner === true;
@@ -264,7 +549,6 @@ async function getUserRoles(userId) {
             userName = userDoc.data()?.name || 'Боец';
         }
 
-        // 2. Проверяем клуб (независимо)
         const clubDoc = await getDoc(doc(db, "clubs", userId));
         if (clubDoc.exists()) {
             isClubUser = true;
@@ -272,7 +556,6 @@ async function getUserRoles(userId) {
             userName = clubDoc.data()?.name || 'Клуб';
         }
 
-        // 3. Проверяем организатора (НЕЗАВИСИМО! Даже если есть документ fighter)
         const orgRequests = await getDocs(query(
             collection(db, "organization_requests"),
             where("userId", "==", userId),
@@ -285,19 +568,15 @@ async function getUserRoles(userId) {
             userName = request.orgName || 'Организация';
         }
 
-        // 🔧 СЕЗОНЫ: ленивый сброс FRS при заходе
-        // ⚠️ Только для бойцов (не партнёров, не клубов-как-юзеров)
         if (!isPartner && !isClubUser) {
             try {
                 initSeasons(db, auth);
                 await lazyResetFighter(userId);
-                // Если боец в клубе — сбрасываем и clubFRS клуба
                 if (myClubId) {
                     await lazyResetClub(myClubId);
                 }
             } catch (seasonsErr) {
                 console.warn('⚠️ Сезоны: ошибка ленивого сброса', seasonsErr);
-                // Не роняем приложение — просто логируем
             }
         }
     } catch (err) {
@@ -314,20 +593,17 @@ async function renderMobileBottomNav() {
     const currentPage = window.location.pathname.split('/').pop() || 'index.html';
     const user = auth.currentUser;
     
-    // По умолчанию роль бойца
     let displayRole = 'fighter'; 
     let roles = { isPartner: false, isClubUser: false, isOrgUser: false, myClubId: null, myOrgId: null, userName: 'Пользователь' };
 
     if (user) {
         roles = await getUserRoles(user.uid);
         
-        // ПРИОРИТЕТ НАВИГАЦИИ: Организатор > Партнер > Клуб > Боец
         if (roles.isOrgUser) displayRole = 'organizer';
         else if (roles.isPartner) displayRole = 'partner';
         else if (roles.isClubUser) displayRole = 'club';
     }
     
-    // Формируем ссылки и иконки на основе ПРИОРИТЕТНОЙ роли
     let profileLink, profileIcon, profileText;
     
     if (displayRole === 'organizer') {
@@ -348,7 +624,6 @@ async function renderMobileBottomNav() {
         profileText = 'Профиль';
     }
 
-    // Определяем, активна ли вкладка профиля
     let isMyProfile = false;
     if (currentPage === 'profile.html' && user) {
         const urlParams = new URLSearchParams(window.location.search);
@@ -394,13 +669,12 @@ async function renderMobileBottomNav() {
         centerBtn.onclick = () => {
             let actions = [];
             
-            // Действия строго по приоритетной роли
             if (displayRole === 'organizer') {
                 actions = [
                     { text: 'Дашборд', icon: 'fa-chart-pie', url: `organization-dashboard.html?id=${roles.myOrgId}` },
                     { text: 'Мои турниры', icon: 'fa-trophy', url: 'my-tournaments.html' },
                     { text: 'Создать турнир', icon: 'fa-plus', url: 'tournament-create.html' },
-                    { text: 'Рейтинг бойцов', icon: 'fa-chart-line', url: 'rating.html' }, // Организатору нужен рейтинг!
+                    { text: 'Рейтинг бойцов', icon: 'fa-chart-line', url: 'rating.html' },
                     { text: 'Все турниры', icon: 'fa-list', url: 'tournaments.html' }
                 ];
             } else if (displayRole === 'partner') {
@@ -459,7 +733,15 @@ async function renderMobileBottomNav() {
                 if (item.dataset.logout === 'true') {
                     item.onclick = async () => { await signOut(auth); window.location.href = 'index.html'; };
                 } else if (item.dataset.url) {
-                    item.onclick = (e) => { e.stopPropagation(); menu.remove(); window.location.href = item.dataset.url; };
+                    item.onclick = (e) => {
+                        e.stopPropagation();
+                        menu.remove();
+                        // Быстрые действия — навигационный переход: просим NavLoader
+                        // на новой странице (и снимаем возможный «skip»-флаг).
+                        sessionStorage.removeItem('prorankSkipLoader');
+                        sessionStorage.setItem('prorankNavLoader', '1');
+                        window.location.href = item.dataset.url;
+                    };
                 }
             });
             menu.querySelector('.quick-actions-close').onclick = () => menu.remove();
@@ -468,7 +750,7 @@ async function renderMobileBottomNav() {
     }
 }
 
-// ... (Остальные функции PWA, анимаций и навигации остаются без изменений) ...
+// ===== PWA =====
 function initPWABanner() {
     const banner = document.getElementById('pwaInstallBanner');
     if (!banner) return;
@@ -496,8 +778,7 @@ window.addEventListener('appinstalled', () => {
     if (banner) banner.style.display = 'none';
 });
 
-// ===== SERVICE WORKER (PWA / офлайн-режим) =====
-// Единый воркер приложения: кэш интерфейса, офлайн-плашка, push.
+// ===== SERVICE WORKER =====
 const SW_URL = '/prorank-live/sw.js';
 const SW_SCOPE = '/prorank-live/';
 
@@ -522,9 +803,7 @@ if ('serviceWorker' in navigator) {
     window.addEventListener('load', registerServiceWorker);
 }
 
-// ===== ПЛАШКА «ОФЛАЙН-РЕЖИМ. ПРОВЕРЬТЕ СЕТЬ» =====
-// Показывается, если связь пропала уже во время работы с приложением.
-// При загрузке страницы без интернета такую же плашку добавляет sw.js.
+// ===== ОФЛАЙН-ПЛАШКА =====
 const OFFLINE_BANNER_ID = 'prorankOfflineBanner';
 
 function injectOfflineBannerStyles() {
@@ -570,7 +849,6 @@ function hideOfflineBanner() {
     setTimeout(() => { if (banner.parentNode) banner.parentNode.removeChild(banner); }, 4000);
 }
 
-// Проверка связи «в лоб» — запрос уходит мимо кэша Service Worker
 function probeConnection() {
     fetch(window.location.href, { method: 'HEAD', cache: 'no-store' })
         .then(() => hideOfflineBanner())
@@ -584,40 +862,34 @@ setInterval(() => {
     if (document.getElementById(OFFLINE_BANNER_ID)) probeConnection();
 }, 20000);
 
-function createTransitionElement() {
-    if (document.querySelector('.page-transition')) return document.querySelector('.page-transition');
-    const transition = document.createElement('div');
-    transition.className = 'page-transition';
-    transition.innerHTML = '<div class="light"></div>';
-    document.body.appendChild(transition);
-    return transition;
-}
-
-function navigateWithAnimation(url) {
-    const transition = createTransitionElement();
-    transition.style.opacity = '1'; transition.style.pointerEvents = 'auto';
-    setTimeout(() => { transition.classList.add('active'); }, 50);
-    setTimeout(() => { window.location.href = url; }, 700);
-}
-
-function animatePageIn() {
-    const body = document.body;
-    body.classList.add('page-fade-in');
-    setTimeout(() => { body.classList.remove('page-fade-in'); }, 400);
-    const transition = document.querySelector('.page-transition');
-    if (transition) {
-        setTimeout(() => { transition.classList.remove('active'); transition.style.opacity = '0'; transition.style.pointerEvents = 'none'; }, 350);
-    }
-}
-
+// ===== ГЛОБАЛЬНАЯ НАВИГАЦИЯ =====
 function setupGlobalNavigation() {
     function handleLinkClick(e) {
         const link = e.currentTarget;
         const href = link.getAttribute('href');
         if (!href || link.target === '_blank' || href.startsWith('#') || link.hasAttribute('data-no-animation') || href.includes('javascript:')) return;
+        // Модификаторы (Ctrl/Cmd/Shift/Alt) или не левая кнопка — даём браузеру
+        // открыть ссылку в новой вкладке: флаги лоадера не ставим, чтобы не
+        // «протухли» в текущей вкладке и не исказили переход на другой странице.
+        if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || (typeof e.button === 'number' && e.button !== 0)) return;
         if (!href.startsWith('http') || href.includes(window.location.hostname) || href.startsWith('/')) {
             e.preventDefault();
-            navigateWithAnimation(href);
+            
+            // Навигационные ссылки (шапка, bottom nav, quick actions, бургер) → NavLoader на новой странице.
+            // Функциональные ссылки (внутри страниц: товар → корзина, заказ → деталь и т.п.) → без лоадера.
+            const isNavLink = link.closest('.nav-links, .mobile-bottom-nav, .mobile-submenu-content, .quick-actions-menu, .mobile-nav-center, .logo, .mobile-submenu');
+            
+            // Гигиена флагов: сначала снимаем оба, затем ставим ровно один —
+            // иначе остаток прошлого клика мог бы перекрыть текущее решение.
+            sessionStorage.removeItem('prorankNavLoader');
+            sessionStorage.removeItem('prorankSkipLoader');
+            if (isNavLink) {
+                sessionStorage.setItem('prorankNavLoader', '1');
+            } else {
+                sessionStorage.setItem('prorankSkipLoader', '1');
+            }
+            
+            window.location.href = href;
         }
     }
     document.querySelectorAll('.nav-links a, .logo, [data-navigate], .mobile-nav-item, .mobile-nav-center .center-button, .mobile-submenu-content a, .quick-action-item[data-url]').forEach(link => {
@@ -633,10 +905,52 @@ function setupGlobalNavigation() {
     });
 }
 
+// ===== ИНИЦИАЛИЗАЦИЯ ШАПКИ =====
 async function initHeader() {
     ensureMobileNavContainer();
+
+    // === ЛОАДЕРЫ ===
+    const isPWA = window.matchMedia('(display-mode: standalone)').matches
+               || window.navigator.standalone === true;
+    const isNavTransition = sessionStorage.getItem('prorankNavLoader') === '1';
+    const skipLoader = sessionStorage.getItem('prorankSkipLoader') === '1';
+    const isFirstLoad = !sessionStorage.getItem('prorankAppLoaded');
+
+    sessionStorage.removeItem('prorankNavLoader');
+    sessionStorage.removeItem('prorankSkipLoader');
+
+    let activeLoader = null;
+
+    if (skipLoader) {
+        // Функциональный переход — лоадер не показываем
+        activeLoader = null;
+    } else if (isNavTransition) {
+        NavLoader.start();
+        NavLoader.grow(70);
+        activeLoader = NavLoader;
+    } else if (isFirstLoad || isPWA) {
+        AppLoader.start();
+        AppLoader.set(15, 'Инициализация');
+        activeLoader = AppLoader;
+    } else {
+        NavLoader.start();
+        NavLoader.grow(70);
+        activeLoader = NavLoader;
+    }
+
+    function finishLoader() {
+        if (activeLoader) {
+            activeLoader.finish();
+            activeLoader = null;
+        }
+        sessionStorage.setItem('prorankAppLoaded', '1');
+    }
+
     const navLinks = document.getElementById('navLinks');
-    if (!navLinks) return;
+    if (!navLinks) {
+        finishLoader();
+        return;
+    }
 
     createIndicators();
     const user = auth.currentUser;
@@ -644,7 +958,9 @@ async function initHeader() {
     let displayRole = 'fighter';
 
     if (user) {
+        if (activeLoader === AppLoader) AppLoader.set(35, 'Подключение');
         roles = await getUserRoles(user.uid);
+        if (activeLoader === AppLoader) AppLoader.set(55, 'Профиль');
         if (roles.isOrgUser) displayRole = 'organizer';
         else if (roles.isPartner) displayRole = 'partner';
         else if (roles.isClubUser) displayRole = 'club';
@@ -678,15 +994,17 @@ async function initHeader() {
         updateActiveAndLogout();
         initBurger();
         initMobileSubmenus();
+        if (activeLoader === AppLoader) AppLoader.set(75, 'Меню');
         await renderMobileBottomNav();
+        if (activeLoader === AppLoader) AppLoader.set(90, 'Данные');
         initPWABanner();
         setupGlobalNavigation();
+        finishLoader();
         return;
     }
 
     const clubLink = roles.myClubId ? `<a href="club-profile.html?id=${roles.myClubId}"><i class="fas fa-shield-alt"></i> Мой клуб</a>` : `<a href="clubs.html"><i class="fas fa-users"></i> Клубы</a>`;
 
-    // Генерация верхнего меню строго по приоритетной роли
     if (isDesktop) {
         if (displayRole === 'organizer') {
             navLinks.innerHTML = `
@@ -744,7 +1062,7 @@ async function initHeader() {
                     </div>
                 </div>
             `;
-        } else if (user) { // Боец
+        } else if (user) {
             navLinks.innerHTML = `
                 <a href="index.html"><i class="fas fa-home"></i> Главная</a>
                 <a href="rating.html"><i class="fas fa-chart-line"></i> Рейтинг</a>
@@ -772,7 +1090,7 @@ async function initHeader() {
                     </div>
                 </div>
             `;
-        } else { // Гость
+        } else {
             navLinks.innerHTML = `
                 <a href="index.html"><i class="fas fa-home"></i> Главная</a>
                 <a href="rating.html"><i class="fas fa-chart-line"></i> Рейтинг</a>
@@ -793,7 +1111,6 @@ async function initHeader() {
             `;
         }
     } else {
-        // Мобильное верхнее меню (бургер) - аналогичная логика приоритета
         if (displayRole === 'organizer') {
             navLinks.innerHTML = `
                 <a href="index.html"><i class="fas fa-home"></i> Главная</a>
@@ -876,15 +1193,15 @@ async function initHeader() {
 
     updateActiveAndLogout();
     initBurger();
+    if (activeLoader === AppLoader) AppLoader.set(75, 'Меню');
     await renderMobileBottomNav();
+    if (activeLoader === AppLoader) AppLoader.set(90, 'Данные');
     initPWABanner();
     setupGlobalNavigation();
+    finishLoader();
 }
 
-export { renderMobileBottomNav, initHeader, navigateWithAnimation, updateFighterMoneyBalance, updatePartnerWalletBalance };
-
-if (document.readyState === 'complete') setTimeout(animatePageIn, 100);
-else window.addEventListener('load', () => setTimeout(animatePageIn, 100));
+export { renderMobileBottomNav, initHeader, updateFighterMoneyBalance, updatePartnerWalletBalance };
 
 setInterval(() => {
     const menu = document.querySelector('.mobile-bottom-nav');
@@ -900,5 +1217,3 @@ document.addEventListener('DOMContentLoaded', () => {
 
 window.updateFighterMoneyBalance = updateFighterMoneyBalance;
 window.updatePartnerWalletBalance = updatePartnerWalletBalance;
-window.navigateWithAnimation = navigateWithAnimation;
-window.animatePageIn = animatePageIn;

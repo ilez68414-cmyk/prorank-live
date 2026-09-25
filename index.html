@@ -7,10 +7,8 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="PRORANK">
-    <meta name="theme-color" content="#fbbf24">
     <meta name="mobile-web-app-capable" content="yes">
     <meta charset="UTF-8">
-<!--🔧ФИКС: preconnect -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="dns-prefetch" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -22,35 +20,64 @@
     <link rel="preconnect" href="https://www.gstatic.com" crossorigin>
     <link rel="dns-prefetch" href="https://www.gstatic.com">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <meta name="theme-color" content="#fbbf24">
+    <meta name="theme-color" content="#07070a">
     <meta name="description" content="PRORANK — рейтинговая платформа для спортсменов-любителей. Участвуй в спаррингах, покупай экипировку, становись лучшим!">
     <title>PRORANK — Рейтинг бойцов-любителей</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700;14..32,800;14..32,900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700;14..32,800;14..32,900&display=swap" rel="stylesheet">
     <style>
-        * {
+        :root{
+            --accent:#fbbf24;
+            --accent-soft:rgba(251,191,36,0.14);
+            --accent-glow:rgba(251,191,36,0.28);
+            --accent-deep:#b45309;
+            --bg:#07070a;
+            --card:rgba(22,22,26,0.72);
+            --card-solid:#16161a;
+            --border:rgba(255,255,255,0.07);
+            --text:#f5f5f7;
+            --text-dim:#a1a1aa;
+            --text-mute:#71717a;
+            --radius-lg:20px;
+            --radius-md:14px;
+            --radius-pill:100px;
+            --shadow-card:0 8px 32px rgba(0,0,0,0.4);
+        }
+
+        *{
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
         }
 
-        body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            color: #fff;
-            line-height: 1.4;
+        html, body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+            font-size: 15px;
+            line-height: 1.5;
             min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            background: radial-gradient(ellipse at 30% 40%, rgba(251, 191, 36, 0.15) 0%, transparent 60%),
-                        radial-gradient(ellipse at 70% 80%, rgba(251, 191, 36, 0.08) 0%, transparent 50%),
-                        linear-gradient(135deg, #1a1a1a 0%, #0f0f0f 40%, #1a1a1a 100%);
-            background-attachment: fixed;
+            overflow-x: hidden;
+            transition: background 0.6s ease;
         }
 
-        main {
-            flex: 1;
+        /* Тёплое фоновое свечение — меняет цвет под роль */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background:
+                radial-gradient(circle at 20% 0%, var(--accent-soft) 0%, transparent 45%),
+                radial-gradient(circle at 80% 100%, var(--accent-soft) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+            opacity: 0.9;
+            transition: background 0.6s ease;
         }
+
+        main { flex: 1; }
 
         .gold-top {
             position: fixed;
@@ -58,8 +85,9 @@
             left: 0;
             width: 100%;
             height: 3px;
-            background: linear-gradient(90deg, #fbbf24, #ffdd88, #fbbf24, #b8860b);
+            background: linear-gradient(90deg, var(--accent-deep), var(--accent), var(--accent-deep), var(--accent));
             z-index: 1001;
+            transition: background 0.6s ease;
         }
 
         .container {
@@ -71,7 +99,8 @@
             width: 100%;
         }
 
-        /* АНИМИРОВАННАЯ ШАПКА */
+
+        /* ===== АНИМИРОВАННАЯ ШАПКА (не трогаем) ===== */
         .navbar {
             display: flex;
             justify-content: space-between;
@@ -97,9 +126,7 @@
             transition: transform 0.2s ease;
         }
 
-        .logo:hover {
-            transform: scale(1.02);
-        }
+        .logo:hover { transform: scale(1.02); }
 
         .logo span {
             background: linear-gradient(135deg, #fbbf24, #ffdd77);
@@ -126,10 +153,7 @@
             box-shadow: 0 0 15px rgba(251,191,36,0.2);
         }
 
-        .balance-count {
-            color: #fbbf24;
-            font-size: 1.1rem;
-        }
+        .balance-count { color: #fbbf24; font-size: 1.1rem; }
 
         .balance-plus {
             background: rgba(251,191,36,0.15);
@@ -143,16 +167,8 @@
             transition: all 0.2s ease;
         }
 
-        .balance-plus:hover {
-            background: rgba(251,191,36,0.3);
-            transform: scale(1.05);
-        }
-
-        .balance-plus:active {
-            background: #fbbf24;
-            color: #000;
-            transform: scale(0.94);
-        }
+        .balance-plus:hover { background: rgba(251,191,36,0.3); transform: scale(1.05); }
+        .balance-plus:active { background: #fbbf24; color: #000; transform: scale(0.94); }
 
         .menu-toggle {
             display: none;
@@ -168,14 +184,8 @@
             min-width: 44px;
         }
 
-        .menu-toggle:hover {
-            background: rgba(251,191,36,0.2);
-            transform: scale(1.02);
-        }
-
-        .menu-toggle:active {
-            transform: scale(0.95);
-        }
+        .menu-toggle:hover { background: rgba(251,191,36,0.2); transform: scale(1.02); }
+        .menu-toggle:active { transform: scale(0.95); }
 
         .nav-links {
             display: flex;
@@ -197,414 +207,1123 @@
             transition: all 0.2s ease;
         }
 
-        .nav-links a i {
-            margin-right: 8px;
-            color: #fbbf24;
-            transition: transform 0.2s ease;
+        .nav-links a i { margin-right: 8px; color: #fbbf24; transition: transform 0.2s ease; }
+        .nav-links a:hover { color: #fbbf24; background: rgba(251,191,36,0.1); transform: translateY(-2px); }
+        .nav-links a:hover i { transform: scale(1.1); }
+
+        /* ============ КАРКАС ПРИЛОЖЕНИЯ ============ */
+        .app {
+            position: relative;
+            z-index: 1;
+            max-width: 720px;
+            margin: 0 auto;
+            padding: 20px 16px 130px;
+            min-height: 60vh;
+            width: 100%;
+        }
+        @media (min-width: 900px) {
+            .app { max-width: 840px; padding: 28px 24px 140px; }
         }
 
-        .nav-links a:hover {
-            color: #fbbf24;
-            background: rgba(251,191,36,0.1);
-            transform: translateY(-2px);
+        .screen { display: none; }
+        .screen.active { display: block; }
+
+        /* ===== КАСКАДНОЕ ПОЯВЛЕНИЕ ===== */
+        .fade-up { animation: fadeUp 0.5s ease both; }
+        .screen .fade-up:nth-child(1) { animation-delay: 0.05s; }
+        .screen .fade-up:nth-child(2) { animation-delay: 0.10s; }
+        .screen .fade-up:nth-child(3) { animation-delay: 0.15s; }
+        .screen .fade-up:nth-child(4) { animation-delay: 0.20s; }
+        .screen .fade-up:nth-child(5) { animation-delay: 0.25s; }
+        .screen .fade-up:nth-child(6) { animation-delay: 0.30s; }
+        .screen .fade-up:nth-child(7) { animation-delay: 0.35s; }
+        .screen .fade-up:nth-child(8) { animation-delay: 0.40s; }
+
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(12px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes fadeDown {
+            from { opacity: 0; transform: translateY(-8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.6; transform: scale(1.3); }
         }
 
-        .nav-links a:hover i {
-            transform: scale(1.1);
+        /* ===== СКЕЛЕТОНЫ ===== */
+        .skel {
+            background: linear-gradient(90deg, rgba(255,255,255,0.05) 25%, rgba(255,255,255,0.10) 50%, rgba(255,255,255,0.05) 75%);
+            background-size: 200% 100%;
+            animation: skelShimmer 1.4s ease-in-out infinite;
+            border-radius: 12px;
         }
-
-        /* ГЕРОЙ СЕКЦИЯ */
-        .hero {
-            text-align: center;
-            padding: 60px 20px 40px;
-            animation: fadeInUp 0.6s ease;
+        @keyframes skelShimmer {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
         }
+        .skel-plate { height: 72px; border-radius: 16px; margin-bottom: 14px; }
+        .skel-card { height: 168px; border-radius: 20px; margin-bottom: 14px; }
+        .skel-row { height: 64px; border-radius: 14px; margin-bottom: 10px; }
+        .skel-tour { flex: 0 0 200px; height: 258px; border-radius: 16px; }
 
-        .hero h1 {
-            font-size: clamp(2rem, 5vw, 3.2rem);
-            font-weight: 800;
-            background: linear-gradient(135deg, #fff, #fbbf24);
-            background-clip: text;
-            color: transparent;
-            margin-bottom: 18px;
-            letter-spacing: -1px;
-        }
-
-        .hero p {
-            color: #ccc;
-            max-width: 580px;
-            margin: 0 auto 28px;
-            font-size: clamp(0.9rem, 3vw, 1rem);
-        }
-
-        /* КАРТОЧКИ ВЫБОРА ПУТИ */
-        .path-selector {
+        /* ===== ЗАГОЛОВКИ СЕКЦИЙ ===== */
+        .section-head {
             display: flex;
-            justify-content: center;
-            gap: 24px;
-            flex-wrap: wrap;
-            margin-bottom: 40px;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            margin: 22px 2px 12px;
         }
-
-        .path-card {
-            background: rgba(15,15,15,0.7);
-            backdrop-filter: blur(8px);
-            border-radius: 28px;
-            padding: 28px 32px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            border: 1px solid rgba(251,191,36,0.2);
-            min-width: 240px;
-        }
-
-        .path-card:hover {
-            transform: translateY(-8px);
-            border-color: #fbbf24;
-            background: rgba(25,25,35,0.9);
-            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
-        }
-
-        .path-card:active {
-            transform: translateY(-4px) scale(0.98);
-        }
-
-        .path-icon {
-            font-size: 2.8rem;
-            color: #fbbf24;
-            margin-bottom: 16px;
-            transition: transform 0.2s ease;
-        }
-
-        .path-card:hover .path-icon {
-            transform: scale(1.1);
-        }
-
-        .path-card h3 {
-            font-size: 1.3rem;
-            margin-bottom: 8px;
-        }
-
-        .path-card p {
-            font-size: 0.8rem;
-            color: #aaa;
-            margin-bottom: 20px;
-        }
-
-        .path-btn {
-            display: inline-flex;
+        .section-head h3 {
+            font-size: 16px;
+            font-weight: 700;
+            letter-spacing: -0.01em;
+            display: flex;
             align-items: center;
             gap: 8px;
-            background: #fbbf24;
-            color: #000;
-            padding: 10px 28px;
-            border-radius: 60px;
-            font-weight: 700;
-            font-size: 0.85rem;
+        }
+        .section-head h3 i { color: var(--accent); font-size: 13px; transition: color 0.6s ease; }
+        .section-head a {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--accent);
             text-decoration: none;
+            white-space: nowrap;
             transition: all 0.2s ease;
         }
+        .section-head a:hover { opacity: 0.75; transform: translateX(2px); }
 
-        .path-btn:hover {
-            background: #ffdd44;
-            transform: translateY(-2px);
-        }
-
-        .path-btn:active {
-            transform: translateY(0) scale(0.97);
-        }
-
-        .path-btn.outline {
-            background: transparent;
-            border: 1.5px solid #fbbf24;
-            color: #fbbf24;
-        }
-
-        .path-btn.outline:hover {
-            background: rgba(251,191,36,0.1);
-            transform: translateY(-2px);
-        }
-
-        /* БЛОК ПАРТНЁРОВ */
-        .ad-showcase {
-            background: linear-gradient(135deg, #141414, #0a0a0a);
-            border-radius: 32px;
-            padding: 28px 24px;
-            margin: 20px 0 40px;
-            border: 1px solid rgba(251,191,36,0.25);
-            box-shadow: 0 15px 30px -12px rgba(0,0,0,0.5);
-            transition: all 0.3s ease;
-        }
-
-        .ad-showcase:hover {
-            border-color: rgba(251,191,36,0.4);
-            box-shadow: 0 20px 40px -12px rgba(0,0,0,0.6);
-        }
-
-        .ad-header {
+        .empty-state {
             text-align: center;
-            margin-bottom: 28px;
+            padding: 24px 16px;
+            color: var(--text-mute);
+            font-size: 13px;
+            background: var(--card);
+            border: 1px dashed var(--border);
+            border-radius: var(--radius-md);
         }
 
-        .ad-header h3 {
-            font-size: 1.3rem;
-            font-weight: 700;
-        }
-
-        .ad-header span {
-            color: #fbbf24;
-        }
-
-        .ad-header p {
-            font-size: 0.8rem;
-            color: #999;
-            margin-top: 6px;
-        }
-
-        .ad-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-            gap: 20px;
-        }
-
-        .ad-card {
-            background: #151515;
-            border-radius: 24px;
-            padding: 22px 18px;
-            display: flex;
-            align-items: center;
-            gap: 18px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            border: 1px solid rgba(251,191,36,0.1);
-        }
-
-        .ad-card:hover {
-            transform: translateY(-4px);
-            border-color: #fbbf24;
-            background: #1e1e1e;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
-        }
-
-        .ad-card:active {
-            transform: translateY(0) scale(0.98);
-        }
-
-        .ad-icon-lg {
-            font-size: 2.6rem;
-            color: #fbbf24;
-            min-width: 55px;
-            text-align: center;
-            transition: transform 0.2s ease;
-        }
-
-        .ad-card:hover .ad-icon-lg {
-            transform: scale(1.1);
-        }
-
-        .ad-info h4 {
-            font-size: 1rem;
-            font-weight: 700;
-            margin-bottom: 6px;
-        }
-
-        .ad-info p {
-            font-size: 0.75rem;
-            color: #bbb;
-        }
-
-        .ad-badge {
-            background: rgba(251,191,36,0.15);
-            padding: 4px 12px;
-            border-radius: 30px;
-            font-size: 0.7rem;
-            font-weight: 600;
-            color: #fbbf24;
-            margin-top: 8px;
-            display: inline-block;
-        }
-
-        /* ТОП БОЙЦЫ */
-        .top-fighters {
-            background: rgba(20,20,20,0.7);
-            backdrop-filter: blur(4px);
-            border-radius: 32px;
-            padding: 32px 28px;
-            margin: 30px 0;
-            border: 1px solid rgba(251,191,36,0.15);
-            transition: all 0.3s ease;
-        }
-
-        .top-fighters h2 {
-            font-size: 1.5rem;
-            font-weight: 700;
-            margin-bottom: 24px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .two-columns {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 32px;
-        }
-
-        .top-list {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-
-        .top-item {
+        /* ===== ПЛАШКИ (заявки / заказы) ===== */
+        .plate {
             display: flex;
             align-items: center;
             gap: 14px;
-            padding: 12px 16px;
-            background: #1a1a1a;
-            border-radius: 22px;
+            padding: 14px 16px;
+            border-radius: 16px;
+            border: 1px solid var(--accent-glow);
+            background: linear-gradient(135deg, var(--accent-soft) 0%, transparent 65%);
+            margin-bottom: 14px;
             cursor: pointer;
             transition: all 0.2s ease;
-            border: 1px solid rgba(255,255,255,0.05);
+            animation: fadeUp 0.5s ease both;
         }
-
-        .top-item:hover {
-            background: #252525;
-            transform: translateX(5px);
-            border-color: rgba(251,191,36,0.3);
+        .plate:hover { transform: translateX(4px); }
+        .plate-icon {
+            width: 42px;
+            height: 42px;
+            border-radius: 12px;
+            background: var(--accent);
+            color: #0a0a0a;
+            display: grid;
+            place-items: center;
+            font-size: 17px;
+            flex-shrink: 0;
+            transition: background 0.6s ease;
         }
-
-        .top-item:active {
-            transform: translateX(2px) scale(0.99);
-        }
-
-        .top-rank {
-            font-size: 1.6rem;
-            font-weight: 800;
-            color: #fbbf24;
-            width: 50px;
-        }
-
-        .top-avatar {
-            width: 48px;
-            height: 48px;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 2px solid #fbbf24;
-            transition: transform 0.2s ease;
-        }
-
-        .top-item:hover .top-avatar {
-            transform: scale(1.05);
-        }
-
-        .top-name {
-            flex: 1;
-            font-weight: 600;
-            font-size: 0.95rem;
-        }
-
-        .top-points {
-            background: #282828;
-            padding: 5px 14px;
-            border-radius: 40px;
-            font-size: 0.75rem;
+        .plate-content { flex: 1; min-width: 0; }
+        .plate-title {
+            font-size: 13px;
             font-weight: 700;
+            color: var(--accent);
+            margin-bottom: 2px;
+            letter-spacing: 0.02em;
+            transition: color 0.6s ease;
+        }
+        .plate-text {
+            font-size: 13px;
+            color: var(--text);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .plate-arrow { color: var(--accent); font-size: 14px; flex-shrink: 0; }
+
+        /* ===== ПЛИТКИ УПРАВЛЕНИЯ (badge-plate) ===== */
+        .tiles {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 14px;
+        }
+        .tile {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 16px 8px;
+            text-align: center;
+            cursor: pointer;
+            backdrop-filter: blur(14px);
+            transition: all 0.2s ease;
+            animation: fadeUp 0.5s ease both;
+        }
+        .tile:hover {
+            border-color: var(--accent-glow);
+            background: var(--accent-soft);
+            transform: translateY(-2px);
+        }
+        .tile i {
+            font-size: 20px;
+            color: var(--accent);
+            display: block;
+            margin-bottom: 8px;
+            transition: all 0.2s ease;
+        }
+        .tile:hover i { transform: scale(1.12); }
+        .tile span { font-size: 12px; font-weight: 600; color: var(--text-dim); }
+        .tile:hover span { color: var(--text); }
+        .tile .tile-count {
+            display: block;
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 20px;
+            line-height: 1;
+            color: var(--accent);
+            margin-top: 5px;
+            letter-spacing: 0.02em;
+        }
+
+        /* ============ PROFILE-КАРТОЧКА ============ */
+        .profile-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 20px;
+            backdrop-filter: blur(14px);
+            margin-bottom: 14px;
+            position: relative;
+            overflow: hidden;
+            animation: fadeUp 0.5s ease both;
+        }
+        .profile-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 20px; right: 20px;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--accent), transparent);
+            transition: background 0.6s ease;
+        }
+        .profile-top {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            margin-bottom: 18px;
+            cursor: pointer;
+        }
+        .profile-avatar {
+            width: 64px;
+            height: 64px;
+            border-radius: 20px;
+            object-fit: cover;
+            border: 2px solid var(--accent);
+            background: #111;
+            flex-shrink: 0;
+            transition: border-color 0.6s ease;
+        }
+        .profile-avatar-icon {
+            width: 64px;
+            height: 64px;
+            border-radius: 20px;
+            background: var(--accent-soft);
+            border: 1px solid var(--accent-glow);
+            color: var(--accent);
+            display: grid;
+            place-items: center;
+            font-size: 26px;
+            flex-shrink: 0;
+            transition: all 0.6s ease;
+        }
+        .profile-name { min-width: 0; flex: 1; }
+        .profile-name h2 {
+            font-size: 17px;
+            font-weight: 700;
+            letter-spacing: -0.01em;
+            margin-bottom: 3px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .profile-name p { font-size: 12px; color: var(--text-dim); }
+        .profile-chev { color: var(--text-mute); font-size: 14px; flex-shrink: 0; }
+
+        .profile-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+        .profile-stat {
+            background: rgba(0,0,0,0.3);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 12px 8px;
+            text-align: center;
+        }
+        .profile-stat .val {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 24px;
+            color: var(--accent);
+            letter-spacing: 0.02em;
+            line-height: 1;
+            margin-bottom: 4px;
+            transition: color 0.6s ease;
+        }
+        .profile-stat .lbl {
+            font-size: 10px;
+            color: var(--text-mute);
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+
+        /* ===== ПРОГРЕСС ЛИГИ ===== */
+        .league-block {
+            background: rgba(0,0,0,0.3);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 12px 14px;
+        }
+        .league-top {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+        .league-top .current { color: var(--accent); transition: color 0.6s ease; display: inline-flex; align-items: center; gap: 6px; min-width: 0; }
+        .league-top .next { color: var(--text-dim); }
+        .league-icon {
+            width: 16px;
+            height: 16px;
+            object-fit: contain;
+            flex-shrink: 0;
+            border-radius: 4px;
+        }
+        .league-bar {
+            height: 6px;
+            background: rgba(255,255,255,0.08);
+            border-radius: var(--radius-pill);
+            overflow: hidden;
+            margin-bottom: 6px;
+        }
+        .league-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent-deep), var(--accent));
+            border-radius: var(--radius-pill);
+            transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .league-nums {
+            font-size: 11px;
+            color: var(--text-mute);
+            text-align: right;
+        }
+
+        /* ============ СЕЗОН ============ */
+        .season {
+            background: linear-gradient(135deg, var(--accent-soft) 0%, transparent 70%);
+            border: 1px solid var(--accent-glow);
+            border-radius: var(--radius-lg);
+            padding: 20px;
+            margin-bottom: 14px;
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+            animation: fadeUp 0.5s ease both;
+            transition: border-color 0.3s ease;
+        }
+        .season:hover { border-color: var(--accent); }
+        .season::before {
+            content: '';
+            position: absolute;
+            top: -50%; right: -20%;
+            width: 200px; height: 200px;
+            background: radial-gradient(circle, var(--accent-glow) 0%, transparent 70%);
+            opacity: 0.4;
+            pointer-events: none;
+        }
+        .season-label {
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--accent);
+            margin-bottom: 8px;
             display: flex;
             align-items: center;
             gap: 6px;
+            transition: color 0.6s ease;
+        }
+        .season-label .dot {
+            width: 6px; height: 6px;
+            border-radius: 50%;
+            background: var(--accent);
+            box-shadow: 0 0 8px var(--accent);
+            animation: pulse 1.8s ease infinite;
+        }
+        .season-name {
+            font-size: 20px;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            margin-bottom: 6px;
+        }
+        .season-prize {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 44px;
+            line-height: 1;
+            color: var(--accent);
+            letter-spacing: 0.02em;
+            margin: 8px 0 4px;
+            transition: color 0.6s ease;
+        }
+        .season-prize small {
+            font-family: 'Inter', sans-serif;
+            font-size: 14px;
+            color: var(--text-dim);
+            font-weight: 500;
+            margin-left: 6px;
+        }
+        .season-prize-label {
+            font-size: 12px;
+            color: var(--text-mute);
+            margin-bottom: 16px;
+        }
+        .season-desc {
+            font-size: 13px;
+            color: var(--text-dim);
+            line-height: 1.5;
+        }
+        .season-progress {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+        .season-progress-item {
+            background: rgba(0,0,0,0.25);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 10px 8px;
+            text-align: center;
+        }
+        .season-progress-item .lbl {
+            font-size: 10px;
+            font-weight: 600;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--text-mute);
+            margin-bottom: 4px;
+        }
+        .season-progress-item .val {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 22px;
+            line-height: 1;
+            color: var(--accent);
+            letter-spacing: 0.02em;
+            transition: color 0.6s ease;
+        }
+        .season-prizes {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+        }
+        .season-prize-item {
+            background: rgba(0,0,0,0.25);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 10px 8px;
+            text-align: center;
+        }
+        .season-prize-item .place {
+            font-size: 10px;
+            font-weight: 600;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--text-mute);
+            margin-bottom: 4px;
+        }
+        .season-prize-item .amount {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 20px;
+            line-height: 1.1;
+            color: var(--accent);
+            letter-spacing: 0.02em;
+            transition: color 0.6s ease;
+        }
+
+        /* ============ ПЛАШКА КЛУБА (у бойца) ============ */
+        .club-plate {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 14px 16px;
+            margin-bottom: 14px;
+            cursor: pointer;
+            backdrop-filter: blur(14px);
+            transition: all 0.2s ease;
+            animation: fadeUp 0.5s ease both;
+        }
+        .club-plate:hover { border-color: var(--accent-glow); transform: translateY(-2px); }
+        .club-plate-logo {
+            width: 48px; height: 48px;
+            border-radius: 14px;
+            object-fit: cover;
+            border: 1px solid var(--accent-glow);
+            background: #111;
+            flex-shrink: 0;
+        }
+        .club-plate-info { flex: 1; min-width: 0; }
+        .club-plate-name {
+            font-size: 14px;
+            font-weight: 700;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .club-plate-sub { font-size: 11px; color: var(--text-mute); }
+        .club-plate-frs {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 22px;
+            color: var(--accent);
+            letter-spacing: 0.02em;
+            flex-shrink: 0;
+        }
+
+        /* ============ СПИСКИ (топ бойцов клуба) ============ */
+        .rank-list { display: flex; flex-direction: column; gap: 8px; }
+        .rank-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 10px 12px;
+            cursor: pointer;
+            backdrop-filter: blur(14px);
+            transition: all 0.2s ease;
+            animation: fadeUp 0.4s ease both;
+        }
+        .rank-row:hover { border-color: var(--accent-glow); transform: translateX(4px); }
+        .rank-pos {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 22px;
+            color: var(--accent);
+            width: 22px;
+            text-align: center;
+            flex-shrink: 0;
+            letter-spacing: 0.02em;
+        }
+        .rank-avatar {
+            width: 38px; height: 38px;
+            border-radius: 12px;
+            object-fit: cover;
+            border: 1px solid var(--border);
+            background: #111;
+            flex-shrink: 0;
+        }
+        .rank-name {
+            flex: 1;
+            min-width: 0;
+            font-size: 13px;
+            font-weight: 600;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .rank-frs {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 18px;
+            color: var(--accent);
+            letter-spacing: 0.02em;
+            flex-shrink: 0;
+        }
+        .rank-frs small {
+            font-family: 'Inter', sans-serif;
+            font-size: 10px;
+            color: var(--text-mute);
+            margin-left: 3px;
+        }
+
+        /* ============ ТОВАРЫ ПАРТНЁРА ============ */
+        .product-list {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+        }
+        .product-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            overflow: hidden;
+            cursor: pointer;
+            backdrop-filter: blur(14px);
+            transition: all 0.2s ease;
+            animation: fadeUp 0.5s ease both;
+        }
+        .product-card:hover { border-color: var(--accent-glow); transform: translateY(-2px); }
+        .product-img {
+            width: 100%;
+            aspect-ratio: 1 / 1;
+            object-fit: cover;
+            background: #111;
+            display: block;
+        }
+        .product-info { padding: 8px 10px 10px; }
+        .product-name {
+            font-size: 12px;
+            font-weight: 600;
+            line-height: 1.3;
+            margin-bottom: 4px;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        .product-price {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 17px;
+            color: var(--accent);
+            letter-spacing: 0.02em;
+        }
+
+        /* ============ ТУРНИРЫ: SNAP-СКРОЛЛ ============ */
+        .tournaments-scroll {
+            display: flex;
+            gap: 12px;
+            overflow-x: auto;
+            overflow-y: hidden;
+            scroll-snap-type: x proximity;
+            padding: 6px 16px 16px;
+            margin: 0 -16px;
+            scrollbar-width: none;
+            -webkit-overflow-scrolling: touch;
+        }
+        .tournaments-scroll::-webkit-scrollbar { display: none; }
+
+        .tournament-card {
+            flex: 0 0 200px;
+            scroll-snap-align: center;
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 14px;
+            backdrop-filter: blur(14px);
+            cursor: pointer;
+            transform-origin: center;
+            overflow: hidden;
+            transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+            animation: fadeUp 0.4s ease both;
+        }
+        .tournament-card.focused {
+            transform: scale(1.05);
+            border-color: var(--accent);
+            box-shadow: 0 0 28px var(--accent-glow), 0 10px 30px rgba(0,0,0,0.45);
+        }
+        .tournament-card:hover { border-color: var(--accent-glow); }
+
+        /* ===== ОБЛОЖКА И БЕЙДЖИ КАРТОЧКИ (как в tournaments.html) ===== */
+        .card-cover-wrap {
+            position: relative;
+            margin: -14px -14px 12px;
+        }
+        .card-cover {
+            position: relative;
+            width: 100%;
+            height: 82px;
+            background: linear-gradient(135deg, rgba(251,191,36,0.15), rgba(7,7,10,0.8));
+            overflow: hidden;
+        }
+        .card-cover img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.4s ease;
+        }
+        .tournament-card:hover .card-cover img { transform: scale(1.06); }
+        .card-cover::after {
+            content: '';
+            position: absolute;
+            bottom: 0; left: 0; right: 0;
+            height: 60%;
+            background: linear-gradient(to top, rgba(7,7,10,0.95), transparent);
+            pointer-events: none;
+        }
+        .card-cover.no-image {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, rgba(251,191,36,0.08), rgba(7,7,10,0.6));
+        }
+        .card-cover.no-image i { font-size: 1.5rem; color: rgba(251,191,36,0.25); }
+        .card-cover-badges {
+            position: absolute;
+            top: 7px;
+            left: 7px;
+            right: 7px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            z-index: 2;
+            gap: 5px;
+        }
+        .badges-left { display: flex; gap: 4px; flex-wrap: wrap; }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
+            font-size: 8px;
+            font-weight: 800;
+            padding: 2px 7px;
+            border-radius: 30px;
+            height: 17px;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            white-space: nowrap;
+            flex-shrink: 0;
+            backdrop-filter: blur(8px);
+        }
+        .status-badge i { font-size: 5px; }
+        .status-badge.registration { background: rgba(251,191,36,0.15); color: #fbbf24; border: 1px solid rgba(251,191,36,0.3); }
+        .status-badge.scheduled { background: rgba(139,92,246,0.15); color: #a78bfa; border: 1px solid rgba(139,92,246,0.3); }
+        .status-badge.active { background: rgba(16,185,129,0.15); color: #10b981; border: 1px solid rgba(16,185,129,0.3); }
+        .status-badge.completed { background: rgba(59,130,246,0.15); color: #60a5fa; border: 1px solid rgba(59,130,246,0.3); }
+        .status-badge.cancelled { background: rgba(239,68,68,0.15); color: #ef4444; border: 1px solid rgba(239,68,68,0.3); }
+
+        .live-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
+            font-size: 8px;
+            font-weight: 800;
+            padding: 2px 7px;
+            border-radius: 30px;
+            height: 17px;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            background: rgba(239,68,68,0.9);
+            color: #fff;
+            backdrop-filter: blur(8px);
+        }
+        .live-badge .pulse {
+            width: 5px;
+            height: 5px;
+            background: #fff;
+            border-radius: 50%;
+            animation: pulse 1.2s infinite;
+        }
+        .tournament-date {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 20px;
+            color: var(--accent);
+            letter-spacing: 0.02em;
+            margin-bottom: 6px;
+        }
+        .tournament-name {
+            font-size: 14px;
+            font-weight: 700;
+            line-height: 1.3;
+            margin-bottom: 10px;
+            min-height: 36px;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        .tournament-meta {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            font-size: 11px;
+            color: var(--text-dim);
+            margin-bottom: 10px;
+        }
+        .tournament-meta span {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .tournament-meta i { color: var(--accent); width: 12px; font-size: 10px; flex-shrink: 0; }
+        .tournament-foot {
+            display: flex;
+            justify-content: space-between;
+            padding-top: 10px;
+            border-top: 1px solid var(--border);
+            font-size: 11px;
+        }
+        .tournament-fee { font-weight: 700; color: var(--accent); }
+        .tournament-slots { color: var(--text-mute); }
+
+        /* ===== ШИРОКАЯ КАРТОЧКА ТУРНИРА (организатор) ===== */
+        .tournament-wide {
+            background: var(--card);
+            border: 1px solid var(--accent-glow);
+            border-radius: 18px;
+            padding: 16px;
+            margin-bottom: 14px;
+            backdrop-filter: blur(14px);
+            animation: fadeUp 0.5s ease both;
             transition: all 0.2s ease;
         }
-
-        .top-item:hover .top-points {
-            background: #333;
+        .tournament-wide:hover { border-color: var(--accent); }
+        .tw-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 12px;
+            margin-bottom: 10px;
         }
-
-        .cta-button-outline {
-            display: inline-flex;
+        .tw-date {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 26px;
+            line-height: 1;
+            color: var(--accent);
+            letter-spacing: 0.02em;
+        }
+        .tw-status {
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            padding: 5px 10px;
+            border-radius: var(--radius-pill);
+            background: var(--accent-soft);
+            color: var(--accent);
+            border: 1px solid var(--accent-glow);
+            white-space: nowrap;
+        }
+        .tw-name { font-size: 16px; font-weight: 700; line-height: 1.3; margin-bottom: 8px; }
+        .tw-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            font-size: 12px;
+            color: var(--text-dim);
+            margin-bottom: 14px;
+        }
+        .tw-meta span { display: flex; align-items: center; gap: 6px; }
+        .tw-meta i { color: var(--accent); font-size: 11px; }
+        .tw-btn {
+            width: 100%;
+            padding: 13px;
+            border-radius: var(--radius-pill);
+            border: none;
+            background: linear-gradient(135deg, var(--accent), var(--accent-deep));
+            color: #0a0a0a;
+            font-family: inherit;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
             align-items: center;
             justify-content: center;
             gap: 8px;
-            background: transparent;
-            border: 1.5px solid #fbbf24;
-            color: #fbbf24;
-            padding: 12px 32px;
-            border-radius: 60px;
-            font-weight: 600;
-            text-decoration: none;
-            margin-top: 32px;
+            box-shadow: 0 4px 18px var(--accent-glow);
             transition: all 0.2s ease;
-            cursor: pointer;
         }
+        .tw-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 24px var(--accent-glow); }
 
-        .cta-button-outline:hover {
-            background: rgba(251,191,36,0.1);
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(251,191,36,0.2);
-        }
-
-        .cta-button-outline:active {
-            transform: translateY(0) scale(0.98);
-        }
-
-        /* ПРЕИМУЩЕСТВА */
-        .features {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-            gap: 24px;
-            margin: 40px 0;
-        }
-
-        .feature-card {
-            background: #141414;
-            padding: 28px 20px;
-            border-radius: 28px;
+        /* ===== ПЛЕЙСХОЛДЕР «СОЗДАТЬ ТУРНИР» ===== */
+        .create-card {
             text-align: center;
-            border: 1px solid rgba(251,191,36,0.1);
-            transition: all 0.3s ease;
+            padding: 26px 18px;
+            border-radius: 18px;
+            border: 1px dashed var(--accent-glow);
+            background: linear-gradient(135deg, var(--accent-soft) 0%, transparent 70%);
             cursor: pointer;
+            margin-bottom: 14px;
+            animation: fadeUp 0.5s ease both;
+            transition: all 0.2s ease;
+        }
+        .create-card:hover { border-color: var(--accent); transform: translateY(-2px); }
+        .create-card i {
+            font-size: 26px;
+            color: var(--accent);
+            display: block;
+            margin-bottom: 10px;
+        }
+        .create-card h4 { font-size: 15px; font-weight: 700; margin-bottom: 4px; }
+        .create-card p { font-size: 12px; color: var(--text-mute); }
+
+        /* ============ ГОСТЬ: HERO ============ */
+        .guest-hero {
+            text-align: center;
+            margin-bottom: 28px;
+            animation: fadeUp 0.6s ease 0.05s both;
+        }
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--accent);
+            background: var(--accent-soft);
+            padding: 6px 12px;
+            border-radius: var(--radius-pill);
+            margin-bottom: 14px;
+            transition: all 0.6s ease;
+        }
+        .hero-badge i { font-size: 10px; }
+        .guest-hero h1 {
+            font-size: clamp(26px, 7vw, 38px);
+            font-weight: 800;
+            line-height: 1.1;
+            letter-spacing: -0.03em;
+            margin-bottom: 12px;
+        }
+        .guest-hero h1 em {
+            font-style: normal;
+            color: var(--accent);
+            transition: color 0.6s ease;
+        }
+        .guest-hero p {
+            color: var(--text-dim);
+            font-size: 15px;
+            max-width: 480px;
+            margin: 0 auto;
+            line-height: 1.55;
         }
 
-        .feature-card:hover {
-            transform: translateY(-5px);
-            border-color: rgba(251,191,36,0.4);
-            background: #1a1a1a;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+        /* ============ ГОСТЬ: 4 КВАДРАТА РОЛЕЙ ============ */
+        .roles {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin-bottom: 28px;
+            animation: fadeUp 0.6s ease 0.1s both;
         }
-
-        .feature-card:active {
+        .role-btn {
+            aspect-ratio: 1 / 1;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border);
+            background: var(--card);
+            backdrop-filter: blur(14px);
+            color: var(--text-dim);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 0.02em;
+            position: relative;
+            overflow: hidden;
+            padding: 8px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .role-btn i { font-size: 20px; transition: all 0.3s ease; }
+        .role-btn::after {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--accent), transparent);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .role-btn:hover {
+            border-color: var(--accent-glow);
+            color: var(--text);
             transform: translateY(-2px);
         }
-
-        .feature-icon {
-            font-size: 2.8rem;
-            margin-bottom: 16px;
-            color: #fbbf24;
-            transition: transform 0.2s ease;
+        .role-btn.active {
+            border-color: var(--accent-glow);
+            color: var(--accent);
+            background: var(--accent-soft);
+            box-shadow: 0 0 24px var(--accent-soft);
         }
+        .role-btn.active::after { opacity: 1; }
+        .role-btn.active i { transform: scale(1.1); }
+        .role-btn .role-label { font-size: 11px; font-weight: 600; }
 
-        .feature-card:hover .feature-icon {
-            transform: scale(1.1);
+        /* ============ ГОСТЬ: ПАНЕЛЬ ============ */
+        .guest-panel { animation: fadeUp 0.4s ease both; }
+        .panel-head {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 18px;
         }
+        .panel-icon {
+            width: 44px; height: 44px;
+            border-radius: 13px;
+            background: var(--accent-soft);
+            border: 1px solid var(--accent-glow);
+            display: grid;
+            place-items: center;
+            color: var(--accent);
+            font-size: 18px;
+            flex-shrink: 0;
+            transition: all 0.6s ease;
+        }
+        .panel-title h2 {
+            font-size: 19px;
+            font-weight: 700;
+            letter-spacing: -0.01em;
+            margin-bottom: 2px;
+        }
+        .panel-title p { font-size: 13px; color: var(--text-mute); }
 
-        .feature-card h3 {
-            font-size: 1.2rem;
+        .guest-features {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 10px;
+            margin-bottom: 18px;
+        }
+        @media (min-width: 600px) {
+            .guest-features { grid-template-columns: 1fr 1fr; }
+            .guest-features .guest-feature.wide { grid-column: 1 / -1; }
+        }
+        .guest-feature {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 16px;
+            backdrop-filter: blur(14px);
+            position: relative;
+            overflow: hidden;
+            animation: fadeUp 0.4s ease both;
+            transition: border-color 0.3s ease, transform 0.3s ease;
+        }
+        .guest-feature::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 16px; right: 16px;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--accent), transparent);
+            opacity: 0.5;
+            transition: background 0.6s ease;
+        }
+        .guest-feature:hover { border-color: var(--accent-glow); transform: translateY(-2px); }
+        .g-feature-head {
+            display: flex;
+            align-items: center;
+            gap: 10px;
             margin-bottom: 8px;
         }
+        .g-feature-head i {
+            width: 32px; height: 32px;
+            border-radius: 10px;
+            background: var(--accent-soft);
+            color: var(--accent);
+            display: grid;
+            place-items: center;
+            font-size: 14px;
+            flex-shrink: 0;
+            transition: all 0.6s ease;
+        }
+        .g-feature-head h3 { font-size: 14px; font-weight: 700; letter-spacing: -0.01em; }
+        .guest-feature p { font-size: 13px; color: var(--text-dim); line-height: 1.5; }
 
-        .feature-card p {
-            font-size: 0.85rem;
-            color: #aaa;
+        .cta-hint {
+            text-align: center;
+            padding: 16px;
+            border-radius: var(--radius-md);
+            border: 1px dashed var(--border);
+            color: var(--text-mute);
+            font-size: 13px;
+            line-height: 1.5;
+        }
+        .cta-hint strong { color: var(--accent); font-weight: 600; transition: color 0.6s ease; }
+
+        /* ============ ГОСТЬ: STICKY CTA ============ */
+        .login-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 12px 16px calc(12px + env(safe-area-inset-bottom));
+            background: linear-gradient(180deg, transparent 0%, rgba(7,7,10,0.95) 30%);
+            z-index: 100;
+            animation: slideUp 0.5s ease 0.3s both;
+        }
+        .login-bar-inner {
+            max-width: 720px;
+            margin: 0 auto;
+            display: flex;
+            gap: 10px;
+        }
+        @media (min-width: 900px) { .login-bar-inner { max-width: 840px; } }
+        @media (max-width: 768px) {
+            .login-bar { bottom: 68px; padding-bottom: 12px; }
         }
 
-        /* ПОДВАЛ */
+        .btn-login {
+            flex: 1;
+            padding: 15px;
+            border-radius: var(--radius-pill);
+            border: none;
+            background: linear-gradient(135deg, var(--accent) 0%, var(--accent-deep) 100%);
+            color: #0a0a0a;
+            font-family: inherit;
+            font-size: 15px;
+            font-weight: 700;
+            letter-spacing: -0.01em;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            box-shadow: 0 4px 20px var(--accent-glow);
+            transition: all 0.3s ease;
+        }
+        .btn-login:hover { transform: translateY(-2px); box-shadow: 0 8px 28px var(--accent-glow); }
+        .btn-login:active { transform: translateY(0); }
+
+        /* ============ ПОДВАЛ ГОСТЯ (ссылки) ============ */
+        .foot {
+            margin-top: 32px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            flex-wrap: wrap;
+            gap: 14px;
+            justify-content: center;
+            font-size: 12px;
+            color: var(--text-mute);
+        }
+        .foot a {
+            color: var(--text-mute);
+            text-decoration: none;
+            transition: color 0.2s ease;
+        }
+        .foot a:hover { color: var(--accent); }
+
+        /* ============ ПОДВАЛ ============ */
         .main-footer {
             background: #0a0a0a;
             border-top: 1px solid rgba(251,191,36,0.15);
             margin-top: 60px;
             padding: 48px 0 28px;
+            position: relative;
+            z-index: 2;
         }
-
         .footer-inner {
             display: flex;
             justify-content: space-between;
@@ -613,51 +1332,14 @@
             gap: 32px;
             margin-bottom: 32px;
         }
-
-        .footer-logo .logo {
-            font-size: 1.3rem;
-            display: inline-block;
-        }
-
-        .footer-logo p {
-            font-size: 0.7rem;
-            color: #777;
-            margin-top: 6px;
-        }
-
-        .footer-social {
-            display: flex;
-            gap: 20px;
-        }
-
-        .social-icon {
-            color: #aaa;
-            font-size: 1.3rem;
-            transition: all 0.2s ease;
-        }
-
-        .social-icon:hover {
-            color: #fbbf24;
-            transform: translateY(-3px) scale(1.1);
-        }
-
-        .footer-links {
-            display: flex;
-            gap: 24px;
-            flex-wrap: wrap;
-        }
-
-        .footer-links a {
-            color: #888;
-            text-decoration: none;
-            font-size: 0.75rem;
-            transition: color 0.2s ease;
-        }
-
-        .footer-links a:hover {
-            color: #fbbf24;
-        }
-
+        .footer-logo .logo { font-size: 1.3rem; display: inline-block; }
+        .footer-logo p { font-size: 0.7rem; color: #777; margin-top: 6px; }
+        .footer-social { display: flex; gap: 20px; }
+        .social-icon { color: #aaa; font-size: 1.3rem; transition: all 0.2s ease; }
+        .social-icon:hover { color: #fbbf24; transform: translateY(-3px) scale(1.1); }
+        .footer-links { display: flex; gap: 24px; flex-wrap: wrap; }
+        .footer-links a { color: #888; text-decoration: none; font-size: 0.75rem; transition: color 0.2s ease; }
+        .footer-links a:hover { color: #fbbf24; }
         .footer-bottom {
             text-align: center;
             padding-top: 24px;
@@ -666,292 +1348,39 @@
             color: #555;
         }
 
-        /* АНИМАЦИИ */
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
         @keyframes fadeIn {
             from { opacity: 0; }
             to { opacity: 1; }
         }
 
-        /* ========== PREMIUM УЛУЧШЕНИЯ ========== */
-        
-        /* Персональный дашборд */
-        .user-dashboard {
-            background: linear-gradient(135deg, rgba(251,191,36,0.1), rgba(0,0,0,0.6));
-            border-radius: 28px;
-            padding: 24px;
-            margin: 20px 0 30px;
-            border: 1px solid rgba(251,191,36,0.3);
-            backdrop-filter: blur(10px);
-            animation: fadeInUp 0.5s ease;
-        }
-
-        .user-greeting {
-            display: flex;
-            align-items: center;
-            gap: 16px;
-            margin-bottom: 20px;
-            cursor: pointer;
-        }
-
-        .user-avatar-large {
-            width: 64px;
-            height: 64px;
-            border-radius: 50%;
-            border: 2px solid #fbbf24;
-            object-fit: cover;
-            transition: transform 0.2s ease;
-        }
-
-        .user-avatar-large:active {
-            transform: scale(0.95);
-        }
-
-        .user-info h3 {
-            font-size: 1.3rem;
-            margin-bottom: 4px;
-        }
-
-        .user-info p {
-            font-size: 0.8rem;
-            color: #ccc;
-        }
-
-        .league-progress {
-            background: rgba(0,0,0,0.5);
-            border-radius: 16px;
-            padding: 14px;
-            margin-top: 8px;
-        }
-
-        .progress-label {
-            display: flex;
-            justify-content: space-between;
-            font-size: 0.75rem;
-            margin-bottom: 8px;
-            color: #ddd;
-        }
-
-        .progress-bar-bg {
-            background: rgba(255,255,255,0.1);
-            border-radius: 20px;
-            height: 8px;
-            overflow: hidden;
-        }
-
-        .progress-bar-fill {
-            background: linear-gradient(90deg, #fbbf24, #ffdd88);
-            width: 0%;
-            height: 100%;
-            border-radius: 20px;
-            transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        /* Skeleton лоадеры */
-        .skeleton {
-            background: linear-gradient(90deg, #2a2a2a 25%, #3a3a3a 50%, #2a2a2a 75%);
-            background-size: 200% 100%;
-            animation: skeleton-loading 1.5s infinite;
-            border-radius: 12px;
-        }
-
-        @keyframes skeleton-loading {
-            0% { background-position: 200% 0; }
-            100% { background-position: -200% 0; }
-        }
-
-        .skeleton-item {
-            display: flex;
-            align-items: center;
-            gap: 14px;
-            padding: 12px 16px;
-            background: #1a1a1a;
-            border-radius: 22px;
-            margin-bottom: 10px;
-        }
-
-        .skeleton-avatar {
-            width: 48px;
-            height: 48px;
-            border-radius: 50%;
-        }
-
-        .skeleton-text {
-            flex: 1;
-            height: 16px;
-            border-radius: 8px;
-        }
-
-        .skeleton-text-sm {
-            width: 60px;
-            height: 12px;
-            border-radius: 6px;
-        }
-
-        /* Лента активности */
-        .activity-feed {
-            margin: 40px 0;
-        }
-
-        .activity-feed h2 {
-            font-size: 1.3rem;
-            margin-bottom: 20px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .activity-card {
-            background: rgba(20,20,20,0.7);
-            border-radius: 20px;
-            padding: 14px 18px;
-            margin-bottom: 12px;
-            display: flex;
-            align-items: center;
-            gap: 14px;
-            border: 1px solid rgba(251,191,36,0.1);
-            transition: all 0.2s ease;
-            animation: fadeInUp 0.4s ease backwards;
-        }
-
-        .activity-card:active {
-            transform: scale(0.98);
-            background: rgba(30,30,30,0.9);
-        }
-
-        .activity-icon {
-            width: 44px;
-            height: 44px;
-            background: rgba(251,191,36,0.15);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.2rem;
-            color: #fbbf24;
-        }
-
-        .activity-content {
-            flex: 1;
-        }
-
-        .activity-title {
-            font-weight: 600;
-            font-size: 0.9rem;
-            margin-bottom: 4px;
-        }
-
-        .activity-time {
-            font-size: 0.7rem;
-            color: #888;
-        }
-
-        /* Анимация появления при скролле */
-        .fade-up {
-            opacity: 0;
-            transform: translateY(30px);
-            transition: opacity 0.6s ease, transform 0.6s ease;
-        }
-
-        .fade-up.visible {
-            opacity: 1;
-            transform: translateY(0);
-        }
-
-        /* Тактильные отклики для телефонов */
+        /* ===== ТАКТИЛЬНЫЙ ОТКЛИК ===== */
         @media (hover: none) and (pointer: coarse) {
-            .path-card:active,
-            .ad-card:active,
-            .top-item:active,
-            .feature-card:active,
-            .activity-card:active {
-                transform: scale(0.97);
+            .profile-top:active,
+            .tournament-card:active,
+            .product-card:active,
+            .rank-row:active,
+            .club-plate:active,
+            .season:active,
+            .tile:active,
+            .role-btn:active {
+                transform: scale(0.98);
                 transition: transform 0.05s ease;
             }
-            
-            button:active,
-            .path-btn:active,
-            .cta-button-outline:active {
-                transform: scale(0.95);
-            }
         }
 
-        /* Pull-to-refresh индикатор */
-        .ptr-element {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            display: flex;
-            justify-content: center;
-            padding: 12px;
-            background: rgba(0,0,0,0.8);
-            backdrop-filter: blur(10px);
-            z-index: 9999;
-            transform: translateY(-100%);
-            transition: transform 0.2s ease;
-            pointer-events: none;
-        }
+        /* ===== СКРОЛЛБАР ===== */
+        ::-webkit-scrollbar { width: 5px; height: 5px; }
+        ::-webkit-scrollbar-track { background: #1a1a1a; }
+        ::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 10px; }
 
-        .ptr-element.show {
-            transform: translateY(0);
-        }
-
-        .ptr-spinner {
-            width: 24px;
-            height: 24px;
-            border: 2px solid rgba(251,191,36,0.3);
-            border-top-color: #fbbf24;
-            border-radius: 50%;
-            animation: spin 0.6s linear infinite;
-        }
-        
-        .icon-gold { 
-            color: #fbbf24; 
-        }
-        
-        .icon-red { 
-            color: #ff5555; 
-        }
-        
-        .loading-spinner {
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 2px solid rgba(251,191,36,0.3);
-            border-top-color: #fbbf24;
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-        }
-        
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
-        /* АДАПТИВ */
+        /* ===== АДАПТИВ ===== */
         @media (max-width: 768px) {
-            .container {
-                padding: 0 18px;
-            }
-            
-            .navbar {
-                padding: 12px 18px;
-            }
-            
-            .menu-toggle {
-                display: block;
-            }
-            
+            .container { padding: 0 18px; }
+
+            .navbar { padding: 12px 18px; }
+
+            .menu-toggle { display: block; }
+
             .nav-links {
                 display: none;
                 flex-direction: column;
@@ -966,84 +1395,19 @@
                 border: 1px solid rgba(251,191,36,0.3);
                 backdrop-filter: blur(20px);
             }
-            
-            .nav-links.show {
-                display: flex;
-                animation: fadeIn 0.2s ease;
-            }
-            
-            .nav-links a {
-                width: 100%;
-                text-align: center;
-                padding: 12px;
-            }
-            
-            .two-columns {
-                grid-template-columns: 1fr;
-                gap: 28px;
-            }
-            
-            .hero h1 {
-                font-size: 2rem;
-            }
-            
-            .path-card {
-                min-width: 200px;
-                padding: 20px;
-            }
-            
-            .ad-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .footer-inner {
-                flex-direction: column;
-                text-align: center;
-            }
+
+            .nav-links.show { display: flex; animation: fadeIn 0.2s ease; }
+
+            .nav-links a { width: 100%; text-align: center; padding: 12px; }
+
+            .footer-inner { flex-direction: column; text-align: center; }
         }
 
         @media (max-width: 480px) {
-            .path-selector {
-                gap: 16px;
-            }
-            
-            .path-card {
-                min-width: 100%;
-                padding: 18px;
-            }
-            
-            .top-rank {
-                font-size: 1.2rem;
-                width: 40px;
-            }
-            
-            .top-avatar {
-                width: 40px;
-                height: 40px;
-            }
-            
-            .top-name {
-                font-size: 0.85rem;
-            }
-            
-            .top-points {
-                font-size: 0.7rem;
-                padding: 4px 10px;
-            }
-        }
-
-        /* СКРОЛЛБАР */
-        ::-webkit-scrollbar {
-            width: 5px;
-        }
-        
-        ::-webkit-scrollbar-track {
-            background: #1a1a1a;
-        }
-        
-        ::-webkit-scrollbar-thumb {
-            background: #fbbf24;
-            border-radius: 10px;
+            .tournaments-scroll { padding-left: 12px; padding-right: 12px; margin: 0 -12px; }
+            .product-list { grid-template-columns: repeat(2, 1fr); }
+            .season-prize { font-size: 38px; }
+            .hero-badge { font-size: 10px; letter-spacing: 0.06em; }
         }
     </style>
 </head>
@@ -1060,7 +1424,8 @@
         <button class="menu-toggle" id="menuToggle"><i class="fas fa-bars"></i></button>
         <nav class="nav-links" id="navLinks"></nav>
     </header>
-    <main class="container">
+
+    <main class="app" id="appMain">
         <div id="pwaInstallBanner" class="install-banner-top" style="display: none;">
             <div class="install-banner-content">
                 <div class="install-banner-icon">
@@ -1078,7 +1443,7 @@
                 </button>
             </div>
         </div>
-        
+
         <!-- ===== БАННЕР ОЖИДАНИЯ ===== -->
         <div id="pendingBanner" style="display:none; background: rgba(251,191,36,0.05); border: 1px solid rgba(251,191,36,0.15); border-radius: 24px; padding: 40px 24px; text-align: center; margin: 40px auto; max-width: 500px;">
             <div style="font-size: 3.5rem; margin-bottom: 12px;">⏳</div>
@@ -1096,115 +1461,85 @@
                 Выйти из аккаунта
             </button>
         </div>
-
-        <section class="hero">
-            <h1>Стань лучшим <br>в своём городе</h1>
-            <p>Честный рейтинг, вызовы на спарринг и признание среди любителей ММА, бокса и борьбы. Присоединяйся к комьюнити!</p>
-        </section>
-
-        <!-- ПЕРСОНАЛЬНЫЙ ДАШБОРД (только для авторизованных) -->
-        <div id="userDashboard" style="display: none;"></div>
-
-        <!-- ВЫБОР ПУТИ -->
-        <div class="path-selector" id="pathSelector">
-            <div class="path-card" id="fighterCard">
-                <div class="path-icon"><i class="fas fa-fist-raised"></i></div>
-                <h3>Стать бойцом</h3>
-                <p>Участвуй в рейтинге, вызывай на спарринги, зарабатывай очки и становись известным</p>
-                <a href="login.html" class="path-btn"><i class="fas fa-bolt"></i> Начать путь</a>
+        <!-- ===== ЭКРАН 1: ГОСТЬ ===== -->
+        <div class="screen" id="screenGuest">
+            <div class="guest-hero">
+                <div class="hero-badge">
+                    <i class="fa-solid fa-fire" id="heroBadgeIcon"></i>
+                    <span id="heroBadgeText">Для бойцов</span>
+                </div>
+                <h1 id="heroTitle">Зарабатывай <em>FRS</em><br>на реальных турнирах</h1>
+                <p id="heroText">Рейтинг, лиги, сезоны с призовыми фондами. Всё, чтобы твой путь в единоборствах был измеримым.</p>
             </div>
-            <div class="path-card" id="partnerCard">
-                <div class="path-icon"><i class="fas fa-handshake"></i></div>
-                <h3>Стать партнёром</h3>
-                <p>Продавай экипировку, получай 90% от продаж, развивай свой бизнес с нами</p>
-                <a href="login.html?role=partner" class="path-btn outline"><i class="fas fa-store"></i> Открыть магазин</a>
+
+            <div class="roles">
+                <button type="button" class="role-btn active" data-role="fighter">
+                    <i class="fa-solid fa-hand-fist"></i>
+                    <span class="role-label">Боец</span>
+                </button>
+                <button type="button" class="role-btn" data-role="partner">
+                    <i class="fa-solid fa-store"></i>
+                    <span class="role-label">Продавец</span>
+                </button>
+                <button type="button" class="role-btn" data-role="club">
+                    <i class="fa-solid fa-shield-halved"></i>
+                    <span class="role-label">Клуб</span>
+                </button>
+                <button type="button" class="role-btn" data-role="organizer">
+                    <i class="fa-solid fa-trophy"></i>
+                    <span class="role-label">Организатор</span>
+                </button>
             </div>
+
+            <div class="guest-panel" id="guestPanel"></div>
         </div>
 
-        <!-- БЛОК ПАРТНЁРОВ -->
-        <div class="ad-showcase fade-up">
-            <div class="ad-header">
-                <h3>⚡ <span>PRORANK партнёры</span> ⚡</h3>
-                <p>Залы | Экипировка | Топ бойцы | Лучшие предложения</p>
-            </div>
-            <div class="ad-grid">
-                <div class="ad-card" onclick="window.location.href='partners.html'">
-                    <div class="ad-icon-lg"><i class="fas fa-dumbbell"></i></div>
-                    <div class="ad-info">
-                        <h4>Лучшие залы твоего города</h4>
-                        <p>Скидки, пробные тренировки, абонементы от проверенных залов</p>
-                        <div class="ad-badge">14 залов на карте</div>
-                    </div>
-                </div>
-                <div class="ad-card" onclick="window.location.href='catalog.html'">
-                    <div class="ad-icon-lg"><i class="fas fa-tshirt"></i></div>
-                    <div class="ad-info">
-                        <h4>Магазины экипировки</h4>
-                        <p>Брендовые перчатки, шлемы, форма и аксессуары</p>
-                        <div class="ad-badge">Скидка 10% по промокоду PRORANK</div>
-                    </div>
-                </div>
-                <div class="ad-card" onclick="window.location.href='rating.html'">
-                    <div class="ad-icon-lg"><i class="fas fa-crown"></i></div>
-                    <div class="ad-info">
-                        <h4>Топ бойцы на связи</h4>
-                        <p>Интервью, мастер-классы, совместные тренировки с лучшими</p>
-                        <div class="ad-badge">Приглашаем звёзд</div>
-                    </div>
-                </div>
-            </div>
+        <!-- ===== ЭКРАН 2: БОЕЦ ===== -->
+        <div class="screen" id="screenFighter">
+            <div id="fighterProfile"></div>
+            <div id="fighterCall"></div>
+            <div id="fighterSeason"></div>
+            <div id="fighterClub"></div>
+            <div id="fighterTournaments"></div>
         </div>
 
-        <!-- ТОП БОЙЦЫ -->
-        <section class="top-fighters fade-up">
-            <div class="two-columns">
-                <div>
-                    <h2><i class="fas fa-trophy icon-gold"></i> Лидеры рейтинга</h2>
-                    <div id="topPointsList" class="top-list">
-                        <div class="skeleton-item"><div class="skeleton skeleton-avatar"></div><div class="skeleton skeleton-text"></div><div class="skeleton skeleton-text-sm"></div></div>
-                        <div class="skeleton-item"><div class="skeleton skeleton-avatar"></div><div class="skeleton skeleton-text"></div><div class="skeleton skeleton-text-sm"></div></div>
-                        <div class="skeleton-item"><div class="skeleton skeleton-avatar"></div><div class="skeleton skeleton-text"></div><div class="skeleton skeleton-text-sm"></div></div>
-                    </div>
-                </div>
-                <div>
-                    <h2><i class="fas fa-fire icon-gold"></i> Хайп-лист</h2>
-                    <div id="topLikesList" class="top-list">
-                        <div class="skeleton-item"><div class="skeleton skeleton-avatar"></div><div class="skeleton skeleton-text"></div><div class="skeleton skeleton-text-sm"></div></div>
-                        <div class="skeleton-item"><div class="skeleton skeleton-avatar"></div><div class="skeleton skeleton-text"></div><div class="skeleton skeleton-text-sm"></div></div>
-                        <div class="skeleton-item"><div class="skeleton skeleton-avatar"></div><div class="skeleton skeleton-text"></div><div class="skeleton skeleton-text-sm"></div></div>
-                    </div>
-                </div>
-            </div>
-            <div style="text-align: center;">
-                <a href="rating.html" class="cta-button-outline"><i class="fas fa-chart-simple"></i> Вся таблица рейтинга</a>
-            </div>
-        </section>
+        <!-- ===== ЭКРАН 3: КЛУБ ===== -->
+        <div class="screen" id="screenClub">
+            <div id="clubProfile"></div>
+            <div id="clubRequests"></div>
+            <div id="clubSeason"></div>
+            <div id="clubTop"></div>
+            <div id="clubTournaments"></div>
+        </div>
 
-        <!-- ЛЕНТА АКТИВНОСТИ -->
-        <section class="activity-feed fade-up" id="activityFeed" style="display: none;">
-            <h2><i class="fas fa-bolt icon-gold"></i> Последние события</h2>
-            <div id="activityList"></div>
-        </section>
+        <!-- ===== ЭКРАН 4: ОРГАНИЗАТОР ===== -->
+        <div class="screen" id="screenOrganizer">
+            <div id="orgProfile"></div>
+            <div id="orgRequests"></div>
+            <div id="orgSeason"></div>
+            <div id="orgNearest"></div>
+            <div id="orgTournaments"></div>
+        </div>
 
-        <!-- ПРЕИМУЩЕСТВА -->
-        <section class="features">
-            <div class="feature-card fade-up" onclick="window.location.href='rating.html'">
-                <div class="feature-icon"><i class="fas fa-chart-line"></i></div>
-                <h3>Динамичный рейтинг</h3>
-                <p>Растёшь — поднимаешься, застой — честное падение. Только реальные достижения</p>
-            </div>
-            <div class="feature-card fade-up" onclick="window.location.href='challenges.html'">
-                <div class="feature-icon"><i class="fas fa-handshake"></i></div>
-                <h3>Честные вызовы</h3>
-                <p>Бросай вызов любому, кто рядом по силе. Побеждай и поднимайся в топ</p>
-            </div>
-            <div class="feature-card fade-up" onclick="window.location.href='rating.html'">
-                <div class="feature-icon"><i class="fas fa-fire"></i></div>
-                <h3>Признание комьюнити</h3>
-                <p>Лайки, респекты, топ хайпа — твоя популярность растёт с каждым боем</p>
-            </div>
-        </section>
+        <!-- ===== ЭКРАН 5: ПАРТНЁР ===== -->
+        <div class="screen" id="screenPartner">
+            <div id="partnerProfile"></div>
+            <div id="partnerOrders"></div>
+            <div id="partnerSeason"></div>
+            <div id="partnerTop"></div>
+            <div id="partnerTiles"></div>
+        </div>
+
     </main>
+    <!-- STICKY CTA (только для гостя) -->
+    <div class="login-bar" id="guestLoginBar" style="display:none;">
+        <div class="login-bar-inner">
+            <button type="button" class="btn-login" id="guestLoginBtn">
+                <i class="fa-solid fa-right-to-bracket"></i>
+                Вход и регистрация
+            </button>
+        </div>
+    </div>
 
     <footer class="main-footer">
         <div class="container">
@@ -1231,12 +1566,12 @@
             </div>
         </div>
     </footer>
-    
-    <!-- Нижнее мобильное меню -->
+
+    <!-- Нижнее мобильное меню (рисует header.js) -->
     <div id="mobileBottomNavContainer"></div>
-    
+
     <!-- Контейнер для ошибок — ВСЕГДА СВЕРХУ -->
-<div id="errorContainer" style="position: fixed; top: 15px; left: 50%; transform: translateX(-50%); z-index: 9999; max-width: 90%; width: 480px; padding: 14px 20px; border-radius: 16px; font-weight: 600; font-size: 0.9rem; animation: slideDown 0.3s ease; box-shadow: 0 10px 30px rgba(0,0,0,0.4); backdrop-filter: blur(8px); display: none; text-align: center; border: 1px solid rgba(255,255,255,0.1);"></div>
+    <div id="errorContainer" style="position: fixed; top: 15px; left: 50%; transform: translateX(-50%); z-index: 9999; max-width: 90%; width: 480px; padding: 14px 20px; border-radius: 16px; font-weight: 600; font-size: 0.9rem; animation: slideDown 0.3s ease; box-shadow: 0 10px 30px rgba(0,0,0,0.4); backdrop-filter: blur(8px); display: none; text-align: center; border: 1px solid rgba(255,255,255,0.1);"></div>
 
     <script type="importmap">
         {
@@ -1248,15 +1583,18 @@
         }
     </script>
     <script type="module" src="header.js?v=3"></script>
-    <!-- 🔧ФИКС: удалён мёртвый fix-prompt.js — он перехватывал
-         BeforeInstallPromptEvent.prompt() и всегда возвращал «dismissed»,
-         из-за чего кнопка установки PWA в header.js (строка 483) не работала,
-         а в браузерах без BeforeInstallPromptEvent (Safari/Firefox) скрипт
-         падал с TypeError прямо в <head>. -->
+
     <script type="module">
+        // ============================================================
+        // PRORANK — главная страница (5 экранов: гость / боец / клуб /
+        // организатор / партнёр). Firestore / Auth / seasons.js
+        // ============================================================
         import { initializeApp } from "firebase/app";
-        import { getFirestore, collection, getDocs, query, orderBy, limit, doc, getDoc, where } from "firebase/firestore";
-        import { getAuth, onAuthStateChanged } from "firebase/auth";
+        import {
+            getFirestore, doc, getDoc, getDocs, collection, query, where, orderBy, limit
+        } from "firebase/firestore";
+        import { getAuth, onAuthStateChanged, signOut } from "firebase/auth";
+        import { initSeasons, getActiveSeason } from "./seasons.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyDUGYJY7pX7q02MS5SACMIIQXpjpQ97mPw",
@@ -1270,453 +1608,1604 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
         const auth = getAuth(app);
+        initSeasons(db, auth);
 
-        async function updateHeaderBalance() {
-            const user = auth.currentUser;
-            const balanceDiv = document.getElementById('balanceIndicator');
-            const balanceCount = document.getElementById('headerChallengesCount');
-            if (!user || !balanceDiv) return;
+        // ============================================================
+        // ПАЛИТРА РОЛЕЙ
+        // ============================================================
+        const PALETTE = {
+            fighter:   { accent: '#fbbf24', soft: 'rgba(251,191,36,0.14)',  glow: 'rgba(251,191,36,0.28)',  deep: '#b45309' },
+            club:      { accent: '#60a5fa', soft: 'rgba(96,165,250,0.14)',  glow: 'rgba(96,165,250,0.28)',  deep: '#1d4ed8' },
+            organizer: { accent: '#a78bfa', soft: 'rgba(167,139,250,0.14)', glow: 'rgba(167,139,250,0.28)', deep: '#6d28d9' },
+            partner:   { accent: '#10b981', soft: 'rgba(16,185,129,0.14)',  glow: 'rgba(16,185,129,0.28)',  deep: '#047857' }
+        };
+
+        const SCREENS = ['screenGuest', 'screenFighter', 'screenClub', 'screenOrganizer', 'screenPartner'];
+        const MONTHS_SHORT = ['ЯНВ', 'ФЕВ', 'МАР', 'АПР', 'МАЯ', 'ИЮН', 'ИЮЛ', 'АВГ', 'СЕН', 'ОКТ', 'НОЯ', 'ДЕК'];
+        const TOURNAMENT_STATUSES = ['registration', 'scheduled', 'active'];
+        const TOURNAMENT_STATUS_LABELS = {
+            registration: 'Набор',
+            scheduled: 'Скоро',
+            active: 'LIVE',
+            completed: 'Завершён',
+            cancelled: 'Отменён'
+        };
+
+        // Кеш за сессию рендера (чтобы не читать одни и те же данные дважды)
+        const state = {
+            orgTournaments: null,
+            partnerId: null,
+            partnerOrders: null,
+            partnerProducts: null,
+            role: 'fighter'
+        };
+        // ============================================================
+        // ХЕЛПЕРЫ
+        // ============================================================
+        function escapeHtml(value) {
+            if (value === null || value === undefined) return '';
+            return String(value).replace(/[&<>"']/g, (m) => ({
+                '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+            }[m]));
+        }
+
+        // 🔧ФИКС (XSS): в src допускаются только http(s) и относительные пути —
+        // javascript:, data: и попытки «закрыть» атрибут отбрасываются.
+        // Логика повторяет tournaments.html/my-tournaments.html.
+        function safeImageUrl(url) {
+            if (!url) return '';
+            const raw = String(url).trim();
+            if (!/^(https?:\/\/|\/\/|\/|\.\/|\.\.\/)/i.test(raw)) return '';
+            return escapeHtml(raw);
+        }
+
+        function fmtNum(value) {
+            const n = Number(value);
+            return Number.isFinite(n) ? n.toLocaleString('ru-RU') : '0';
+        }
+
+        function toDate(value) {
+            if (!value) return null;
+            if (typeof value.toDate === 'function') return value.toDate();
+            if (typeof value.seconds === 'number') return new Date(value.seconds * 1000);
+            const d = new Date(value);
+            return Number.isNaN(d.getTime()) ? null : d;
+        }
+
+        function tsOf(value) {
+            const d = toDate(value);
+            return d ? d.getTime() : Number.MAX_SAFE_INTEGER;
+        }
+
+        function fmtTournamentDate(value) {
+            const d = toDate(value);
+            if (!d) return 'СКОРО';
+            return `${d.getDate()} ${MONTHS_SHORT[d.getMonth()]}`;
+        }
+
+        function delayStyle(i) {
+            const index = Number.isFinite(i) ? i : 0;
+            return `animation-delay:${(0.05 + index * 0.05).toFixed(2)}s;`;
+        }
+
+        function placeholderAvatar(name) {
+            const letter = (name || '?').trim().charAt(0) || '?';
+            return `https://placehold.co/100x100/1a1a1a/fbbf24?text=${encodeURIComponent(letter)}`;
+        }
+
+        // ============================================================
+        // ЛИГИ — пороги и иконки синхронизированы с leagues.html (LEAGUES)
+        // Бронза 0–499 · Серебро 500–999 · Золото 1000–1999 ·
+        // Алмаз 2000–3499 · Элита 3500–4999 · Легенда 5000+
+        // ============================================================
+        const LEAGUE_TIERS = [
+            { id: 'bronze',    name: 'Бронза',  nextName: 'Серебро', min: 0,    max: 499 },
+            { id: 'silver',    name: 'Серебро', nextName: 'Золото',  min: 500,  max: 999 },
+            { id: 'gold',      name: 'Золото',  nextName: 'Алмаз',   min: 1000, max: 1999 },
+            { id: 'diamond',   name: 'Алмаз',   nextName: 'Элита',   min: 2000, max: 3499 },
+            { id: 'elite',     name: 'Элита',   nextName: 'Легенда', min: 3500, max: 4999 },
+            { id: 'legendary', name: 'Легенда', nextName: 'Максимум', min: 5000, max: null }
+        ];
+
+        function getLeagueIconPath(id) {
+            return `./league-icons/${id}.webp`;
+        }
+
+        function getLeague(frs) {
+            const v = Number(frs) || 0;
+            let tier = LEAGUE_TIERS[0];
+            for (let i = LEAGUE_TIERS.length - 1; i >= 0; i--) {
+                if (v >= LEAGUE_TIERS[i].min) { tier = LEAGUE_TIERS[i]; break; }
+            }
+            return { ...tier, icon: getLeagueIconPath(tier.id) };
+        }
+
+        function setAccent(role) {
+            const p = PALETTE[role] || PALETTE.fighter;
+            const body = document.body;
+            body.style.setProperty('--accent', p.accent);
+            body.style.setProperty('--accent-soft', p.soft);
+            body.style.setProperty('--accent-glow', p.glow);
+            body.style.setProperty('--accent-deep', p.deep);
+            state.role = role;
+        }
+
+        function showScreen(id) {
+            SCREENS.forEach((screenId) => {
+                const el = document.getElementById(screenId);
+                if (el) el.classList.toggle('active', screenId === id);
+            });
+            const loginBar = document.getElementById('guestLoginBar');
+            if (loginBar) loginBar.style.display = id === 'screenGuest' ? 'block' : 'none';
+        }
+
+        function hideAllScreens() {
+            SCREENS.forEach((screenId) => {
+                const el = document.getElementById(screenId);
+                if (el) el.classList.remove('active');
+            });
+            const loginBar = document.getElementById('guestLoginBar');
+            if (loginBar) loginBar.style.display = 'none';
+        }
+
+        function setBlock(id, html) {
+            const el = document.getElementById(id);
+            if (el) el.innerHTML = html;
+        }
+
+        function setSkeleton(id, kind) {
+            const el = document.getElementById(id);
+            if (el) el.innerHTML = `<div class="skel ${kind}"></div>`;
+        }
+
+        function clearBlock(id) {
+            const el = document.getElementById(id);
+            if (el) el.innerHTML = '';
+        }
+
+        // Делегированные переходы: любой элемент с data-href
+        document.addEventListener('click', (e) => {
+            const target = e.target.closest('[data-href]');
+            if (!target) return;
+            const href = target.getAttribute('data-href');
+            if (!href) return;
+            e.preventDefault();
+            // Внутренний переход по карточкам/плиткам → NavLoader на новой странице.
+            // Сбрасываем оба флага, чтобы остаток прошлого клика не перекрыл решение.
+            sessionStorage.removeItem('prorankSkipLoader');
+            sessionStorage.setItem('prorankNavLoader', '1');
+            window.location.href = href;
+        });
+
+        // ============================================================
+        // ОБЁРТКИ НАД FIRESTORE (индекс-устойчивые)
+        // ============================================================
+        /**
+         * Запрос с фильтрами. Если Firestore требует композитный индекс
+         * (или его нет) — повторяем без orderBy/limit и сортируем на клиенте.
+         */
+        async function safeQuery(colName, filters = [], orderField = null, orderDir = 'asc', max = null, sortFn = null) {
+            function build(withOrder) {
+                const parts = [collection(db, colName)];
+                filters.forEach((f) => parts.push(where(f[0], f[1], f[2])));
+                if (withOrder && orderField) {
+                    parts.push(orderBy(orderField, orderDir));
+                    if (max) parts.push(limit(max));
+                }
+                return query(...parts);
+            }
+
             try {
-                const userDoc = await getDoc(doc(db, "fighters", user.uid));
-                const data = userDoc.data();
-                const total = (data.freeChallenges || 0) + (data.purchasedChallenges || 0);
-                balanceCount.innerText = total;
-                balanceDiv.style.display = 'flex';
-            } catch (err) { 
-                console.error(err);
-                balanceDiv.style.display = 'none';
+                const snap = await getDocs(build(true));
+                return snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+            } catch (err) {
+                console.warn(`⚠️ index.html: fallback-запрос ${colName}`, err && err.message);
+                try {
+                    const snap = await getDocs(build(false));
+                    let list = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+                    if (sortFn) list.sort(sortFn);
+                    if (max) list = list.slice(0, max);
+                    return list;
+                } catch (err2) {
+                    console.warn(`⚠️ index.html: запрос ${colName} не удался`, err2 && err2.message);
+                    return [];
+                }
             }
         }
 
-        async function loadTopPoints() {
-            const container = document.getElementById('topPointsList');
-            if (!container) return;
-            
+        /** Подсчёт документов: getCountFromServer, при недоступности — getDocs().size */
+        async function countDocs(colName, filters = []) {
+            const parts = [collection(db, colName)];
+            filters.forEach((f) => parts.push(where(f[0], f[1], f[2])));
+            const q = query(...parts);
             try {
-                const q = query(collection(db, "fighters"), orderBy("frs", "desc"), limit(5));
-                const snapshot = await getDocs(q);
-                
-                if (snapshot.empty) { 
-                    container.innerHTML = '<div style="text-align:center; color:#888; padding:20px;">Пока нет бойцов в рейтинге</div>'; 
-                    return; 
+                const mod = await import('firebase/firestore');
+                if (typeof mod.getCountFromServer === 'function') {
+                    const snap = await mod.getCountFromServer(q);
+                    return snap.data().count;
                 }
-                
-                let html = '';
-                let rank = 1;
-                
-                for (const docSnap of snapshot.docs) {
-                    const fighter = docSnap.data();
-                    const avatarUrl = fighter.avatar && fighter.avatar !== 'Avatar.png' ? fighter.avatar : 'https://placehold.co/100x100/1a1a1a/fbbf24?text=' + (fighter.name?.charAt(0) || '?');
-                    
-                    html += `<div class="top-item" onclick="window.location.href='profile.html?id=${docSnap.id}'">
-                        <div class="top-rank">${rank}</div>
-                        <img src="${avatarUrl}" class="top-avatar" onerror="this.src='https://placehold.co/100x100/1a1a1a/fbbf24?text=?'">
-                        <div class="top-name">${escapeHtml(fighter.name || 'Боец')}</div>
-                        <div class="top-points"><i class="fas fa-star icon-gold"></i> ${fighter.frs || 0} FRS</div>
-                    </div>`;
-                    rank++;
-                }
-                container.innerHTML = html;
-            } catch(e) { 
-                console.error(e);
-                container.innerHTML = '<div style="text-align:center; color:#888; padding:20px;">Ошибка загрузки рейтинга</div>'; 
+            } catch (err) {
+                console.warn('⚠️ index.html: getCountFromServer недоступен, считаем getDocs', err && err.message);
+            }
+            try {
+                const snap = await getDocs(q);
+                return snap.size;
+            } catch (err2) {
+                return 0;
             }
         }
 
-        async function loadTopLikes() {
-            const container = document.getElementById('topLikesList');
-            if (!container) return;
-            
-            try {
-                const likesSnapshot = await getDocs(collection(db, "likes"));
-                const likesCount = {};
-                
-                likesSnapshot.forEach(doc => { 
-                    const fid = doc.data().fighterId; 
-                    if (fid) likesCount[fid] = (likesCount[fid] || 0) + 1; 
-                });
-                
-                const sorted = Object.entries(likesCount)
-                    .map(([id, c]) => ({ id, c }))
-                    .sort((a, b) => b.c - a.c)
-                    .slice(0, 5);
-                
-                if (sorted.length === 0) { 
-                    container.innerHTML = '<div style="text-align:center; color:#888; padding:20px;">Пока нет лайков у бойцов</div>'; 
-                    return; 
-                }
-                
-                let html = '';
-                let rank = 1;
-                
-                for (const item of sorted) {
-                    try {
-                        const fighterDoc = await getDoc(doc(db, "fighters", item.id));
-                        if (fighterDoc.exists()) {
-                            const fighter = fighterDoc.data();
-                            const avatarUrl = fighter.avatar && fighter.avatar !== 'Avatar.png' ? fighter.avatar : 'https://placehold.co/100x100/1a1a1a/fbbf24?text=' + (fighter.name?.charAt(0) || '?');
-                            
-                            html += `<div class="top-item" onclick="window.location.href='profile.html?id=${item.id}'">
-                                <div class="top-rank">${rank}</div>
-                                <img src="${avatarUrl}" class="top-avatar" onerror="this.src='https://placehold.co/100x100/1a1a1a/fbbf24?text=?'">
-                                <div class="top-name">${escapeHtml(fighter.name || 'Боец')}</div>
-                                <div class="top-points"><i class="fas fa-heart icon-red"></i> ${item.c}</div>
-                            </div>`;
-                            rank++;
-                        }
-                    } catch(e) {
-                        console.error('Ошибка загрузки бойца:', e);
-                    }
-                }
-                
-                if (html === '') {
-                    container.innerHTML = '<div style="text-align:center; color:#888; padding:20px;">Нет данных</div>';
-                } else {
-                    container.innerHTML = html;
-                }
-            } catch(e) { 
-                console.error(e);
-                container.innerHTML = '<div style="text-align:center; color:#888; padding:20px;">Ошибка загрузки хайп-листа</div>'; 
-            }
+        /** Место в рейтинге: кол-во тех, у кого поле больше + 1 */
+        async function placeInRating(colName, field, myValue) {
+            const my = Number(myValue) || 0;
+            const higher = await countDocs(colName, [[field, '>', my]]);
+            return higher + 1;
         }
 
-        // ========== PREMIUM ФУНКЦИИ ==========
-        
-        // 1. Персональный дашборд с прогресс-баром лиги
-        async function loadUserDashboard(userId) {
-            const dashboardDiv = document.getElementById('userDashboard');
-            if (!dashboardDiv) return;
-            
-            try {
-                const userDoc = await getDoc(doc(db, "fighters", userId));
-                const userData = userDoc.data();
-                if (!userData) return;
-                
-                // Определение лиги на основе FRS
-                const frs = userData.frs || 0;
-                let league = { name: 'Новичок', next: 100, color: '#fbbf24', icon: '🥊' };
-                if (frs >= 1000) league = { name: 'Легенда', next: null, color: '#ffdd88', icon: '👑' };
-                else if (frs >= 500) league = { name: 'Мастер', next: 1000, color: '#fbbf24', icon: '⭐' };
-                else if (frs >= 200) league = { name: 'Ветеран', next: 500, color: '#ffcc44', icon: '🔥' };
-                else if (frs >= 100) league = { name: 'Боец', next: 200, color: '#ffaa22', icon: '⚡' };
-                
-                const progressPercent = league.next ? (frs / league.next) * 100 : 100;
-                const avatarUrl = userData.avatar && userData.avatar !== 'Avatar.png' ? userData.avatar : 'https://placehold.co/100x100/1a1a1a/fbbf24?text=' + (userData.name?.charAt(0) || '?');
-                
-                dashboardDiv.innerHTML = `
-                    <div class="user-dashboard">
-                        <div class="user-greeting" onclick="window.location.href='profile.html?id=${userId}'">
-                            <img src="${avatarUrl}" class="user-avatar-large" onerror="this.src='https://placehold.co/100x100/1a1a1a/fbbf24?text=?'">
-                            <div class="user-info">
-                                <h3>Привет, ${escapeHtml(userData.name || 'Боец')}!</h3>
-                                <p><i class="fas fa-chart-line"></i> ${frs} FRS • ${league.icon} ${league.name}</p>
-                            </div>
-                        </div>
-                        <div class="league-progress">
-                            <div class="progress-label">
-                                <span>До ${league.name === 'Легенда' ? 'Максимума' : league.name === 'Новичок' ? 'Лиги Боец' : `Лиги ${league.next === 1000 ? 'Легенда' : league.next === 500 ? 'Мастер' : 'Ветеран'}`}</span>
-                                <span>${frs} / ${league.next || frs} FRS</span>
-                            </div>
-                            <div class="progress-bar-bg">
-                                <div class="progress-bar-fill" style="width: ${Math.min(progressPercent, 100)}%"></div>
-                            </div>
+        // ============================================================
+        // ТУРНИРЫ
+        // ============================================================
+        /** Актуальные турниры: без завершённых/отменённых, по дате asc.
+         *  Приоритет набора статусов: registration/scheduled/active,
+         *  если их нет — любые незавершённые (fallback). */
+        async function fetchTournaments() {
+            const list = await safeQuery(
+                'tournaments', [], 'date', 'asc', 60,
+                (a, b) => tsOf(a.date) - tsOf(b.date)
+            );
+            const alive = list.filter((t) => !t.deleted && t.status !== 'completed' && t.status !== 'cancelled');
+            const main = alive.filter((t) => TOURNAMENT_STATUSES.includes(t.status));
+            if (main.length) return main;
+            return alive;
+        }
+
+        /** Сортировка по релевантности: город+спорт → спорт → остальные */
+        function prioritizeTournaments(list, city, sports) {
+            const mySports = (sports || []).filter(Boolean).map((s) => String(s).toLowerCase());
+            const myCity = city ? String(city).toLowerCase() : '';
+
+            const matchesCity = (t) => {
+                if (!myCity) return false;
+                const tCity = String(t.city || t.location || '').toLowerCase();
+                return tCity === myCity || (tCity && tCity.includes(myCity));
+            };
+            const matchesSport = (t) => {
+                if (!mySports.length) return false;
+                const tSport = String(t.sport || t.sportName || '').toLowerCase();
+                return mySports.some((s) => tSport === s || tSport.includes(s) || s.includes(tSport));
+            };
+
+            const both = list.filter((t) => matchesCity(t) && matchesSport(t));
+            const sportOnly = list.filter((t) => !both.includes(t) && matchesSport(t));
+            const rest = list.filter((t) => !both.includes(t) && !sportOnly.includes(t));
+
+            const relevant = [...both, ...sportOnly];
+            if (relevant.length >= 3) return relevant.slice(0, 8);
+            return [...relevant, ...rest].slice(0, 8);
+        }
+
+        function tournamentCardHtml(t, i) {
+            const name = t.name || 'Турнир';
+            const city = t.city || t.location || '—';
+            const sport = t.sport || t.sportName || '—';
+            const feeValue = Number(t.entryFee) || 0;
+            const fee = feeValue > 0 ? `${fmtNum(feeValue)} ₽` : 'Бесплатно';
+            const cur = Number(t.participantCount) || 0;
+            const max = Number(t.maxParticipants) || 0;
+            const slots = max > 0 ? `${cur}/${max}` : `${cur}`;
+
+            // Обложка — как на tournaments.html: безопасный URL + фолбэк на иконку.
+            //🔧ФИКС (XSS): URL проходит через safeImageUrl(), имя — через escapeHtml().
+            const coverUrl = safeImageUrl(t.imageUrl);
+            const coverHtml = coverUrl
+                ? `<div class="card-cover"><img src="${coverUrl}" alt="${escapeHtml(name)}" onerror="this.parentElement.classList.add('no-image'); this.outerHTML='<i class=\\'fas fa-trophy\\'></i>'"></div>`
+                : `<div class="card-cover no-image"><i class="fas fa-trophy"></i></div>`;
+
+            // Бейджи статуса — та же логика, что в tournaments.html
+            // (status-badge для обычных статусов, красный live-badge для LIVE).
+            const status = TOURNAMENT_STATUSES.includes(t.status) || ['completed', 'cancelled'].includes(t.status)
+                ? t.status
+                : null;
+            const statusHtml = status === 'active'
+                ? `<span class="live-badge"><span class="pulse"></span> LIVE</span>`
+                : status
+                    ? `<span class="status-badge ${escapeHtml(status)}"><i class="fas fa-circle"></i> ${escapeHtml(TOURNAMENT_STATUS_LABELS[status] || status)}</span>`
+                    : '';
+
+            return `
+                <div class="tournament-card" style="${delayStyle(i)}" data-href="tournament-details.html?id=${encodeURIComponent(t.id)}">
+                    <div class="card-cover-wrap">
+                        ${coverHtml}
+                        <div class="card-cover-badges">
+                            <div class="badges-left">${statusHtml}</div>
                         </div>
                     </div>
-                `;
-                dashboardDiv.style.display = 'block';
-                
-                // Скрываем hero для авторизованных
-                const heroSection = document.querySelector('.hero');
-                if (heroSection) heroSection.style.display = 'none';
-                
-            } catch(e) {
-                console.error('Ошибка дашборда:', e);
-            }
-        }
-
-        // 2. Лента активности
-        async function loadActivityFeed(userId) {
-            const feedSection = document.getElementById('activityFeed');
-            const activityList = document.getElementById('activityList');
-            if (!feedSection || !activityList) return;
-            
-            try {
-                const activities = [];
-                
-                // Последние вызовы
-                const challengesQuery = query(collection(db, "challenges"), orderBy("createdAt", "desc"), limit(5));
-                const challengesSnap = await getDocs(challengesQuery);
-                challengesSnap.forEach(doc => {
-                    const data = doc.data();
-                    if (data.fighterId === userId || data.opponentId === userId) {
-                        activities.push({
-                            type: 'challenge',
-                            title: data.status === 'completed' ? 'Завершил спарринг' : 'Бросил вызов',
-                            time: data.createdAt?.toDate?.(),
-                            icon: 'fa-handshake'
-                        });
-                    }
-                });
-                
-                // Сортируем и берем 5 последних
-                activities.sort((a, b) => (b.time || 0) - (a.time || 0));
-                const recent = activities.slice(0, 5);
-                
-                if (recent.length === 0) {
-                    feedSection.style.display = 'none';
-                    return;
-                }
-                
-                activityList.innerHTML = recent.map(act => `
-                    <div class="activity-card">
-                        <div class="activity-icon"><i class="fas ${act.icon}"></i></div>
-                        <div class="activity-content">
-                            <div class="activity-title">${escapeHtml(act.title)}</div>
-                            <div class="activity-time">${formatRelativeTime(act.time)}</div>
-                        </div>
+                    <div class="tournament-date">${escapeHtml(fmtTournamentDate(t.date))}</div>
+                    <div class="tournament-name">${escapeHtml(name)}</div>
+                    <div class="tournament-meta">
+                        <span><i class="fas fa-location-dot"></i>${escapeHtml(city)}</span>
+                        <span><i class="fas fa-fist-raised"></i>${escapeHtml(sport)}</span>
                     </div>
-                `).join('');
-                
-                feedSection.style.display = 'block';
-            } catch(e) {
-                console.error('Ошибка ленты активности:', e);
+                    <div class="tournament-foot">
+                        <span class="tournament-fee">${escapeHtml(fee)}</span>
+                        <span class="tournament-slots">${escapeHtml(slots)}</span>
+                    </div>
+                </div>`;
+        }
+
+        /** Центральная (ближайшая к центру области) карточка → .focused */
+        function updateTournamentFocus(scrollEl) {
+            if (!scrollEl) return;
+            const cards = scrollEl.querySelectorAll('.tournament-card');
+            if (!cards.length) return;
+            const rect = scrollEl.getBoundingClientRect();
+            const center = rect.left + rect.width / 2;
+            let best = null;
+            let bestDist = Infinity;
+            cards.forEach((card) => {
+                const r = card.getBoundingClientRect();
+                const dist = Math.abs((r.left + r.width / 2) - center);
+                if (dist < bestDist) {
+                    bestDist = dist;
+                    best = card;
+                }
+            });
+            cards.forEach((card) => card.classList.toggle('focused', card === best));
+        }
+
+        function attachTournamentFocus(scrollEl) {
+            if (!scrollEl) return;
+            if (scrollEl.dataset.focusBound !== '1') {
+                scrollEl.dataset.focusBound = '1';
+                let raf = null;
+                const onScroll = () => {
+                    if (raf) return;
+                    raf = requestAnimationFrame(() => {
+                        raf = null;
+                        updateTournamentFocus(scrollEl);
+                    });
+                };
+                scrollEl.addEventListener('scroll', onScroll, { passive: true });
+                window.addEventListener('resize', onScroll);
+            }
+            updateTournamentFocus(scrollEl);
+            setTimeout(() => updateTournamentFocus(scrollEl), 300);
+        }
+
+        function sectionHeadHtml(title, icon, linkText, linkHref) {
+            return `
+                <div class="section-head">
+                    <h3><i class="fas ${icon}"></i>${escapeHtml(title)}</h3>
+                    <a href="${linkHref}">${escapeHtml(linkText)}</a>
+                </div>`;
+        }
+
+        /**
+         * Блок «Турниры» с горизонтальным snap-скроллом и фокусом.
+         */
+        async function loadTournamentsBlock(opts) {
+            const container = document.getElementById(opts.blockId);
+            if (!container) return;
+            container.innerHTML = `
+                ${sectionHeadHtml(opts.title || 'Турниры', 'fa-trophy', 'Все →', opts.allHref || 'tournaments.html')}
+                <div class="tournaments-scroll">
+                    <div class="skel skel-tour"></div>
+                    <div class="skel skel-tour"></div>
+                    <div class="skel skel-tour"></div>
+                </div>`;
+
+            const all = opts.list || await fetchTournaments();
+            const list = opts.priority === false ? all.slice(0, 8) : prioritizeTournaments(all, opts.city, opts.sports);
+
+            if (!list.length) {
+                container.innerHTML = `
+                    ${sectionHeadHtml(opts.title || 'Турниры', 'fa-trophy', 'Все →', opts.allHref || 'tournaments.html')}
+                    <div class="empty-state">Пока нет активных турниров</div>`;
+                return;
+            }
+
+            const cards = list.map((t, i) => tournamentCardHtml(t, i)).join('');
+            container.innerHTML = `
+                ${sectionHeadHtml(opts.title || 'Турниры', 'fa-trophy', 'Все →', opts.allHref || 'tournaments.html')}
+                <div class="tournaments-scroll">${cards}</div>`;
+
+            attachTournamentFocus(container.querySelector('.tournaments-scroll'));
+        }
+
+        // ============================================================
+        // ЭКРАН ГОСТЯ — конфиг ролей (тексты из Testovy.html)
+        // ============================================================
+        const ROLES_GUEST = {
+            fighter: {
+                badge: 'Для бойцов',
+                badgeIcon: 'fa-fire',
+                title: 'Зарабатывай <em>FRS</em><br>на реальных турнирах',
+                text: 'Рейтинг, лиги, сезоны с призовыми фондами. Всё, чтобы твой путь в единоборствах был измеримым.',
+                panelIcon: 'fa-hand-fist',
+                panelTitle: 'Боец',
+                panelSub: 'Твой путь: от Бронзы до Легенды',
+                features: [
+                    { icon: 'fa-ranking-star', title: 'Система FRS', text: 'Побеждаешь на турнирах — получаешь рейтинговые очки. Они определяют твоё место в лиге и в общем рейтинге.' },
+                    { icon: 'fa-medal', title: '6 лиг', text: 'Бронза → Серебро → Золото → Алмаз → Элита → Легенда. Растёшь по FRS — открываешь новый уровень.' },
+                    { icon: 'fa-crown', title: 'Призовые сезона', text: 'Каждые 3 месяца спонсор кладёт фонд. Топ-3 бойца сезона делят его между собой.' },
+                    { icon: 'fa-chart-line', title: 'Рекорд и статистика', text: 'Победы, поражения, финиши. Всё фиксируется в профиле и работает на твою репутацию.' },
+                    { icon: 'fa-bag-shopping', title: 'Маркетплейс', text: 'Экипировка от проверенных партнёров. Бойцы покупают — магазины платят за поток.' }
+                ],
+                season: {
+                    name: 'Осень 2026',
+                    prize: 500000,
+                    source: 'Спонсор: FightGear Pro',
+                    desc: 'Каждая победа на турнире сезона приносит FRS. Чем выше место — тем больше доля от фонда.',
+                    prizes: [
+                        { place: '1 место', amount: 250000 },
+                        { place: '2 место', amount: 150000 },
+                        { place: '3 место', amount: 100000 }
+                    ]
+                }
+            },
+            partner: {
+                badge: 'Для продавцов',
+                badgeIcon: 'fa-store',
+                title: 'Продавай <em>экипировку</em><br>голодным бойцам',
+                text: 'Готовая аудитория, которая покупает регулярно. Мы приводим бойцов — ты продаёшь.',
+                panelIcon: 'fa-store',
+                panelTitle: 'Продавец',
+                panelSub: 'Магазин внутри экосистемы PRORANK',
+                features: [
+                    { icon: 'fa-users', title: 'Готовая аудитория', text: 'Бойцы, которые уже в системе и мотивированы покупать экипировку для турниров.' },
+                    { icon: 'fa-percent', title: 'Комиссия 10%', text: 'Прозрачно: 10% с продажи — PRORANK, остальное твоё. Без скрытых платежей.' },
+                    { icon: 'fa-box', title: 'Управление товарами', text: 'Загружай фото, цены, остатки. Управляй заказами и отзывами в одном кабинете.' },
+                    { icon: 'fa-chart-pie', title: 'Аналитика', text: 'Видишь, что покупают бойцы, какие категории в топе, где растёт спрос.' },
+                    { icon: 'fa-star', title: 'Отзывы и рейтинг', text: 'Реальные отзывы от бойцов. Репутация работает на тебя.' }
+                ],
+                season: {
+                    name: 'Осень 2026',
+                    prize: 500000,
+                    source: 'Спонсор: FightGear Pro',
+                    desc: 'Во время сезона активность бойцов растёт — они покупают экипировку, чтобы выступать на турнирах.',
+                    prizes: [
+                        { place: 'Топ-категория', amount: 'Экипировка' },
+                        { place: 'Спрос', amount: '+40%' },
+                        { place: 'Аудитория', amount: 'Бойцы' }
+                    ]
+                }
+            },
+            club: {
+                badge: 'Для клубов',
+                badgeIcon: 'fa-shield-halved',
+                title: 'Веди бойцов.<br>Расти <em>клубом</em>',
+                text: 'Club FRS — сумма очков твоих бойцов. Место в топе клубов, призы сезона, управление составом.',
+                panelIcon: 'fa-shield-halved',
+                panelTitle: 'Клуб',
+                panelSub: 'Твоя команда и её рейтинг',
+                features: [
+                    { icon: 'fa-users-rectangle', title: 'Состав клуба', text: 'Добавляй бойцов, следи за их прогрессом, управляй заявками на вступление.' },
+                    { icon: 'fa-calculator', title: 'Club FRS', text: 'Сумма FRS всех твоих бойцов. Одно число, которое показывает силу клуба.' },
+                    { icon: 'fa-trophy', title: 'Призы сезона', text: 'Клубы тоже соревнуются. Топ-3 клуба сезона получают награды, которые делятся между бойцами.' },
+                    { icon: 'fa-comments', title: 'Чат клуба', text: 'Внутренний чат для координации. Анонсы турниров, сборы, договорённости.' },
+                    { icon: 'fa-location-dot', title: 'Клуб в своём городе', text: 'Бойцы ищут клубы рядом. Ты становишься точкой притяжения в регионе.' }
+                ],
+                season: {
+                    name: 'Осень 2026',
+                    prize: 300000,
+                    source: 'Призовой фонд клубов',
+                    desc: 'Club FRS пересчитывается в начале сезона. Чем больше активных бойцов — тем выше место клуба.',
+                    prizes: [
+                        { place: '1 место', amount: 150000 },
+                        { place: '2 место', amount: 100000 },
+                        { place: '3 место', amount: 50000 }
+                    ]
+                }
+            },
+            organizer: {
+                badge: 'Для организаторов',
+                badgeIcon: 'fa-trophy',
+                title: 'Проводи турниры.<br>Получай <em>поток бойцов</em>',
+                text: 'Бойцы голодны до FRS. Ты даёшь турнир — они платят взнос. PRORANK в доле.',
+                panelIcon: 'fa-trophy',
+                panelTitle: 'Организатор',
+                panelSub: 'Турниры, участники, доход',
+                features: [
+                    { icon: 'fa-calendar-plus', title: 'Создание турниров', text: 'Публикуй турнир за пару минут. Указывай дату, город, взнос, категории.' },
+                    { icon: 'fa-users', title: 'Поток участников', text: 'Бойцы ищут турниры ради FRS. Твой турнир попадает в каталог и на главную.' },
+                    { icon: 'fa-sack-dollar', title: 'Прозрачные выплаты', text: 'Взносы собираются в escrow. PRORANK берёт ~20% с регистраций, остальное — тебе.' },
+                    { icon: 'fa-sitemap', title: 'Сетки и ринги', text: 'Генерация сеток, распределение по рингам, управление ходом турнира.' },
+                    { icon: 'fa-chart-line', title: 'Аналитика', text: 'Видишь заполняемость, доход, активность бойцов в регионе.' }
+                ],
+                season: {
+                    name: 'Осень 2026',
+                    prize: 500000,
+                    source: 'Спонсор: FightGear Pro',
+                    desc: 'Сезонный фонд привлекает бойцов на турниры. Чем активнее сезон — тем выше поток на твои турниры.',
+                    prizes: [
+                        { place: 'Бойцы', amount: 'Поток' },
+                        { place: 'Регистрации', amount: '+60%' },
+                        { place: 'Доход', amount: 'Твой' }
+                    ]
+                }
+            }
+        };
+
+        // ============================================================
+        // ЭКРАН ГОСТЯ — рендер
+        // ============================================================
+        let currentGuestRole = 'fighter';
+        let guestSeasonCache = null;
+        let guestSeasonLoaded = false;
+
+        async function loadGuestSeason() {
+            if (guestSeasonLoaded) return guestSeasonCache;
+            guestSeasonLoaded = true;
+            try {
+                guestSeasonCache = await getActiveSeason();
+            } catch (e) {
+                console.warn('⚠️ index.html: активный сезон не получен', e && e.message);
+                guestSeasonCache = null;
+            }
+            return guestSeasonCache;
+        }
+
+        function sumAmounts(list) {
+            if (!Array.isArray(list)) return 0;
+            return list.reduce((sum, p) => sum + (Number(p && p.amount) || 0), 0);
+        }
+
+        function seasonPrizeItems(roleKey, season) {
+            const r = ROLES_GUEST[roleKey] || ROLES_GUEST.fighter;
+            if (season && (roleKey === 'fighter' || roleKey === 'club')) {
+                const arr = roleKey === 'club' ? season.clubPrizes : season.fighterPrizes;
+                if (Array.isArray(arr) && arr.length) {
+                    return arr.slice(0, 3).map((p) => ({
+                        place: /место/i.test(String(p.place)) ? String(p.place) : `${p.place} место`,
+                        amount: Number(p.amount) || 0
+                    }));
+                }
+            }
+            return r.season.prizes;
+        }
+
+        function updateGuestHero(roleKey) {
+            const r = ROLES_GUEST[roleKey] || ROLES_GUEST.fighter;
+            const badge = document.getElementById('heroBadgeText');
+            const badgeIcon = document.getElementById('heroBadgeIcon');
+            const title = document.getElementById('heroTitle');
+            const text = document.getElementById('heroText');
+            if (badge) badge.textContent = r.badge;
+            if (badgeIcon) badgeIcon.className = `fa-solid ${r.badgeIcon}`;
+            if (title) title.innerHTML = r.title;
+            if (text) text.textContent = r.text;
+        }
+
+        function renderGuestPanel(roleKey) {
+            const r = ROLES_GUEST[roleKey] || ROLES_GUEST.fighter;
+            const panel = document.getElementById('guestPanel');
+            if (!panel) return;
+
+            const season = guestSeasonCache;
+            const seasonName = (season && season.name) || r.season.name;
+            const prizes = seasonPrizeItems(roleKey, season);
+            const totalPrize = season
+                ? ((Number(season.prizePool) || 0) || (sumAmounts(season.fighterPrizes) + sumAmounts(season.clubPrizes)) || r.season.prize)
+                : r.season.prize;
+            const prizeLabel = season
+                ? (season.sponsorName ? `Призовой фонд · ${season.sponsorName}` : 'Призовой фонд сезона')
+                : r.season.source;
+
+            const featuresHtml = r.features.map((f, i) => `
+                <div class="guest-feature" style="${delayStyle(i + 1)}">
+                    <div class="g-feature-head">
+                        <i class="fa-solid ${f.icon}"></i>
+                        <h3>${escapeHtml(f.title)}</h3>
+                    </div>
+                    <p>${escapeHtml(f.text)}</p>
+                </div>`).join('');
+
+            const prizesHtml = prizes.map((p) => `
+                <div class="season-prize-item">
+                    <div class="place">${escapeHtml(p.place)}</div>
+                    <div class="amount">${typeof p.amount === 'number' ? fmtNum(p.amount) + ' ₽' : escapeHtml(p.amount)}</div>
+                </div>`).join('');
+
+            panel.innerHTML = `
+                <div class="panel-head">
+                    <div class="panel-icon"><i class="fa-solid ${r.panelIcon}"></i></div>
+                    <div class="panel-title">
+                        <h2>${escapeHtml(r.panelTitle)}</h2>
+                        <p>${escapeHtml(r.panelSub)}</p>
+                    </div>
+                </div>
+
+                <div class="season" data-href="login.html?role=${encodeURIComponent(roleKey)}">
+                    <div class="season-label"><span class="dot"></span>Активный сезон</div>
+                    <div class="season-name">${escapeHtml(seasonName)}</div>
+                    <div class="season-prize">${typeof totalPrize === 'number' ? fmtNum(totalPrize) : escapeHtml(totalPrize)}<small>₽</small></div>
+                    <div class="season-prize-label">${escapeHtml(prizeLabel)}</div>
+                    <div class="season-desc" style="font-size:13px;color:var(--text-dim);line-height:1.5;">${escapeHtml(r.season.desc)}</div>
+                    <div class="season-prizes" style="margin-top:14px;">${prizesHtml}</div>
+                </div>
+
+                <div class="guest-features">${featuresHtml}</div>
+
+                <div class="cta-hint">
+                    Зарегистрируйся как <strong>${escapeHtml(r.panelTitle.toLowerCase())}</strong> и получи доступ ко всем возможностям
+                </div>`;
+        }
+
+        async function renderGuest(preferredRole) {
+            const roleKey = ROLES_GUEST[preferredRole] ? preferredRole : (currentGuestRole || 'fighter');
+            currentGuestRole = roleKey;
+
+            setAccent(roleKey);
+            showScreen('screenGuest');
+            updateGuestHero(roleKey);
+            renderGuestPanel(roleKey);
+
+            document.querySelectorAll('.role-btn').forEach((btn) => {
+                btn.classList.toggle('active', btn.dataset.role === roleKey);
+            });
+
+            // Реальный сезон подтягиваем асинхронно и обновляем панель
+            const season = await loadGuestSeason();
+            if (season) {
+                renderGuestPanel(roleKey);
+                updateGuestHero(roleKey);
             }
         }
 
-        // 3. Форматирование относительного времени
-        function formatRelativeTime(date) {
-            if (!date) return 'только что';
-            const seconds = Math.floor((new Date() - date) / 1000);
-            if (seconds < 60) return 'только что';
-            const minutes = Math.floor(seconds / 60);
-            if (minutes < 60) return `${minutes} мин назад`;
-            const hours = Math.floor(minutes / 60);
-            if (hours < 24) return `${hours} ч назад`;
-            const days = Math.floor(hours / 24);
-            if (days < 7) return `${days} дн назад`;
-            return date.toLocaleDateString('ru-RU');
+        function initGuestControls() {
+            document.querySelectorAll('.role-btn').forEach((btn) => {
+                btn.addEventListener('click', () => {
+                    const roleKey = btn.dataset.role;
+                    if (!ROLES_GUEST[roleKey]) return;
+                    document.querySelectorAll('.role-btn').forEach((b) => b.classList.toggle('active', b === btn));
+                    currentGuestRole = roleKey;
+                    setAccent(roleKey);
+                    updateGuestHero(roleKey);
+                    renderGuestPanel(roleKey);
+                });
+            });
+
+            const loginBtn = document.getElementById('guestLoginBtn');
+            if (loginBtn) {
+                loginBtn.addEventListener('click', () => {
+                    window.location.href = `login.html?role=${encodeURIComponent(currentGuestRole)}`;
+                });
+            }
         }
 
-        // 4. Pull-to-refresh
-        let touchStartY = 0;
-        let isRefreshing = false;
+        // ============================================================
+        // ОПРЕДЕЛЕНИЕ РОЛИ / СТАТУС ЗАЯВКИ
+        // ============================================================
+        async function detectRole(uid) {
+            const roles = {
+                isPartner: false,
+                isClubUser: false,
+                isOrgUser: false,
+                myClubId: null,
+                myOrgId: null,
+                userName: 'Пользователь',
+                fighter: null,
+                club: null
+            };
 
-        function initPullToRefresh() {
-            const ptrElement = document.createElement('div');
-            ptrElement.className = 'ptr-element';
-            ptrElement.innerHTML = '<div class="ptr-spinner"></div>';
-            document.body.insertBefore(ptrElement, document.body.firstChild);
-            
-            document.addEventListener('touchstart', (e) => {
-                if (window.scrollY === 0) {
-                    touchStartY = e.touches[0].clientY;
-                }
-            });
-            
-            document.addEventListener('touchmove', (e) => {
-                if (window.scrollY === 0 && !isRefreshing) {
-                    const deltaY = e.touches[0].clientY - touchStartY;
-                    if (deltaY > 60) {
-                        e.preventDefault();
-                        refreshPage();
-                    }
-                }
-            });
-        }
-
-        async function refreshPage() {
-            if (isRefreshing) return;
-            isRefreshing = true;
-            
-            const ptrElement = document.querySelector('.ptr-element');
-            if (ptrElement) ptrElement.classList.add('show');
-            
-            await Promise.all([
-                loadTopPoints(),
-                loadTopLikes(),
-                auth.currentUser ? loadUserDashboard(auth.currentUser.uid) : null,
-                auth.currentUser ? loadActivityFeed(auth.currentUser.uid) : null
+            const [fighterSnap, clubSnap, orgSnap] = await Promise.all([
+                getDoc(doc(db, 'fighters', uid)).catch(() => null),
+                getDoc(doc(db, 'clubs', uid)).catch(() => null),
+                getDocs(query(
+                    collection(db, 'organization_requests'),
+                    where('userId', '==', uid),
+                    where('status', '==', 'approved')
+                )).catch(() => null)
             ]);
-            
-            setTimeout(() => {
-                if (ptrElement) ptrElement.classList.remove('show');
-                isRefreshing = false;
-            }, 500);
-        }
 
-        // 5. Intersection Observer для анимации появления
-        function initScrollAnimations() {
-            const elements = document.querySelectorAll('.fade-up');
-            const observer = new IntersectionObserver((entries) => {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting) {
-                        entry.target.classList.add('visible');
-                        observer.unobserve(entry.target);
-                    }
-                });
-            }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
-            
-            elements.forEach(el => observer.observe(el));
-        }
+            if (fighterSnap && fighterSnap.exists()) {
+                const data = fighterSnap.data() || {};
+                roles.fighter = data;
+                roles.isPartner = data.isPartner === true;
+                roles.myClubId = data.clubId || null;
+                roles.userName = data.name || 'Боец';
+            }
 
-        function escapeHtml(str) {
-            if (!str) return '';
-            return String(str).replace(/[&<>]/g, m => m === '&' ? '&amp;' : m === '<' ? '&lt;' : '&gt;');
+            if (clubSnap && clubSnap.exists()) {
+                const data = clubSnap.data() || {};
+                roles.club = data;
+                roles.isClubUser = true;
+                roles.myClubId = uid;
+                roles.userName = data.name || 'Клуб';
+            }
+
+            if (orgSnap && !orgSnap.empty) {
+                const req = orgSnap.docs[0].data() || {};
+                roles.isOrgUser = true;
+                roles.myOrgId = req.organizationId || orgSnap.docs[0].id;
+                roles.userName = req.orgName || 'Организация';
+            }
+
+            return roles;
         }
 
         async function checkPendingStatus(user) {
             if (!user) return null;
             const uid = user.uid;
-            
             try {
-                // 1. Проверяем клубы
-                const clubDoc = await getDoc(doc(db, "clubs", uid));
-                if (clubDoc.exists() && clubDoc.data().status === 'pending') {
+                const clubSnap = await getDoc(doc(db, 'clubs', uid));
+                if (clubSnap.exists() && clubSnap.data().status === 'pending') {
                     return { status: 'pending', role: 'Клуб' };
                 }
-                
-                // 2. Проверяем организации
-                const orgRequests = await getDocs(query(
-                    collection(db, "organization_requests"),
-                    where("userId", "==", uid),
-                    where("status", "==", "pending")
+
+                const orgReq = await getDocs(query(
+                    collection(db, 'organization_requests'),
+                    where('userId', '==', uid),
+                    where('status', '==', 'pending')
                 ));
-                if (!orgRequests.empty) {
-                    return { status: 'pending', role: 'Организация' };
-                }
-                
-                // 3. Проверяем партнёров
-                const partnerRequests = await getDocs(query(
-                    collection(db, "partner_requests"),
-                    where("userId", "==", uid),
-                    where("status", "==", "pending")
+                if (!orgReq.empty) return { status: 'pending', role: 'Организация' };
+
+                const partnerReq = await getDocs(query(
+                    collection(db, 'partner_requests'),
+                    where('userId', '==', uid),
+                    where('status', '==', 'pending')
                 ));
-                if (!partnerRequests.empty) {
-                    return { status: 'pending', role: 'Партнёр' };
-                }
-                
+                if (!partnerReq.empty) return { status: 'pending', role: 'Партнёр' };
+
                 return null;
             } catch (err) {
-                console.error('Ошибка проверки статуса:', err);
+                console.error('❌ index.html: ошибка проверки статуса заявки', err);
                 return null;
             }
         }
 
-        // Обновленный обработчик авторизации
+        function showPendingBanner(roleLabel) {
+            hideAllScreens();
+            const banner = document.getElementById('pendingBanner');
+            if (!banner) return;
+            banner.style.display = 'block';
+            const roleText = document.getElementById('pendingRoleText');
+            if (roleText) roleText.textContent = roleLabel || 'Клуб';
+
+            const btn = document.getElementById('pendingBtn');
+            if (btn) btn.onclick = () => { window.location.href = 'waiting.html'; };
+
+            const logoutBtn = document.getElementById('pendingLogoutBtn');
+            if (logoutBtn) {
+                logoutBtn.onclick = async () => {
+                    await signOut(auth);
+                    window.location.href = 'index.html';
+                };
+            }
+        }
+
+        function hidePendingBanner() {
+            const banner = document.getElementById('pendingBanner');
+            if (banner) banner.style.display = 'none';
+        }
+
+        // ============================================================
+        // БОЕЦ — профиль и напоминание о вызове
+        // ============================================================
+        async function loadFighterProfile(user, roles) {
+            setSkeleton('fighterProfile', 'skel-card');
+            let f = roles.fighter;
+            if (!f) {
+                const snap = await getDoc(doc(db, 'fighters', user.uid)).catch(() => null);
+                f = (snap && snap.exists()) ? snap.data() : {};
+            }
+
+            const name = f.name || user.displayName || 'Боец';
+            const avatar = f.avatar && f.avatar !== 'Avatar.png' ? f.avatar : placeholderAvatar(name);
+            const sport = f.sport || '—';
+            const weight = f.weightClass ? `${f.weightClass}` : (f.weight ? `${f.weight} кг` : '');
+            const sub = [sport, weight].filter(Boolean).join(' · ');
+
+            const frs = Number(f.frs) || 0;
+            const wins = Number(f.wins) || 0;
+            const losses = Number(f.losses) || 0;
+            const finishes = Number(f.finishes) || 0;
+
+            const league = getLeague(frs);
+            const progress = league.max
+                ? Math.max(0, Math.min(100, Math.round(((frs - league.min) / (league.max - league.min)) * 100)))
+                : 100;
+            const leagueNums = league.max
+                ? `${fmtNum(frs)} / ${fmtNum(league.max)} FRS`
+                : `${fmtNum(frs)} FRS · максимум`;
+
+            setBlock('fighterProfile', `
+                <div class="profile-card" style="${delayStyle(0)}">
+                    <div class="profile-top" data-href="profile.html?id=${encodeURIComponent(user.uid)}">
+                        <img class="profile-avatar" src="${escapeHtml(avatar)}" alt="" onerror="this.onerror=null;this.src='Avatar.png';">
+                        <div class="profile-name">
+                            <h2>${escapeHtml(name)}</h2>
+                            <p>${escapeHtml(sub || 'Профиль бойца')}</p>
+                        </div>
+                        <i class="fas fa-chevron-right profile-chev"></i>
+                    </div>
+
+                    <div class="profile-stats">
+                        <div class="profile-stat">
+                            <div class="val">${fmtNum(frs)}</div>
+                            <div class="lbl">FRS</div>
+                        </div>
+                        <div class="profile-stat">
+                            <div class="val">${wins}–${losses}</div>
+                            <div class="lbl">Рекорд</div>
+                        </div>
+                        <div class="profile-stat">
+                            <div class="val">${finishes}</div>
+                            <div class="lbl">Финиша</div>
+                        </div>
+                    </div>
+
+                    <div class="league-block">
+                        <div class="league-top">
+                            <span class="current"><img class="league-icon" src="${escapeHtml(league.icon)}" alt="" onerror="this.remove()">${escapeHtml(league.name)}</span>
+                            <span class="next">${escapeHtml(league.nextName)}</span>
+                        </div>
+                        <div class="league-bar">
+                            <div class="league-bar-fill" style="width:${progress}%"></div>
+                        </div>
+                        <div class="league-nums">${escapeHtml(leagueNums)}</div>
+                    </div>
+                </div>`);
+        }
+
+        async function loadCallReminder(uid) {
+            clearBlock('fighterCall');
+            const list = await safeQuery(
+                'challenges',
+                [['toUserId', '==', uid]],
+                'createdAt', 'desc', 20,
+                (a, b) => tsOf(b.createdAt) - tsOf(a.createdAt)
+            );
+            const pending = list.filter((c) => (c.status || 'pending') === 'pending');
+            if (!pending.length) return;
+
+            const c = pending[0];
+            const opponent = c.fromName || 'Соперник';
+            const weight = c.fromWeight && c.fromWeight !== 'не указан' ? `${c.fromWeight} кг` : '';
+            const sport = c.sport && c.sport !== '—' ? c.sport : '';
+            const meta = [weight, sport].filter(Boolean).join(' · ');
+            const extra = pending.length > 1 ? ` и ещё ${pending.length - 1}` : '';
+
+            setBlock('fighterCall', `
+                <div class="plate" style="${delayStyle(1)}" data-href="challenges.html">
+                    <div class="plate-icon"><i class="fas fa-fist-raised"></i></div>
+                    <div class="plate-content">
+                        <div class="plate-title">${pending.length > 1 ? `${pending.length} новых вызова` : 'Новый вызов'}</div>
+                        <div class="plate-text">${escapeHtml(opponent)}${meta ? ' · ' + escapeHtml(meta) : ''}${escapeHtml(extra)}</div>
+                    </div>
+                    <i class="fas fa-chevron-right plate-arrow"></i>
+                </div>`);
+        }
+
+        // ============================================================
+        // СЕЗОН (общий блок для всех ролей)
+        // ============================================================
+        async function loadSeasonBlock(opts) {
+            const blockId = opts.blockId;
+            setSkeleton(blockId, 'skel-card');
+
+            const season = await getActiveSeason().catch(() => null);
+            if (!season) {
+                clearBlock(blockId);
+                return;
+            }
+
+            const isClub = opts.kind === 'club';
+            const clubPrizes = Array.isArray(season.clubPrizes) ? season.clubPrizes : [];
+            const fighterPrizes = Array.isArray(season.fighterPrizes) ? season.fighterPrizes : [];
+            const prizesRaw = isClub ? (clubPrizes.length ? clubPrizes : fighterPrizes) : fighterPrizes;
+
+            const prizesTotal = prizesRaw.reduce((sum, p) => sum + (Number(p && p.amount) || 0), 0);
+            const total = Number(season.prizePool) || prizesTotal;
+            const seasonName = season.name || [season.season, season.year].filter(Boolean).join(' ') || 'Сезон';
+            const prizeLabel = season.sponsorName
+                ? `Призовой фонд · ${season.sponsorName}`
+                : (isClub ? 'Призовой фонд клубов' : 'Призовой фонд сезона');
+
+            let progressHtml = '';
+            if (opts.personal) {
+                const myValue = Number(opts.myValue) || 0;
+                const place = await placeInRating(opts.ratingCollection, opts.ratingField, myValue);
+                progressHtml = `
+                    <div class="season-progress">
+                        <div class="season-progress-item">
+                            <div class="lbl">${isClub ? 'Club FRS' : 'FRS в сезоне'}</div>
+                            <div class="val">${fmtNum(myValue)}</div>
+                        </div>
+                        <div class="season-progress-item">
+                            <div class="lbl">Место</div>
+                            <div class="val">#${fmtNum(place)}</div>
+                        </div>
+                    </div>`;
+            }
+
+            const prizesHtml = prizesRaw.slice(0, 3).map((p) => `
+                <div class="season-prize-item">
+                    <div class="place">${escapeHtml(/место/i.test(String(p.place)) ? String(p.place) : `${p.place} место`)}</div>
+                    <div class="amount">${fmtNum(p.amount)} ₽</div>
+                </div>`).join('');
+
+            setBlock(blockId, `
+                <div class="season" style="${delayStyle(opts.delay || 2)}" data-href="leagues.html">
+                    <div class="season-label"><span class="dot"></span>Активный сезон</div>
+                    <div class="season-name">${escapeHtml(seasonName)}</div>
+                    <div class="season-prize">${fmtNum(total)}<small>₽</small></div>
+                    <div class="season-prize-label">${escapeHtml(prizeLabel)}</div>
+                    ${progressHtml}
+                    <div class="season-prizes" style="${progressHtml ? '' : 'margin-top:14px;'}">${prizesHtml}</div>
+                </div>`);
+        }
+
+        // ============================================================
+        // ПЛАШКА КЛУБА (у бойца)
+        // ============================================================
+        async function loadClubPlate(clubId) {
+            clearBlock('fighterClub');
+            if (!clubId) return;
+
+            const snap = await getDoc(doc(db, 'clubs', clubId)).catch(() => null);
+            if (!snap || !snap.exists()) return;
+
+            const c = snap.data() || {};
+            const name = c.name || 'Клуб';
+            const logo = (c.logo && String(c.logo).trim()) ? c.logo : placeholderAvatar(name);
+            const sub = c.city ? `${c.city} · мой клуб` : 'Мой клуб';
+
+            setBlock('fighterClub', `
+                <div class="club-plate" style="${delayStyle(3)}" data-href="club-profile.html?id=${encodeURIComponent(clubId)}">
+                    <img class="club-plate-logo" src="${escapeHtml(logo)}" alt="" onerror="this.onerror=null;this.src='Avatar.png';">
+                    <div class="club-plate-info">
+                        <div class="club-plate-name">${escapeHtml(name)}</div>
+                        <div class="club-plate-sub">${escapeHtml(sub)}</div>
+                    </div>
+                    <div class="club-plate-frs">${fmtNum(c.clubFRS)}<small style="font-family:'Inter',sans-serif;font-size:10px;color:var(--text-mute);margin-left:3px;">FRS</small></div>
+                </div>`);
+        }
+
+        // ============================================================
+        // ЭКРАН БОЙЦА
+        // ============================================================
+        async function renderFighter(user, roles) {
+            showScreen('screenFighter');
+
+            // Свежие данные бойца (header.js мог сделать ленивый сброс сезона)
+            const freshSnap = await getDoc(doc(db, 'fighters', user.uid)).catch(() => null);
+            if (freshSnap && freshSnap.exists()) roles.fighter = freshSnap.data();
+
+            const f = roles.fighter || {};
+
+            await Promise.allSettled([
+                loadFighterProfile(user, roles),
+                loadCallReminder(user.uid),
+                loadSeasonBlock({
+                    blockId: 'fighterSeason',
+                    kind: 'fighter',
+                    personal: true,
+                    myValue: Number(f.frs) || 0,
+                    ratingCollection: 'fighters',
+                    ratingField: 'frs',
+                    delay: 2
+                }),
+                loadClubPlate(f.clubId),
+                loadTournamentsBlock({
+                    blockId: 'fighterTournaments',
+                    title: 'Турниры',
+                    city: f.city,
+                    sports: [f.sport]
+                })
+            ]);
+        }
+
+        // ============================================================
+        // ЭКРАН КЛУБА
+        // ============================================================
+        function loadClubProfile(clubId, c) {
+            const data = c || {};
+            const name = data.name || 'Клуб';
+            const logo = (data.logo && String(data.logo).trim()) ? data.logo : placeholderAvatar(name);
+            const members = Array.isArray(data.members) ? data.members : [];
+            const memberCount = members.length || Number(data.memberCount) || 0;
+            const sub = data.city ? `${data.city} · клуб` : 'Клуб PRORANK';
+
+            setBlock('clubProfile', `
+                <div class="profile-card" style="${delayStyle(0)}">
+                    <div class="profile-top" data-href="club-profile.html?id=${encodeURIComponent(clubId)}">
+                        <img class="profile-avatar" src="${escapeHtml(logo)}" alt="" onerror="this.onerror=null;this.src='Avatar.png';">
+                        <div class="profile-name">
+                            <h2>${escapeHtml(name)}</h2>
+                            <p>${escapeHtml(sub)}</p>
+                        </div>
+                        <i class="fas fa-chevron-right profile-chev"></i>
+                    </div>
+
+                    <div class="profile-stats" style="margin-bottom:0;">
+                        <div class="profile-stat">
+                            <div class="val">${fmtNum(data.clubFRS)}</div>
+                            <div class="lbl">Club FRS</div>
+                        </div>
+                        <div class="profile-stat">
+                            <div class="val">${fmtNum(memberCount)}</div>
+                            <div class="lbl">Бойцов</div>
+                        </div>
+                        <div class="profile-stat">
+                            <div class="val">${fmtNum(data.allTimeFrs)}</div>
+                            <div class="lbl">Всего FRS</div>
+                        </div>
+                    </div>
+                </div>`);
+        }
+
+        async function loadClubRequests(clubId) {
+            clearBlock('clubRequests');
+            const apps = await safeQuery('club_applications', [['clubId', '==', clubId], ['status', '==', 'pending']]);
+            if (!apps.length) return;
+
+            setBlock('clubRequests', `
+                <div class="plate" style="${delayStyle(1)}" data-href="club-profile.html?id=${encodeURIComponent(clubId)}&tab=members">
+                    <div class="plate-icon"><i class="fas fa-user-plus"></i></div>
+                    <div class="plate-content">
+                        <div class="plate-title">${apps.length} ${apps.length === 1 ? 'заявка' : 'заявок'} в клуб</div>
+                        <div class="plate-text">Разбери состав — прими или отклони</div>
+                    </div>
+                    <i class="fas fa-chevron-right plate-arrow"></i>
+                </div>`);
+        }
+
+        async function loadClubTop(clubId) {
+            const container = document.getElementById('clubTop');
+            if (!container) return;
+            const head = sectionHeadHtml('Топ бойцов клуба', 'fa-ranking-star', 'Клуб →', `club-profile.html?id=${encodeURIComponent(clubId)}`);
+            container.innerHTML = `
+                ${head}
+                <div class="rank-list">
+                    <div class="skel skel-row"></div>
+                    <div class="skel skel-row"></div>
+                    <div class="skel skel-row"></div>
+                </div>`;
+
+            const fighters = await safeQuery(
+                'fighters',
+                [['clubId', '==', clubId]],
+                'frs', 'desc', 3,
+                (a, b) => (Number(b.frs) || 0) - (Number(a.frs) || 0)
+            );
+
+            if (!fighters.length) {
+                container.innerHTML = `${head}<div class="empty-state">В клубе пока нет бойцов</div>`;
+                return;
+            }
+
+            const rows = fighters.map((f, i) => {
+                const name = f.name || 'Боец';
+                const avatar = f.avatar && f.avatar !== 'Avatar.png' ? f.avatar : placeholderAvatar(name);
+                return `
+                    <div class="rank-row" style="${delayStyle(i)}" data-href="profile.html?id=${encodeURIComponent(f.id)}">
+                        <div class="rank-pos">${i + 1}</div>
+                        <img class="rank-avatar" src="${escapeHtml(avatar)}" alt="" onerror="this.onerror=null;this.src='Avatar.png';">
+                        <div class="rank-name">${escapeHtml(name)}</div>
+                        <div class="rank-frs">${fmtNum(f.frs)}<small>FRS</small></div>
+                    </div>`;
+            }).join('');
+
+            container.innerHTML = `${head}<div class="rank-list">${rows}</div>`;
+        }
+
+        async function renderClub(user, roles) {
+            showScreen('screenClub');
+            const clubId = roles.myClubId || user.uid;
+
+            const fresh = await getDoc(doc(db, 'clubs', clubId)).catch(() => null);
+            if (fresh && fresh.exists()) roles.club = fresh.data();
+            const c = roles.club || {};
+
+            await Promise.allSettled([
+                Promise.resolve(loadClubProfile(clubId, c)),
+                loadClubRequests(clubId),
+                loadSeasonBlock({
+                    blockId: 'clubSeason',
+                    kind: 'club',
+                    personal: true,
+                    myValue: Number(c.clubFRS) || 0,
+                    ratingCollection: 'clubs',
+                    ratingField: 'clubFRS',
+                    delay: 2
+                }),
+                loadClubTop(clubId),
+                loadTournamentsBlock({
+                    blockId: 'clubTournaments',
+                    title: 'Турниры для бойцов',
+                    city: c.city,
+                    sports: Array.isArray(c.sports) ? c.sports : []
+                })
+            ]);
+        }
+
+        // ============================================================
+        // ЭКРАН ОРГАНИЗАТОРА
+        // ============================================================
+        let orgTournamentsPromise = null;
+
+        async function getOrgTournaments(orgId) {
+            if (state.orgTournaments) return state.orgTournaments;
+            if (!orgTournamentsPromise) {
+                orgTournamentsPromise = safeQuery(
+                    'tournaments',
+                    [['organizationId', '==', orgId]],
+                    'date', 'asc', 100,
+                    (a, b) => tsOf(a.date) - tsOf(b.date)
+                ).then((list) => {
+                    state.orgTournaments = list;
+                    orgTournamentsPromise = null;
+                    return list;
+                }).catch(() => {
+                    orgTournamentsPromise = null;
+                    return [];
+                });
+            }
+            return orgTournamentsPromise;
+        }
+
+        async function loadOrgProfile(roles) {
+            setSkeleton('orgProfile', 'skel-card');
+            const orgId = roles.myOrgId;
+            const name = roles.userName || 'Организация';
+
+            const [total, list] = await Promise.all([
+                countDocs('tournaments', [['organizationId', '==', orgId]]),
+                getOrgTournaments(orgId)
+            ]);
+
+            const activeCount = list.filter((t) => TOURNAMENT_STATUSES.includes(t.status)).length;
+            const participants = list.reduce((sum, t) => sum + (Number(t.participantCount) || 0), 0);
+
+            setBlock('orgProfile', `
+                <div class="profile-card" style="${delayStyle(0)}">
+                    <div class="profile-top" data-href="organization-dashboard.html?id=${encodeURIComponent(orgId)}">
+                        <div class="profile-avatar-icon"><i class="fas fa-trophy"></i></div>
+                        <div class="profile-name">
+                            <h2>${escapeHtml(name)}</h2>
+                            <p>Организатор турниров</p>
+                        </div>
+                        <i class="fas fa-chevron-right profile-chev"></i>
+                    </div>
+
+                    <div class="profile-stats" style="margin-bottom:0;">
+                        <div class="profile-stat">
+                            <div class="val">${fmtNum(total || list.length)}</div>
+                            <div class="lbl">Турниров</div>
+                        </div>
+                        <div class="profile-stat">
+                            <div class="val">${fmtNum(activeCount)}</div>
+                            <div class="lbl">Активных</div>
+                        </div>
+                        <div class="profile-stat">
+                            <div class="val">${fmtNum(participants)}</div>
+                            <div class="lbl">Участников</div>
+                        </div>
+                    </div>
+                </div>`);
+        }
+
+        /** Заявки на турниры организатора: отдельной коллекции в схеме нет,
+         *  поэтому блок не рендерится (заглушка без чтения Firestore). */
+        function loadOrgRequests() {
+            clearBlock('orgRequests');
+        }
+
+        async function loadOrgNearest(orgId) {
+            const container = document.getElementById('orgNearest');
+            if (!container) return;
+            container.innerHTML = '<div class="skel skel-card"></div>';
+
+            const list = await getOrgTournaments(orgId);
+            const upcoming = list
+                .filter((t) => !t.deleted && t.status !== 'completed' && t.status !== 'cancelled')
+                .sort((a, b) => tsOf(a.date) - tsOf(b.date));
+
+            // Приоритет — ближайший турнир в будущем, иначе самый свежий из прошедших
+            const now = Date.now();
+            const future = upcoming.filter((t) => tsOf(t.date) >= now);
+            const nearest = future.length ? future[0] : (upcoming.length ? upcoming[upcoming.length - 1] : null);
+
+            if (!nearest) {
+                container.innerHTML = `
+                    <div class="create-card" style="${delayStyle(2)}" data-href="tournament-create.html">
+                        <i class="fas fa-plus"></i>
+                        <h4>Создать турнир</h4>
+                        <p>Анонс турнира — это поток бойцов и взносы</p>
+                    </div>`;
+                return;
+            }
+
+            const t = nearest;
+            const cur = Number(t.participantCount) || 0;
+            const max = Number(t.maxParticipants) || 0;
+            const statusLabel = TOURNAMENT_STATUS_LABELS[t.status] || 'Турнир';
+            const city = t.city || t.location || '—';
+            const date = toDate(t.date);
+            const dateText = date
+                ? `${String(date.getDate()).padStart(2, '0')} ${MONTHS_SHORT[date.getMonth()]} ${date.getFullYear()}`
+                : 'Дата уточняется';
+
+            container.innerHTML = `
+                ${sectionHeadHtml('Ближайший турнир', 'fa-calendar-check', 'Мои турниры →', 'my-tournaments.html')}
+                <div class="tournament-wide" style="${delayStyle(2)}">
+                    <div class="tw-top">
+                        <div class="tw-date">${escapeHtml(dateText)}</div>
+                        <div class="tw-status">${escapeHtml(statusLabel)}</div>
+                    </div>
+                    <div class="tw-name">${escapeHtml(t.name || 'Турнир')}</div>
+                    <div class="tw-meta">
+                        <span><i class="fas fa-location-dot"></i>${escapeHtml(city)}</span>
+                        <span><i class="fas fa-users"></i>${max > 0 ? `${cur}/${max}` : `${cur}`} участников</span>
+                        <span><i class="fas fa-ruble-sign"></i>${fmtNum(t.entryFee)} ₽</span>
+                    </div>
+                    <button type="button" class="tw-btn" data-href="my-tournament.html?id=${encodeURIComponent(t.id)}">
+                        <i class="fas fa-sliders"></i> Управлять
+                    </button>
+                </div>`;
+        }
+
+        // ============================================================
+        // ЭКРАН ПАРТНЁРА
+        // ============================================================
+        let partnerProductsPromise = null;
+        let partnerOrdersPromise = null;
+
+        async function resolvePartner(user) {
+            if (state.partnerId) return state.partnerId;
+            try {
+                const snap = await getDocs(query(
+                    collection(db, 'partners'),
+                    where('email', '==', user.email || '')
+                ));
+                if (snap.empty) return null;
+                state.partnerId = snap.docs[0].id;
+                state.partnerDoc = snap.docs[0].data() || {};
+                return state.partnerId;
+            } catch (err) {
+                console.warn('⚠️ index.html: партнёр не найден', err && err.message);
+                return null;
+            }
+        }
+
+        async function getPartnerProducts(partnerId) {
+            if (state.partnerProducts) return state.partnerProducts;
+            if (!partnerProductsPromise) {
+                partnerProductsPromise = safeQuery('products', [['partnerId', '==', partnerId]])
+                    .then((list) => { state.partnerProducts = list; partnerProductsPromise = null; return list; })
+                    .catch(() => { partnerProductsPromise = null; return []; });
+            }
+            return partnerProductsPromise;
+        }
+
+        async function getPartnerOrders(partnerId) {
+            if (state.partnerOrders) return state.partnerOrders;
+            if (!partnerOrdersPromise) {
+                partnerOrdersPromise = safeQuery(
+                    'physical_orders',
+                    [['partnerId', '==', partnerId]],
+                    'createdAt', 'desc', 200,
+                    (a, b) => tsOf(b.createdAt) - tsOf(a.createdAt)
+                ).then((list) => { state.partnerOrders = list; partnerOrdersPromise = null; return list; })
+                 .catch(() => { partnerOrdersPromise = null; return []; });
+            }
+            return partnerOrdersPromise;
+        }
+
+        /** Товары считаются «хитами» по полю sales, если оно есть;
+         *  иначе — по количеству заказов и цене. */
+        function sortProductsBySales(products, orders) {
+            const ordersCount = {};
+            (orders || []).forEach((o) => {
+                (Array.isArray(o.items) ? o.items : []).forEach((it) => {
+                    if (!it || !it.productId) return;
+                    ordersCount[it.productId] = (ordersCount[it.productId] || 0) + (Number(it.quantity) || 1);
+                });
+            });
+            const score = (p) => Number(p.sales || p.sold || p.salesCount || 0) || ordersCount[p.id] || 0;
+            return [...products].sort((a, b) => (score(b) - score(a)) || ((Number(b.price) || 0) - (Number(a.price) || 0)));
+        }
+
+        async function loadPartnerProfile(user) {
+            setSkeleton('partnerProfile', 'skel-card');
+            const partnerId = await resolvePartner(user);
+
+            if (!partnerId) {
+                setBlock('partnerProfile', `
+                    <div class="create-card" style="${delayStyle(0)}" data-href="login.html?role=partner">
+                        <i class="fas fa-store-slash"></i>
+                        <h4>Магазин не настроен</h4>
+                        <p>Отправь заявку на партнёрство — кабинет появится после одобрения</p>
+                    </div>`);
+                return;
+            }
+
+            const pdata = state.partnerDoc || {};
+            const storeName = pdata.storeName || pdata.name || user.displayName || 'Магазин';
+            const [products, orders] = await Promise.all([
+                getPartnerProducts(partnerId),
+                getPartnerOrders(partnerId)
+            ]);
+
+            const salesSum = orders
+                .filter((o) => o.status === 'completed')
+                .reduce((sum, o) => sum + (Number(o.totalPrice) || 0), 0);
+
+            setBlock('partnerProfile', `
+                <div class="profile-card" style="${delayStyle(0)}">
+                    <div class="profile-top" data-href="partner-dashboard.html">
+                        <div class="profile-avatar-icon"><i class="fas fa-store"></i></div>
+                        <div class="profile-name">
+                            <h2>${escapeHtml(storeName)}</h2>
+                            <p>Партнёр · Магазин</p>
+                        </div>
+                        <i class="fas fa-chevron-right profile-chev"></i>
+                    </div>
+
+                    <div class="profile-stats" style="margin-bottom:0;">
+                        <div class="profile-stat">
+                            <div class="val">${fmtNum(products.length)}</div>
+                            <div class="lbl">Товаров</div>
+                        </div>
+                        <div class="profile-stat">
+                            <div class="val">${fmtNum(orders.length)}</div>
+                            <div class="lbl">Заказов</div>
+                        </div>
+                        <div class="profile-stat">
+                            <div class="val">${fmtNum(salesSum)}</div>
+                            <div class="lbl">Продаж, ₽</div>
+                        </div>
+                    </div>
+                </div>`);
+        }
+
+        async function loadPartnerOrdersPlate(partnerId) {
+            clearBlock('partnerOrders');
+            if (!partnerId) return;
+
+            const orders = await getPartnerOrders(partnerId);
+            const fresh = orders.filter((o) => o.status === 'pending' || o.status === 'paid');
+            if (!fresh.length) return;
+
+            setBlock('partnerOrders', `
+                <div class="plate" style="${delayStyle(1)}" data-href="partner-orders.html">
+                    <div class="plate-icon"><i class="fas fa-shopping-bag"></i></div>
+                    <div class="plate-content">
+                        <div class="plate-title">${fresh.length} ${fresh.length === 1 ? 'новый заказ' : 'новых заказов'}</div>
+                        <div class="plate-text">Собери и отправь — бойцы ждут экипировку</div>
+                    </div>
+                    <i class="fas fa-chevron-right plate-arrow"></i>
+                </div>`);
+        }
+
+        async function loadPartnerTop(partnerId) {
+            const container = document.getElementById('partnerTop');
+            if (!container) return;
+            const head = sectionHeadHtml('Топ товары', 'fa-fire', 'Все →', 'partner-products.html');
+            container.innerHTML = `${head}<div class="product-list">
+                <div class="skel" style="height:150px;"></div>
+                <div class="skel" style="height:150px;"></div>
+                <div class="skel" style="height:150px;"></div>
+            </div>`;
+
+            if (!partnerId) {
+                container.innerHTML = `${head}<div class="empty-state">Товары появятся после настройки магазина</div>`;
+                return;
+            }
+
+            const [products, orders] = await Promise.all([
+                getPartnerProducts(partnerId),
+                getPartnerOrders(partnerId)
+            ]);
+            const top = sortProductsBySales(products, orders).slice(0, 3);
+
+            if (!top.length) {
+                container.innerHTML = `${head}<div class="empty-state">Пока нет товаров — добавь первый</div>`;
+                return;
+            }
+
+            const cards = top.map((p, i) => {
+                const name = p.name || 'Товар';
+                const img = p.image || placeholderAvatar(name);
+                return `
+                    <div class="product-card" style="${delayStyle(i)}" data-href="partner-products.html">
+                        <img class="product-img" src="${escapeHtml(img)}" alt="" onerror="this.onerror=null;this.src='Avatar.png';">
+                        <div class="product-info">
+                            <div class="product-name">${escapeHtml(name)}</div>
+                            <div class="product-price">${fmtNum(p.price)} ₽</div>
+                        </div>
+                    </div>`;
+            }).join('');
+
+            container.innerHTML = `${head}<div class="product-list">${cards}</div>`;
+        }
+
+        function loadPartnerTiles(products, orders) {
+            const productsCount = products ? products.length : 0;
+            const ordersCount = orders ? orders.length : 0;
+
+            setBlock('partnerTiles', `
+                <div class="tiles">
+                    <div class="tile" style="${delayStyle(4)}" data-href="partner-products.html">
+                        <i class="fas fa-box"></i>
+                        <span>Товары</span>
+                        <span class="tile-count">${fmtNum(productsCount)}</span>
+                    </div>
+                    <div class="tile" style="${delayStyle(5)}" data-href="partner-orders.html">
+                        <i class="fas fa-shopping-cart"></i>
+                        <span>Заказы</span>
+                        <span class="tile-count">${fmtNum(ordersCount)}</span>
+                    </div>
+                    <div class="tile" style="${delayStyle(6)}" data-href="partner-analytics.html">
+                        <i class="fas fa-chart-line"></i>
+                        <span>Аналитика</span>
+                    </div>
+                </div>`);
+        }
+
+        async function renderPartner(user, roles) {
+            showScreen('screenPartner');
+            void roles;
+
+            await Promise.allSettled([
+                loadPartnerProfile(user),
+                loadSeasonBlock({ blockId: 'partnerSeason', kind: 'partner', personal: false, delay: 2 })
+            ]);
+
+            const partnerId = state.partnerId;
+            const [products, orders] = await Promise.all([
+                partnerId ? getPartnerProducts(partnerId) : Promise.resolve([]),
+                partnerId ? getPartnerOrders(partnerId) : Promise.resolve([])
+            ]);
+
+            await Promise.allSettled([
+                loadPartnerOrdersPlate(partnerId),
+                loadPartnerTop(partnerId)
+            ]);
+
+            loadPartnerTiles(products, orders);
+        }
+
+        async function renderOrganizer(user, roles) {
+            showScreen('screenOrganizer');
+            const orgId = roles.myOrgId;
+
+            await Promise.allSettled([
+                loadOrgProfile(roles),
+                Promise.resolve(loadOrgRequests()),
+                loadSeasonBlock({ blockId: 'orgSeason', kind: 'organizer', personal: false, delay: 2 }),
+                loadOrgNearest(orgId),
+                loadTournamentsBlock({ blockId: 'orgTournaments', title: 'Все турниры', priority: false })
+            ]);
+        }
+
+        // ============================================================
+        // СТАРТ
+        // ============================================================
+        function initPageControls() {
+            const plusBtn = document.getElementById('balancePlusBtn');
+            if (plusBtn) plusBtn.onclick = () => { window.location.href = 'shop.html'; };
+
+            const menuToggle = document.getElementById('menuToggle');
+            const navLinks = document.getElementById('navLinks');
+            if (menuToggle && navLinks) {
+                menuToggle.addEventListener('click', () => navLinks.classList.toggle('show'));
+                navLinks.addEventListener('click', (e) => {
+                    if (e.target.closest('a')) navLinks.classList.remove('show');
+                });
+            }
+
+            initGuestControls();
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initPageControls);
+        } else {
+            initPageControls();
+        }
+
+        let authResolved = false;
+        // Если Firebase молчит дольше 1.5 с — показываем гостевой экран
+        setTimeout(() => {
+            if (!authResolved) renderGuest();
+        }, 1500);
+
         onAuthStateChanged(auth, async (user) => {
-            const pathSelector = document.getElementById('pathSelector');
-            const activityFeed = document.getElementById('activityFeed');
-            const heroSection = document.querySelector('.hero');
-            const pendingBanner = document.getElementById('pendingBanner');
-            const userDashboard = document.getElementById('userDashboard');
-            
-            if (user) {
-                // Проверяем статус заявки
-                const pendingStatus = await checkPendingStatus(user);
-                
-                if (pendingStatus) {
-                    // ===== СТАТУС ОЖИДАНИЯ =====
-                    // Скрываем всё
-                    if (pathSelector) pathSelector.style.display = 'none';
-                    if (heroSection) heroSection.style.display = 'none';
-                    if (userDashboard) userDashboard.style.display = 'none';
-                    if (activityFeed) activityFeed.style.display = 'none';
-                    
-                    // Показываем баннер ожидания
-                    if (pendingBanner) {
-                        pendingBanner.style.display = 'block';
-                        document.getElementById('pendingRoleText').textContent = pendingStatus.role;
-                        document.getElementById('pendingBtn').onclick = () => {
-                            window.location.href = 'waiting.html';
-                        };
-                    }
+            authResolved = true;
+            try {
+                if (!user) {
+                    hidePendingBanner();
+                    await renderGuest();
                     return;
                 }
-                
-                // ===== ОБЫЧНЫЙ ПОЛЬЗОВАТЕЛЬ =====
-                if (pathSelector) pathSelector.style.display = 'none';
-                if (heroSection) heroSection.style.display = 'none';
-                if (pendingBanner) pendingBanner.style.display = 'none';
-                if (userDashboard) userDashboard.style.display = 'block';
-                if (activityFeed) activityFeed.style.display = 'block';
-                
-                loadUserDashboard(user.uid);
-                loadActivityFeed(user.uid);
-                setTimeout(updateHeaderBalance, 1000);
-                
-            } else {
-                // ===== НЕАВТОРИЗОВАННЫЙ =====
-                if (pathSelector) pathSelector.style.display = 'flex';
-                if (heroSection) heroSection.style.display = 'block';
-                if (pendingBanner) pendingBanner.style.display = 'none';
-                if (userDashboard) userDashboard.style.display = 'none';
-                if (activityFeed) activityFeed.style.display = 'none';
+
+                const pending = await checkPendingStatus(user);
+                if (pending) {
+                    showPendingBanner(pending.role);
+                    return;
+                }
+                hidePendingBanner();
+
+                const roles = await detectRole(user.uid);
+
+                // Приоритет как в header.js: Org > Partner > Club > Fighter
+                if (roles.isOrgUser) {
+                    setAccent('organizer');
+                    await renderOrganizer(user, roles);
+                } else if (roles.isPartner) {
+                    setAccent('partner');
+                    await renderPartner(user, roles);
+                } else if (roles.isClubUser) {
+                    setAccent('club');
+                    await renderClub(user, roles);
+                } else {
+                    setAccent('fighter');
+                    await renderFighter(user, roles);
+                }
+            } catch (err) {
+                console.error('❌ index.html: ошибка рендера главной', err);
+                setAccent('fighter');
+                showScreen('screenFighter');
             }
         });
 
-        // Кнопка покупки челленджей
-        const plusBtn = document.getElementById('balancePlusBtn');
-        if (plusBtn) plusBtn.onclick = () => window.location.href = 'shop.html';
 
-        // Бургер-меню
-        const menuToggle = document.getElementById('menuToggle');
-        const navLinks = document.getElementById('navLinks');
-        if (menuToggle && navLinks) {
-            menuToggle.addEventListener('click', () => {
-                navLinks.classList.toggle('show');
-            });
-            
-            navLinks.querySelectorAll('a').forEach(link => {
-                link.addEventListener('click', () => {
-                    navLinks.classList.remove('show');
-                });
-            });
-        }
 
-        // Инициализация всех улучшений
-        loadTopPoints();
-        loadTopLikes();
-        initPullToRefresh();
-        initScrollAnimations();
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     </script>
-<!-- OneSignal -->
-<script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
-<script>
-  window.OneSignalDeferred = window.OneSignalDeferred || [];
-  OneSignalDeferred.push(async function(OneSignal) {
-    await OneSignal.init({
-      appId: "7ec0f0b2-e126-480b-b928-d0d6eaeab3a0",
-      // OneSignal-воркер вынесен в отдельный scope (/prorank-live/onesignal/),
-      // чтобы он не вытеснял PWA-воркер /prorank-live/sw.js (офлайн-режим).
-      serviceWorkerPath: "/prorank-live/onesignal/OneSignalSDKWorker.js",
-      serviceWorkerParam: { scope: "/prorank-live/onesignal/" }
-    });
-  });
-</script>
-<!-- ===== Регистрация Service Worker (PWA / офлайн-режим) =====
-     Воркер /prorank-live/sw.js кэширует интерфейс и открывает локальную копию
-     сайта, когда интернета нет. Повторную регистрацию делает header.js —
-     это безопасно, регистрация идемпотентна. -->
-<script>
-    if ('serviceWorker' in navigator) {
-        window.addEventListener('load', function () {
-            navigator.serviceWorker.getRegistration('/prorank-live/')
-                .then(function (existing) {
-                    if (existing && existing.active) {
-                        console.log('✅ Service Worker уже активен:', existing.scope);
-                        return null;
-                    }
-                    return navigator.serviceWorker
-                        .register('/prorank-live/sw.js', { scope: '/prorank-live/' })
-                        .then(function (registration) {
-                            console.log('✅ Service Worker зарегистрирован:', registration.scope);
-                        });
-                })
-                .catch(function (err) { console.error('❌ SW error:', err); });
+
+    <!-- OneSignal -->
+    <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+    <script>
+        window.OneSignalDeferred = window.OneSignalDeferred || [];
+        OneSignalDeferred.push(async function(OneSignal) {
+            await OneSignal.init({
+                appId: "7ec0f0b2-e126-480b-b928-d0d6eaeab3a0",
+                // OneSignal-воркер вынесен в отдельный scope (/prorank-live/onesignal/),
+                // чтобы он не вытеснял PWA-воркер /prorank-live/sw.js (офлайн-режим).
+                serviceWorkerPath: "/prorank-live/onesignal/OneSignalSDKWorker.js",
+                serviceWorkerParam: { scope: "/prorank-live/onesignal/" }
+            });
         });
-    } else {
-        console.warn('⚠️ Service Worker не поддерживается — офлайн-режим и пуши недоступны');
-    }
-</script>
+    </script>
+
+    <!-- ===== Регистрация Service Worker (PWA / офлайн-режим) ===== -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function () {
+                navigator.serviceWorker.getRegistration('/prorank-live/')
+                    .then(function (existing) {
+                        if (existing && existing.active) {
+                            console.log('✅ Service Worker уже активен:', existing.scope);
+                            return null;
+                        }
+                        return navigator.serviceWorker
+                            .register('/prorank-live/sw.js', { scope: '/prorank-live/' })
+                            .then(function (registration) {
+                                console.log('✅ Service Worker зарегистрирован:', registration.scope);
+                            });
+                    })
+                    .catch(function (err) { console.error('❌ SW error:', err); });
+            });
+        } else {
+            console.warn('⚠️ Service Worker не поддерживается — офлайн-режим и пуши недоступны');
+        }
+    </script>
 </body>
 </html>
