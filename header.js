@@ -46,7 +46,7 @@ function injectQuickActionsStyles() {
 }
 injectQuickActionsStyles();
 
-// ===== СТИЛИ ДЛЯ ЛОАДЕРОВ =====
+// ===== СТИЛИ ДЛЯ APP LOADER (полноэкранный, при входе) =====
 function injectLoaderStyles() {
     if (document.getElementById('prorankLoaderStyles')) return;
     const styles = document.createElement('style');
@@ -131,67 +131,12 @@ function injectLoaderStyles() {
             from{opacity:0;transform:translateY(8px)}
             to{opacity:1;transform:translateY(0)}
         }
-
-        /* ===== NAV LOADER (компактный) ===== */
-        #prorankNavLoader{
-            position:fixed;inset:0;z-index:9998;
-            display:grid;place-items:center;
-            background:rgba(7,7,10,0.82);
-            backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
-            opacity:1;visibility:visible;
-            transition:opacity 0.35s ease,visibility 0.35s ease;
-        }
-        #prorankNavLoader.hidden{
-            opacity:0;visibility:hidden;pointer-events:none;
-        }
-        .nav-loader-inner{
-            display:flex;flex-direction:column;align-items:center;
-            gap:14px;padding:20px;
-            animation:navLoaderIn 0.35s cubic-bezier(0.4,0,0.2,1) both;
-        }
-        @keyframes navLoaderIn{
-            from{opacity:0;transform:translateY(6px) scale(0.96)}
-            to{opacity:1;transform:translateY(0) scale(1)}
-        }
-        .nav-loader-logo{
-            width:44px;height:44px;border-radius:14px;
-            display:grid;place-items:center;overflow:hidden;
-            box-shadow:0 0 28px rgba(251,191,36,0.45);
-            animation:navLoaderPulse 1.6s ease infinite;
-        }
-        .nav-loader-logo img{width:100%;height:100%;object-fit:cover;display:block}
-        @keyframes navLoaderPulse{
-            0%,100%{box-shadow:0 0 28px rgba(251,191,36,0.45);transform:scale(1)}
-            50%{box-shadow:0 0 44px rgba(251,191,36,0.7);transform:scale(1.04)}
-        }
-        .nav-loader-bar{
-            width:120px;height:3px;border-radius:100px;
-            background:rgba(255,255,255,0.08);overflow:hidden;position:relative;
-        }
-        .nav-loader-fill{
-            height:100%;width:0%;
-            background:linear-gradient(90deg,#b45309 0%,#fbbf24 50%,#fde68a 100%);
-            border-radius:100px;box-shadow:0 0 10px rgba(251,191,36,0.6);
-            transition:width 0.4s cubic-bezier(0.4,0,0.2,1);position:relative;
-        }
-        .nav-loader-fill::after{
-            content:'';position:absolute;top:0;right:0;bottom:0;width:30px;
-            background:linear-gradient(90deg,transparent,rgba(255,255,255,0.8));
-            animation:navShimmer 1.2s ease infinite;
-        }
-        @keyframes navShimmer{
-            0%{transform:translateX(-30px)}100%{transform:translateX(30px)}
-        }
-        .nav-loader-text{
-            font-size:11px;color:#a1a1aa;
-            letter-spacing:0.12em;text-transform:uppercase;font-weight:600;
-        }
     `;
     document.head.appendChild(styles);
 }
 injectLoaderStyles();
 
-// ===== APP LOADER (полноэкранный, для входа) =====
+// ===== APP LOADER (полноэкранный, только при входе в приложение) =====
 const AppLoader = {
     el: null, fill: null, percent: null, status: null,
     value: 0, visible: false, minDuration: 600, startTime: 0,
@@ -261,70 +206,6 @@ const AppLoader = {
             this.visible = false;
             setTimeout(() => { if (this.el) this.el.style.display = 'none'; }, 800);
         }, 350 + wait);
-    }
-};
-
-// ===== NAV LOADER (компактный, для переходов) =====
-const NavLoader = {
-    el: null, fill: null,
-    value: 0, visible: false,
-
-    _ensure(){
-        if (this.el) return;
-        injectLoaderStyles();
-        const div = document.createElement('div');
-        div.id = 'prorankNavLoader';
-        div.className = 'hidden';
-        div.innerHTML = `
-            <div class="nav-loader-inner">
-                <div class="nav-loader-logo"><img src="${LOGO_SRC}" alt="PRORANK"></div>
-                <div class="nav-loader-bar"><div class="nav-loader-fill"></div></div>
-                <div class="nav-loader-text">Загрузка</div>
-            </div>
-        `;
-        document.body.appendChild(div);
-        this.el = div;
-        this.fill = div.querySelector('.nav-loader-fill');
-    },
-
-    start(){
-        this._ensure();
-        this.value = 0;
-        this.fill.style.transition = 'none';
-        this.fill.style.width = '0%';
-        this.el.classList.remove('hidden');
-        this.visible = true;
-        void this.fill.offsetWidth;
-        this.fill.style.transition = 'width 0.4s cubic-bezier(0.4,0,0.2,1)';
-        requestAnimationFrame(() => {
-            requestAnimationFrame(() => {
-                this.value = 25;
-                this.fill.style.width = '25%';
-            });
-        });
-    },
-
-    grow(target = 70){
-        if (!this.visible) return;
-        setTimeout(() => {
-            this.value = target;
-            this.fill.style.width = target + '%';
-        }, 200);
-    },
-
-    finish(){
-        if (!this.visible) return;
-        this.fill.style.transition = 'width 0.25s ease-out';
-        this.fill.style.width = '100%';
-        setTimeout(() => {
-            this.el.classList.add('hidden');
-            this.visible = false;
-            setTimeout(() => {
-                this.fill.style.transition = 'none';
-                this.fill.style.width = '0%';
-                this.value = 0;
-            }, 400);
-        }, 350);
     }
 };
 
@@ -736,10 +617,6 @@ async function renderMobileBottomNav() {
                     item.onclick = (e) => {
                         e.stopPropagation();
                         menu.remove();
-                        // Быстрые действия — навигационный переход: просим NavLoader
-                        // на новой странице (и снимаем возможный «skip»-флаг).
-                        sessionStorage.removeItem('prorankSkipLoader');
-                        sessionStorage.setItem('prorankNavLoader', '1');
                         window.location.href = item.dataset.url;
                     };
                 }
@@ -868,27 +745,12 @@ function setupGlobalNavigation() {
         const link = e.currentTarget;
         const href = link.getAttribute('href');
         if (!href || link.target === '_blank' || href.startsWith('#') || link.hasAttribute('data-no-animation') || href.includes('javascript:')) return;
-        // Модификаторы (Ctrl/Cmd/Shift/Alt) или не левая кнопка — даём браузеру
-        // открыть ссылку в новой вкладке: флаги лоадера не ставим, чтобы не
-        // «протухли» в текущей вкладке и не исказили переход на другой странице.
         if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || (typeof e.button === 'number' && e.button !== 0)) return;
         if (!href.startsWith('http') || href.includes(window.location.hostname) || href.startsWith('/')) {
             e.preventDefault();
-            
-            // Навигационные ссылки (шапка, bottom nav, quick actions, бургер) → NavLoader на новой странице.
-            // Функциональные ссылки (внутри страниц: товар → корзина, заказ → деталь и т.п.) → без лоадера.
-            const isNavLink = link.closest('.nav-links, .mobile-bottom-nav, .mobile-submenu-content, .quick-actions-menu, .mobile-nav-center, .logo, .mobile-submenu');
-            
-            // Гигиена флагов: сначала снимаем оба, затем ставим ровно один —
-            // иначе остаток прошлого клика мог бы перекрыть текущее решение.
-            sessionStorage.removeItem('prorankNavLoader');
-            sessionStorage.removeItem('prorankSkipLoader');
-            if (isNavLink) {
-                sessionStorage.setItem('prorankNavLoader', '1');
-            } else {
-                sessionStorage.setItem('prorankSkipLoader', '1');
-            }
-            
+            // Функциональные ссылки внутри страниц — просто переходим без каких-либо флагов/лоадеров.
+            // Навигационные ссылки (шапка, bottom nav, quick actions) — тоже просто переходим.
+            // Никаких NavLoader-флагов больше не ставим: лоадер показывается только при входе в приложение.
             window.location.href = href;
         }
     }
@@ -909,33 +771,19 @@ function setupGlobalNavigation() {
 async function initHeader() {
     ensureMobileNavContainer();
 
-    // === ЛОАДЕРЫ ===
+    // === ЛОАДЕР ===
+    // Полноэкранный AppLoader показываем ТОЛЬКО при первом входе в приложение за сессию
+    // или при холодном старте PWA. При всех остальных переходах между страницами — ничего.
     const isPWA = window.matchMedia('(display-mode: standalone)').matches
                || window.navigator.standalone === true;
-    const isNavTransition = sessionStorage.getItem('prorankNavLoader') === '1';
-    const skipLoader = sessionStorage.getItem('prorankSkipLoader') === '1';
     const isFirstLoad = !sessionStorage.getItem('prorankAppLoaded');
-
-    sessionStorage.removeItem('prorankNavLoader');
-    sessionStorage.removeItem('prorankSkipLoader');
 
     let activeLoader = null;
 
-    if (skipLoader) {
-        // Функциональный переход — лоадер не показываем
-        activeLoader = null;
-    } else if (isNavTransition) {
-        NavLoader.start();
-        NavLoader.grow(70);
-        activeLoader = NavLoader;
-    } else if (isFirstLoad || isPWA) {
+    if (isFirstLoad || isPWA) {
         AppLoader.start();
         AppLoader.set(15, 'Инициализация');
         activeLoader = AppLoader;
-    } else {
-        NavLoader.start();
-        NavLoader.grow(70);
-        activeLoader = NavLoader;
     }
 
     function finishLoader() {
