@@ -1805,9 +1805,13 @@
                     }, { merge: true });
 
                     const loserDataOld = loserSnap.exists() ? loserSnap.data() : {};
+                    const loserOldFrs = Number(loserDataOld.frs) || 0;
+                    const loserNewFrs = Math.max(0, loserOldFrs + frsLoser);
+                    const loserOldAllTime = Number(loserDataOld.allTimeFrs) || 0;
+                    const loserNewAllTime = Math.max(0, loserOldAllTime + frsLoser);
                     tx.set(loserRef, {
-                        frs: (loserDataOld.frs || 0) + frsLoser,
-                        allTimeFrs: (loserDataOld.allTimeFrs || 0) + frsLoser,
+                        frs: loserNewFrs,
+                        allTimeFrs: loserNewAllTime,
                         losses: (loserDataOld.losses || 0) + 1,
                         lastFightDate: new Date().toISOString()
                     }, { merge: true });

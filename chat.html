@@ -937,7 +937,8 @@ body {
 #voiceCancelBtn:active {
     transform: scale(0.95);
 }
-</style>
+    </style>
+    <script src="modals.js"></script>
 </head>
 <body>
     <div class="chat-wrapper">
@@ -1139,6 +1140,12 @@ function escapeHtml(str) {
 }
 
 function showNotification(message, type = 'info') {
+    // Используем единый тост из modals.js (если он загружен)
+    if (typeof window.showToast === 'function') {
+        window.showToast(message, type);
+        return;
+    }
+    // Fallback — старая плашка (на случай, если modals.js не подключён)
     const container = document.getElementById('errorContainer');
     if (!container) return;
     const colors = { success: '#22c55e', error: '#ef4444', warning: '#f59e0b', info: '#fbbf24' };
@@ -1221,12 +1228,12 @@ async function addReaction(messageId, emoji) {
             delete reactions[currentUser.uid];
         }
         await setDoc(reactionRef, reactions);
-        showNotification(`❌ Реакция "${emoji}" убрана`, 'info');
+        showNotification(`Реакция "${emoji}" убрана`, 'info');
     } else {
         // Иначе добавляем
         reactions[currentUser.uid] = [...userReactions, emoji];
         await setDoc(reactionRef, reactions);
-        showNotification(`✅ Реакция "${emoji}" добавлена`, 'success');
+        showNotification(`Реакция "${emoji}" добавлена`, 'success');
     }
     
     // Обновляем отображение
@@ -1337,7 +1344,7 @@ async function loadAllReactions() {
                         
                         if (isReacted) {
                             // Если уже есть реакция - убираем
-                            if (confirm(`Убрать реакцию "${emoji}"?`)) {
+                            if (await showConfirm(`Убрать реакцию "${emoji}"?`)) {
                                 await addReaction(messageId, emoji);
                             }
                         } else {
@@ -1416,7 +1423,7 @@ function showMessageMenu(event, messageEl) {
 
     menu.querySelector('[data-action="copy"]')?.addEventListener('click', () => {
         navigator.clipboard.writeText(messageText).then(() => {
-            showNotification('📋 Скопировано', 'success');
+            showNotification('Скопировано', 'success');
         }).catch(() => {
             const textarea = document.createElement('textarea');
             textarea.value = messageText;
@@ -1424,13 +1431,13 @@ function showMessageMenu(event, messageEl) {
             textarea.select();
             document.execCommand('copy');
             textarea.remove();
-            showNotification('📋 Скопировано', 'success');
+            showNotification('Скопировано', 'success');
         });
         menu.remove();
     });
 
-    menu.querySelector('[data-action="delete"]')?.addEventListener('click', () => {
-        if (confirm('Удалить это сообщение?')) {
+    menu.querySelector('[data-action="delete"]')?.addEventListener('click', async () => {
+        if (await showConfirm('Удалить это сообщение?')) {
             deleteMessage(messageId);
         }
         menu.remove();
@@ -1451,9 +1458,9 @@ async function deleteMessage(messageId) {
     if (!chatId || !currentUser) return;
     try {
         await deleteDoc(doc(db, "chats", chatId, "messages", messageId));
-        showNotification('🗑️ Сообщение удалено', 'success');
+        showNotification('Сообщение удалено', 'success');
     } catch (err) {
-        showNotification('❌ Ошибка удаления', 'error');
+        showNotification('Ошибка удаления', 'error');
     }
 }
 
@@ -1679,7 +1686,7 @@ function initializeVoiceRecorder() {
             resetRecordingUI();
         },
         onRecordingCancel: () => {
-            showNotification('❌ Запись отменена', 'warning');
+            showNotification('Запись отменена', 'warning');
             resetRecordingUI();
         },
         onRecordingProgress: (duration) => {
@@ -1687,12 +1694,12 @@ function initializeVoiceRecorder() {
             voiceTimer.textContent = formatTime(duration);
             
             if (duration === 55) {
-                showNotification('⏰ Осталось 5 секунд', 'warning');
+                showNotification('Осталось 5 секунд', 'warning');
             }
         },
         onUploadProgress: (progress) => {
             if (progress < 100) {
-                showNotification(`📤 Загрузка... ${Math.round(progress)}%`, 'info');
+                showNotification(`Загрузка... ${Math.round(progress)}%`, 'info');
             }
         }
     });
@@ -1705,7 +1712,7 @@ async function startRecording() {
         }
         await voiceRecorder.startRecording();
     } catch (err) {
-        showNotification('❌ ' + err.message, 'error');
+        showNotification(err.message, 'error');
         resetRecordingUI();
     }
 }
@@ -1715,7 +1722,7 @@ async function stopRecording() {
         try {
             voiceRecorder.stopRecording();
         } catch (err) {
-            showNotification('❌ ' + err.message, 'warning');
+            showNotification(err.message, 'warning');
             resetRecordingUI();
         }
     }
@@ -1789,7 +1796,7 @@ function showCancelButton(show) {
 
 async function sendVoiceMessageFromRecorder(audioChunks) {
     if (!currentUser || !chatId) {
-        showNotification('❌ Ошибка: не авторизован или нет чата', 'error');
+        showNotification('Ошибка: не авторизован или нет чата', 'error');
         return;
     }
     
@@ -1857,11 +1864,11 @@ async function sendVoiceMessageFromRecorder(audioChunks) {
             } catch (err) {}
         }
         
-        showNotification('✅ Голосовое сообщение отправлено', 'success');
+        showNotification('Голосовое сообщение отправлено', 'success');
         
     } catch (err) {
         console.error('Ошибка отправки голоса:', err);
-        showNotification('❌ Не удалось отправить голосовое: ' + err.message, 'error');
+        showNotification('Не удалось отправить голосовое: ' + err.message, 'error');
     }
 }
 
@@ -1966,7 +1973,7 @@ async function playVoiceMessage(voiceUrl, duration, voiceEl) {
         };
 
         audio.onerror = () => {
-            showNotification('❌ Ошибка воспроизведения', 'error');
+            showNotification('Ошибка воспроизведения', 'error');
             playBtn.classList.remove('playing');
             playBtn.innerHTML = '<i class="fas fa-play"></i>';
             stopVoiceAnimation(bars);
@@ -1981,7 +1988,7 @@ async function playVoiceMessage(voiceUrl, duration, voiceEl) {
 
     } catch (err) {
         console.error('Ошибка:', err);
-        showNotification('❌ Не удалось воспроизвести', 'error');
+        showNotification('Не удалось воспроизвести', 'error');
     }
 }
 
@@ -2549,7 +2556,7 @@ async function playVoiceMessageFromBase64(voiceData, duration, voiceEl) {
 
     } catch (err) {
         console.error('Ошибка:', err);
-        showNotification('❌ Не удалось воспроизвести', 'error');
+        showNotification('Не удалось воспроизвести', 'error');
     }
 }
 

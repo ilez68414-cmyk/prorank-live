@@ -63,102 +63,6 @@
             width: 100%;
         }
 
-        .navbar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 16px 32px;
-            background: rgba(0, 0, 0, 0.75);
-            backdrop-filter: blur(16px);
-            border-bottom: 1px solid rgba(251, 191, 36, 0.25);
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-        }
-
-        .logo {
-            font-size: 1.8rem;
-            font-weight: 800;
-            cursor: pointer;
-            background: linear-gradient(135deg, #ffffff, #fbbf24);
-            background-clip: text;
-            color: transparent;
-        }
-
-        .logo span {
-            background: linear-gradient(135deg, #fbbf24, #ffdd77);
-            background-clip: text;
-            color: transparent;
-        }
-
-        .balance-indicator {
-            background: #111;
-            border: 1px solid rgba(251, 191, 36, 0.5);
-            border-radius: 60px;
-            padding: 7px 18px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            font-weight: 700;
-            font-size: 0.9rem;
-        }
-
-        .balance-count { color: #fbbf24; font-size: 1.1rem; }
-
-        .balance-plus {
-            background: rgba(251,191,36,0.15);
-            border: none;
-            color: #fbbf24;
-            cursor: pointer;
-            width: 28px;
-            height: 28px;
-            border-radius: 50%;
-        }
-
-        .balance-plus:active { background: #fbbf24; color: #000; transform: scale(0.94); }
-
-        .menu-toggle {
-            display: none;
-            background: rgba(251,191,36,0.1);
-            border: 1px solid #fbbf24;
-            color: #fbbf24;
-            font-size: 1.6rem;
-            cursor: pointer;
-            padding: 8px 14px;
-            border-radius: 12px;
-            min-height: 44px;
-        }
-
-        .nav-links {
-            display: flex;
-            gap: 6px;
-            background: rgba(15,15,15,0.7);
-            backdrop-filter: blur(12px);
-            padding: 5px 14px;
-            border-radius: 60px;
-            border: 1px solid rgba(251,191,36,0.2);
-        }
-
-        .nav-links a {
-            color: #ddd;
-            text-decoration: none;
-            font-size: 0.9rem;
-            font-weight: 500;
-            padding: 8px 18px;
-            border-radius: 40px;
-            transition: all 0.2s;
-        }
-
-        .nav-links a i {
-            margin-right: 8px;
-            color: #fbbf24;
-        }
-
-        .nav-links a:hover {
-            color: #fbbf24;
-            background: rgba(251,191,36,0.1);
-        }
-
         .page-header {
             text-align: center;
             padding: 40px 20px 20px;
@@ -670,24 +574,9 @@
         @media (max-width: 768px) {
             .container { padding: 0 16px; }
             .navbar { padding: 12px 18px; }
-            .menu-toggle { display: block; }
-            .nav-links {
-                display: none;
-                flex-direction: column;
-                position: absolute;
-                top: 68px;
-                left: 18px;
-                right: 18px;
-                background: #0f0f0f;
-                border-radius: 24px;
-                padding: 20px;
-                gap: 10px;
-                border: 1px solid rgba(251,191,36,0.3);
-                z-index: 1000;
-                backdrop-filter: blur(20px);
-            }
+            
             .nav-links.show { display: flex; animation: fadeIn 0.2s ease; }
-            .nav-links a { width: 100%; text-align: center; padding: 12px; }
+            
             .page-header h1 { font-size: 1.6rem; }
             .challenge-header { flex-direction: column; align-items: flex-start; }
             .challenge-details { font-size: 0.7rem; gap: 8px; }
@@ -778,17 +667,13 @@
             font-style: italic;
         }
     </style>
+    <script src="modals.js"></script>
 </head>
 <body>
     <div class="gold-top"></div>
 
     <header class="navbar">
         <div class="logo" onclick="window.location='index.html'">PRO<span>RANK</span></div>
-        <div class="balance-indicator" id="balanceIndicator" style="display: none;">
-            <i class="fas fa-crosshairs"></i>
-            <span class="balance-count" id="headerChallengesCount">0</span>
-            <button class="balance-plus" id="balancePlusBtn">+</button>
-        </div>
         <button class="menu-toggle" id="menuToggle"><i class="fas fa-bars"></i></button>
         <nav class="nav-links" id="navLinks"></nav>
     </header>
@@ -1338,23 +1223,23 @@
                     await notifyAboutChallengeAccepted(challenge.fromUserId, challenge.toUserId, challenge.toName || 'Соперник');
                 }
 
-                alert(`✅ Вызов ${newStatus === 'accepted' ? 'принят' : 'отклонён'}`);
+                showToast(`✅ Вызов ${newStatus === 'accepted' ? 'принят' : 'отклонён'}`, 'success');
                 loadChallenges();
             } catch (err) {
                 console.error('Ошибка:', err);
-                alert('❌ Ошибка при обновлении статуса');
+                showToast('❌ Ошибка при обновлении статуса', 'error');
             }
         }
 
         async function cancelChallenge(challengeId) {
-            if (!confirm('Отменить вызов?')) return;
+            if (!await showConfirm('Отменить вызов?')) return;
             try {
                 await deleteDoc(doc(db, "challenges", challengeId));
-                alert('✅ Вызов отменён');
+                showToast('✅ Вызов отменён', 'success');
                 loadChallenges();
             } catch (err) {
                 console.error('Ошибка:', err);
-                alert('❌ Ошибка при отмене');
+                showToast('❌ Ошибка при отмене', 'error');
             }
         }
 
@@ -1371,7 +1256,7 @@
         // ===== ОЧИСТКА ИСТОРИИ =====
         async function clearHistory() {
             if (!currentUser) return;
-            if (!confirm('Удалить все завершённые вызовы (принятые и отклонённые)?')) return;
+            if (!await showConfirm('Удалить все завершённые вызовы (принятые и отклонённые)?')) return;
 
             try {
                 const incomingQuery = query(
@@ -1399,11 +1284,11 @@
                     }
                 }
 
-                alert(`✅ Удалено ${deleted} записей истории`);
+                showToast(`✅ Удалено ${deleted} записей истории`, 'success');
                 loadChallenges();
             } catch (err) {
                 console.error('Ошибка очистки:', err);
-                alert('❌ Ошибка при очистке истории');
+                showToast('❌ Ошибка при очистке истории', 'error');
             }
         }
 
@@ -1513,14 +1398,14 @@
             document.querySelectorAll('.btn-delete-offer').forEach(btn => {
                 btn.addEventListener('click', async () => {
                     const offerId = btn.dataset.offerId;
-                    if (confirm('Удалить своё предложение?')) {
+                    if (await showConfirm('Удалить своё предложение?')) {
                         try {
                             await deleteDoc(doc(db, "sparring_offers", offerId));
-                            alert('✅ Предложение удалено');
+                            showToast('✅ Предложение удалено', 'success');
                             loadOffers();
                         } catch (err) {
                             console.error('Ошибка:', err);
-                            alert('❌ Ошибка при удалении');
+                            showToast('❌ Ошибка при удалении', 'error');
                         }
                     }
                 });
@@ -1529,19 +1414,19 @@
 
         async function respondToOffer(offerId, userId, userName) {
             if (!currentUser) {
-                alert('Войдите в аккаунт');
+                showToast('Войдите в аккаунт', 'warning');
                 return;
             }
 
             if (currentUser.uid === userId) {
-                alert('Нельзя откликнуться на своё предложение');
+                showToast('Нельзя откликнуться на своё предложение', 'warning');
                 return;
             }
 
             if (!currentUserData) {
                 const userDoc = await getDoc(doc(db, "fighters", currentUser.uid));
                 if (!userDoc.exists()) {
-                    alert('❌ Данные пользователя не найдены');
+                    showToast('❌ Данные пользователя не найдены', 'error');
                     return;
                 }
                 currentUserData = userDoc.data();
@@ -1552,7 +1437,7 @@
             let totalChallenges = freeChallenges + purchasedChallenges;
 
             if (totalChallenges <= 0) {
-                if (confirm('❌ У вас закончились вызовы!\nПерейти в магазин?')) {
+                if (await showConfirm('❌ У вас закончились вызовы!\nПерейти в магазин?')) {
                     window.location.href = 'shop.html';
                 }
                 return;
@@ -1562,7 +1447,7 @@
             const offer = offerDoc.data();
 
             if (!offer) {
-                alert('❌ Предложение больше не активно');
+                showToast('❌ Предложение больше не активно', 'error');
                 return;
             }
 
@@ -1601,21 +1486,21 @@
                     takenAt: new Date()
                 });
 
-                alert('✅ Вызов отправлен!');
+                showToast('✅ Вызов отправлен!', 'success');
                 loadOffers();
                 loadChallenges();
                 updateHeaderBalance();
 
             } catch (err) {
                 console.error('Ошибка:', err);
-                alert('❌ Ошибка при отправке вызова');
+                showToast('❌ Ошибка при отправке вызова', 'error');
             }
         }
 
         // ===== ПУБЛИКАЦИЯ ПРЕДЛОЖЕНИЯ =====
         async function publishOffer() {
             if (!currentUser) {
-                alert('Войдите в аккаунт');
+                showToast('Войдите в аккаунт', 'warning');
                 return;
             }
 
@@ -1629,7 +1514,7 @@
             let place = '';
             if (hallSelect.value === 'other') {
                 if (!manualHall) {
-                    alert('Введите название зала');
+                    showToast('Введите название зала', 'warning');
                     return;
                 }
                 place = manualHall;
@@ -1637,12 +1522,12 @@
                 const selectedHall = allHalls.find(h => h.id === hallSelect.value);
                 place = selectedHall ? selectedHall.name : hallSelect.value;
             } else {
-                alert('Выберите зал или введите название');
+                showToast('Выберите зал или введите название', 'warning');
                 return;
             }
 
             if (!sport || !place || !date) {
-                alert('Заполните все обязательные поля');
+                showToast('Заполните все обязательные поля', 'warning');
                 return;
             }
 
@@ -1656,12 +1541,12 @@
                 const userOffersSnap = await getDocs(userOffersQuery);
                 
                 if (userOffersSnap.size >= 3) {
-                    alert('❌ У вас уже 3 активных предложения на доске. Сначала удалите одно из них.');
+                    showToast('❌ У вас уже 3 активных предложения на доске. Сначала удалите одно из них.', 'error');
                     return;
                 }
             } catch (err) {
                 console.error('Ошибка проверки лимита:', err);
-                alert('❌ Ошибка при проверке лимита');
+                showToast('❌ Ошибка при проверке лимита', 'error');
                 return;
             }
 
@@ -1669,7 +1554,7 @@
             if (!currentUserData) {
                 const userDoc = await getDoc(doc(db, "fighters", currentUser.uid));
                 if (!userDoc.exists()) {
-                    alert('❌ Данные пользователя не найдены');
+                    showToast('❌ Данные пользователя не найдены', 'error');
                     return;
                 }
                 currentUserData = userDoc.data();
@@ -1680,7 +1565,7 @@
             let totalChallenges = freeChallenges + purchasedChallenges;
 
             if (totalChallenges <= 0) {
-                if (confirm('❌ У вас закончились вызовы!\nПерейти в магазин?')) {
+                if (await showConfirm('❌ У вас закончились вызовы!\nПерейти в магазин?')) {
                     window.location.href = 'shop.html';
                 }
                 return;
@@ -1717,7 +1602,7 @@
                     expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
                 });
 
-                alert('✅ Предложение опубликовано! Потрачен 1 вызов.');
+                showToast('✅ Предложение опубликовано! Потрачен 1 вызов.', 'success');
                 document.getElementById('offerModal').classList.remove('active');
                 document.getElementById('offerMessage').value = '';
                 document.getElementById('offerDate').value = '';
@@ -1731,7 +1616,7 @@
 
             } catch (err) {
                 console.error('Ошибка:', err);
-                alert('❌ Ошибка при публикации');
+                showToast('❌ Ошибка при публикации', 'error');
             } finally {
                 btn.disabled = false;
                 btn.innerHTML = '<i class="fas fa-paper-plane"></i> Опубликовать';
@@ -1777,7 +1662,7 @@
         });
 
         document.getElementById('publishOfferBtn').addEventListener('click', () => {
-            if (!currentUser) { alert('Войдите в аккаунт'); return; }
+            if (!currentUser) { showToast('Войдите в аккаунт', 'warning'); return; }
             document.getElementById('offerModal').classList.add('active');
         });
 

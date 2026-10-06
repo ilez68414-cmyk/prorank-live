@@ -1185,7 +1185,7 @@ function setupLogout() {
     const logoutBtn = document.getElementById('logoutBtn');
     if (!logoutBtn) return;
     logoutBtn.addEventListener('click', async () => {
-        if (confirm('Вы уверены, что хотите выйти?')) {
+        if (await showConfirm('Вы уверены, что хотите выйти?')) {
             try {
                 await auth.signOut();
                 window.location.href = 'index.html';

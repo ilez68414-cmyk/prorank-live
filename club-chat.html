@@ -801,6 +801,7 @@
             .emoji-picker .emoji-btn { font-size: 1rem; padding: 3px; }
         }
     </style>
+    <script src="modals.js"></script>
 </head>
 <body>
     <div class="chat-wrapper">
@@ -916,6 +917,12 @@
         }
 
         function showNotification(message, type = 'info') {
+            // Используем единый тост из modals.js (если он загружен)
+            if (typeof window.showToast === 'function') {
+                window.showToast(message, type);
+                return;
+            }
+            // Fallback — старая плашка (на случай, если modals.js не подключён)
             const container = document.getElementById('errorContainer');
             if (!container) return;
             const colors = { success: '#22c55e', error: '#ef4444', warning: '#f59e0b', info: '#fbbf24' };
@@ -1019,11 +1026,11 @@
                     delete reactions[currentUser.uid];
                 }
                 await setDoc(reactionRef, reactions);
-                showNotification(`❌ Реакция "${emoji}" убрана`, 'info');
+                showNotification(`Реакция "${emoji}" убрана`, 'info');
             } else {
                 reactions[currentUser.uid] = [...userReactions, emoji];
                 await setDoc(reactionRef, reactions);
-                showNotification(`✅ Реакция "${emoji}" добавлена`, 'success');
+                showNotification(`Реакция "${emoji}" добавлена`, 'success');
             }
             
             setTimeout(() => loadAllReactions(), 200);
@@ -1200,7 +1207,7 @@
 
             menu.querySelector('[data-action="copy"]')?.addEventListener('click', () => {
                 navigator.clipboard.writeText(messageText).then(() => {
-                    showNotification('📋 Скопировано', 'success');
+                    showNotification('Скопировано', 'success');
                 }).catch(() => {
                     const textarea = document.createElement('textarea');
                     textarea.value = messageText;
@@ -1208,13 +1215,13 @@
                     textarea.select();
                     document.execCommand('copy');
                     textarea.remove();
-                    showNotification('📋 Скопировано', 'success');
+                    showNotification('Скопировано', 'success');
                 });
                 menu.remove();
             });
 
-            menu.querySelector('[data-action="delete"]')?.addEventListener('click', () => {
-                if (confirm('Удалить это сообщение?')) {
+            menu.querySelector('[data-action="delete"]')?.addEventListener('click', async () => {
+                if (await showConfirm('Удалить это сообщение?')) {
                     deleteMessage(messageId);
                 }
                 menu.remove();
@@ -1235,9 +1242,9 @@
             if (!clubId || !currentUser) return;
             try {
                 await deleteDoc(doc(db, "club_messages", messageId));
-                showNotification('🗑️ Сообщение удалено', 'success');
+                showNotification('Сообщение удалено', 'success');
             } catch (err) {
-                showNotification('❌ Ошибка удаления', 'error');
+                showNotification('Ошибка удаления', 'error');
             }
         }
 
@@ -1615,7 +1622,7 @@
                 };
 
                 audio.onerror = () => {
-                    showNotification('❌ Ошибка воспроизведения', 'error');
+                    showNotification('Ошибка воспроизведения', 'error');
                     playBtn.classList.remove('playing');
                     playBtn.innerHTML = '<i class="fas fa-play"></i>';
                     stopVoiceAnimation(bars);
@@ -1627,7 +1634,7 @@
 
             } catch (err) {
                 console.error('Ошибка:', err);
-                showNotification('❌ Не удалось воспроизвести', 'error');
+                showNotification('Не удалось воспроизвести', 'error');
             }
         }
 

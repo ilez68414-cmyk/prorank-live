@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Тост — превью</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+    body {
+        margin: 0;
+        min-height: 100vh;
+        background: radial-gradient(ellipse at 30% 40%, rgba(251,191,36,0.15) 0%, transparent 60%),
+                    linear-gradient(135deg, #1a1a1a 0%, #0f0f0f 40%, #1a1a1a 100%);
+        font-family: 'Inter', sans-serif;
+    }
+
+    .toast-container {
+        position: fixed;
+        top: 16px;
+        right: 16px;
+        z-index: 9999;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        pointer-events: none;
+    }
+
+    .toast {
+        background: rgba(15,15,15,0.95);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border-radius: 10px;
+        padding: 11px 16px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        min-width: 240px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        transform: translateX(0);
+        pointer-events: auto;
+        animation: toastIn 0.4s cubic-bezier(0.175,0.885,0.32,1.275) both;
+    }
+    .toast.success { border-left: 3px solid #10b981; }
+    .toast.error   { border-left: 3px solid #ef4444; }
+    .toast.info    { border-left: 3px solid #60a5fa; }
+    .toast.warning { border-left: 3px solid #f59e0b; }
+
+    .toast i { font-size: 1rem; }
+    .toast.success i { color: #10b981; }
+    .toast.error   i { color: #ef4444; }
+    .toast.info    i { color: #60a5fa; }
+    .toast.warning i { color: #f59e0b; }
+
+    .toast-message {
+        font-size: 0.75rem;
+        font-weight: 500;
+        color: #fff;
+    }
+
+    @keyframes toastIn {
+        from { opacity: 0; transform: translateX(120%); }
+        to   { opacity: 1; transform: translateX(0); }
+    }
+
+    /* Демо-кнопки, чтобы вызвать тосты */
+    .demo {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        padding: 40px;
+        max-width: 320px;
+    }
+    .demo button {
+        padding: 12px 18px;
+        border-radius: 40px;
+        border: none;
+        background: #fbbf24;
+        color: #0a0a0a;
+        font-weight: 700;
+        font-size: 0.85rem;
+        cursor: pointer;
+        font-family: 'Inter', sans-serif;
+    }
+    .demo button.err { background: #ef4444; color: #fff; }
+    .demo button.info { background: #60a5fa; color: #fff; }
+    .demo button.warn { background: #f59e0b; color: #fff; }
+</style>
+</head>
+<body>
+
+<div class="toast-container" id="toastContainer"></div>
+
+<div class="demo">
+    <button onclick="showToast('Товар добавлен в корзину', 'success')">Показать success</button>
+    <button class="err" onclick="showToast('Ошибка загрузки', 'error')">Показать error</button>
+    <button class="info" onclick="showToast('Войдите в аккаунт', 'info')">Показать info</button>
+    <button class="warn" onclick="showToast('Заполните все поля', 'warning')">Показать warning</button>
+</div>
+
+<script>
+    window.showToast = function(message, type = 'info') {
+        const container = document.getElementById('toastContainer');
+        if (!container) return;
+        const toast = document.createElement('div');
+        toast.className = `toast ${type}`;
+        const icons = {
+            success: 'fa-check-circle',
+            error: 'fa-exclamation-circle',
+            info: 'fa-info-circle',
+            warning: 'fa-exclamation-triangle'
+        };
+        toast.innerHTML = `<i class="fas ${icons[type] || icons.info}"></i><span class="toast-message">${message}</span>`;
+        container.appendChild(toast);
+        setTimeout(() => {
+            toast.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+            toast.style.opacity = '0';
+            toast.style.transform = 'translateX(120%)';
+            setTimeout(() => toast.remove(), 300);
+        }, 3200);
+    };
+</script>
+</body>
+</html>

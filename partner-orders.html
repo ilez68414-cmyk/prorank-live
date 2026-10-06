@@ -78,127 +78,12 @@ main {
 }
 
 /* ===== NAVBAR ===== */
-.navbar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 14px 24px;
-    background: rgba(0, 0, 0, 0.85);
-    backdrop-filter: blur(20px) saturate(1.2);
-    border-bottom: 1px solid rgba(251, 191, 36, 0.15);
-    position: sticky;
-    top: 0;
-    z-index: 1000;
-    min-height: 64px;
-    transition: all 0.3s ease;
-}
-
-.logo {
-    font-size: 1.6rem;
-    font-weight: 800;
-    letter-spacing: -0.5px;
-    cursor: pointer;
-    background: linear-gradient(135deg, #ffffff, #fbbf24);
-    background-clip: text;
-    -webkit-background-clip: text;
-    color: transparent;
-    transition: transform 0.2s ease;
-}
-
-.logo:hover {
-    transform: scale(1.05);
-}
-
-.logo span {
-    background: linear-gradient(135deg, #fbbf24, #ffdd77);
-    background-clip: text;
-    -webkit-background-clip: text;
-    color: transparent;
-}
-
-.wallet-indicator {
-    background: rgba(251, 191, 36, 0.08);
-    border: 1px solid rgba(251, 191, 36, 0.2);
-    border-radius: 60px;
-    padding: 8px 20px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-weight: 600;
-    font-size: 0.85rem;
-    cursor: pointer;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    display: none;
-}
 
 .wallet-indicator:hover {
     background: rgba(251, 191, 36, 0.15);
     border-color: #fbbf24;
     transform: translateY(-2px);
     box-shadow: 0 4px 20px rgba(251, 191, 36, 0.15);
-}
-
-.wallet-amount {
-    color: #fbbf24;
-    font-weight: 800;
-}
-
-.menu-toggle {
-    display: none;
-    background: rgba(251, 191, 36, 0.08);
-    border: 1px solid rgba(251, 191, 36, 0.3);
-    color: #fbbf24;
-    font-size: 1.4rem;
-    cursor: pointer;
-    padding: 8px 16px;
-    border-radius: 12px;
-    min-height: 44px;
-    min-width: 44px;
-    transition: all 0.2s ease;
-}
-
-.menu-toggle:hover {
-    background: rgba(251, 191, 36, 0.15);
-}
-
-.nav-links {
-    display: flex;
-    gap: 4px;
-    background: rgba(15, 15, 15, 0.6);
-    backdrop-filter: blur(12px);
-    padding: 4px 12px;
-    border-radius: 60px;
-    border: 1px solid rgba(251, 191, 36, 0.1);
-}
-
-.nav-links a {
-    color: #aaa;
-    text-decoration: none;
-    font-size: 0.85rem;
-    font-weight: 500;
-    padding: 8px 18px;
-    border-radius: 40px;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    min-height: 40px;
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.nav-links a i {
-    color: #fbbf24;
-    font-size: 0.9rem;
-}
-
-.nav-links a:hover {
-    color: #fff;
-    background: rgba(251, 191, 36, 0.08);
-    transform: translateY(-1px);
-}
-
-.nav-links a.active {
-    color: #fff;
-    background: rgba(251, 191, 36, 0.12);
 }
 
 /* ============================================
@@ -1555,34 +1440,8 @@ main {
         padding: 10px 16px;
     }
     
-    .menu-toggle {
-        display: block;
-    }
-    
-    .nav-links {
-        display: none;
-        flex-direction: column;
-        position: absolute;
-        top: 64px;
-        left: 16px;
-        right: 16px;
-        background: #0f0f0f;
-        border-radius: 20px;
-        padding: 16px;
-        gap: 4px;
-        border: 1px solid rgba(251, 191, 36, 0.15);
-        z-index: 1000;
-    }
-    
     .nav-links.show {
         display: flex;
-    }
-    
-    .nav-links a {
-        width: 100%;
-        text-align: center;
-        padding: 12px;
-        justify-content: center;
     }
     
     .container {
@@ -1721,17 +1580,13 @@ main {
     }
 }
     </style>
+    <script src="modals.js"></script>
 </head>
 <body>
     <div class="gold-top"></div>
 
     <header class="navbar">
         <div class="logo" onclick="window.location='index.html'">PRO<span>RANK</span></div>
-        <div class="wallet-indicator" id="walletIndicator" onclick="window.location.href='wallet.html'">
-            <i class="fas fa-wallet"></i>
-            <span class="wallet-amount" id="walletBalance">0 ₽</span>
-            <i class="fas fa-chevron-right" style="font-size:0.7rem;"></i>
-        </div>
         <button class="menu-toggle" id="menuToggle"><i class="fas fa-bars"></i></button>
         <nav class="nav-links" id="navLinks"></nav>
     </header>
@@ -2228,26 +2083,22 @@ main {
             el._timeout = setTimeout(() => el.style.display = 'none', 3000);
         }
 
-        function showNotification(msg, type = 'info') {
+        function showNotification(message, type = 'info') {
+            // Используем единый тост из modals.js (если он загружен)
+            if (typeof window.showToast === 'function') {
+                window.showToast(message, type);
+                return;
+            }
+            // Fallback — старая плашка (на случай, если modals.js не подключён)
             const container = document.getElementById('errorContainer');
             if (!container) return;
-            
-            const colors = { 
-                success: '#22c55e', 
-                error: '#ef4444', 
-                warning: '#f59e0b', 
-                info: '#fbbf24' 
-            };
-            
+            const colors = { success: '#22c55e', error: '#ef4444', warning: '#f59e0b', info: '#fbbf24' };
             container.style.display = 'block';
             container.style.background = colors[type] || colors.info;
             container.style.color = '#000';
-            container.textContent = msg;
-            
+            container.textContent = message;
             clearTimeout(container._timeout);
-            container._timeout = setTimeout(() => { 
-                container.style.display = 'none'; 
-            }, 4000);
+            container._timeout = setTimeout(() => { container.style.display = 'none'; }, 4000);
         }
 
         // ===== LOAD WALLET BALANCE =====
@@ -2654,7 +2505,7 @@ main {
         }
 
         window.confirmOrder = async function(orderId) {
-            if (!confirm('Подтвердить заказ? Деньги будут списаны с баланса покупателя.')) return;
+            if (!await showConfirm('Подтвердить заказ? Деньги будут списаны с баланса покупателя.')) return;
             
             try {
                 const orderRef = doc(db, "physical_orders", orderId);
@@ -2662,7 +2513,7 @@ main {
                 const order = orderSnap.data();
                 
                 if (!order || order.status !== 'pending') {
-                    showNotification('❌ Заказ нельзя подтвердить (статус: ' + (order?.status || 'неизвестен') + ')', 'warning');
+                    showNotification('Заказ нельзя подтвердить (статус: ' + (order?.status || 'неизвестен') + ')', 'warning');
                     return;
                 }
                 
@@ -2686,14 +2537,14 @@ main {
                 
             } catch (err) {
                 console.error('Ошибка:', err);
-                showNotification('❌ Не удалось подтвердить заказ: ' + err.message, 'error');
+                showNotification('Не удалось подтвердить заказ: ' + err.message, 'error');
             }
         };
 
         window.rejectOrder = async function(orderId) {
             const reason = prompt('Укажите причину отклонения заказа (необязательно):');
             
-            if (!confirm('Отклонить заказ?')) return;
+            if (!await showConfirm('Отклонить заказ?')) return;
             
             try {
                 const orderRef = doc(db, "physical_orders", orderId);
@@ -2701,7 +2552,7 @@ main {
                 const order = orderSnap.data();
                 
                 if (!order || order.status !== 'pending') {
-                    showNotification('❌ Заказ нельзя отклонить (статус: ' + (order?.status || 'неизвестен') + ')', 'warning');
+                    showNotification('Заказ нельзя отклонить (статус: ' + (order?.status || 'неизвестен') + ')', 'warning');
                     return;
                 }
                 
@@ -2718,7 +2569,7 @@ main {
                 
             } catch (err) {
                 console.error('Ошибка:', err);
-                showNotification('❌ Не удалось отклонить заказ', 'error');
+                showNotification('Не удалось отклонить заказ', 'error');
             }
         };
 
@@ -2746,7 +2597,7 @@ main {
             
             if (e.target.checked && order && order.status === 'shipped') {
                 e.target.checked = false;
-                showNotification('⚠️ Заказы в пути нельзя выбрать для массовой отправки', 'warning');
+                showNotification('Заказы в пути нельзя выбрать для массовой отправки', 'warning');
                 return;
             }
             
@@ -2787,12 +2638,12 @@ main {
             const skipped = state.selectedOrders.size - list.length;
             
             if (list.length === 0) {
-                showNotification('⚠️ Выберите только оплаченные заказы (не в пути)', 'warning');
+                showNotification('Выберите только оплаченные заказы (не в пути)', 'warning');
                 return;
             }
             
             if (skipped > 0) {
-                showNotification(`⚠️ ${skipped} заказов пропущено (они в пути или уже завершены)`, 'warning');
+                showNotification(`${skipped} заказов пропущено (они в пути или уже завершены)`, 'warning');
             }
             
             const track = prompt('Введите общий трек-номер для всех заказов (или оставьте пустым для автогенерации):');
@@ -2818,7 +2669,7 @@ main {
                 );
                 
                 if (results.failed.length > 0) {
-                    showNotification(`⚠️ ${results.failed.length} заказов не удалось отправить`, 'warning');
+                    showNotification(`${results.failed.length} заказов не удалось отправить`, 'warning');
                 } else {
                     showToast(`✅ Отправлено ${results.success.length} заказов`);
                 }
@@ -2830,7 +2681,7 @@ main {
                 
             } catch (err) {
                 console.error('Ошибка массовой отправки:', err);
-                showNotification('❌ Ошибка при массовой отправке', 'error');
+                showNotification('Ошибка при массовой отправке', 'error');
             }
         });
 
@@ -3000,7 +2851,7 @@ main {
                 const order = orderSnap.data();
                 
                 if (!order || order.status !== 'paid') {
-                    showNotification('❌ Заказ нельзя отправить (статус: ' + (order?.status || 'неизвестен') + ')', 'warning');
+                    showNotification('Заказ нельзя отправить (статус: ' + (order?.status || 'неизвестен') + ')', 'warning');
                     return;
                 }
                 
@@ -3047,7 +2898,7 @@ main {
                 await loadOrders(true);
             } catch (err) {
                 console.error('Ошибка:', err);
-                showNotification('❌ Ошибка при отправке', 'error');
+                showNotification('Ошибка при отправке', 'error');
             }
         }
 
@@ -3059,7 +2910,7 @@ main {
                 const order = orderSnap.data();
                 
                 if (!order || (order.status !== 'paid' && order.status !== 'shipped')) {
-                    showNotification('❌ Этот заказ уже нельзя отменить', 'warning');
+                    showNotification('Этот заказ уже нельзя отменить', 'warning');
                     return;
                 }
                 
@@ -3120,7 +2971,7 @@ main {
                 
             } catch (err) {
                 console.error('Ошибка отмены:', err);
-                showNotification('❌ Ошибка при отмене заказа', 'error');
+                showNotification('Ошибка при отмене заказа', 'error');
             }
         }
 

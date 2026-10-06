@@ -69,120 +69,11 @@
             width: 100%;
         }
         
-        .navbar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 16px 32px;
-            background: rgba(0, 0, 0, 0.75);
-            backdrop-filter: blur(16px);
-            border-bottom: 1px solid rgba(251, 191, 36, 0.25);
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-            transition: all 0.3s ease;
-        }
-        
-        .logo {
-            font-size: 1.8rem;
-            font-weight: 800;
-            letter-spacing: -0.5px;
-            cursor: pointer;
-            background: linear-gradient(135deg, #ffffff, #fbbf24);
-            background-clip: text;
-            color: transparent;
-            transition: transform 0.2s ease;
-        }
-        
-        .logo:hover { transform: scale(1.02); }
-        .logo span { background: linear-gradient(135deg, #fbbf24, #ffdd77); background-clip: text; color: transparent; }
-        
-        .balance-indicator {
-            background: #111;
-            border: 1px solid rgba(251,191,36,0.5);
-            border-radius: 60px;
-            padding: 7px 18px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            font-weight: 700;
-            font-size: 0.9rem;
-            transition: all 0.2s ease;
-        }
-        
         .balance-indicator:hover {
             border-color: #fbbf24;
             box-shadow: 0 0 15px rgba(251,191,36,0.2);
         }
         
-        .balance-count { color: #fbbf24; font-size: 1.1rem; }
-        
-        .balance-plus {
-            background: rgba(251,191,36,0.15);
-            border: none;
-            color: #fbbf24;
-            cursor: pointer;
-            width: 28px;
-            height: 28px;
-            border-radius: 50%;
-            transition: all 0.2s ease;
-        }
-        
-        .balance-plus:hover {
-            background: rgba(251,191,36,0.3);
-            transform: scale(1.05);
-        }
-        
-        .balance-plus:active { 
-            background: #fbbf24; 
-            color: #000;
-            transform: scale(0.94);
-        }
-        
-        .menu-toggle { 
-            display: none; 
-            background: rgba(251,191,36,0.1); 
-            border: 1px solid #fbbf24; 
-            color: #fbbf24; 
-            font-size: 1.6rem; 
-            cursor: pointer; 
-            padding: 8px 14px; 
-            border-radius: 12px;
-            transition: all 0.2s ease;
-            min-height: 44px;
-            min-width: 44px;
-        }
-        
-        .menu-toggle:hover {
-            background: rgba(251,191,36,0.2);
-            transform: scale(1.02);
-        }
-        
-        .menu-toggle:active { transform: scale(0.95); }
-        
-        .nav-links {
-            display: flex;
-            gap: 6px;
-            background: rgba(15,15,15,0.7);
-            backdrop-filter: blur(12px);
-            padding: 5px 14px;
-            border-radius: 60px;
-            border: 1px solid rgba(251,191,36,0.2);
-        }
-        
-        .nav-links a { 
-            color: #ddd; 
-            text-decoration: none; 
-            font-size: 0.9rem; 
-            font-weight: 500; 
-            padding: 8px 18px; 
-            border-radius: 40px; 
-            transition: all 0.2s;
-        }
-        
-        .nav-links a i { margin-right: 8px; color: #fbbf24; }
-        .nav-links a:hover { color: #fbbf24; background: rgba(251,191,36,0.1); }
-
         /* ===== ХЛЕБНЫЕ КРОШКИ С КНОПКОЙ НАЗАД (ДОБАВЛЕНО) ===== */
         .breadcrumb {
             margin: 20px 0 10px;
@@ -870,7 +761,6 @@
     }
 }
 
-
         .modal-overlay {
             position: fixed;
             top: 0; left: 0; right: 0; bottom: 0;
@@ -1012,31 +902,11 @@
             .navbar {
                 padding: 12px 18px;
             }
-            .menu-toggle {
-                display: block;
-            }
-            .nav-links {
-                display: none;
-                flex-direction: column;
-                position: absolute;
-                top: 68px;
-                left: 18px;
-                right: 18px;
-                background: #0f0f0f;
-                border-radius: 20px;
-                padding: 16px;
-                gap: 8px;
-                border: 1px solid rgba(251,191,36,0.3);
-                z-index: 1000;
-            }
+            
             .nav-links.show {
                 display: flex;
             }
-            .nav-links a {
-                width: 100%;
-                text-align: center;
-                padding: 10px;
-            }
+            
             .container {
                 padding: 0 16px;
             }
@@ -1155,17 +1025,13 @@
         .order-card:nth-child(7) { animation-delay: 0.35s; }
         .order-card:nth-child(8) { animation-delay: 0.4s; }
     </style>
+    <script src="modals.js"></script>
 </head>
 <body>
     <div class="gold-top"></div>
 
     <header class="navbar">
         <div class="logo" onclick="window.location='index.html'">PRO<span>RANK</span></div>
-        <div class="balance-indicator" id="balanceIndicator" style="display: none;">
-            <i class="fas fa-crosshairs"></i>
-            <span class="balance-count" id="headerChallengesCount">0</span>
-            <button class="balance-plus" id="balancePlusBtn">+</button>
-        </div>
         <button class="menu-toggle" id="menuToggle"><i class="fas fa-bars"></i></button>
         <nav class="nav-links" id="navLinks"></nav>
     </header>
@@ -1307,6 +1173,12 @@
 
     // ===== УВЕДОМЛЕНИЯ =====
     function showNotification(message, type = 'info') {
+        // Используем единый тост из modals.js (если он загружен)
+        if (typeof window.showToast === 'function') {
+            window.showToast(message, type);
+            return;
+        }
+        // Fallback — старая плашка (на случай, если modals.js не подключён)
         const container = document.getElementById('errorContainer');
         if (!container) return;
         const colors = { success: '#22c55e', error: '#ef4444', warning: '#f59e0b', info: '#fbbf24' };
@@ -1341,7 +1213,7 @@
             return;
         }
 
-        if (!confirm(`❌ Вы уверены, что хотите удалить ${historyOrders.length} заказов из истории?\n\nЭто действие нельзя отменить.`)) {
+        if (!await showConfirm(`❌ Вы уверены, что хотите удалить ${historyOrders.length} заказов из истории?\n\nЭто действие нельзя отменить.`)) {
             return;
         }
 
@@ -1360,7 +1232,7 @@
 
             allOrders = allOrders.filter(o => o.status !== 'completed' && o.status !== 'cancelled' && o.status !== 'rejected');
             
-            showNotification(`✅ Удалено ${historyOrders.length} заказов из истории`, 'success');
+            showNotification(`Удалено ${historyOrders.length} заказов из истории`, 'success');
             
             updateBadges();
             updateHistoryCount();
@@ -1368,7 +1240,7 @@
             
         } catch (err) {
             console.error('Ошибка очистки истории:', err);
-            showNotification('❌ Не удалось очистить историю', 'error');
+            showNotification('Не удалось очистить историю', 'error');
         } finally {
             btn.innerHTML = originalText;
             btn.disabled = false;
@@ -1740,7 +1612,7 @@
         const card = e.currentTarget;
         const orderId = card.dataset.orderId;
         if (orderId) {
-            showNotification(`📋 Заказ #${orderId.slice(0, 8)}`, 'info');
+            showNotification(`Заказ #${orderId.slice(0, 8)}`, 'info');
         }
     }
 
@@ -1754,7 +1626,7 @@
         if (sellerId && sellerId !== 'null' && sellerId !== 'undefined' && sellerId !== 'unknown') {
             window.location.href = `partner-dashboard.html?id=${sellerId}`;
         } else {
-            showNotification('❌ Не удалось найти продавца', 'error');
+            showNotification('Не удалось найти продавца', 'error');
         }
     }
 
@@ -1811,7 +1683,7 @@
         console.log('🔍 Действие:', action, 'ID заказа:', orderId);
         
         if (!orderId || orderId === 'undefined' || orderId === 'null') {
-            showNotification('❌ Ошибка: ID заказа не найден', 'error');
+            showNotification('Ошибка: ID заказа не найден', 'error');
             return;
         }
         
@@ -1828,7 +1700,7 @@
     }
 
     async function handleCancelOrder(orderId, btn) {
-        if (!confirm('Вы уверены, что хотите отменить заказ?')) return;
+        if (!await showConfirm('Вы уверены, что хотите отменить заказ?')) return;
         
         const originalText = btn.innerHTML;
         btn.innerHTML = '<i class="fas fa-spinner fa-pulse"></i>';
@@ -1839,7 +1711,7 @@
             const orderSnap = await getDoc(orderRef);
             
             if (!orderSnap.exists()) {
-                showNotification('❌ Заказ не найден', 'error');
+                showNotification('Заказ не найден', 'error');
                 btn.innerHTML = originalText;
                 btn.disabled = false;
                 return;
@@ -1849,7 +1721,7 @@
             
             // ===== ПРОВЕРКА: НЕЛЬЗЯ ОТМЕНИТЬ ПОСЛЕ ОТПРАВКИ =====
             if (orderData.status === 'shipped' || orderData.status === 'delivered' || orderData.status === 'completed') {
-                showNotification('❌ Заказ уже отправлен. Отмена невозможна. Обратитесь в поддержку.', 'error');
+                showNotification('Заказ уже отправлен. Отмена невозможна. Обратитесь в поддержку.', 'error');
                 btn.innerHTML = originalText;
                 btn.disabled = false;
                 return;
@@ -1870,7 +1742,7 @@
                     refundedAt: new Date()
                 });
                 
-                showNotification('✅ Заказ отменён, средства возвращены на баланс', 'success');
+                showNotification('Заказ отменён, средства возвращены на баланс', 'success');
                 await loadOrders();
                 return;
             }
@@ -1890,16 +1762,16 @@
                     refundedAt: new Date()
                 });
                 
-                showNotification('✅ Заказ отменён, средства возвращены на баланс', 'success');
+                showNotification('Заказ отменён, средства возвращены на баланс', 'success');
                 await loadOrders();
                 return;
             }
             
-            showNotification('❌ Нельзя отменить заказ в текущем статусе', 'error');
+            showNotification('Нельзя отменить заказ в текущем статусе', 'error');
             
         } catch (err) {
             console.error('Ошибка отмены:', err);
-            showNotification('❌ Не удалось отменить заказ: ' + err.message, 'error');
+            showNotification('Не удалось отменить заказ: ' + err.message, 'error');
         } finally {
             btn.innerHTML = originalText;
             btn.disabled = false;
@@ -1909,7 +1781,7 @@
     async function handleConfirmOrder(orderId, btn) {
         const totalPrice = parseFloat(btn.dataset.total) || 0;
         
-        if (!confirm('Подтвердите получение товара? Деньги будут переведены продавцу.')) return;
+        if (!await showConfirm('Подтвердите получение товара? Деньги будут переведены продавцу.')) return;
         
         const originalText = btn.innerHTML;
         btn.innerHTML = '<i class="fas fa-spinner fa-pulse"></i>';
@@ -1920,7 +1792,7 @@
             const orderSnap = await getDoc(orderRef);
             
             if (!orderSnap.exists()) {
-                showNotification('❌ Заказ не найден', 'error');
+                showNotification('Заказ не найден', 'error');
                 btn.innerHTML = originalText;
                 btn.disabled = false;
                 return;
@@ -1931,7 +1803,7 @@
             
             // ✅ ПРОВЕРКА НА items
             if (!orderData.items || !Array.isArray(orderData.items) || orderData.items.length === 0) {
-                showNotification('❌ В заказе нет товаров', 'error');
+                showNotification('В заказе нет товаров', 'error');
                 btn.innerHTML = originalText;
                 btn.disabled = false;
                 return;
@@ -1946,7 +1818,7 @@
             }
             
             if (!sellerId || sellerId === 'null') {
-                showNotification('❌ Не удалось определить продавца', 'error');
+                showNotification('Не удалось определить продавца', 'error');
                 btn.innerHTML = originalText;
                 btn.disabled = false;
                 return;
@@ -1990,12 +1862,12 @@
             
             await releaseFunds(currentUser.uid, sellerId, totalPrice, orderId);
             
-            showNotification('✅ Спасибо за покупку! Заказ завершён.', 'success');
+            showNotification('Спасибо за покупку! Заказ завершён.', 'success');
             await loadOrders();
             
         } catch (err) {
             console.error('Ошибка:', err);
-            showNotification('❌ Ошибка: ' + err.message, 'error');
+            showNotification('Ошибка: ' + err.message, 'error');
         } finally {
             btn.innerHTML = originalText;
             btn.disabled = false;
@@ -2018,12 +1890,12 @@
                 });
             });
             localStorage.setItem('cart', JSON.stringify(cart));
-            showNotification(`🔄 ${order.items.length} товаров добавлены в корзину`, 'success');
+            showNotification(`${order.items.length} товаров добавлены в корзину`, 'success');
             setTimeout(() => {
                 window.location.href = 'cart.html';
             }, 1000);
         } else {
-            showNotification('❌ Не удалось повторить заказ', 'error');
+            showNotification('Не удалось повторить заказ', 'error');
         }
     }
 
@@ -2073,12 +1945,12 @@
                 reviewedAt: new Date()
             });
 
-            showNotification('✅ Отзыв отправлен!', 'success');
+            showNotification('Отзыв отправлен!', 'success');
             document.getElementById('reviewModal').classList.remove('show');
             await loadOrders();
         } catch (err) {
             console.error('Ошибка:', err);
-            showNotification('❌ Не удалось отправить отзыв', 'error');
+            showNotification('Не удалось отправить отзыв', 'error');
         }
     });
 

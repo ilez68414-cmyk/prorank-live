@@ -60,90 +60,7 @@
         }
 
         /* ===== NAVBAR ===== */
-        .navbar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 14px 20px;
-            background: rgba(0, 0, 0, 0.75);
-            backdrop-filter: blur(16px);
-            border-bottom: 1px solid rgba(251, 191, 36, 0.25);
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-        }
-
-        .logo {
-            font-size: 1.5rem;
-            font-weight: 800;
-            letter-spacing: -0.5px;
-            cursor: pointer;
-            background: linear-gradient(135deg, #ffffff, #fbbf24);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .logo span {
-            background: linear-gradient(135deg, #fbbf24, #ffdd77);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .menu-toggle {
-            display: none;
-            background: rgba(251, 191, 36, 0.1);
-            border: 1px solid rgba(251, 191, 36, 0.3);
-            color: #fbbf24;
-            font-size: 1.3rem;
-            cursor: pointer;
-            padding: 8px 14px;
-            border-radius: 12px;
-            min-height: 44px;
-            min-width: 44px;
-            transition: all 0.2s;
-        }
-
-        .menu-toggle:active {
-            background: rgba(251, 191, 36, 0.2);
-        }
-
-        .nav-links {
-            display: flex;
-            gap: 4px;
-            background: rgba(15, 15, 15, 0.7);
-            backdrop-filter: blur(12px);
-            padding: 4px 12px;
-            border-radius: 60px;
-            border: 1px solid rgba(251, 191, 36, 0.2);
-        }
-
-        .nav-links a {
-            color: #ddd;
-            text-decoration: none;
-            font-size: 0.8rem;
-            font-weight: 500;
-            padding: 8px 14px;
-            border-radius: 40px;
-            transition: all 0.2s;
-            min-height: 38px;
-            display: inline-flex;
-            align-items: center;
-            letter-spacing: 0.2px;
-        }
-
-        .nav-links a i {
-            margin-right: 7px;
-            color: #fbbf24;
-            font-size: 0.8rem;
-        }
-
-        .nav-links a:hover {
-            color: #fff;
-            background: rgba(251, 191, 36, 0.08);
-        }
-
+        
         .nav-links a:active {
             color: #fbbf24;
             background: rgba(251, 191, 36, 0.15);
@@ -1006,36 +923,8 @@
                 padding: 12px 16px;
             }
 
-            .menu-toggle {
-                display: block;
-            }
-
-            .nav-links {
-                display: none;
-                flex-direction: column;
-                position: absolute;
-                top: 62px;
-                left: 16px;
-                right: 16px;
-                background: #0f0f0f;
-                border-radius: 20px;
-                padding: 16px;
-                gap: 6px;
-                border: 1px solid rgba(251, 191, 36, 0.2);
-                z-index: 1000;
-                backdrop-filter: blur(20px);
-            }
-
             .nav-links.show {
                 display: flex;
-            }
-
-            .nav-links a {
-                width: 100%;
-                text-align: center;
-                padding: 12px;
-                justify-content: center;
-                font-size: 0.85rem;
             }
 
             .container {
@@ -1107,6 +996,7 @@
             border-radius: 10px;
         }
     </style>
+    <script src="modals.js"></script>
 </head>
 <body>
     <div class="gold-top"></div>
@@ -1703,14 +1593,14 @@
 
         async function processPayment() {
             if (!currentUser) {
-                alert('Войдите в аккаунт');
+                showToast('Войдите в аккаунт', 'warning');
                 window.location.href = 'login.html';
                 return;
             }
 
             const amount = parseInt(document.getElementById('modalAmount').value);
             if (!amount || amount < 100) {
-                alert('Минимальная сумма пополнения — 100 ₽');
+                showToast('Минимальная сумма пополнения — 100 ₽', 'warning');
                 return;
             }
 
@@ -1729,14 +1619,14 @@
                 } else {
                     // Test mode
                     await depositBuyerFunds(currentUser.uid, amount, selectedMethod === 'card' ? 'card' : 'sbp');
-                    alert(`✅ Баланс пополнен на ${amount.toLocaleString()} ₽!`);
+                    showToast(`✅ Баланс пополнен на ${amount.toLocaleString()} ₽!`, 'success');
                     document.getElementById('depositModal').classList.remove('active');
                     document.getElementById('modalAmount').value = '';
                     await loadWallet();
                 }
             } catch (err) {
                 console.error('Error:', err);
-                alert(`❌ ${err.message || 'Ошибка при пополнении баланса'}`);
+                showToast(`❌ ${err.message || 'Ошибка при пополнении баланса'}`, 'error');
             } finally {
                 confirmBtn.innerHTML = originalText;
                 confirmBtn.disabled = false;
@@ -1745,7 +1635,7 @@
 
         async function requestWithdraw() {
             if (!currentUser) {
-                alert('Войдите в аккаунт');
+                showToast('Войдите в аккаунт', 'warning');
                 return;
             }
 
@@ -1753,21 +1643,21 @@
             const details = document.getElementById('withdrawDetails').value.trim();
 
             if (!amount || amount < 100) {
-                alert('Минимальная сумма вывода — 100 ₽');
+                showToast('Минимальная сумма вывода — 100 ₽', 'warning');
                 return;
             }
 
             if (!details) {
-                alert('Укажите реквизиты для вывода (номер карты или Telegram ID)');
+                showToast('Укажите реквизиты для вывода (номер карты или Telegram ID)', 'warning');
                 return;
             }
 
             if (amount > currentBalance) {
-                alert(`Недостаточно средств. Доступно: ${currentBalance.toLocaleString()} ₽`);
+                showToast(`Недостаточно средств. Доступно: ${currentBalance.toLocaleString()} ₽`, 'error');
                 return;
             }
 
-            if (!confirm(`Вывести ${amount.toLocaleString()} ₽ на ${selectedWithdrawMethod === 'card' ? 'карту' : 'СБП'}?`)) return;
+            if (!await showConfirm(`Вывести ${amount.toLocaleString()} ₽ на ${selectedWithdrawMethod === 'card' ? 'карту' : 'СБП'}?`)) return;
 
             const confirmBtn = document.getElementById('confirmWithdrawBtn');
             const originalText = confirmBtn.innerHTML;
@@ -1782,14 +1672,14 @@
                     details
                 );
 
-                alert(`✅ Заявка на вывод ${amount.toLocaleString()} ₽ принята!`);
+                showToast(`✅ Заявка на вывод ${amount.toLocaleString()} ₽ принята!`, 'success');
 
                 document.getElementById('withdrawModal').classList.remove('active');
                 document.getElementById('withdrawAmount').value = '';
                 document.getElementById('withdrawDetails').value = '';
                 await loadWallet();
             } catch (err) {
-                alert(`❌ ${err.message}`);
+                showToast(`❌ ${err.message}`, 'error');
             } finally {
                 confirmBtn.innerHTML = originalText;
                 confirmBtn.disabled = false;
@@ -1802,7 +1692,7 @@
 
         document.getElementById('depositBtn')?.addEventListener('click', () => {
             if (!currentUser) {
-                alert('Войдите в аккаунт');
+                showToast('Войдите в аккаунт', 'warning');
                 window.location.href = 'login.html';
                 return;
             }
@@ -1825,7 +1715,7 @@
 
         document.getElementById('withdrawBtn')?.addEventListener('click', async () => {
             if (!currentUser) {
-                alert('Войдите в аккаунт');
+                showToast('Войдите в аккаунт', 'warning');
                 window.location.href = 'login.html';
                 return;
             }

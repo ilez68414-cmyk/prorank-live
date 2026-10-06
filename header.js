@@ -638,9 +638,9 @@ function initPWABanner() {
     const installBtn = document.getElementById('installPwaBtn');
     if (installBtn) {
         installBtn.onclick = async () => {
-            if (/iPhone|iPad|iPod/i.test(navigator.userAgent)) alert('Нажмите "Поделиться" → "На экран Домой"');
+            if (/iPhone|iPad|iPod/i.test(navigator.userAgent)) window.showToast('Нажмите "Поделиться" → "На экран Домой"', 'info');
             else if (deferredPrompt) { deferredPrompt.prompt(); await deferredPrompt.userChoice; banner.style.display = 'none'; deferredPrompt = null; }
-            else alert('Нажмите меню (три точки) → "Установить приложение"');
+            else window.showToast('Нажмите меню (три точки) → "Установить приложение"', 'info');
         };
     }
     const closeBtn = document.getElementById('closePwaBanner');
