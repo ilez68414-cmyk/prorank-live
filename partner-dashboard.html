@@ -9,7 +9,6 @@
     <meta name="theme-color" content="#fbbf24">
     <meta name="mobile-web-app-capable" content="yes">
     <meta charset="UTF-8">
-<!--🔧ФИКС: preconnect -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="dns-prefetch" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -19,1736 +18,1222 @@
     <link rel="preconnect" href="https://www.gstatic.com" crossorigin>
     <link rel="dns-prefetch" href="https://www.gstatic.com">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Мой магазин | PRORANK</title>
+    <title>Магазин | PRORANK</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700;14..32,800;14..32,900&display=swap" rel="stylesheet">
-    <style>
-        /* ===== RESET & BASE ===== */
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        
-        body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            background: radial-gradient(ellipse at 20% 30%, rgba(251,191,36,0.06) 0%, transparent 50%),
-                        radial-gradient(ellipse at 80% 70%, rgba(251,191,36,0.04) 0%, transparent 50%),
-                        linear-gradient(145deg, #0a0a0a 0%, #141414 50%, #0a0a0a 100%);
-            background-attachment: fixed;
-            color: #e5e5e5;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-        }
-        
-        main { flex: 1; }
-        
-        .gold-top {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 3px;
-            background: linear-gradient(90deg, #fbbf24, #ffdd88, #fbbf24, #b8860b);
-            background-size: 200% 100%;
-            animation: shimmer 2.5s ease-in-out infinite;
-            z-index: 1001;
-        }
-        
-        @keyframes shimmer {
-            0% { background-position: 200% 0; }
-            100% { background-position: -200% 0; }
-        }
-        
-        .container { max-width: 1200px; margin: 0 auto; padding: 0 24px; width: 100%; }
-        
-        /* ===== NAVBAR ===== */
-        .navbar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 14px 24px;
-            background: rgba(0, 0, 0, 0.85);
-            backdrop-filter: blur(20px) saturate(1.2);
-            border-bottom: 1px solid rgba(251, 191, 36, 0.15);
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-            min-height: 64px;
-        }
-        
-        .logo {
-            font-size: 1.6rem;
-            font-weight: 800;
-            letter-spacing: -0.5px;
-            cursor: pointer;
-            background: linear-gradient(135deg, #ffffff, #fbbf24);
-            background-clip: text;
-            -webkit-background-clip: text;
-            color: transparent;
-            transition: transform 0.2s ease;
-        }
-        
-        .logo:hover { transform: scale(1.05); }
-        .logo span {
-            background: linear-gradient(135deg, #fbbf24, #ffdd77);
-            background-clip: text;
-            -webkit-background-clip: text;
-            color: transparent;
-        }
-        
-        .wallet-indicator {
-            background: rgba(251, 191, 36, 0.08);
-            border: 1px solid rgba(251, 191, 36, 0.2);
-            border-radius: 60px;
-            padding: 8px 20px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-weight: 600;
-            font-size: 0.85rem;
-            cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            display: none;
-        }
-        
-        .wallet-indicator:hover {
-            background: rgba(251, 191, 36, 0.15);
-            border-color: #fbbf24;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 20px rgba(251, 191, 36, 0.15);
-        }
-        
-        .wallet-amount { color: #fbbf24; font-weight: 800; }
-        
-        .menu-toggle {
-            display: none;
-            background: rgba(251, 191, 36, 0.08);
-            border: 1px solid rgba(251, 191, 36, 0.3);
-            color: #fbbf24;
-            font-size: 1.4rem;
-            cursor: pointer;
-            padding: 8px 16px;
-            border-radius: 12px;
-            min-height: 44px;
-            min-width: 44px;
-            transition: all 0.2s ease;
-        }
-        
-        .menu-toggle:hover { background: rgba(251, 191, 36, 0.15); }
-        
-        .nav-links {
-            display: flex;
-            gap: 4px;
-            background: rgba(15, 15, 15, 0.6);
-            backdrop-filter: blur(12px);
-            padding: 4px 12px;
-            border-radius: 60px;
-            border: 1px solid rgba(251, 191, 36, 0.1);
-        }
-        
-        .nav-links a {
-            color: #aaa;
-            text-decoration: none;
-            font-size: 0.85rem;
-            font-weight: 500;
-            padding: 8px 18px;
-            border-radius: 40px;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            min-height: 40px;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-        }
-        
-        .nav-links a i { color: #fbbf24; font-size: 0.9rem; }
-        .nav-links a:hover { color: #fff; background: rgba(251, 191, 36, 0.08); transform: translateY(-1px); }
-        .nav-links a.active { color: #fff; background: rgba(251, 191, 36, 0.12); }
-        
-        /* ============================================
-           ПРОФИЛЬ МАГАЗИНА
-           ============================================ */
-        .store-profile { margin: 16px 0 24px; }
-        
-        .store-header {
-            display: flex;
-            align-items: center;
-            gap: 28px;
-            padding: 32px 36px;
-            background: rgba(18, 18, 18, 0.7);
-            backdrop-filter: blur(16px);
-            border-radius: 28px;
-            border: 1px solid rgba(251, 191, 36, 0.06);
-            flex-wrap: wrap;
-            margin-bottom: 20px;
-            transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .store-header::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: radial-gradient(circle at 30% 40%, rgba(251,191,36,0.03), transparent 70%);
-            pointer-events: none;
-        }
-        
-        .store-header:hover {
-            border-color: rgba(251, 191, 36, 0.15);
-            transform: translateY(-2px);
-            box-shadow: 0 12px 48px rgba(0,0,0,0.4);
-        }
-        
-        .store-avatar-wrap {
-            position: relative;
-            flex-shrink: 0;
-        }
-        
-        .store-avatar {
-            width: 100px;
-            height: 100px;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 2.5px solid rgba(251, 191, 36, 0.15);
-            background: #1a1a1a;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 3rem;
-            color: #fbbf24;
-            flex-shrink: 0;
-            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-            box-shadow: 0 0 40px rgba(251,191,36,0.02);
-            position: relative;
-        }
-        
-        .store-avatar.editable {
-            cursor: pointer;
-        }
-        
-        .store-avatar.editable:hover {
-            border-color: #fbbf24;
-            transform: scale(1.04);
-            box-shadow: 0 0 60px rgba(251,191,36,0.08);
-        }
-        
-        .store-avatar.editable:hover::after {
-            content: '✏️';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.55);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.8rem;
-            backdrop-filter: blur(4px);
-        }
-        
-        .store-avatar-ring {
-            position: absolute;
-            top: -4px;
-            left: -4px;
-            width: calc(100% + 8px);
-            height: calc(100% + 8px);
-            border-radius: 50%;
-            border: 2px solid transparent;
-            border-top-color: #fbbf24;
-            border-right-color: rgba(251,191,36,0.3);
-            animation: spinRing 8s linear infinite;
-            pointer-events: none;
-            opacity: 0.3;
-        }
-        
-        @keyframes spinRing {
-            to { transform: rotate(360deg); }
-        }
-        
-        .store-avatar-ring-2 {
-            animation-duration: 12s;
-            animation-direction: reverse;
-            opacity: 0.15;
-            border-top-color: transparent;
-            border-bottom-color: #fbbf24;
-        }
-        
-        .store-info { flex: 1; min-width: 0; }
-        
-        .store-name-row {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            flex-wrap: wrap;
-        }
-        
-        .store-name {
-            font-size: 1.6rem;
-            font-weight: 700;
-            color: #fff;
-            letter-spacing: -0.3px;
-        }
-        
-        .store-name i { color: #fbbf24; font-size: 0.85rem; margin-left: 6px; }
-        
-        .store-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            font-size: 0.55rem;
-            font-weight: 700;
-            padding: 4px 14px;
-            border-radius: 40px;
-            background: rgba(34, 197, 94, 0.12);
-            color: #22c55e;
-            border: 1px solid rgba(34, 197, 94, 0.15);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-        
-        .store-badge i { font-size: 0.4rem; }
-        .store-badge.offline {
-            background: rgba(239, 68, 68, 0.12);
-            color: #ef4444;
-            border-color: rgba(239, 68, 68, 0.15);
-        }
-        
-        .store-meta {
-            display: flex;
-            gap: 20px;
-            flex-wrap: wrap;
-            margin-top: 6px;
-            font-size: 0.75rem;
-            color: #777;
-        }
-        
-        .store-meta i { color: #fbbf24; margin-right: 4px; width: 16px; opacity: 0.6; }
-        .store-meta a { color: #fbbf24; text-decoration: none; }
-        .store-meta a:hover { text-decoration: underline; }
-        
-        .store-desc {
-            margin-top: 8px;
-            color: #999;
-            font-size: 0.85rem;
-            line-height: 1.6;
-            max-width: 600px;
-        }
-        
-        .store-stats {
-            display: flex;
-            gap: 12px;
-            margin-top: 14px;
-            flex-wrap: wrap;
-        }
-        
-        .store-stat {
-            text-align: center;
-            background: rgba(255,255,255,0.03);
-            padding: 6px 18px 8px;
-            border-radius: 14px;
-            border: 1px solid rgba(255,255,255,0.04);
-            transition: all 0.3s ease;
-            min-width: 70px;
-        }
-        
-        .store-stat:hover {
-            border-color: rgba(251, 191, 36, 0.08);
-            background: rgba(255,255,255,0.05);
-            transform: translateY(-2px);
-        }
-        
-        .store-stat .stat-number {
-            font-size: 1.3rem;
-            font-weight: 800;
-            color: #fbbf24;
-            letter-spacing: -0.3px;
-        }
-        
-        .store-stat .stat-label {
-            font-size: 0.55rem;
-            color: #555;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-top: 2px;
-            font-weight: 500;
-        }
-        
-        .store-actions {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-            align-items: center;
-            margin-top: 12px;
-        }
-        
-        .store-actions .btn {
-            padding: 8px 24px;
-            border-radius: 40px;
-            font-weight: 600;
-            font-size: 0.75rem;
-            cursor: pointer;
-            border: none;
-            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-            font-family: 'Inter', sans-serif;
-            min-height: 38px;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .store-actions .btn::after {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: radial-gradient(circle, rgba(255,255,255,0.05), transparent 60%);
-            opacity: 0;
-            transition: opacity 0.4s;
-        }
-        
-        .store-actions .btn:hover::after { opacity: 1; }
-        .store-actions .btn:hover { transform: translateY(-3px); }
-        .store-actions .btn:active { transform: scale(0.96); }
-        
-        .btn-gold {
-            background: linear-gradient(135deg, #fbbf24, #f59e0b);
-            color: #0a0a0a;
-            font-weight: 700;
-            box-shadow: 0 4px 20px rgba(251, 191, 36, 0.15);
-        }
-        
-        .btn-gold:hover {
-            background: linear-gradient(135deg, #ffdd44, #fbbf24);
-            box-shadow: 0 6px 30px rgba(251, 191, 36, 0.25);
-        }
-        
-        .btn-outline-gold {
-            background: rgba(251, 191, 36, 0.06);
-            color: #fbbf24;
-            border: 1px solid rgba(251, 191, 36, 0.12);
-        }
-        
-        .btn-outline-gold:hover {
-            background: rgba(251, 191, 36, 0.12);
-            border-color: rgba(251, 191, 36, 0.25);
-            box-shadow: 0 4px 20px rgba(251, 191, 36, 0.05);
-        }
-        
-        .edit-fields {
-            display: none;
-            margin-top: 12px;
-            animation: fadeSlide 0.3s ease;
-        }
-        
-        .edit-fields input,
-        .edit-fields textarea {
-            width: 100%;
-            padding: 10px 16px;
-            background: rgba(0,0,0,0.4);
-            border: 1px solid rgba(251, 191, 36, 0.1);
-            color: #fff;
-            border-radius: 40px;
-            font-size: 0.8rem;
-            margin-bottom: 8px;
-            font-family: 'Inter', sans-serif;
-            transition: all 0.3s ease;
-        }
-        
-        .edit-fields textarea {
-            border-radius: 14px;
-            resize: vertical;
-            min-height: 60px;
-        }
-        
-        .edit-fields input:focus,
-        .edit-fields textarea:focus {
-            outline: none;
-            border-color: #fbbf24;
-            box-shadow: 0 0 0 4px rgba(251, 191, 36, 0.06);
-            background: rgba(0,0,0,0.6);
-        }
-        
-        .edit-actions {
-            display: flex;
-            gap: 8px;
-            margin-top: 4px;
-        }
-        
-        .edit-actions .btn {
-            padding: 6px 18px;
-            border-radius: 40px;
-            font-weight: 600;
-            font-size: 0.7rem;
-            cursor: pointer;
-            border: none;
-            transition: all 0.3s ease;
-            font-family: 'Inter', sans-serif;
-            min-height: 34px;
-        }
-        
-        .btn-save {
-            background: #10b981;
-            color: #fff;
-        }
-        
-        .btn-save:hover {
-            background: #059669;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 20px rgba(16,185,129,0.25);
-        }
-        
-        .btn-cancel-edit {
-            background: rgba(255,255,255,0.04);
-            color: #888;
-        }
-        
-        .btn-cancel-edit:hover {
-            background: rgba(255,255,255,0.08);
-            color: #fff;
-            transform: translateY(-2px);
-        }
-        
-        @keyframes fadeSlide {
-            from { opacity: 0; transform: translateY(-8px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        
-        /* ============================================
-           ВКЛАДКИ
-           ============================================ */
-        .tabs-wrapper {
-            display: flex;
-            gap: 2px;
-            margin: 20px 0 24px;
-            padding: 4px;
-            background: rgba(18, 18, 18, 0.5);
-            border-radius: 16px;
-            border: 1px solid rgba(255, 255, 255, 0.04);
-            flex-wrap: wrap;
-            backdrop-filter: blur(8px);
-        }
-        
-        .tab-btn {
-            flex: 1;
-            min-width: 90px;
-            background: none;
-            border: none;
-            color: #666;
-            padding: 12px 20px;
-            border-radius: 12px;
-            font-size: 0.8rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-            font-family: 'Inter', sans-serif;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            position: relative;
-        }
-        
-        .tab-btn::after {
-            content: '';
-            position: absolute;
-            bottom: 4px;
-            left: 50%;
-            transform: translateX(-50%) scaleX(0);
-            width: 30%;
-            height: 2px;
-            background: linear-gradient(90deg, transparent, #fbbf24, transparent);
-            border-radius: 4px;
-            transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-        }
-        
-        .tab-btn:hover { color: #fff; background: rgba(255,255,255,0.03); }
-        
-        .tab-btn.active {
-            color: #fbbf24;
-            background: rgba(251, 191, 36, 0.06);
-        }
-        
-        .tab-btn.active::after { transform: translateX(-50%) scaleX(1); }
-        
-        .tab-btn i { font-size: 0.9rem; }
-        .tab-btn .badge {
-            background: rgba(255,255,255,0.04);
-            padding: 1px 10px;
-            border-radius: 20px;
-            font-size: 0.55rem;
-            font-weight: 700;
-            color: #666;
-            transition: all 0.3s;
-        }
-        
-        .tab-btn.active .badge {
-            background: rgba(251, 191, 36, 0.1);
-            color: #fbbf24;
-        }
-        
-        .tab-content {
-            display: none;
-            animation: fadeSlide 0.35s ease;
-        }
-        
-        .tab-content.active { display: block; }
-        
-        /* ============================================
-           ТОВАРЫ
-           ============================================ */
-        .section-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 12px;
-            margin-bottom: 16px;
-        }
-        
-        .section-header h3 {
-            font-size: 0.95rem;
-            font-weight: 600;
-            color: #888;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        
-        .section-header h3 i { color: #fbbf24; }
-        .section-header h3 span { color: #fbbf24; font-weight: 700; }
-        
-        .btn-sm {
-            padding: 6px 18px;
-            border-radius: 30px;
-            font-size: 0.7rem;
-            font-weight: 600;
-            cursor: pointer;
-            border: none;
-            transition: all 0.3s ease;
-            font-family: 'Inter', sans-serif;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            min-height: 32px;
-        }
-        
-        .btn-sm:hover { transform: translateY(-2px); }
-        .btn-sm:active { transform: scale(0.96); }
-        
-        .btn-add {
-            background: linear-gradient(135deg, #fbbf24, #f59e0b);
-            color: #0a0a0a;
-            box-shadow: 0 4px 16px rgba(251, 191, 36, 0.12);
-        }
-        
-        .btn-add:hover {
-            background: linear-gradient(135deg, #ffdd44, #fbbf24);
-            box-shadow: 0 6px 24px rgba(251, 191, 36, 0.2);
-        }
-        
-        .products-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            gap: 14px;
-        }
-        
-        .product-card {
-            background: rgba(18, 18, 18, 0.6);
-            backdrop-filter: blur(4px);
-            border-radius: 18px;
-            padding: 14px 14px 16px;
-            border: 1px solid rgba(251, 191, 36, 0.04);
-            transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
-            display: flex;
-            flex-direction: column;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .product-card::before {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            height: 2px;
-            background: linear-gradient(90deg, transparent, #fbbf24, transparent);
-            opacity: 0;
-            transition: opacity 0.4s;
-        }
-        
-        .product-card:hover::before { opacity: 0.4; }
-        
-        .product-card:hover {
-            border-color: rgba(251, 191, 36, 0.12);
-            transform: translateY(-4px);
-            box-shadow: 0 8px 40px rgba(0,0,0,0.3);
-        }
-        
-        .product-card .product-image {
-            width: 100%;
-            aspect-ratio: 1 / 1;
-            border-radius: 14px;
-            object-fit: cover;
-            background: #1a1a1a;
-            margin-bottom: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 2rem;
-            color: #444;
-            transition: all 0.4s;
-        }
-        
-        .product-card:hover .product-image { transform: scale(1.02); }
-        
-        .product-card .product-name {
-            font-size: 0.78rem;
-            font-weight: 600;
-            color: #eee;
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
-            min-height: 36px;
-        }
-        
-        .product-card .product-price {
-            font-weight: 700;
-            color: #fbbf24;
-            font-size: 0.9rem;
-            margin-top: 4px;
-        }
-        
-        .product-card .product-stock {
-            font-size: 0.55rem;
-            color: #666;
-            margin-top: 2px;
-            font-weight: 500;
-        }
-        
-        .product-card .product-stock .in-stock { color: #22c55e; }
-        .product-card .product-stock .low-stock { color: #f59e0b; }
-        .product-card .product-stock .out-of-stock { color: #ef4444; }
-        
-        .product-card .product-actions {
-            display: flex;
-            gap: 6px;
-            margin-top: 10px;
-        }
-        
-        .product-card .product-actions .btn {
-            flex: 1;
-            padding: 4px 10px;
-            border-radius: 30px;
-            font-size: 0.55rem;
-            font-weight: 600;
-            cursor: pointer;
-            border: none;
-            transition: all 0.3s ease;
-            font-family: 'Inter', sans-serif;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 4px;
-            min-height: 28px;
-        }
-        
-        .product-card .product-actions .btn:hover { transform: translateY(-2px); }
-        
-        .btn-edit-product {
-            background: rgba(251, 191, 36, 0.08);
-            color: #fbbf24;
-            border: 1px solid rgba(251, 191, 36, 0.06);
-        }
-        
-        .btn-edit-product:hover { background: rgba(251, 191, 36, 0.15); }
-        
-        .btn-delete-product {
-            background: rgba(239, 68, 68, 0.08);
-            color: #ef4444;
-            border: 1px solid rgba(239, 68, 68, 0.06);
-        }
-        
-        .btn-delete-product:hover { background: rgba(239, 68, 68, 0.15); }
-        
-        .empty-state {
-            text-align: center;
-            padding: 40px 20px;
-            color: #666;
-            grid-column: 1 / -1;
-        }
-        
-        .empty-state i {
-            font-size: 3rem;
-            color: #1a1a1a;
-            margin-bottom: 12px;
-            display: block;
-        }
-        
-        .empty-state h3 { color: #ccc; }
-        .empty-state p { font-size: 0.85rem; }
-        
-        /* ============================================
-           ОТЗЫВЫ
-           ============================================ */
-        .reviews-list {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-        
-        .review-card {
-            background: rgba(18, 18, 18, 0.4);
-            border-radius: 14px;
-            padding: 16px 20px;
-            border: 1px solid rgba(255, 255, 255, 0.03);
-            transition: all 0.3s ease;
-        }
-        
-        .review-card:hover {
-            border-color: rgba(251, 191, 36, 0.06);
-            background: rgba(18, 18, 18, 0.6);
-        }
-        
-        .review-header {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            flex-wrap: wrap;
-        }
-        
-        .review-avatar {
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, #2a2a2a, #1a1a1a);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 0.7rem;
-            font-weight: 700;
-            color: #fbbf24;
-            border: 1px solid rgba(251,191,36,0.1);
-            flex-shrink: 0;
-        }
-        
-        .review-author {
-            font-weight: 600;
-            color: #eee;
-            font-size: 0.8rem;
-        }
-        
-        .review-stars { color: #fbbf24; font-size: 0.65rem; letter-spacing: 1px; }
-        .review-stars .empty { color: #333; }
-        .review-date { font-size: 0.55rem; color: #555; margin-left: auto; }
-        .review-text {
-            font-size: 0.78rem;
-            color: #aaa;
-            margin-top: 6px;
-            line-height: 1.5;
-        }
-        
-        .review-reply {
-            margin-top: 8px;
-            padding-left: 14px;
-            border-left: 2px solid #fbbf24;
-            font-size: 0.7rem;
-            color: #888;
-        }
-        
-        /* ============================================
-           АНАЛИТИКА
-           ============================================ */
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-            gap: 12px;
-            margin-bottom: 20px;
-        }
-        
-        .stat-card {
-            background: rgba(18, 18, 18, 0.5);
-            border-radius: 16px;
-            padding: 16px 20px;
-            border: 1px solid rgba(255,255,255,0.03);
-            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-            position: relative;
-            overflow: hidden;
-        }
-        
-        /* ===== КНОПКА "ВСЕ ОТЗЫВЫ" В ЗАГОЛОВКЕ ===== */
-        .btn-all-reviews-header {
-            padding: 6px 18px;
-            border-radius: 30px;
-            font-size: 0.7rem;
-            font-weight: 600;
-            background: rgba(251, 191, 36, 0.06);
-            color: #fbbf24;
-            border: 1px solid rgba(251, 191, 36, 0.08);
-            cursor: pointer;
-            font-family: 'Inter', sans-serif;
-            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            white-space: nowrap;
-        }
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700;14..32,800;14..32,900&family=Bebas+Neue&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
-        .btn-all-reviews-header:hover {
-            background: rgba(251, 191, 36, 0.12);
-            border-color: rgba(251, 191, 36, 0.2);
-            transform: translateY(-2px);
-            box-shadow: 0 4px 20px rgba(251, 191, 36, 0.05);
-        }
+:root {
+    --gold: #fbbf24;
+    --gold-2: #d4a24a;
+    --gold-deep: #b8860b;
+    --gold-soft: #ffdd88;
+    --gold-glow: rgba(251,191,36,0.35);
+    --gold-line: rgba(251,191,36,0.20);
 
-        .btn-all-reviews-header i {
-            color: #fbbf24;
-            font-size: 0.65rem;
-        }
-
-        /* ===== АДАПТИВ ===== */
-        @media (max-width: 480px) {
-            .btn-all-reviews-header {
-                font-size: 0.6rem;
-                padding: 4px 12px;
-            }
-            .btn-all-reviews-header i {
-                display: none;
-            }
-        }
-
-        .stat-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 2px;
-            background: linear-gradient(90deg, transparent, #fbbf24, transparent);
-            opacity: 0;
-            transition: opacity 0.4s;
-        }
-        
-        .stat-card:hover::before { opacity: 0.3; }
-        
-        .stat-card:hover {
-            border-color: rgba(251, 191, 36, 0.06);
-            transform: translateY(-3px);
-            box-shadow: 0 8px 30px rgba(0,0,0,0.2);
-        }
-        
-        .stat-card .stat-top {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .stat-card .stat-icon {
-            font-size: 0.7rem;
-            color: #fbbf24;
-            opacity: 0.4;
-        }
-        
-        .stat-card .stat-number {
-            font-size: 1.5rem;
-            font-weight: 800;
-            color: #fff;
-            margin-top: 6px;
-            letter-spacing: -0.5px;
-        }
-        
-        .stat-card .stat-label {
-            font-size: 0.55rem;
-            color: #666;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            font-weight: 500;
-        }
-        
-        .stat-card .stat-change {
-            font-size: 0.6rem;
-            font-weight: 700;
-            margin-top: 4px;
-            padding: 2px 10px;
-            border-radius: 20px;
-            display: inline-block;
-        }
-        
-        .stat-card .stat-change.up { 
-            color: #22c55e; 
-            background: rgba(34,197,94,0.08);
-        }
-        
-        .stat-card .stat-change.down { 
-            color: #ef4444; 
-            background: rgba(239,68,68,0.08);
-        }
-        
-        .stat-card .stat-change.flat { 
-            color: #666; 
-            background: rgba(255,255,255,0.04);
-        }
-        
-        .stats-link {
-            background: rgba(18, 18, 18, 0.4);
-            border-radius: 14px;
-            padding: 16px 20px;
-            text-align: center;
-            border: 1px solid rgba(255,255,255,0.03);
-            transition: all 0.3s;
-        }
-        
-        .stats-link:hover {
-            border-color: rgba(251, 191, 36, 0.06);
-            background: rgba(18, 18, 18, 0.6);
-        }
-        
-        .stats-link p {
-            color: #666;
-            font-size: 0.8rem;
-        }
-        
-        .stats-link a {
-            color: #fbbf24;
-            text-decoration: none;
-            font-weight: 600;
-            transition: all 0.3s;
-        }
-        
-        .stats-link a:hover { opacity: 0.8; }
-        
-        /* ============================================
-           НАСТРОЙКИ
-           ============================================ */
-        .settings-block {
-            background: rgba(18, 18, 18, 0.4);
-            border-radius: 16px;
-            padding: 24px;
-            border: 1px solid rgba(255,255,255,0.03);
-            backdrop-filter: blur(4px);
-        }
-        
-        .settings-block h3 {
-            color: #fbbf24;
-            margin-bottom: 16px;
-            font-size: 0.95rem;
-        }
-        
-        .settings-block h3 i { margin-right: 8px; }
-        
-        .settings-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 12px 0;
-            border-bottom: 1px solid rgba(255,255,255,0.03);
-            flex-wrap: wrap;
-            gap: 8px;
-        }
-        
-        .settings-item:last-child { border-bottom: none; }
-        
-        .settings-item .label {
-            font-weight: 600;
-            color: #eee;
-            font-size: 0.85rem;
-        }
-        
-        .settings-item .desc {
-            font-size: 0.7rem;
-            color: #666;
-        }
-        
-/* ============================================
-   КНОПКИ ДЛЯ ПОКУПАТЕЛЯ
-   ============================================ */
-
-/* Кнопка "Написать" (чат) */
-.btn-chat {
-    background: rgba(139, 92, 246, 0.12);
-    color: #a78bfa;
-    border: 1px solid rgba(139, 92, 246, 0.15);
-    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    --bg: #0a0a0e;
+    --card: rgba(20,20,26,0.78);
+    --line: rgba(255,255,255,0.07);
+    --text: #f2f2f5;
+    --text-dim: #a0a0a8;
+    --text-mute: #5a5a62;
 }
 
-.btn-chat:hover {
-    background: rgba(139, 92, 246, 0.2);
-    border-color: rgba(139, 92, 246, 0.3);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 20px rgba(139, 92, 246, 0.15);
+html, body {
+    font-family: 'Inter', sans-serif;
+    background:
+        radial-gradient(ellipse at 15% -5%, rgba(251,191,36,0.10) 0%, transparent 55%),
+        radial-gradient(ellipse at 85% 100%, rgba(251,191,36,0.05) 0%, transparent 55%),
+        linear-gradient(135deg, #0f0f13 0%, #08080c 50%, #0f0f13 100%);
+    background-attachment: fixed;
+    color: var(--text);
+    min-height: 100vh;
+    line-height: 1.45;
+    -webkit-font-smoothing: antialiased;
+    display: flex;
+    flex-direction: column;
 }
 
-.btn-chat i {
-    color: #a78bfa;
+main { flex: 1; }
+
+.gold-top {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, transparent, var(--gold) 25%, var(--gold-soft) 50%, var(--gold) 75%, transparent);
+    z-index: 100;
+    box-shadow: 0 0 20px var(--gold-glow);
 }
 
-/* Кнопка "Подписаться" */
-.btn-subscribe {
-    background: rgba(59, 130, 246, 0.08);
-    color: #60a5fa;
-    border: 1px solid rgba(59, 130, 246, 0.1);
-    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+/* NAVBAR — header.js рендерит свой контент, мы только обёртка */
+.navbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 20px;
+    background: rgba(8,8,12,0.85);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--gold-line);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    min-height: 60px;
+}
+.nav-logo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.4rem;
+    letter-spacing: 2px;
+    background: linear-gradient(135deg, #fff, var(--gold));
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+    cursor: pointer;
+}
+.nav-logo span {
+    background: linear-gradient(135deg, var(--gold), var(--gold-soft));
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+}
+.nav-spacer { flex: 1; }
+
+/* КОНТЕЙНЕР */
+.container {
+    max-width: 680px;
+    margin: 0 auto;
+    padding: 0 0 40px;
+    width: 100%;
 }
 
-.btn-subscribe:hover {
-    background: rgba(59, 130, 246, 0.15);
-    border-color: rgba(59, 130, 246, 0.2);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 20px rgba(59, 130, 246, 0.1);
+/* ============================================================
+   ШАПКА ПРОФИЛЯ
+   ============================================================ */
+.ig-header {
+    padding: 22px 18px 14px;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 18px;
+    align-items: center;
+    border-bottom: 1px solid var(--line);
 }
 
-.btn-subscribe.subscribed {
-    background: rgba(16, 185, 129, 0.08);
-    color: #34d399;
-    border-color: rgba(16, 185, 129, 0.15);
+.ig-avatar-col { position: relative; flex-shrink: 0; }
+
+.ig-avatar-ring {
+    width: 96px;
+    height: 96px;
+    border-radius: 50%;
+    padding: 3px;
+    background: linear-gradient(135deg, var(--gold-soft), var(--gold) 40%, var(--gold-2) 70%, var(--gold-deep));
+    position: relative;
+    box-shadow: 0 0 24px var(--gold-glow), 0 4px 14px rgba(0,0,0,0.55);
+    cursor: default;
+}
+.ig-avatar-ring.editable { cursor: pointer; }
+
+.ig-avatar-img-wrap {
+    position: absolute;
+    inset: 3px;
+    border-radius: 50%;
+    overflow: hidden;
+    background: #0a0a0e;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
-.btn-subscribe.subscribed:hover {
-    background: rgba(16, 185, 129, 0.15);
-    border-color: rgba(16, 185, 129, 0.25);
-    box-shadow: 0 4px 20px rgba(16, 185, 129, 0.12);
+.ig-avatar-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
 }
 
-.btn-subscribe i {
-    color: #60a5fa;
+.ig-avatar-letter {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 2.6rem;
+    letter-spacing: 2px;
+    background: linear-gradient(135deg, var(--gold-soft), var(--gold));
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+    filter: drop-shadow(0 0 12px var(--gold-glow));
 }
 
-.btn-subscribe.subscribed i {
-    color: #34d399;
+/* Онлайн — только для чужого профиля */
+.ig-avatar-online {
+    display: none;
+    position: absolute;
+    bottom: 0; right: 0;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: #22c55e;
+    border: 3px solid #08080c;
+    box-shadow: 0 0 14px #22c55e;
+    z-index: 3;
+}
+.ig-avatar-online.visible { display: block; }
+.ig-avatar-online::after {
+    content: '';
+    position: absolute;
+    inset: -4px;
+    border-radius: 50%;
+    border: 2px solid #22c55e;
+    opacity: 0.5;
+    animation: onlinePulse 2s ease-out infinite;
+}
+@keyframes onlinePulse {
+    0% { transform: scale(0.7); opacity: 0.8; }
+    100% { transform: scale(1.6); opacity: 0; }
 }
 
-/* Кнопка "Купить" (на карточке товара) */
-.btn-buy-product {
-    background: linear-gradient(135deg, #fbbf24, #f59e0b);
-    color: #0a0a0a;
-    font-weight: 700;
-    border: none;
-    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+.ig-right-col {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
 }
 
-.btn-buy-product:hover {
-    background: linear-gradient(135deg, #ffdd44, #fbbf24);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 20px rgba(251, 191, 36, 0.25);
+.ig-name-inline {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
 }
-
-.btn-buy-product i {
-    color: #0a0a0a;
-}
-
-/* Кнопка "В корзину" (на карточке товара) */
-.btn-cart-product {
-    background: rgba(255, 255, 255, 0.04);
-    color: #aaa;
-    border: 1px solid rgba(255, 255, 255, 0.06);
-    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-
-.btn-cart-product:hover {
-    background: rgba(255, 255, 255, 0.08);
+.ig-name {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.5rem;
+    letter-spacing: 0.8px;
+    line-height: 1;
     color: #fff;
-    border-color: rgba(255, 255, 255, 0.12);
-    transform: translateY(-2px);
+    white-space: nowrap;
 }
 
-.btn-cart-product i {
-    color: #888;
-    transition: all 0.3s;
+.ig-record-row {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+.ig-record-item { display: flex; flex-direction: column; align-items: flex-start; gap: 1px; }
+.ig-record-num {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.2rem;
+    line-height: 1;
+    color: #fff;
+    letter-spacing: 0.5px;
+}
+.ig-record-num.gold { color: var(--gold); }
+.ig-record-label {
+    font-size: 0.6rem;
+    color: var(--text-dim);
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
 }
 
-.btn-cart-product:hover i {
-    color: #fbbf24;
+.ig-actions-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+}
+.ig-btn {
+    font-family: 'Inter', sans-serif;
+    font-weight: 700;
+    font-size: 0.78rem;
+    border: none;
+    cursor: pointer;
+    padding: 9px 14px;
+    border-radius: 10px;
+    min-height: 38px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+.ig-btn:active { transform: scale(0.97); }
+.ig-btn.primary {
+    background: linear-gradient(135deg, var(--gold), var(--gold-2));
+    color: #0a0a0a;
+    box-shadow: 0 4px 14px var(--gold-glow);
+}
+.ig-btn.primary:hover { transform: translateY(-1px); box-shadow: 0 6px 22px var(--gold-glow); }
+.ig-btn.secondary {
+    background: rgba(255,255,255,0.05);
+    color: #fff;
+    border: 1px solid rgba(255,255,255,0.08);
+}
+.ig-btn.secondary:hover { background: rgba(255,255,255,0.10); }
+.ig-btn.full { grid-column: 1 / -1; }
+
+/* ИНФО */
+.ig-info {
+    padding: 14px 18px 16px;
+    border-bottom: 1px solid var(--line);
+}
+.ig-league-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 10px;
+    align-items: center;
+}
+.ig-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 10px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 100px;
+    font-size: 0.7rem;
+    color: var(--text-dim);
+    font-weight: 600;
+}
+.ig-chip i { color: var(--gold); font-size: 0.62rem; }
+
+.ig-bio-label {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 0.68rem;
+    color: var(--text-dim);
+    font-weight: 700;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+}
+.ig-bio-label i { color: var(--gold); font-size: 0.7rem; }
+.ig-bio {
+    font-size: 0.85rem;
+    color: var(--text-dim);
+    line-height: 1.55;
 }
 
-        /* ===== КНОПКИ В КАРТОЧКЕ ТОВАРА (ДЛЯ ПОКУПАТЕЛЯ) ===== */
-        .product-actions {
-            display: flex;
-            gap: 6px;
-            margin-top: 10px;
-        }
+/* ТАБЫ */
+.ig-tabs {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    border-bottom: 1px solid var(--line);
+    background: rgba(0,0,0,0.2);
+    position: sticky;
+    top: 60px;
+    z-index: 90;
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+}
+.ig-tab {
+    background: transparent;
+    border: none;
+    color: var(--text-mute);
+    font-family: inherit;
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    padding: 15px 6px 13px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: color 0.25s ease;
+    position: relative;
+}
+.ig-tab i { font-size: 1rem; }
+.ig-tab:hover { color: #fff; }
+.ig-tab.active { color: var(--gold); }
+.ig-tab.active::after {
+    content: '';
+    position: absolute;
+    bottom: -1px; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--gold), transparent);
+    box-shadow: 0 0 12px var(--gold-glow);
+}
 
-        .product-actions .btn {
-            flex: 1;
-            padding: 6px 10px;
-            border-radius: 30px;
-            font-size: 0.6rem;
-            font-weight: 600;
-            cursor: pointer;
-            border: none;
-            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-            font-family: 'Inter', sans-serif;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 4px;
-            min-height: 30px;
-        }
+.tab-content { display: none; padding: 18px 18px 40px; }
+.tab-content.active { display: block; animation: fadeIn 0.3s ease; }
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+}
 
-        .product-actions .btn:hover {
-            transform: translateY(-2px);
-        }
+/* ВИТРИНА */
+.showcase-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
+    gap: 12px;
+}
+.showcase-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 3px;
+    color: var(--gold);
+    text-transform: uppercase;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.showcase-title::before {
+    content: '';
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--gold);
+    box-shadow: 0 0 10px var(--gold);
+}
+.showcase-count {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1rem;
+    color: var(--text-mute);
+    letter-spacing: 0.5px;
+}
+.btn-add-product {
+    padding: 7px 16px;
+    border-radius: 100px;
+    background: linear-gradient(135deg, var(--gold), var(--gold-2));
+    color: #0a0a0a;
+    border: none;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.72rem;
+    font-weight: 800;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    box-shadow: 0 4px 14px var(--gold-glow);
+    transition: all 0.2s;
+}
+.btn-add-product:hover { transform: translateY(-2px); box-shadow: 0 6px 22px var(--gold-glow); }
+.btn-add-product:active { transform: scale(0.97); }
 
-        .product-actions .btn:active {
-            transform: scale(0.95);
-        }
+.products-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+.product-card {
+    background: linear-gradient(145deg, rgba(24,24,30,0.9), rgba(14,14,18,0.95));
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 18px;
+    overflow: hidden;
+    position: relative;
+    transition: all 0.3s cubic-bezier(0.2, 0.8, 0.3, 1);
+    display: flex;
+    flex-direction: column;
+}
+.product-card:hover {
+    transform: translateY(-4px);
+    border-color: rgba(251,191,36,0.35);
+    box-shadow: 0 12px 32px rgba(0,0,0,0.5), 0 0 40px rgba(251,191,36,0.08);
+}
 
-        /* ===== КНОПКА "ВСЕ ОТЗЫВЫ" (для владельца) ===== */
-        .btn-all-reviews {
-            background: rgba(251, 191, 36, 0.06);
-            color: #fbbf24;
-            border: 1px solid rgba(251, 191, 36, 0.08);
-            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-        }
+.product-image {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    background: linear-gradient(135deg, #22222c, #0e0e14);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.4rem;
+    color: rgba(251,191,36,0.3);
+    position: relative;
+    overflow: hidden;
+}
+.product-image img {
+    width: 100%; height: 100%;
+    object-fit: cover;
+    display: block;
+}
 
-        .btn-all-reviews:hover {
-            background: rgba(251, 191, 36, 0.12);
-            border-color: rgba(251, 191, 36, 0.2);
-            transform: translateY(-2px);
-            box-shadow: 0 4px 20px rgba(251, 191, 36, 0.05);
-        }
+/* Достойная плашка "Нет в наличии" */
+.product-image .badge {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 0.58rem;
+    font-weight: 900;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    z-index: 2;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+}
+.badge.out-of-stock {
+    background: rgba(10,10,14,0.85);
+    color: #ef4444;
+    border: 1px solid rgba(239,68,68,0.4);
+    box-shadow: 0 4px 16px rgba(239,68,68,0.15), inset 0 1px 0 rgba(255,255,255,0.05);
+}
+.badge.out-of-stock i { font-size: 0.5rem; }
 
-        .btn-all-reviews i {
-            color: #fbbf24;
-        }
+.badge.hit {
+    background: linear-gradient(135deg, var(--gold), var(--gold-2));
+    color: #000;
+    border: none;
+    box-shadow: 0 4px 16px var(--gold-glow);
+}
 
-        .btn-toggle {
-            background: #22c55e;
-            color: #fff;
-            border: none;
-            padding: 6px 18px;
-            border-radius: 30px;
-            font-size: 0.65rem;
-            font-weight: 600;
-            cursor: pointer;
-            font-family: 'Inter', sans-serif;
-            min-height: 32px;
-            transition: all 0.3s ease;
-        }
-        
-        .btn-toggle.off { background: #ef4444; }
-        .btn-toggle:hover { transform: translateY(-2px); box-shadow: 0 4px 16px rgba(34,197,94,0.2); }
-        .btn-toggle.off:hover { box-shadow: 0 4px 16px rgba(239,68,68,0.2); }
-        
-        .btn-danger {
-            background: rgba(239, 68, 68, 0.08);
-            color: #ef4444;
-            border: 1px solid rgba(239, 68, 68, 0.08);
-            padding: 6px 18px;
-            border-radius: 30px;
-            font-size: 0.65rem;
-            font-weight: 600;
-            cursor: pointer;
-            font-family: 'Inter', sans-serif;
-            min-height: 32px;
-            transition: all 0.3s ease;
-        }
-        
-        .btn-danger:hover {
-            background: rgba(239, 68, 68, 0.15);
-            transform: translateY(-2px);
-        }
-        
-        .settings-info {
-            margin-top: 16px;
-            padding: 12px 16px;
-            background: rgba(251, 191, 36, 0.03);
-            border-radius: 12px;
-            border: 1px solid rgba(251, 191, 36, 0.05);
-        }
-        
-        .settings-info p {
-            font-size: 0.65rem;
-            color: #666;
-        }
-        
-        .settings-info i { color: #fbbf24; margin-right: 6px; }
-        
-        /* ============================================
-           PREVIEW
-           ============================================ */
-        .preview-badge {
-            display: none;
-            align-items: center;
-            gap: 4px;
-            font-size: 0.5rem;
-            font-weight: 600;
-            color: #fbbf24;
-            background: rgba(251, 191, 36, 0.06);
-            padding: 2px 10px;
-            border-radius: 20px;
-            border: 1px solid rgba(251, 191, 36, 0.08);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-        
-        body.preview-mode .store-actions .btn { pointer-events: none; opacity: 0.4; }
-        body.preview-mode .product-actions .btn { pointer-events: none; opacity: 0.4; }
-        body.preview-mode .preview-badge { display: inline-flex !important; }
-        body.preview-mode .store-avatar.editable { cursor: default; }
-        body.preview-mode .store-avatar.editable:hover::after { display: none; }
-        
-        /* ============================================
-           FOOTER
-           ============================================ */
-        .main-footer {
-            background: rgba(10, 10, 10, 0.9);
-            backdrop-filter: blur(8px);
-            border-top: 1px solid rgba(251, 191, 36, 0.06);
-            margin-top: 40px;
-            padding: 30px 0 20px;
-        }
-        
-        .footer-inner {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 16px;
-        }
-        
-        .footer-logo .logo { font-size: 1.2rem; }
-        .footer-logo p { font-size: 0.65rem; color: #444; }
-        .footer-social { display: flex; gap: 12px; }
-        .footer-social a { color: #555; font-size: 1.1rem; transition: 0.2s; }
-        .footer-social a:hover { color: #fbbf24; transform: translateY(-2px); }
-        .footer-links { display: flex; gap: 16px; flex-wrap: wrap; }
-        .footer-links a { color: #555; text-decoration: none; font-size: 0.7rem; transition: 0.2s; }
-        .footer-links a:hover { color: #fbbf24; }
-        .footer-copy { text-align: center; margin-top: 16px; font-size: 0.6rem; color: #333; }
-        
-        /* ============================================
-           АДАПТИВ
-           ============================================ */
-        @media (max-width: 768px) {
-            .navbar { padding: 10px 16px; }
-            .menu-toggle { display: block; }
-            .nav-links {
-                display: none;
-                flex-direction: column;
-                position: absolute;
-                top: 62px;
-                left: 16px;
-                right: 16px;
-                background: #0f0f0f;
-                border-radius: 20px;
-                padding: 16px;
-                gap: 6px;
-                border: 1px solid rgba(251, 191, 36, 0.15);
-                z-index: 1000;
-            }
-            .nav-links.show { display: flex; }
-            .nav-links a { width: 100%; text-align: center; padding: 12px; justify-content: center; }
-            
-            .container { padding: 0 16px; }
-            
-            .store-header {
-                flex-direction: column;
-                text-align: center;
-                padding: 24px 20px;
-                gap: 16px;
-            }
-            
-            .store-name-row { justify-content: center; }
-            .store-meta { justify-content: center; }
-            .store-desc { text-align: center; }
-            .store-stats { justify-content: center; gap: 8px; }
-            .store-actions { justify-content: center; }
-            
-            .store-avatar { width: 80px; height: 80px; font-size: 2.5rem; }
-            
-            .products-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
-            
-            .tabs-wrapper { gap: 2px; padding: 3px; border-radius: 12px; }
-            .tab-btn { padding: 8px 12px; font-size: 0.7rem; min-width: 50px; }
-            .tab-btn span { display: none; }
-            .tab-btn .badge { display: none; }
-            
-            .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
-            .stat-card { padding: 12px 14px; }
-            .stat-card .stat-number { font-size: 1.2rem; }
-            
-            .product-card .product-actions { flex-direction: column; }
-            
-            .settings-item { flex-direction: column; align-items: stretch; gap: 6px; }
-            .settings-item .btn-toggle,
-            .settings-item .btn-danger { width: 100%; justify-content: center; }
-        }
-        
-        @media (max-width: 480px) {
-            .products-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
-            .product-card { padding: 10px; }
-            .product-card .product-name { font-size: 0.65rem; min-height: 28px; }
-            .product-card .product-price { font-size: 0.7rem; }
-            .product-card .product-actions .btn { font-size: 0.45rem; padding: 2px 6px; min-height: 22px; }
-            
-            .store-avatar { width: 64px; height: 64px; font-size: 2rem; }
-            .store-name { font-size: 1.1rem; }
-            
-            .stats-grid { grid-template-columns: 1fr 1fr; gap: 6px; }
-            .stat-card { padding: 10px 12px; }
-            .stat-card .stat-number { font-size: 1rem; }
-            
-            .tab-btn { padding: 6px 8px; font-size: 0.6rem; }
-            .tab-btn i { font-size: 0.7rem; }
-            
-            .store-stat { padding: 4px 10px; min-width: 50px; }
-            .store-stat .stat-number { font-size: 1rem; }
-            .store-stat .stat-label { font-size: 0.45rem; }
-        }
-        
-        ::-webkit-scrollbar { width: 4px; }
-        ::-webkit-scrollbar-track { background: #1a1a1a; }
-        ::-webkit-scrollbar-thumb { background: #fbbf24; border-radius: 10px; }
-        
-        .loading-spinner {
-            display: inline-block;
-            width: 24px;
-            height: 24px;
-            border: 2px solid rgba(251, 191, 36, 0.2);
-            border-top-color: #fbbf24;
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-        }
-        
-        @keyframes spin { to { transform: rotate(360deg); } }
-        
-        .toast-notification {
-            position: fixed;
-            bottom: 30px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(0,0,0,0.9);
-            backdrop-filter: blur(12px);
-            color: #fff;
-            padding: 12px 24px;
-            border-radius: 60px;
-            font-weight: 600;
-            font-size: 0.85rem;
-            border: 1px solid rgba(251, 191, 36, 0.15);
-            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
-            z-index: 9999;
-            animation: toastUp 0.3s ease;
-            display: none;
-        }
-        
-        @keyframes toastUp {
-            from { opacity: 0; transform: translateX(-50%) translateY(20px); }
-            to { opacity: 1; transform: translateX(-50%) translateY(0); }
-        }
-    </style>
+.product-body {
+    padding: 12px 12px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    flex: 1;
+}
+.product-name {
+    font-size: 0.8rem;
+    font-weight: 800;
+    color: #fff;
+    line-height: 1.25;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    min-height: 36px;
+}
+.product-price-row {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 6px;
+    margin-top: auto;
+}
+.product-price {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.2rem;
+    color: var(--gold);
+    letter-spacing: 0.5px;
+}
+.product-stock {
+    font-size: 0.6rem;
+    color: var(--text-mute);
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+.product-stock.low { color: #fb923c; }
+.product-stock.out { color: #ef4444; }
+.product-stock .dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+    box-shadow: 0 0 6px currentColor;
+}
+
+.product-actions {
+    display: flex;
+    gap: 6px;
+    margin-top: 8px;
+    padding-top: 10px;
+    border-top: 1px solid rgba(255,255,255,0.05);
+}
+.product-actions .btn {
+    flex: 1;
+    padding: 6px 8px;
+    border-radius: 100px;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.6rem;
+    font-weight: 800;
+    cursor: pointer;
+    border: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    min-height: 30px;
+    transition: all 0.2s;
+}
+.btn-edit-product {
+    background: rgba(251,191,36,0.10);
+    color: var(--gold);
+    border: 1px solid rgba(251,191,36,0.25) !important;
+}
+.btn-edit-product:hover { background: rgba(251,191,36,0.20); }
+.btn-delete-product {
+    background: rgba(239,68,68,0.10);
+    color: #ef4444;
+    border: 1px solid rgba(239,68,68,0.25) !important;
+    max-width: 40px;
+}
+.btn-delete-product:hover { background: rgba(239,68,68,0.20); }
+
+.btn-buy-product {
+    background: linear-gradient(135deg, var(--gold), var(--gold-2));
+    color: #0a0a0a;
+    box-shadow: 0 3px 12px var(--gold-glow);
+}
+.btn-buy-product:hover { transform: translateY(-2px); }
+.btn-cart-product {
+    background: rgba(255,255,255,0.05);
+    color: #ccc;
+    border: 1px solid rgba(255,255,255,0.08) !important;
+}
+.btn-cart-product:hover { background: rgba(255,255,255,0.10); }
+
+/* РЕЙТИНГ + ОТЗЫВЫ */
+.rating-hero {
+    background:
+        radial-gradient(circle at 0% 50%, rgba(251,191,36,0.12), transparent 60%),
+        linear-gradient(145deg, rgba(24,24,30,0.9), rgba(14,14,18,0.95));
+    border: 1px solid rgba(251,191,36,0.20);
+    border-radius: 20px;
+    padding: 18px 20px;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 20px;
+    align-items: center;
+    margin-bottom: 14px;
+}
+.rating-hero-big {
+    text-align: center;
+    padding-right: 20px;
+    border-right: 1px solid rgba(251,191,36,0.20);
+}
+.rating-value {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 3.2rem;
+    line-height: 1;
+    background: linear-gradient(135deg, #fff, var(--gold));
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+    letter-spacing: 1px;
+    margin-bottom: 4px;
+    filter: drop-shadow(0 0 20px var(--gold-glow));
+}
+.rating-stars {
+    color: var(--gold);
+    font-size: 0.75rem;
+    letter-spacing: 2px;
+    margin-bottom: 4px;
+}
+.rating-stars .empty { color: rgba(251,191,36,0.2); }
+.rating-count {
+    font-size: 0.6rem;
+    color: var(--text-mute);
+    font-weight: 700;
+}
+.rating-bars { display: flex; flex-direction: column; gap: 5px; }
+.rating-row {
+    display: grid;
+    grid-template-columns: 22px 1fr 30px;
+    gap: 8px;
+    align-items: center;
+    font-size: 0.6rem;
+    color: var(--text-mute);
+    font-weight: 700;
+}
+.rating-row .num { color: var(--text); font-weight: 800; display: flex; align-items: center; gap: 3px; }
+.rating-row .num i { color: var(--gold); font-size: 0.5rem; }
+.rating-bar {
+    height: 4px;
+    background: rgba(0,0,0,0.5);
+    border-radius: 100px;
+    overflow: hidden;
+}
+.rating-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--gold-2), var(--gold));
+    border-radius: 100px;
+    box-shadow: 0 0 8px var(--gold-glow);
+    width: 0;
+    transition: width 1s ease;
+}
+
+.review-list { display: flex; flex-direction: column; gap: 10px; }
+.review-card {
+    padding: 14px 16px;
+    background: rgba(20,20,26,0.7);
+    border: 1px solid rgba(255,255,255,0.05);
+    border-radius: 16px;
+    transition: all 0.2s ease;
+}
+.review-card:hover {
+    border-color: rgba(251,191,36,0.2);
+    background: rgba(20,20,26,0.9);
+}
+.review-head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+}
+.review-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--gold), var(--gold-2));
+    color: #000;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+.review-name { flex: 1; font-size: 0.8rem; font-weight: 800; color: #fff; }
+.review-date { font-size: 0.6rem; color: var(--text-mute); font-weight: 600; }
+.review-stars { color: var(--gold); font-size: 0.65rem; letter-spacing: 1px; margin-bottom: 6px; }
+.review-text { font-size: 0.78rem; color: var(--text-dim); line-height: 1.5; }
+
+/* О МАГАЗИНЕ */
+.about-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 3px;
+    color: var(--gold);
+    text-transform: uppercase;
+    font-weight: 700;
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.about-title::before {
+    content: '';
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--gold);
+    box-shadow: 0 0 10px var(--gold);
+}
+.info-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; }
+.info-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 14px;
+    background: rgba(20,20,26,0.6);
+    border: 1px solid rgba(255,255,255,0.05);
+    border-radius: 14px;
+}
+.info-row i {
+    width: 32px; height: 32px;
+    border-radius: 10px;
+    background: rgba(251,191,36,0.1);
+    border: 1px solid rgba(251,191,36,0.2);
+    color: var(--gold);
+    font-size: 0.85rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+.info-row .label {
+    font-size: 0.62rem;
+    color: var(--text-mute);
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    font-weight: 700;
+    margin-bottom: 2px;
+}
+.info-row .value { font-size: 0.82rem; color: #fff; font-weight: 700; }
+
+.store-tags { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 6px; }
+.store-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 6px 12px;
+    border-radius: 100px;
+    font-size: 0.6rem;
+    font-weight: 800;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+}
+.store-tag.fast {
+    background: rgba(251,191,36,0.12);
+    color: var(--gold);
+    border: 1px solid rgba(251,191,36,0.25);
+}
+.store-tag.verified {
+    background: rgba(96,165,250,0.12);
+    color: #60a5fa;
+    border: 1px solid rgba(96,165,250,0.25);
+}
+.store-tag i { font-size: 0.55rem; }
+
+/* ПУСТО */
+.empty {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--text-mute);
+    font-size: 0.82rem;
+    font-weight: 600;
+}
+.empty i {
+    font-size: 2.4rem;
+    color: rgba(251,191,36,0.15);
+    display: block;
+    margin-bottom: 12px;
+}
+
+/* ЗАГРУЗКА */
+.loading {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--text-mute);
+}
+.loading-spinner {
+    display: inline-block;
+    width: 26px;
+    height: 26px;
+    border: 2px solid rgba(251,191,36,0.2);
+    border-top-color: var(--gold);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin-bottom: 12px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* МОДАЛКА */
+.modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.88);
+    backdrop-filter: blur(12px);
+    z-index: 2000;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+.modal.show { display: flex; }
+.modal-content {
+    background: linear-gradient(145deg, #1a1a22, #0c0c12);
+    border: 1px solid rgba(251,191,36,0.25);
+    border-radius: 24px;
+    padding: 24px 22px;
+    width: 100%;
+    max-width: 460px;
+    max-height: 92vh;
+    overflow-y: auto;
+    box-shadow: 0 30px 80px rgba(0,0,0,0.7), 0 0 100px rgba(251,191,36,0.08);
+    position: relative;
+}
+.modal-content::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 30px; right: 30px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--gold), transparent);
+}
+.modal-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.4rem;
+    letter-spacing: 1px;
+    color: #fff;
+    margin-bottom: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+.modal-close {
+    background: rgba(239,68,68,0.1);
+    border: 1px solid rgba(239,68,68,0.3);
+    color: #ef4444;
+    width: 34px; height: 34px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 0.9rem;
+    transition: all 0.2s;
+}
+.modal-close:hover { background: rgba(239,68,68,0.2); transform: rotate(90deg); }
+
+.form-group { margin-bottom: 14px; }
+.form-label {
+    display: block;
+    font-size: 0.68rem;
+    font-weight: 800;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    margin-bottom: 6px;
+}
+.form-input {
+    width: 100%;
+    padding: 12px 14px;
+    background: rgba(0,0,0,0.4);
+    border: 1.5px solid rgba(255,255,255,0.08);
+    color: #fff;
+    border-radius: 12px;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.88rem;
+    outline: none;
+    transition: all 0.2s;
+}
+.form-input:focus {
+    border-color: var(--gold);
+    box-shadow: 0 0 0 4px rgba(251,191,36,0.1);
+}
+textarea.form-input { resize: vertical; min-height: 70px; }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.modal-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+}
+.modal-btn {
+    flex: 1;
+    padding: 13px;
+    border-radius: 12px;
+    border: none;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 800;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+}
+.modal-btn.primary {
+    background: linear-gradient(135deg, var(--gold), var(--gold-2));
+    color: #0a0a0a;
+    box-shadow: 0 4px 16px var(--gold-glow);
+}
+.modal-btn.primary:hover { transform: translateY(-2px); }
+.modal-btn.secondary {
+    background: rgba(255,255,255,0.05);
+    color: #fff;
+    border: 1px solid rgba(255,255,255,0.1);
+}
+
+/* TOAST */
+.toast {
+    position: fixed;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: rgba(0,0,0,0.92);
+    backdrop-filter: blur(12px);
+    color: #fff;
+    padding: 12px 24px;
+    border-radius: 60px;
+    font-weight: 700;
+    font-size: 0.85rem;
+    border: 1px solid rgba(251,191,36,0.3);
+    box-shadow: 0 10px 40px rgba(0,0,0,0.5), 0 0 30px rgba(251,191,36,0.15);
+    z-index: 9999;
+    opacity: 0;
+    transition: all 0.3s ease;
+    pointer-events: none;
+}
+.toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+}
+
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: #0e0e14; }
+::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, var(--gold), var(--gold-2));
+    border-radius: 10px;
+}
+
+@media (max-width: 768px) {
+    .navbar { padding: 12px 16px; }
+}
+
+@media (max-width: 480px) {
+    .ig-header { padding: 18px 14px 12px; gap: 14px; }
+    .ig-avatar-ring { width: 84px; height: 84px; }
+    .ig-avatar-letter { font-size: 2.2rem; }
+    .ig-avatar-online { width: 18px; height: 18px; }
+    .ig-name { font-size: 1.3rem; }
+    .ig-record-num { font-size: 1.05rem; }
+    .ig-btn { font-size: 0.72rem; padding: 8px 10px; min-height: 34px; }
+    .tab-content { padding: 14px 14px 40px; }
+    .products-grid { gap: 10px; }
+    .product-name { font-size: 0.72rem; }
+    .product-price { font-size: 1.05rem; }
+    .rating-hero { grid-template-columns: 1fr; gap: 14px; text-align: center; }
+    .rating-hero-big { padding-right: 0; padding-bottom: 12px; border-right: none; border-bottom: 1px solid rgba(251,191,36,0.2); }
+    .rating-value { font-size: 2.6rem; }
+    .ig-tab { font-size: 0.62rem; padding: 13px 4px 11px; letter-spacing: 0.5px; }
+    .ig-tab i { font-size: 0.9rem; }
+    .showcase-header { flex-wrap: wrap; gap: 8px; }
+    .btn-add-product { font-size: 0.65rem; padding: 6px 12px; }
+}
+</style>
 </head>
 <body>
     <div class="gold-top"></div>
 
+    <!-- Навигацию рендерит header.js в .nav-links -->
     <header class="navbar">
-        <div class="logo" onclick="window.location='index.html'">PRO<span>RANK</span></div>
-        <div class="wallet-indicator" id="walletIndicator" style="display: none;" onclick="window.location.href='wallet.html'">
-            <i class="fas fa-wallet"></i>
-            <span class="wallet-amount" id="walletBalance">0 ₽</span>
-            <i class="fas fa-chevron-right"></i>
-        </div>
-        <button class="menu-toggle" id="menuToggle"><i class="fas fa-bars"></i></button>
+        <div class="nav-logo" onclick="window.location='index.html'">PRO<span>RANK</span></div>
+        <div class="nav-spacer"></div>
         <nav class="nav-links" id="navLinks"></nav>
     </header>
 
     <main class="container">
-        <!-- ============================================
-             ПРОФИЛЬ МАГАЗИНА
-             ============================================ -->
-        <div class="store-profile" id="storeProfile">
-            <div id="storeLoading" style="text-align:center;padding:40px;">
-                <div class="loading-spinner"></div>
-                <p style="margin-top:12px;color:#666;">Загрузка магазина...</p>
+
+        <div id="storeLoading" class="loading">
+            <div class="loading-spinner"></div>
+            <p>Загрузка магазина...</p>
+        </div>
+
+        <div id="storeNotFound" class="loading" style="display:none;">
+            <i class="fas fa-store-slash" style="font-size:3rem;color:rgba(251,191,36,0.2);margin-bottom:16px;display:block;"></i>
+            <h3 style="color:#ccc;margin-bottom:8px;">Магазин не найден</h3>
+            <p style="color:#666;font-size:0.82rem;">Создайте магазин или проверьте ссылку</p>
+        </div>
+
+        <div id="storeContent" style="display:none;">
+
+            <!-- ШАПКА -->
+            <div class="ig-header">
+                <div class="ig-avatar-col">
+                    <div class="ig-avatar-ring" id="storeAvatarBtn">
+                        <div class="ig-avatar-img-wrap" id="storeAvatarWrap">
+                            <span class="ig-avatar-letter" id="storeAvatarLetter">—</span>
+                        </div>
+                    </div>
+                    <div class="ig-avatar-online" id="storeOnlineDot"></div>
+                    <input type="file" id="avatarInput" accept="image/*" style="display:none;">
+                </div>
+
+                <div class="ig-right-col">
+                    <div class="ig-name-inline">
+                        <span class="ig-name" id="storeNameDisplay">Магазин</span>
+                    </div>
+
+                    <div class="ig-record-row">
+                        <div class="ig-record-item">
+                            <span class="ig-record-num" id="statReviewsTop">0</span>
+                            <span class="ig-record-label">отзывов</span>
+                        </div>
+                        <div class="ig-record-item">
+                            <span class="ig-record-num gold" id="statRatingTop">0.0</span>
+                            <span class="ig-record-label">рейтинг</span>
+                        </div>
+                        <div class="ig-record-item">
+                            <span class="ig-record-num" id="statProductsTop">0</span>
+                            <span class="ig-record-label">товаров</span>
+                        </div>
+                    </div>
+
+                    <div class="ig-actions-row" id="storeActions">
+                        <button class="ig-btn primary" id="editToggleBtn"><i class="fas fa-pen"></i> Редактировать</button>
+                        <button class="ig-btn secondary" id="shareBtn"><i class="fas fa-share-alt"></i> Поделиться</button>
+                    </div>
+                </div>
             </div>
 
-            <div id="storeContent" style="display:none;">
-                <!-- ШАПКА МАГАЗИНА -->
-                <div class="store-header" id="storeHeader">
-                    <div class="store-avatar-wrap">
-                        <div class="store-avatar editable" id="storeAvatar" onclick="if(document.getElementById('avatarInput')) document.getElementById('avatarInput').click();">
-                            <i class="fas fa-store" id="storeAvatarIcon"></i>
-                        </div>
-                        <input type="file" id="avatarInput" accept="image/*" style="display:none;">
-                        <div class="store-avatar-ring"></div>
-                        <div class="store-avatar-ring store-avatar-ring-2"></div>
-                    </div>
-                    <div class="store-info">
-                        <div class="store-name-row">
-                            <span class="store-name" id="storeNameDisplay">Название магазина <i class="fas fa-store"></i></span>
-                            <span class="store-badge online" id="storeStatusBadge"><i class="fas fa-circle"></i> Онлайн</span>
-                            <span class="preview-badge"><i class="fas fa-eye"></i> Просмотр</span>
-                        </div>
-                        <div class="store-meta" id="storeMeta">
-                            <span><i class="fas fa-calendar-alt"></i> На рынке с <span id="storeYear">2024</span></span>
-                            <span><i class="fas fa-phone"></i> <span id="storePhone">+7 999 123-45-67</span></span>
-                            <span><i class="fas fa-link"></i> <a href="#" id="storeUrl" target="_blank">prorank.ru/shop</a></span>
-                        </div>
-                        <div class="store-desc" id="storeDescDisplay">
-                            Добро пожаловать в мой магазин! Здесь вы найдёте качественную экипировку для спорта.
-                        </div>
-                        <div class="store-stats" id="storeStats">
-                            <div class="store-stat">
-                                <div class="stat-number" id="statProducts">0</div>
-                                <div class="stat-label">Товаров</div>
-                            </div>
-                            <div class="store-stat">
-                                <div class="stat-number" id="statRating">0.0</div>
-                                <div class="stat-label">⭐ Рейтинг</div>
-                            </div>
-                            <div class="store-stat">
-                                <div class="stat-number" id="statReviews">0</div>
-                                <div class="stat-label">Отзывов</div>
-                            </div>
-                            <div class="store-stat">
-                                <div class="stat-number" id="statViews">0</div>
-                                <div class="stat-label">👁 Просмотров</div>
-                            </div>
-                        </div>
-                        <div class="store-actions" id="storeActions">
-                            <button class="btn btn-gold" id="editToggleBtn"><i class="fas fa-pen"></i> Редактировать</button>
-                            <button class="btn btn-outline-gold" id="shareBtn"><i class="fas fa-share-alt"></i> Поделиться</button>
-                        </div>
-
-                        <!-- ПОЛЯ РЕДАКТИРОВАНИЯ -->
-                        <div class="edit-fields" id="editFields">
-                            <input type="text" id="editName" placeholder="Название магазина" value="Название магазина">
-                            <input type="text" id="editPhone" placeholder="Телефон" value="+7 999 123-45-67">
-                            <input type="text" id="editUrl" placeholder="Ссылка на сайт" value="prorank.ru/shop">
-                            <textarea id="editDesc" rows="2" placeholder="Описание магазина">Добро пожаловать в мой магазин! Здесь вы найдёте качественную экипировку для спорта.</textarea>
-                            <div class="edit-actions">
-                                <button class="btn btn-save" id="saveEditBtn"><i class="fas fa-check"></i> Сохранить</button>
-                                <button class="btn btn-cancel-edit" id="cancelEditBtn"><i class="fas fa-times"></i> Отмена</button>
-                            </div>
-                        </div>
-                    </div>
+            <!-- ИНФО -->
+            <div class="ig-info">
+                <div class="ig-league-row" id="storeChipsRow">
+                    <span class="ig-chip"><i class="fas fa-calendar"></i> <span id="storeYear">2026</span></span>
+                    <span class="ig-chip" id="storeCityChip" style="display:none;"><i class="fas fa-map-marker-alt"></i> <span id="storeCity">—</span></span>
                 </div>
 
-                <!-- ============================================
-                     ВКЛАДКИ
-                     ============================================ -->
-                <div class="tabs-wrapper" id="tabsContainer">
-                    <button class="tab-btn active" data-tab="products">
-                        <i class="fas fa-box"></i> <span>Товары</span>
-                        <span class="badge" id="productsBadge">0</span>
-                    </button>
-                    <button class="tab-btn" data-tab="reviews">
-                        <i class="fas fa-star"></i> <span>Отзывы</span>
-                        <span class="badge" id="reviewsBadge">0</span>
-                    </button>
-                    <button class="tab-btn" data-tab="analytics">
-                        <i class="fas fa-chart-line"></i> <span>Аналитика</span>
-                    </button>
-                    <button class="tab-btn" data-tab="settings">
-                        <i class="fas fa-cog"></i> <span>Настройки</span>
-                    </button>
+                <div class="ig-bio-label">
+                    <i class="fas fa-store"></i>
+                    О магазине
                 </div>
+                <div class="ig-bio" id="storeDescDisplay">
+                    Здесь пока пусто...
+                </div>
+            </div>
 
-                <!-- ============================================
-                     ВКЛАДКА: ТОВАРЫ
-                     ============================================ -->
-                <div class="tab-content active" id="tab-products">
-                    <div class="section-header">
-                        <h3><i class="fas fa-box"></i> Мои товары <span id="productsCount">(0)</span></h3>
-                        <button class="btn btn-sm btn-add" id="addProductBtn">
+            <!-- РЕДАКТИРОВАНИЕ -->
+            <div id="editFieldsBlock" style="display:none;padding:16px 18px;border-bottom:1px solid var(--line);background:rgba(251,191,36,0.03);">
+                <div class="form-group">
+                    <label class="form-label">Название магазина</label>
+                    <input type="text" class="form-input" id="editName" placeholder="Название магазина">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Описание</label>
+                    <textarea class="form-input" id="editDesc" placeholder="О магазине..."></textarea>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Телефон</label>
+                        <input type="text" class="form-input" id="editPhone" placeholder="+7 ...">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Город</label>
+                        <input type="text" class="form-input" id="editCity" placeholder="Москва">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Сайт</label>
+                    <input type="text" class="form-input" id="editUrl" placeholder="example.com">
+                </div>
+                <div class="modal-actions">
+                    <button class="modal-btn secondary" id="cancelEditBtn"><i class="fas fa-times"></i> Отмена</button>
+                    <button class="modal-btn primary" id="saveEditBtn"><i class="fas fa-save"></i> Сохранить</button>
+                </div>
+            </div>
+
+            <!-- ТАБЫ -->
+            <div class="ig-tabs">
+                <button class="ig-tab active" data-tab="products">
+                    <i class="fas fa-box"></i> <span>Товары</span>
+                </button>
+                <button class="ig-tab" data-tab="reviews">
+                    <i class="fas fa-star"></i> <span>Отзывы</span>
+                </button>
+                <button class="ig-tab" data-tab="about">
+                    <i class="fas fa-info-circle"></i> <span>О магазине</span>
+                </button>
+            </div>
+
+            <!-- ТОВАРЫ -->
+            <div class="tab-content active" id="tab-products">
+                <div class="showcase-header">
+                    <div class="showcase-title">Витрина</div>
+                    <div style="display:flex;align-items:center;gap:10px;">
+                        <span class="showcase-count" id="productsCount">0 товаров</span>
+                        <button class="btn-add-product" id="addProductBtn">
                             <i class="fas fa-plus"></i> Добавить
                         </button>
                     </div>
-                    <div class="products-grid" id="productsGrid">
-                        <div class="empty-state">
-                            <i class="fas fa-box-open"></i>
-                            <h3>Нет товаров</h3>
-                            <p>Добавьте первый товар в магазин</p>
-                        </div>
-                    </div>
                 </div>
-
-                <!-- ============================================
-                    ВКЛАДКА: ОТЗЫВЫ
-                    ============================================ -->
-                <div class="tab-content" id="tab-reviews">
-                    <div class="section-header">
-                        <h3><i class="fas fa-star"></i> Отзывы покупателей <span id="reviewsCount">(0)</span></h3>
-                        <!-- ===== КНОПКА "ВСЕ ОТЗЫВЫ" РЯДОМ С ЗАГОЛОВКОМ ===== -->
-                        <button class="btn btn-sm btn-all-reviews-header" id="allReviewsHeaderBtn" 
-                                onclick="window.location.href='partner-reviews.html'" 
-                                style="display:none; padding:6px 18px; border-radius:30px; font-size:0.7rem; font-weight:600; background:rgba(251,191,36,0.06); color:#fbbf24; border:1px solid rgba(251,191,36,0.08); cursor:pointer; font-family:'Inter',sans-serif; transition:all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);">
-                            <i class="fas fa-arrow-right"></i> Все отзывы
-                        </button>
-                    </div>
-                    <div class="reviews-list" id="reviewsList">
-                        <div class="empty-state">
-                            <i class="fas fa-comment-slash"></i>
-                            <h3>Нет отзывов</h3>
-                            <p>Покупатели ещё не оставляли отзывы</p>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- ============================================
-                     ВКЛАДКА: АНАЛИТИКА
-                     ============================================ -->
-                <div class="tab-content" id="tab-analytics">
-                    <div class="stats-grid" id="analyticsStats">
-                        <div class="stat-card">
-                            <div class="stat-top">
-                                <div class="stat-icon"><i class="fas fa-shopping-bag"></i></div>
-                                <span class="stat-change flat" id="analyticsOrdersChange">0%</span>
-                            </div>
-                            <div class="stat-number" id="analyticsOrders">0</div>
-                            <div class="stat-label">Всего заказов</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-top">
-                                <div class="stat-icon"><i class="fas fa-ruble-sign"></i></div>
-                                <span class="stat-change flat" id="analyticsRevenueChange">0%</span>
-                            </div>
-                            <div class="stat-number" id="analyticsRevenue">0 ₽</div>
-                            <div class="stat-label">Выручка</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-top">
-                                <div class="stat-icon"><i class="fas fa-users"></i></div>
-                                <span class="stat-change flat" id="analyticsCustomersChange">0%</span>
-                            </div>
-                            <div class="stat-number" id="analyticsCustomers">0</div>
-                            <div class="stat-label">Покупателей</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-top">
-                                <div class="stat-icon"><i class="fas fa-receipt"></i></div>
-                                <span class="stat-change flat" id="analyticsCheckChange">0%</span>
-                            </div>
-                            <div class="stat-number" id="analyticsCheck">0 ₽</div>
-                            <div class="stat-label">Средний чек</div>
-                        </div>
-                    </div>
-                    <div class="stats-link">
-                        <p><i class="fas fa-chart-simple" style="color:#fbbf24;margin-right:8px;"></i> Детальная аналитика доступна в разделе <a href="partner-analytics.html">Аналитика →</a></p>
-                    </div>
-                </div>
-
-                <!-- ============================================
-                     ВКЛАДКА: НАСТРОЙКИ
-                     ============================================ -->
-                <div class="tab-content" id="tab-settings">
-                    <div class="settings-block">
-                        <h3><i class="fas fa-cog"></i> Настройки магазина</h3>
-                        
-                        <div class="settings-item">
-                            <div>
-                                <div class="label">Статус магазина</div>
-                                <div class="desc">Показывать магазин в каталоге</div>
-                            </div>
-                            <button class="btn-toggle" id="toggleStatusBtn"><i class="fas fa-circle"></i> Вкл</button>
-                        </div>
-                        
-                        <div class="settings-item">
-                            <div>
-                                <div class="label">Удалить магазин</div>
-                                <div class="desc">Все товары и данные будут удалены безвозвратно</div>
-                            </div>
-                            <button class="btn-danger" id="deleteStoreBtn"><i class="fas fa-trash"></i> Удалить</button>
-                        </div>
-                        
-                        <div class="settings-info">
-                            <p><i class="fas fa-info-circle"></i> Настройки сохраняются автоматически при изменении</p>
-                        </div>
+                <div class="products-grid" id="productsGrid">
+                    <div class="empty" style="grid-column:1/-1;">
+                        <i class="fas fa-box-open"></i>
+                        Загрузка товаров...
                     </div>
                 </div>
             </div>
 
-            <div id="storeNotFound" style="display:none;text-align:center;padding:60px 20px;color:#888;">
-                <i class="fas fa-store-slash" style="font-size:3rem;color:#1a1a1a;margin-bottom:16px;display:block;"></i>
-                <h3 style="color:#ccc;">Магазин не найден</h3>
-                <p style="color:#666;">Создайте магазин в настройках</p>
+            <!-- ОТЗЫВЫ -->
+            <div class="tab-content" id="tab-reviews">
+                <div class="showcase-header">
+                    <div class="showcase-title">Отзывы</div>
+                    <span class="showcase-count" id="reviewsCount">0 отзывов</span>
+                </div>
+
+                <div class="rating-hero" id="ratingHero" style="display:none;">
+                    <div class="rating-hero-big">
+                        <div class="rating-value" id="ratingValue">0.0</div>
+                        <div class="rating-stars" id="ratingStars"></div>
+                        <div class="rating-count" id="ratingCount">0 отзывов</div>
+                    </div>
+                    <div class="rating-bars" id="ratingBars"></div>
+                </div>
+
+                <div class="review-list" id="reviewsList">
+                    <div class="empty">
+                        <i class="fas fa-comment-slash"></i>
+                        Пока нет отзывов
+                    </div>
+                </div>
             </div>
+
+            <!-- О МАГАЗИНЕ -->
+            <div class="tab-content" id="tab-about">
+                <div class="about-title">Информация</div>
+
+                <div class="info-list">
+                    <div class="info-row">
+                        <i class="fas fa-calendar-alt"></i>
+                        <div>
+                            <div class="label">На рынке</div>
+                            <div class="value" id="aboutYear">—</div>
+                        </div>
+                    </div>
+                    <div class="info-row" id="aboutPhoneRow">
+                        <i class="fas fa-phone"></i>
+                        <div>
+                            <div class="label">Телефон</div>
+                            <div class="value" id="aboutPhone">—</div>
+                        </div>
+                    </div>
+                    <div class="info-row" id="aboutUrlRow">
+                        <i class="fas fa-globe"></i>
+                        <div>
+                            <div class="label">Сайт</div>
+                            <div class="value" id="aboutUrl">—</div>
+                        </div>
+                    </div>
+                    <div class="info-row" id="aboutCityRow">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <div>
+                            <div class="label">Город</div>
+                            <div class="value" id="aboutCity">—</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="about-title">Теги магазина</div>
+                <div class="store-tags" id="storeTagsWrap">
+                    <span class="store-tag fast"><i class="fas fa-truck"></i> Быстрая доставка</span>
+                    <span class="store-tag verified"><i class="fas fa-check-circle"></i> Верифицирован</span>
+                </div>
+            </div>
+
         </div>
 
-        <!-- ============================================
-             МОДАЛЬНОЕ ОКНО РЕДАКТИРОВАНИЯ ТОВАРА
-             ============================================ -->
-        <div class="product-edit-modal" id="productEditModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);backdrop-filter:blur(12px);z-index:2000;align-items:center;justify-content:center;padding:20px;">
-            <div style="background:linear-gradient(145deg,#1a1a1a,#0d0d0d);border-radius:24px;padding:32px;width:100%;max-width:480px;border:1px solid rgba(251,191,36,0.08);box-shadow:0 40px 100px rgba(0,0,0,0.6);max-height:90vh;overflow-y:auto;">
-                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
-                    <h2 style="font-size:1.1rem;font-weight:700;color:#fff;">
-                        <i class="fas fa-pen" style="color:#fbbf24;margin-right:10px;"></i>Редактировать товар
-                    </h2>
-                    <button onclick="closeProductEditor()" style="background:rgba(239,68,68,0.1);border:none;color:#ef4444;width:34px;height:34px;border-radius:50%;cursor:pointer;font-size:1rem;transition:all 0.2s;font-family:'Inter',sans-serif;">✕</button>
-                </div>
-                
-                <input type="hidden" id="editProductId">
-                
-                <div style="margin-bottom:14px;">
-                    <label style="display:block;font-size:0.75rem;font-weight:600;color:#888;margin-bottom:4px;">Название товара *</label>
-                    <input type="text" id="editProductName" placeholder="Например: Боксёрские перчатки" style="width:100%;padding:10px 14px;background:#1a1a1a;border:1px solid rgba(251,191,36,0.15);color:#fff;border-radius:12px;font-size:0.85rem;font-family:'Inter',sans-serif;transition:all 0.3s;">
-                </div>
-                
-                <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px;">
-                    <div>
-                        <label style="display:block;font-size:0.75rem;font-weight:600;color:#888;margin-bottom:4px;">Цена (₽) *</label>
-                        <input type="number" id="editProductPrice" placeholder="0" min="0" style="width:100%;padding:10px 14px;background:#1a1a1a;border:1px solid rgba(251,191,36,0.15);color:#fff;border-radius:12px;font-size:0.85rem;font-family:'Inter',sans-serif;transition:all 0.3s;">
-                    </div>
-                    <div>
-                        <label style="display:block;font-size:0.75rem;font-weight:600;color:#888;margin-bottom:4px;">Количество</label>
-                        <input type="number" id="editProductStock" placeholder="0" min="0" style="width:100%;padding:10px 14px;background:#1a1a1a;border:1px solid rgba(251,191,36,0.15);color:#fff;border-radius:12px;font-size:0.85rem;font-family:'Inter',sans-serif;transition:all 0.3s;">
-                    </div>
-                </div>
-                
-                <div style="margin-bottom:14px;">
-                    <label style="display:block;font-size:0.75rem;font-weight:600;color:#888;margin-bottom:4px;">Категория</label>
-                    <input type="text" id="editProductCategory" placeholder="Например: Экипировка" style="width:100%;padding:10px 14px;background:#1a1a1a;border:1px solid rgba(251,191,36,0.15);color:#fff;border-radius:12px;font-size:0.85rem;font-family:'Inter',sans-serif;transition:all 0.3s;">
-                </div>
-                
-                <div style="margin-bottom:14px;">
-                    <label style="display:block;font-size:0.75rem;font-weight:600;color:#888;margin-bottom:4px;">Описание</label>
-                    <textarea id="editProductDescription" rows="3" placeholder="Описание товара..." style="width:100%;padding:10px 14px;background:#1a1a1a;border:1px solid rgba(251,191,36,0.15);color:#fff;border-radius:12px;font-size:0.85rem;font-family:'Inter',sans-serif;transition:all 0.3s;resize:vertical;min-height:60px;"></textarea>
-                </div>
-                
-                <div style="display:flex;gap:10px;margin-top:20px;">
-                    <button onclick="closeProductEditor()" style="flex:1;padding:10px 20px;border-radius:40px;font-weight:600;font-size:0.8rem;cursor:pointer;border:none;transition:all 0.3s;font-family:'Inter',sans-serif;background:rgba(255,255,255,0.05);color:#888;border:1px solid rgba(255,255,255,0.06);">Отмена</button>
-                    <button onclick="saveProductEdit()" style="flex:1;padding:10px 20px;border-radius:40px;font-weight:600;font-size:0.8rem;cursor:pointer;border:none;transition:all 0.3s;font-family:'Inter',sans-serif;background:linear-gradient(135deg,#fbbf24,#f59e0b);color:#000;">Сохранить</button>
-                </div>
-            </div>
-        </div>
     </main>
 
-    <footer class="main-footer">
-        <div class="container">
-            <div class="footer-inner">
-                <div class="footer-logo">
-                    <div class="logo">PRO<span>RANK</span></div>
-                    <p>Рейтинг спортсменов-любителей</p>
+    <!-- МОДАЛКА РЕДАКТИРОВАНИЯ ТОВАРА -->
+    <div class="modal" id="productEditModal">
+        <div class="modal-content">
+            <div class="modal-title">
+                <span><i class="fas fa-pen" style="color:var(--gold);margin-right:8px;"></i>Редактировать товар</span>
+                <button class="modal-close" onclick="closeProductEditor()">✕</button>
+            </div>
+
+            <input type="hidden" id="editProductId">
+
+            <div class="form-group">
+                <label class="form-label">Название *</label>
+                <input type="text" class="form-input" id="editProductName" placeholder="Название товара">
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">Цена (₽) *</label>
+                    <input type="number" class="form-input" id="editProductPrice" placeholder="0" min="0">
                 </div>
-                <div class="footer-social">
-                    <a href="#"><i class="fab fa-telegram"></i></a>
-                    <a href="#"><i class="fab fa-vk"></i></a>
-                    <a href="#"><i class="fab fa-youtube"></i></a>
-                    <a href="#"><i class="fab fa-instagram"></i></a>
-                </div>
-                <div class="footer-links">
-                    <a href="about.html">О проекте</a>
-                    <a href="privacy.html">Конфиденциальность</a>
-                    <a href="disclaimer.html">Дисклеймер</a>
+                <div class="form-group">
+                    <label class="form-label">Количество</label>
+                    <input type="number" class="form-input" id="editProductStock" placeholder="0" min="0">
                 </div>
             </div>
-            <div class="footer-copy">© 2026 PRORANK. Все права защищены.</div>
+
+            <div class="form-group">
+                <label class="form-label">Категория</label>
+                <input type="text" class="form-input" id="editProductCategory" placeholder="Экипировка">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Описание</label>
+                <textarea class="form-input" id="editProductDescription" placeholder="Описание товара..." rows="3"></textarea>
+            </div>
+
+            <div class="modal-actions">
+                <button class="modal-btn secondary" onclick="closeProductEditor()">Отмена</button>
+                <button class="modal-btn primary" onclick="saveProductEdit()"><i class="fas fa-save"></i> Сохранить</button>
+            </div>
         </div>
-    </footer>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <div id="errorContainer" style="position:fixed;top:15px;left:50%;transform:translateX(-50%);z-index:9999;max-width:90%;width:480px;padding:14px 20px;border-radius:16px;font-weight:600;font-size:0.9rem;box-shadow:0 10px 30px rgba(0,0,0,0.4);backdrop-filter:blur(8px);display:none;text-align:center;border:1px solid rgba(255,255,255,0.1);"></div>
 
     <div id="mobileBottomNavContainer"></div>
-
-    <div class="toast-notification" id="toastNotification"></div>
-    <div id="errorContainer"></div>
-
 
     <script type="importmap">
         {
@@ -1760,9 +1245,10 @@
         }
     </script>
     <script type="module" src="header.js"></script>
+
     <script type="module">
     import { initializeApp } from "firebase/app";
-    import { getFirestore, collection, getDocs, query, where, doc, getDoc, updateDoc, deleteDoc, setDoc } from "firebase/firestore";
+    import { getFirestore, collection, getDocs, query, where, doc, getDoc, updateDoc, deleteDoc } from "firebase/firestore";
     import { getAuth, onAuthStateChanged } from "firebase/auth";
 
     const firebaseConfig = {
@@ -1783,771 +1269,480 @@
     let partnerData = null;
     let products = [];
     let reviews = [];
-    let orders = [];
+    let isOwner = false;
 
-    function showNotification(message, type = 'info') {
-        const container = document.getElementById('errorContainer');
-        if (!container) return;
-        const colors = { success: '#22c55e', error: '#ef4444', warning: '#f59e0b', info: '#fbbf24' };
-        container.style.display = 'block';
-        container.style.background = colors[type] || colors.info;
-        container.style.color = '#000';
-        container.textContent = message;
-        clearTimeout(container._timeout);
-        container._timeout = setTimeout(() => { container.style.display = 'none'; }, 4000);
+    function showToast(msg) {
+        const t = document.getElementById('toast');
+        if (!t) return;
+        t.textContent = msg;
+        t.classList.add('show');
+        clearTimeout(t._timeout);
+        t._timeout = setTimeout(() => t.classList.remove('show'), 3000);
     }
 
-    function showToast(message) {
-        const toast = document.getElementById('toastNotification');
-        if (!toast) return;
-        toast.textContent = message;
-        toast.style.display = 'block';
-        clearTimeout(toast._timeout);
-        toast._timeout = setTimeout(() => { toast.style.display = 'none'; }, 3000);
+    function showNotification(msg, type = 'info') {
+        const c = document.getElementById('errorContainer');
+        if (!c) return;
+        const colors = { success: '#22c55e', error: '#ef4444', warning: '#f59e0b', info: '#fbbf24' };
+        c.style.display = 'block';
+        c.style.background = colors[type] || colors.info;
+        c.style.color = (type === 'success' || type === 'warning') ? '#000' : '#fff';
+        c.textContent = msg;
+        clearTimeout(c._timeout);
+        c._timeout = setTimeout(() => { c.style.display = 'none'; }, 4000);
     }
 
     function escapeHtml(str) {
         if (!str) return '';
-        return String(str).replace(/[&<>]/g, m => m === '&' ? '&amp;' : m === '<' ? '&lt;' : '&gt;');
+        return String(str).replace(/[&<>"']/g, m => ({
+            '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+        }[m]));
     }
 
-    // ============================================================
-    // ЗАГРУЗКА ДАННЫХ
-    // ============================================================
+    function safeImageUrl(url) {
+        if (!url) return '';
+        const raw = String(url).trim();
+        if (!/^(https?:\/\/|\/\/|\/|\.\/|\.\.\/)/i.test(raw)) return '';
+        return escapeHtml(raw);
+    }
+
+    function declOfNum(n, forms) {
+        n = Math.abs(n) % 100;
+        const n1 = n % 10;
+        if (n > 10 && n < 20) return forms[2];
+        if (n1 > 1 && n1 < 5) return forms[1];
+        if (n1 === 1) return forms[0];
+        return forms[2];
+    }
+
     async function loadPartnerData() {
         if (!currentUser) return;
-        
         try {
             const partnersQuery = query(collection(db, "partners"), where("email", "==", currentUser.email));
             const partnersSnap = await getDocs(partnersQuery);
-            
             if (partnersSnap.empty) {
-                document.getElementById('storeLoading').style.display = 'none';
-                document.getElementById('storeNotFound').style.display = 'block';
+                showNotFound();
                 return;
             }
-            
             partnerDocId = partnersSnap.docs[0].id;
             partnerData = { id: partnerDocId, ...partnersSnap.docs[0].data() };
-            
-            // Загружаем товары
-            const productsSnap = await getDocs(query(collection(db, "products"), where("partnerId", "==", partnerDocId)));
-            products = productsSnap.docs.map(d => ({ id: d.id, ...d.data() }));
-            
-            // Загружаем отзывы
-            const reviewsSnap = await getDocs(query(collection(db, "reviews"), where("partnerId", "==", partnerDocId)));
-            reviews = reviewsSnap.docs.map(d => ({ id: d.id, ...d.data() }));
-            
-            // Загружаем заказы
-            const ordersSnap = await getDocs(query(collection(db, "physical_orders"), where("partnerId", "==", partnerDocId)));
-            orders = ordersSnap.docs.map(d => ({ id: d.id, ...d.data() }));
-            
-            // Загружаем баланс
-            try {
-                const balanceDoc = await getDoc(doc(db, "wallet_balances", partnerDocId));
-                const walletIndicator = document.getElementById('walletIndicator');
-                const walletBalance = document.getElementById('walletBalance');
-                
-                if (balanceDoc.exists() && walletBalance) {
-                    const available = balanceDoc.data().available || 0;
-                    walletBalance.textContent = available.toLocaleString() + ' ₽';
-                    if (walletIndicator) walletIndicator.style.display = 'flex';
-                }
-            } catch (err) {
-                console.warn('Ошибка загрузки баланса:', err);
-            }
-            
+            await loadAllData();
             renderStore();
-            
-            document.getElementById('storeLoading').style.display = 'none';
-            document.getElementById('storeContent').style.display = 'block';
-            document.getElementById('storeNotFound').style.display = 'none';
-            
+            showContent();
         } catch (err) {
             console.error('Ошибка загрузки:', err);
-            document.getElementById('storeLoading').style.display = 'none';
-            document.getElementById('storeNotFound').style.display = 'block';
+            showNotFound();
         }
     }
 
-    // ============================================================
-    // РАСЧЁТ АНАЛИТИКИ
-    // ============================================================
-    function calculateAnalytics(ordersList) {
-        // Исключаем отменённые заказы
-        const validOrders = ordersList.filter(o => o.status !== 'cancelled');
-        
-        const totalOrders = validOrders.length;
-        const totalRevenue = validOrders.reduce((sum, o) => sum + (o.totalPrice || o.total || 0), 0);
-        const uniqueCustomers = new Set(validOrders.map(o => o.userId || o.buyerId).filter(id => id)).size;
-        const avgCheck = totalOrders > 0 ? totalRevenue / totalOrders : 0;
-        
-        const statusCounts = { pending: 0, paid: 0, shipped: 0, completed: 0, cancelled: 0 };
-        ordersList.forEach(o => {
-            const status = o.status || 'pending';
-            if (statusCounts[status] !== undefined) statusCounts[status]++;
-        });
-        
-        return { totalOrders, totalRevenue, uniqueCustomers, avgCheck, statusCounts };
-    }
-
-    // ===== ЗАГРУЗКА МАГАЗИНА ПО ID (ДЛЯ ПОКУПАТЕЛЯ) =====
     async function loadStoreById(storeId) {
-        const loadingEl = document.getElementById('storeLoading');
-        const contentEl = document.getElementById('storeContent');
-        const notFoundEl = document.getElementById('storeNotFound');
-        
-        if (!loadingEl || !contentEl || !notFoundEl) return;
-        
         try {
             const partnerRef = doc(db, "partners", storeId);
             const partnerSnap = await getDoc(partnerRef);
-            
             if (!partnerSnap.exists()) {
-                loadingEl.style.display = 'none';
-                notFoundEl.style.display = 'block';
+                showNotFound();
                 return;
             }
-            
-            partnerData = { id: storeId, ...partnerSnap.data() };
             partnerDocId = storeId;
-            
-            // Загружаем товары
-            const productsSnap = await getDocs(query(collection(db, "products"), where("partnerId", "==", storeId)));
-            products = productsSnap.docs.map(d => ({ id: d.id, ...d.data() }));
-            
-            // Загружаем отзывы
-            const reviewsSnap = await getDocs(query(collection(db, "reviews"), where("partnerId", "==", storeId)));
-            reviews = reviewsSnap.docs.map(d => ({ id: d.id, ...d.data() }));
-            
-            // Загружаем заказы (только для статистики)
-           const ordersSnap = await getDocs(query(collection(db, "physical_orders"), where("partnerId", "==", storeId)));
-            orders = ordersSnap.docs.map(d => ({ id: d.id, ...d.data() }));
-            
+            partnerData = { id: storeId, ...partnerSnap.data() };
+            await loadAllData();
             renderStore();
-            
-            loadingEl.style.display = 'none';
-            contentEl.style.display = 'block';
-            notFoundEl.style.display = 'none';
-            
+            showContent();
         } catch (err) {
             console.error('Ошибка загрузки магазина:', err);
-            loadingEl.style.display = 'none';
-            notFoundEl.style.display = 'block';
+            showNotFound();
         }
     }
 
-    function calculateChange(current, previous) {
-        if (previous === 0) return { percent: 0, direction: 'flat' };
-        const abs = current - previous;
-        const percent = (abs / previous) * 100;
-        const direction = abs > 0 ? 'up' : (abs < 0 ? 'down' : 'flat');
-        return { percent, direction };
-    }
+    async function loadAllData() {
+        const [productsSnap, reviewsSnap] = await Promise.all([
+            getDocs(query(collection(db, "products"), where("partnerId", "==", partnerDocId))),
+            getDocs(query(collection(db, "reviews"), where("partnerId", "==", partnerDocId)))
+        ]);
+        products = productsSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+        reviews = reviewsSnap.docs.map(d => ({ id: d.id, ...d.data() }));
 
-    function updateDashboardAnalytics(ordersList) {
-        const stats = calculateAnalytics(ordersList);
-        
-        // Обновляем статистику
-        const ordersEl = document.getElementById('analyticsOrders');
-        const revenueEl = document.getElementById('analyticsRevenue');
-        const customersEl = document.getElementById('analyticsCustomers');
-        const checkEl = document.getElementById('analyticsCheck');
-        
-        if (ordersEl) ordersEl.textContent = stats.totalOrders;
-        if (revenueEl) revenueEl.textContent = stats.totalRevenue.toLocaleString() + ' ₽';
-        if (customersEl) customersEl.textContent = stats.uniqueCustomers;
-        if (checkEl) checkEl.textContent = stats.avgCheck.toLocaleString() + ' ₽';
-        
-        // Обновляем статистику в карточке магазина
-        document.getElementById('statProducts').textContent = products.length;
-        document.getElementById('statReviews').textContent = reviews.length;
-        
-        // Рассчитываем изменения (сравниваем с прошлым месяцем)
-        const now = new Date();
-        const monthAgo = new Date(now);
-        monthAgo.setMonth(monthAgo.getMonth() - 1);
-        
-        const currentMonthOrders = ordersList.filter(o => {
-            if (!o.createdAt) return false;
-            const date = o.createdAt.toDate ? o.createdAt.toDate() : new Date(o.createdAt.seconds * 1000);
-            return date >= monthAgo;
-        });
-        
-        const prevMonthOrders = ordersList.filter(o => {
-            if (!o.createdAt) return false;
-            const date = o.createdAt.toDate ? o.createdAt.toDate() : new Date(o.createdAt.seconds * 1000);
-            return date < monthAgo && date >= new Date(now.getFullYear(), now.getMonth() - 2, now.getDate());
-        });
-        
-        const currentStats = calculateAnalytics(currentMonthOrders);
-        const prevStats = calculateAnalytics(prevMonthOrders);
-        
-        const changes = {
-            orders: calculateChange(currentStats.totalOrders, prevStats.totalOrders),
-            revenue: calculateChange(currentStats.totalRevenue, prevStats.totalRevenue),
-            customers: calculateChange(currentStats.uniqueCustomers, prevStats.uniqueCustomers),
-            check: calculateChange(currentStats.avgCheck, prevStats.avgCheck)
-        };
-        
-        // Обновляем изменения
-        const ordersChange = document.getElementById('analyticsOrdersChange');
-        const revenueChange = document.getElementById('analyticsRevenueChange');
-        const customersChange = document.getElementById('analyticsCustomersChange');
-        const checkChange = document.getElementById('analyticsCheckChange');
-        
-        if (ordersChange) {
-            ordersChange.className = `stat-change ${changes.orders.direction}`;
-            ordersChange.textContent = changes.orders.percent.toFixed(1) + '%';
-        }
-        if (revenueChange) {
-            revenueChange.className = `stat-change ${changes.revenue.direction}`;
-            revenueChange.textContent = changes.revenue.percent.toFixed(1) + '%';
-        }
-        if (customersChange) {
-            customersChange.className = `stat-change ${changes.customers.direction}`;
-            customersChange.textContent = changes.customers.percent.toFixed(1) + '%';
-        }
-        if (checkChange) {
-            checkChange.className = `stat-change ${changes.check.direction}`;
-            checkChange.textContent = changes.check.percent.toFixed(1) + '%';
+        if (currentUser && currentUser.uid === partnerDocId) {
+            try {
+                const balDoc = await getDoc(doc(db, "wallet_balances", partnerDocId));
+                if (balDoc.exists()) {
+                    const avail = balDoc.data().available || 0;
+                    // walletBalance отрисовывается в header.js, здесь ничего не делаем
+                }
+            } catch (e) { /* silent */ }
         }
     }
 
-    // ============================================================
-    // ОТРИСОВКА
-    // ============================================================
+    function showContent() {
+        document.getElementById('storeLoading').style.display = 'none';
+        document.getElementById('storeNotFound').style.display = 'none';
+        document.getElementById('storeContent').style.display = 'block';
+    }
+
+    function showNotFound() {
+        document.getElementById('storeLoading').style.display = 'none';
+        document.getElementById('storeContent').style.display = 'none';
+        document.getElementById('storeNotFound').style.display = 'block';
+    }
+
     function renderStore() {
         if (!partnerData) return;
-        
-        const isOwner = currentUser && partnerDocId && currentUser.uid === partnerDocId;
-        
-        // ===== СМЕНА АВАТАРКИ (только владелец) =====
-        const avatarInput = document.getElementById('avatarInput');
-        if (avatarInput) {
-            avatarInput.style.display = isOwner ? 'none' : 'none'; // скрыт всегда, вызывается по клику
-        }
-        const avatarEl = document.getElementById('storeAvatar');
-        if (avatarEl) {
-            if (isOwner) {
-                avatarEl.classList.add('editable');
-                avatarEl.style.cursor = 'pointer';
-                avatarEl.onclick = () => document.getElementById('avatarInput')?.click();
-            } else {
-                avatarEl.classList.remove('editable');
-                avatarEl.style.cursor = 'default';
-                avatarEl.onclick = null;  // ← Запрещаем клик
-            }
+        isOwner = currentUser && currentUser.uid === partnerDocId;
+
+        document.getElementById('storeNameDisplay').textContent = partnerData.name || 'Магазин';
+
+        // Аватар
+        const wrap = document.getElementById('storeAvatarWrap');
+        if (partnerData.avatar) {
+            wrap.innerHTML = `<img src="${safeImageUrl(partnerData.avatar)}" class="ig-avatar-img" onerror="this.parentElement.innerHTML='<span class=\\'ig-avatar-letter\\'>${escapeHtml((partnerData.name || 'M')[0].toUpperCase())}</span>';">`;
+        } else {
+            wrap.innerHTML = `<span class="ig-avatar-letter">${escapeHtml((partnerData.name || 'M')[0].toUpperCase())}</span>`;
         }
 
-        // Кнопка "Все отзывы" — только для владельца
-        const allReviewsBtn = document.querySelector('.btn-all-reviews');
-        if (allReviewsBtn) {
-            allReviewsBtn.style.display = isOwner ? 'inline-flex' : 'none';
-        }
-    // ===== КНОПКА "ВСЕ ОТЗЫВЫ" В ЗАГОЛОВКЕ =====
-        const allReviewsHeaderBtn = document.getElementById('allReviewsHeaderBtn');
-        if (allReviewsHeaderBtn) {
-            allReviewsHeaderBtn.style.display = isOwner ? 'inline-flex' : 'none';
-            // Обновляем счётчик
-            allReviewsHeaderBtn.innerHTML = `<i class="fas fa-arrow-right"></i> Все отзывы (${reviews.length})`;
+        // Онлайн — показываем только если это НЕ свой профиль
+        const onlineDot = document.getElementById('storeOnlineDot');
+        if (onlineDot) {
+            onlineDot.classList.toggle('visible', !isOwner);
         }
 
-        // Шапка
-        const nameDisplay = document.getElementById('storeNameDisplay');
-        const descDisplay = document.getElementById('storeDescDisplay');
-        const phoneDisplay = document.getElementById('storePhone');
-        const urlDisplay = document.getElementById('storeUrl');
-        const yearDisplay = document.getElementById('storeYear');
-        
-        if (nameDisplay) nameDisplay.innerHTML = `${escapeHtml(partnerData.name || 'Название магазина')} <i class="fas fa-store"></i>`;
-        if (descDisplay) descDisplay.textContent = partnerData.description || 'Добро пожаловать в мой магазин!';
-        if (phoneDisplay) phoneDisplay.textContent = partnerData.phone || '+7 999 123-45-67';
-        if (urlDisplay) {
-            urlDisplay.textContent = partnerData.url || 'prorank.ru/shop';
-            urlDisplay.href = partnerData.url ? `https://${partnerData.url}` : '#';
-        }
-        if (yearDisplay) yearDisplay.textContent = partnerData.createdAt ? new Date(partnerData.createdAt.seconds * 1000).getFullYear() : '2024';
-        
-        // Статус
-        const statusBadge = document.getElementById('storeStatusBadge');
-        if (statusBadge) {
-            const isOnline = partnerData.isOnline !== false;
-            statusBadge.className = `store-badge ${isOnline ? 'online' : 'offline'}`;
-            statusBadge.innerHTML = `<i class="fas fa-circle"></i> ${isOnline ? 'Онлайн' : 'Офлайн'}`;
-        }
-        
-        // Статистика
-        const avgRating = reviews.length > 0 ? reviews.reduce((sum, r) => sum + (r.rating || 5), 0) / reviews.length : 0;
-        document.getElementById('statProducts').textContent = products.length;
-        document.getElementById('statRating').textContent = avgRating.toFixed(1);
-        document.getElementById('statReviews').textContent = reviews.length;
-        document.getElementById('statViews').textContent = partnerData.views || 0;
-        
-        // Бейджи вкладок
-        document.getElementById('productsBadge').textContent = products.length;
-        document.getElementById('reviewsBadge').textContent = reviews.length;
-        document.getElementById('productsCount').textContent = `(${products.length})`;
-        document.getElementById('reviewsCount').textContent = `(${reviews.length})`;
-        
-        // Управление видимостью
-        const editToggleBtn = document.getElementById('editToggleBtn');
-        if (editToggleBtn) editToggleBtn.style.display = isOwner ? 'inline-flex' : 'none';
-        
-        const addProductBtn = document.getElementById('addProductBtn');
-        if (addProductBtn) addProductBtn.style.display = isOwner ? 'inline-flex' : 'none';
-        
-        const analyticsTab = document.querySelector('.tab-btn[data-tab="analytics"]');
-        const settingsTab = document.querySelector('.tab-btn[data-tab="settings"]');
-        if (analyticsTab) analyticsTab.style.display = isOwner ? 'flex' : 'none';
-        if (settingsTab) settingsTab.style.display = isOwner ? 'flex' : 'none';
-        
-        // Кнопка "Написать" (чат) — только для покупателей
-        let chatBtn = document.getElementById('chatBtn');
-        if (!chatBtn) {
-            const actions = document.getElementById('storeActions');
-            if (actions) {
-                const btn = document.createElement('button');
-                btn.id = 'chatBtn';
-                btn.className = 'btn btn-chat';
-                btn.innerHTML = '<i class="fas fa-comment"></i> Написать';
-                btn.addEventListener('click', openChat);
-                actions.prepend(btn);
-                chatBtn = btn;
-            }
-        }
-        if (chatBtn) chatBtn.style.display = isOwner ? 'none' : 'inline-flex';
-        
-        if (chatBtn && !isOwner) {
-            // Проверяем, есть ли уже чат
-            checkExistingChat().then(existingChatId => {
-                if (existingChatId) {
-                    chatBtn.innerHTML = '<i class="fas fa-comment"></i> Открыть чат';
-                } else {
-                    chatBtn.innerHTML = '<i class="fas fa-comment"></i> Написать';
-                }
-            });
+        // Аватар редактируется только владельцем
+        const avatarBtn = document.getElementById('storeAvatarBtn');
+        if (isOwner) {
+            avatarBtn.classList.add('editable');
+            avatarBtn.onclick = () => document.getElementById('avatarInput').click();
+        } else {
+            avatarBtn.classList.remove('editable');
+            avatarBtn.onclick = null;
         }
 
-        // Кнопка "Подписаться" убрана
-        const subscribeBtn = document.getElementById('subscribeBtn');
-        if (subscribeBtn) subscribeBtn.remove();
-        // Обновляем аналитику
-        updateDashboardAnalytics(orders);
-        
-        // Товары
-        renderProducts(isOwner);
+        // Год
+        const year = partnerData.createdAt
+            ? new Date(partnerData.createdAt.seconds * 1000).getFullYear()
+            : new Date().getFullYear();
+        document.getElementById('storeYear').textContent = year;
+        document.getElementById('aboutYear').textContent = `С ${year} года`;
+
+        // Город
+        if (partnerData.city) {
+            document.getElementById('storeCity').textContent = partnerData.city;
+            document.getElementById('storeCityChip').style.display = 'inline-flex';
+            document.getElementById('aboutCity').textContent = partnerData.city;
+        } else {
+            document.getElementById('storeCityChip').style.display = 'none';
+            document.getElementById('aboutCityRow').style.display = 'none';
+        }
+
+        // Описание
+        document.getElementById('storeDescDisplay').textContent = partnerData.description || 'Здесь пока пусто...';
+
+        // Телефон
+        if (partnerData.phone) {
+            document.getElementById('aboutPhone').textContent = partnerData.phone;
+        } else {
+            document.getElementById('aboutPhoneRow').style.display = 'none';
+        }
+
+        // Сайт
+        if (partnerData.url) {
+            document.getElementById('aboutUrl').textContent = partnerData.url;
+        } else {
+            document.getElementById('aboutUrlRow').style.display = 'none';
+        }
+
+        // Метрики
+        const avgRating = reviews.length > 0
+            ? reviews.reduce((s, r) => s + (Number(r.rating) || 5), 0) / reviews.length
+            : 0;
+
+        document.getElementById('statReviewsTop').textContent = reviews.length;
+        document.getElementById('statRatingTop').textContent = avgRating.toFixed(1);
+        document.getElementById('statProductsTop').textContent = products.length;
+        document.getElementById('productsCount').textContent = products.length + ' ' + declOfNum(products.length, ['товар', 'товара', 'товаров']);
+        document.getElementById('reviewsCount').textContent = reviews.length + ' ' + declOfNum(reviews.length, ['отзыв', 'отзыва', 'отзывов']);
+
+        // Владелец
+        document.getElementById('addProductBtn').style.display = isOwner ? 'inline-flex' : 'none';
+        document.getElementById('editToggleBtn').style.display = isOwner ? 'inline-flex' : 'none';
+
+        renderProducts();
         renderReviews();
     }
 
-    // ============================================================
-    // ТОВАРЫ
-    // ============================================================
-    function renderProducts(isOwner) {
+    function renderProducts() {
         const grid = document.getElementById('productsGrid');
         if (!grid) return;
-        
+
         if (products.length === 0) {
             grid.innerHTML = `
-                <div class="empty-state" style="grid-column:1/-1;text-align:center;padding:40px 20px;color:#666;">
-                    <i class="fas fa-box-open" style="font-size:3rem;color:#1a1a1a;margin-bottom:12px;display:block;"></i>
-                    <h3 style="color:#ccc;">Нет товаров</h3>
-                    <p>${isOwner ? 'Добавьте первый товар в магазин' : 'В этом магазине пока нет товаров'}</p>
-                    ${isOwner ? `<button class="btn btn-sm btn-add" onclick="window.location.href='partner-products.html'" style="margin-top:12px;"><i class="fas fa-plus"></i> Добавить товар</button>` : ''}
-                </div>
-            `;
+                <div class="empty" style="grid-column:1/-1;">
+                    <i class="fas fa-box-open"></i>
+                    ${isOwner ? 'У вас пока нет товаров. Добавьте первый!' : 'В магазине пока нет товаров'}
+                </div>`;
             return;
         }
-        
-        let html = '';
-        products.forEach(product => {
-            const stockClass = product.stock > 10 ? 'in-stock' : (product.stock > 0 ? 'low-stock' : 'out-of-stock');
-            const stockText = product.stock > 0 ? `${product.stock} шт` : 'Нет';
-            
-            const imageUrl = product.image || 'https://placehold.co/300x200/1a1a1a/fbbf24?text=No+Image';
-            const imageHtml = `
-                <img src="${imageUrl}" class="product-image" loading="lazy" 
-                    onerror="this.style.display='none';this.parentElement.innerHTML='<i class=\\'fas fa-image\\' style=\\'font-size:2rem;color:#444;\\'></i>'">
-            `;
-            
-            let actionsHtml = '';
-            if (isOwner) {
-                actionsHtml = `
-                    <div class="product-actions">
-                        <button class="btn btn-edit-product" onclick="openProductEditor('${product.id}')"><i class="fas fa-pen"></i> Ред.</button>
-                        <button class="btn btn-delete-product" onclick="deleteProduct('${product.id}')"><i class="fas fa-trash"></i></button>
-                    </div>
-                `;
-            } else {
-                actionsHtml = `
-                    <div class="product-actions">
-                        <button class="btn btn-buy-product" onclick="buyProduct('${product.id}')"><i class="fas fa-bolt"></i> Купить</button>
-                        <button class="btn btn-cart-product" onclick="addToCart('${product.id}')"><i class="fas fa-cart-plus"></i> В корзину</button>
-                    </div>
-                `;
-            }
-            
-            html += `
+
+        grid.innerHTML = products.map(p => {
+            const stock = Number(p.stock) || 0;
+            const stockClass = stock > 10 ? '' : (stock > 0 ? 'low' : 'out');
+            const stockText = stock > 0 ? `${stock} шт` : 'Нет';
+
+            const imgUrl = safeImageUrl(p.image);
+            const imgHtml = imgUrl
+                ? `<img src="${imgUrl}" loading="lazy" onerror="this.style.display='none';this.parentElement.innerHTML='<i class=\\'fas fa-image\\'></i>';">`
+                : `<i class="fas fa-image"></i>`;
+
+            // Достойная плашка "Нет в наличии"
+            const outBadge = stock === 0
+                ? `<span class="badge out-of-stock"><i class="fas fa-circle"></i> Нет в наличии</span>`
+                : '';
+
+            const actionsHtml = isOwner
+                ? `<div class="product-actions">
+                       <button class="btn btn-edit-product" onclick="openProductEditor('${p.id}')"><i class="fas fa-pen"></i> Ред.</button>
+                       <button class="btn btn-delete-product" onclick="deleteProduct('${p.id}')"><i class="fas fa-trash"></i></button>
+                   </div>`
+                : `<div class="product-actions">
+                       <button class="btn btn-buy-product" onclick="buyProduct('${p.id}')"><i class="fas fa-bolt"></i> Купить</button>
+                       <button class="btn btn-cart-product" onclick="addToCart('${p.id}')"><i class="fas fa-cart-plus"></i></button>
+                   </div>`;
+
+            return `
                 <div class="product-card">
-                    ${imageHtml}
-                    <div class="product-name">${escapeHtml(product.name)}</div>
-                    <div class="product-price">${(product.price || 0).toLocaleString()} ₽</div>
-                    <div class="product-stock"><span class="${stockClass}">${stockText}</span></div>
-                    ${actionsHtml}
-                </div>
-            `;
-        });
-        grid.innerHTML = html;
+                    <div class="product-image">
+                        ${outBadge}
+                        ${imgHtml}
+                    </div>
+                    <div class="product-body">
+                        <div class="product-name">${escapeHtml(p.name || 'Без названия')}</div>
+                        <div class="product-price-row">
+                            <span class="product-price">${(Number(p.price) || 0).toLocaleString()} ₽</span>
+                            <span class="product-stock ${stockClass}"><span class="dot"></span> ${stockText}</span>
+                        </div>
+                        ${actionsHtml}
+                    </div>
+                </div>`;
+        }).join('');
     }
 
-    // ============================================================
-    // ОТЗЫВЫ
-    // ============================================================
     function renderReviews() {
-    const list = document.getElementById('reviewsList');
-    if (!list) return;
-    
-    if (reviews.length === 0) {
-        list.innerHTML = `
-            <div class="empty-state">
-                <i class="fas fa-comment-slash"></i>
-                <h3>Нет отзывов</h3>
-                <p>Покупатели ещё не оставляли отзывы</p>
-            </div>
-        `;
-        return;
-    }
-    
-    const displayReviews = reviews.slice(0, 3);
-    
-    let html = '';
-    displayReviews.forEach(review => {
-        const stars = '★'.repeat(Math.round(review.rating || 5)) + '☆'.repeat(5 - Math.round(review.rating || 5));
-        const date = review.createdAt ? new Date(review.createdAt.seconds * 1000).toLocaleDateString('ru') : '';
-        html += `
-            <div class="review-card">
-                <div class="review-header">
-                    <div class="review-avatar">${(review.userName || 'П')[0].toUpperCase()}</div>
-                    <span class="review-author">${escapeHtml(review.userName || 'Покупатель')}</span>
-                    <span class="review-stars">${stars}</span>
-                    <span class="review-date">${date}</span>
-                </div>
-                <div class="review-text">${escapeHtml(review.text || '')}</div>
-            </div>
-        `;
-    });
-    
-    list.innerHTML = html;
-}
+        const list = document.getElementById('reviewsList');
+        const hero = document.getElementById('ratingHero');
 
-    // ============================================================
-    // РЕДАКТИРОВАНИЕ ТОВАРА
-    // ============================================================
-    let editingProductId = null;
+        if (reviews.length === 0) {
+            if (hero) hero.style.display = 'none';
+            if (list) list.innerHTML = `
+                <div class="empty">
+                    <i class="fas fa-comment-slash"></i>
+                    Пока нет отзывов
+                </div>`;
+            return;
+        }
+
+        const total = reviews.length;
+        const sum = reviews.reduce((s, r) => s + (Number(r.rating) || 5), 0);
+        const avg = sum / total;
+
+        const stars = [5, 4, 3, 2, 1].map(star => {
+            const count = reviews.filter(r => Math.round(Number(r.rating) || 5) === star).length;
+            return { star, count, percent: total > 0 ? Math.round((count / total) * 100) : 0 };
+        });
+
+        if (hero) {
+            hero.style.display = 'grid';
+            document.getElementById('ratingValue').textContent = avg.toFixed(1);
+            document.getElementById('ratingCount').textContent = total + ' ' + declOfNum(total, ['отзыв', 'отзыва', 'отзывов']);
+
+            const fullStars = Math.round(avg);
+            document.getElementById('ratingStars').innerHTML =
+                '★'.repeat(fullStars) + '<span class="empty">' + '★'.repeat(5 - fullStars) + '</span>';
+
+            document.getElementById('ratingBars').innerHTML = stars.map(s => `
+                <div class="rating-row">
+                    <span class="num"><i class="fas fa-star"></i>${s.star}</span>
+                    <div class="rating-bar"><div class="rating-fill" data-width="${s.percent}%"></div></div>
+                    <span>${s.percent}%</span>
+                </div>
+            `).join('');
+
+            setTimeout(() => {
+                document.querySelectorAll('#ratingBars .rating-fill').forEach(el => {
+                    el.style.width = el.dataset.width;
+                });
+            }, 100);
+        }
+
+        const sorted = [...reviews].sort((a, b) => {
+            const ta = a.createdAt?.seconds || 0;
+            const tb = b.createdAt?.seconds || 0;
+            return tb - ta;
+        });
+
+        if (list) {
+            list.innerHTML = sorted.map(r => {
+                const name = r.userName || 'Покупатель';
+                const letter = name.trim()[0]?.toUpperCase() || '?';
+                const rating = Math.round(Number(r.rating) || 5);
+                const stars = '★'.repeat(rating) + '<span style="color:rgba(251,191,36,0.2);">' + '★'.repeat(5 - rating) + '</span>';
+                const date = r.createdAt?.seconds
+                    ? new Date(r.createdAt.seconds * 1000).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' })
+                    : '';
+                return `
+                    <div class="review-card">
+                        <div class="review-head">
+                            <div class="review-avatar">${escapeHtml(letter)}</div>
+                            <div class="review-name">${escapeHtml(name)}</div>
+                            <div class="review-date">${date}</div>
+                        </div>
+                        <div class="review-stars">${stars}</div>
+                        <div class="review-text">${escapeHtml(r.text || '')}</div>
+                    </div>`;
+            }).join('');
+        }
+    }
 
     window.openProductEditor = function(productId) {
-        const product = products.find(p => p.id === productId);
-        if (!product) {
-            showToast('❌ Товар не найден');
-            return;
-        }
-        
-        editingProductId = productId;
-        
-        document.getElementById('editProductId').value = productId;
-        document.getElementById('editProductName').value = product.name || '';
-        document.getElementById('editProductPrice').value = product.price || '';
-        document.getElementById('editProductDescription').value = product.description || '';
-        document.getElementById('editProductCategory').value = product.category || '';
-        document.getElementById('editProductStock').value = product.stock || 0;
-        
-        document.getElementById('productEditModal').style.display = 'flex';
+        const p = products.find(x => x.id === productId);
+        if (!p) return;
+        document.getElementById('editProductId').value = p.id;
+        document.getElementById('editProductName').value = p.name || '';
+        document.getElementById('editProductPrice').value = p.price || '';
+        document.getElementById('editProductStock').value = p.stock || 0;
+        document.getElementById('editProductCategory').value = p.category || '';
+        document.getElementById('editProductDescription').value = p.description || '';
+        document.getElementById('productEditModal').classList.add('show');
     };
 
     window.closeProductEditor = function() {
-        document.getElementById('productEditModal').style.display = 'none';
-        editingProductId = null;
+        document.getElementById('productEditModal').classList.remove('show');
     };
 
     window.saveProductEdit = async function() {
-        const productId = document.getElementById('editProductId').value;
-        if (!productId) {
-            showToast('❌ Ошибка: ID товара не найден');
-            return;
-        }
-        
+        const id = document.getElementById('editProductId').value;
         const name = document.getElementById('editProductName').value.trim();
         const price = parseFloat(document.getElementById('editProductPrice').value);
-        const description = document.getElementById('editProductDescription').value.trim();
-        const category = document.getElementById('editProductCategory').value.trim();
         const stock = parseInt(document.getElementById('editProductStock').value) || 0;
-        
-        if (!name) {
-            showToast('⚠️ Введите название товара');
-            return;
-        }
-        
-        if (isNaN(price) || price < 0) {
-            showToast('⚠️ Введите корректную цену');
-            return;
-        }
-        
+        const category = document.getElementById('editProductCategory').value.trim();
+        const description = document.getElementById('editProductDescription').value.trim();
+
+        if (!name) { showToast('⚠️ Введите название'); return; }
+        if (isNaN(price) || price < 0) { showToast('⚠️ Введите цену'); return; }
+
         try {
-            await updateDoc(doc(db, "products", productId), {
-                name: name,
-                price: price,
-                description: description || '',
-                category: category || '',
-                stock: stock,
+            await updateDoc(doc(db, "products", id), {
+                name, price, stock, category, description,
                 updatedAt: new Date()
             });
-            
-            showToast('✅ Товар обновлён!');
-            window.closeProductEditor();
-            await loadPartnerData();
-            
+            showToast('✅ Товар обновлён');
+            closeProductEditor();
+            await loadAllData();
+            renderStore();
         } catch (err) {
-            console.error('Ошибка сохранения:', err);
-            showToast('❌ Ошибка сохранения товара');
+            console.error(err);
+            showToast('❌ Ошибка сохранения');
         }
     };
 
-    window.deleteProduct = async function(productId) {
-        if (!confirm('🗑️ Удалить этот товар навсегда?')) return;
-        
+    window.deleteProduct = async function(id) {
+        if (!confirm('Удалить товар навсегда?')) return;
         try {
-            await deleteDoc(doc(db, "products", productId));
+            await deleteDoc(doc(db, "products", id));
             showToast('🗑️ Товар удалён');
-            await loadPartnerData();
+            await loadAllData();
+            renderStore();
         } catch (err) {
-            console.error('Ошибка удаления:', err);
-            showToast('❌ Ошибка удаления товара');
+            console.error(err);
+            showToast('❌ Ошибка удаления');
         }
     };
 
-    // ============================================================
-    // ФУНКЦИИ ДЛЯ ПОКУПАТЕЛЕЙ
-    // ============================================================
-    window.buyProduct = function(productId) {
+    window.buyProduct = function(id) {
         if (!currentUser) {
             showNotification('Войдите в аккаунт', 'warning');
             setTimeout(() => window.location.href = 'login.html', 1000);
             return;
         }
-        
-        const product = products.find(p => p.id === productId);
-        if (!product) {
-            showNotification('❌ Товар не найден', 'error');
+        const p = products.find(x => x.id === id);
+        if (!p) return;
+        if (p.partnerId === currentUser.uid) {
+            showNotification('❌ Нельзя купить свой товар', 'warning');
             return;
         }
-        
-        if (product.partnerId === currentUser.uid) {
-            showNotification('❌ Вы не можете купить свой товар', 'warning');
-            return;
-        }
-        
-        // Создаём корзину с одним товаром
-        const productForCart = {
-            id: product.id,
-            name: product.name,
-            price: product.price,
-            image: product.image,
-            desc: product.description || '',
-            partnerId: product.partnerId || null,
+        localStorage.setItem('cart', JSON.stringify([{
+            id: p.id, name: p.name, price: p.price, image: p.image,
+            desc: p.description || '', partnerId: p.partnerId || null,
             partnerName: partnerData?.name || null
-        };
-        
-        localStorage.setItem('cart', JSON.stringify([productForCart]));
-        
-        // Переходим на страницу оформления (cart.html)
+        }]));
         window.location.href = 'cart.html';
     };
 
-    window.addToCart = function(productId) {
+    window.addToCart = function(id) {
         if (!currentUser) {
             showNotification('Войдите в аккаунт', 'warning');
             setTimeout(() => window.location.href = 'login.html', 1000);
             return;
         }
-        
-        const product = products.find(p => p.id === productId);
-        if (!product) {
-            showNotification('❌ Товар не найден', 'error');
+        const p = products.find(x => x.id === id);
+        if (!p) return;
+        if (p.partnerId === currentUser.uid) {
+            showNotification('❌ Нельзя купить свой товар', 'warning');
             return;
         }
-        
-        // Проверка: не свой ли товар
-        if (product.partnerId === currentUser.uid) {
-            showNotification('❌ Вы не можете купить свой товар', 'warning');
-            return;
-        }
-        
-        const productForCart = {
-            id: product.id,
-            name: product.name,
-            price: product.price,
-            image: product.image,
-            desc: product.description || '',
-            partnerId: product.partnerId || null,
-            partnerName: partnerData?.name || null
-        };
-        
         let cart = JSON.parse(localStorage.getItem('cart') || '[]');
-        cart.push(productForCart);
-        localStorage.setItem('cart', JSON.stringify(cart));
-        
-        showNotification(`✅ ${product.name} добавлен в корзину`, 'success');
-        
-        // Обновляем счётчик корзины если есть
-        updateCartCount();
-    };
-
-    function updateCartCount() {
-        const cart = JSON.parse(localStorage.getItem('cart') || '[]');
-        const cartCount = document.getElementById('cartCount');
-        if (cartCount) cartCount.innerText = cart.length;
-        const cartIcon = document.getElementById('cartIcon');
-        if (cartIcon) cartIcon.style.display = 'flex';
-    }
-
-    async function checkExistingChat() {
-        if (!currentUser || !partnerDocId) return null;
-        
-        try {
-            // Ищем чат по участникам
-            const chatsQuery = query(
-                collection(db, "chats"),
-                where("participants", "array-contains", currentUser.uid)
-            );
-            
-            const snapshot = await getDocs(chatsQuery);
-            
-            for (const docSnap of snapshot.docs) {
-                const chat = docSnap.data();
-                if (chat.participants && chat.participants.includes(partnerDocId)) {
-                    return docSnap.id;
-                }
-            }
-            
-            return null;
-        } catch (err) {
-            console.error('Ошибка проверки чата:', err);
-            return null;
-        }
-    }
-
-    window.openChat = async function() {
-        if (!currentUser) {
-            showNotification('Войдите в аккаунт', 'warning');
-            setTimeout(() => window.location.href = 'login.html', 1000);
-            return;
-        }
-        
-        if (!partnerDocId) {
-            showNotification('Продавец не найден', 'error');
-            return;
-        }
-        
-        try {
-            // Сначала проверяем существующий чат
-            const existingChatId = await checkExistingChat();
-            
-            if (existingChatId) {
-                // Чат уже есть — просто переходим
-                window.location.href = `chat.html?id=${existingChatId}`;
-                return;
-            }
-            
-            // Чата нет — создаём новый
-            const chatId = `store_${partnerDocId}_${currentUser.uid}`;
-            const chatRef = doc(db, "chats", chatId);
-            const chatSnap = await getDoc(chatRef);
-            
-            if (!chatSnap.exists()) {
-                const buyerDoc = await getDoc(doc(db, "fighters", currentUser.uid));
-                const buyerName = buyerDoc.exists() ? (buyerDoc.data()?.name || 'Покупатель') : 'Покупатель';
-                
-                await setDoc(chatRef, {
-                    participants: [currentUser.uid, partnerDocId],
-                    participantNames: {
-                        [currentUser.uid]: buyerName,
-                        [partnerDocId]: partnerData?.name || 'Продавец'
-                    },
-                    createdAt: new Date(),
-                    lastMessage: 'Чат с магазином',
-                    lastMessageTime: new Date()
-                });
-            }
-            
-            window.location.href = `chat.html?id=${chatId}`;
-            
-        } catch (err) {
-            console.error('Ошибка создания чата:', err);
-            showNotification('❌ Не удалось открыть чат', 'error');
-        }
-    };
-
-    // ============================================================
-    // СОБЫТИЯ
-    // ============================================================
-    document.querySelectorAll('.tab-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-            btn.classList.add('active');
-            document.getElementById(`tab-${btn.dataset.tab}`).classList.add('active');
+        cart.push({
+            id: p.id, name: p.name, price: p.price, image: p.image,
+            desc: p.description || '', partnerId: p.partnerId || null,
+            partnerName: partnerData?.name || null
         });
-    });
+        localStorage.setItem('cart', JSON.stringify(cart));
+        showNotification(`✅ ${p.name} в корзине`, 'success');
+    };
 
     document.getElementById('editToggleBtn')?.addEventListener('click', () => {
-        const fields = document.getElementById('editFields');
+        const block = document.getElementById('editFieldsBlock');
         const btn = document.getElementById('editToggleBtn');
-        if (fields.style.display === 'block') {
-            fields.style.display = 'none';
+        if (block.style.display === 'block') {
+            block.style.display = 'none';
             btn.innerHTML = '<i class="fas fa-pen"></i> Редактировать';
         } else {
-            fields.style.display = 'block';
+            document.getElementById('editName').value = partnerData.name || '';
+            document.getElementById('editDesc').value = partnerData.description || '';
+            document.getElementById('editPhone').value = partnerData.phone || '';
+            document.getElementById('editCity').value = partnerData.city || '';
+            document.getElementById('editUrl').value = partnerData.url || '';
+            block.style.display = 'block';
             btn.innerHTML = '<i class="fas fa-times"></i> Отменить';
         }
     });
 
     document.getElementById('cancelEditBtn')?.addEventListener('click', () => {
-        const fields = document.getElementById('editFields');
-        const btn = document.getElementById('editToggleBtn');
-        fields.style.display = 'none';
-        btn.innerHTML = '<i class="fas fa-pen"></i> Редактировать';
+        document.getElementById('editFieldsBlock').style.display = 'none';
+        document.getElementById('editToggleBtn').innerHTML = '<i class="fas fa-pen"></i> Редактировать';
     });
 
     document.getElementById('saveEditBtn')?.addEventListener('click', async () => {
         const name = document.getElementById('editName').value.trim();
+        const description = document.getElementById('editDesc').value.trim();
         const phone = document.getElementById('editPhone').value.trim();
+        const city = document.getElementById('editCity').value.trim();
         const url = document.getElementById('editUrl').value.trim();
-        const desc = document.getElementById('editDesc').value.trim();
-        
-        if (!name) {
-            showNotification('Введите название магазина', 'warning');
-            return;
-        }
-        
+
+        if (!name) { showNotification('Введите название', 'warning'); return; }
+
         try {
             await updateDoc(doc(db, "partners", partnerDocId), {
-                name: name,
-                phone: phone || '',
-                url: url || '',
-                description: desc || ''
+                name, description, phone, city, url
             });
-            
             partnerData.name = name;
+            partnerData.description = description;
             partnerData.phone = phone;
+            partnerData.city = city;
             partnerData.url = url;
-            partnerData.description = desc;
-            
-            renderStore();
-            document.getElementById('editFields').style.display = 'none';
+            document.getElementById('editFieldsBlock').style.display = 'none';
             document.getElementById('editToggleBtn').innerHTML = '<i class="fas fa-pen"></i> Редактировать';
-            showToast('✅ Настройки сохранены!');
+            renderStore();
+            showToast('✅ Сохранено');
         } catch (err) {
-            console.error('Ошибка:', err);
+            console.error(err);
             showNotification('❌ Ошибка сохранения', 'error');
         }
     });
@@ -2555,15 +1750,9 @@
     document.getElementById('shareBtn')?.addEventListener('click', () => {
         const url = `${window.location.origin}/prorank-live/partner-dashboard.html?id=${partnerDocId}`;
         if (navigator.share) {
-            navigator.share({
-                title: 'Мой магазин на PRORANK',
-                text: 'Посмотрите мой магазин на PRORANK!',
-                url: url
-            }).catch(() => {});
+            navigator.share({ title: 'Мой магазин на PRORANK', url }).catch(() => {});
         } else {
-            navigator.clipboard.writeText(url).then(() => {
-                showToast('📋 Ссылка скопирована!');
-            });
+            navigator.clipboard.writeText(url).then(() => showToast('📋 Ссылка скопирована!'));
         }
     });
 
@@ -2571,54 +1760,50 @@
         window.location.href = 'partner-products.html';
     });
 
-
-
-    // ============================================================
-    // АВТОРИЗАЦИЯ
-    // ============================================================
-    onAuthStateChanged(auth, async (user) => {
-    currentUser = user;
-    
-    // ===== ПОЛУЧАЕМ ID МАГАЗИНА ИЗ URL =====
-    const params = new URLSearchParams(window.location.search);
-    const storeId = params.get('id');
-    
-    if (!storeId) {
-        // Если ID нет — значит это дашборд продавца
-        if (!user) {
-            window.location.href = 'login.html';
+    document.getElementById('avatarInput')?.addEventListener('change', async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        if (file.size > 5 * 1024 * 1024) {
+            showNotification('Файл больше 5MB', 'warning');
             return;
         }
-        
-        try {
-            const userDoc = await getDoc(doc(db, "fighters", user.uid));
-            const userData = userDoc.data();
-            
-            if (!userData?.isPartner) {
-                window.location.href = 'index.html';
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+            const wrap = document.getElementById('storeAvatarWrap');
+            wrap.innerHTML = `<img src="${ev.target.result}" class="ig-avatar-img">`;
+            showToast('✅ Аватар загружен');
+        };
+        reader.readAsDataURL(file);
+    });
+
+    document.querySelectorAll('.ig-tab').forEach(tab => {
+        tab.addEventListener('click', () => {
+            const tabId = tab.dataset.tab;
+            document.querySelectorAll('.ig-tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            tab.classList.add('active');
+            document.getElementById('tab-' + tabId)?.classList.add('active');
+        });
+    });
+
+    onAuthStateChanged(auth, async (user) => {
+        currentUser = user;
+        const params = new URLSearchParams(window.location.search);
+        const storeId = params.get('id');
+
+        if (storeId) {
+            partnerDocId = storeId;
+            await loadStoreById(storeId);
+        } else {
+            if (!user) {
+                window.location.href = 'login.html';
                 return;
             }
-        } catch (err) {
-            console.error('Ошибка проверки партнёра:', err);
+            await loadPartnerData();
         }
-        
-        await loadPartnerData();
-    } else {
-        // ===== ЕСТЬ ID МАГАЗИНА — ЗАГРУЖАЕМ ПО ID =====
-        partnerDocId = storeId;
-        await loadStoreById(storeId);
-    }
-});
+    });
 
-    const menuToggle = document.getElementById('menuToggle');
-    const navLinks = document.getElementById('navLinks');
-    if (menuToggle && navLinks) {
-        menuToggle.addEventListener('click', () => navLinks.classList.toggle('show'));
-    }
-
-    console.log('✅ partner-dashboard.html — работает!');
-    console.log('📌 Редактирование товаров — ДА');
-    console.log('📌 Аналитика синхронизирована с Firebase — ДА');
-</script>
+    console.log('✅ partner-dashboard.html — работает');
+    </script>
 </body>
 </html>
