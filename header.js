@@ -1065,3 +1065,281 @@ document.addEventListener('DOMContentLoaded', () => {
 
 window.updateFighterMoneyBalance = updateFighterMoneyBalance;
 window.updatePartnerWalletBalance = updatePartnerWalletBalance;
+
+
+// ============================================================
+// 🔥 PULL-TO-REFRESH (глобальная фишка для всех страниц)
+// ============================================================
+// Работает только если у <body> есть атрибут data-ptr="true".
+// CSS инжектится один раз, логика — touch events.
+// Не мешает скроллу: активируется только при scrollY === 0.
+// ============================================================
+
+const PullToRefresh = (() => {
+    let enabled = false;
+    let startY = 0;
+    let currentY = 0;
+    let distance = 0;
+    let pulling = false;
+    let refreshing = false;
+    const THRESHOLD = 90;
+    const MAX_DISTANCE = 140;
+    const INDICATOR_HEIGHT = 70;
+
+    let container = null;
+    let iconEl = null;
+    let textEl = null;
+
+    function injectStyles() {
+        if (document.getElementById('ptrStyles')) return;
+        const style = document.createElement('style');
+        style.id = 'ptrStyles';
+        style.textContent = `
+            #ptrIndicator {
+                position: fixed;
+                top: 0; left: 0; right: 0;
+                height: 0;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                gap: 6px;
+                overflow: hidden;
+                z-index: 999;
+                background: linear-gradient(180deg, rgba(10,10,15,0.95), rgba(10,10,15,0.85));
+                backdrop-filter: blur(12px);
+                -webkit-backdrop-filter: blur(12px);
+                border-bottom: 1px solid rgba(251,191,36,0.15);
+                opacity: 0;
+                transition: height 0.3s cubic-bezier(0.2, 0.8, 0.3, 1),
+                            opacity 0.25s ease;
+                pointer-events: none;
+                will-change: height, opacity;
+            }
+            #ptrIndicator.ptr-active {
+                transition: none;
+            }
+            #ptrIndicator.ptr-refreshing {
+                transition: height 0.3s cubic-bezier(0.2, 0.8, 0.3, 1),
+                            opacity 0.25s ease;
+            }
+            #ptrIcon {
+                color: #fbbf24;
+                font-size: 22px;
+                line-height: 1;
+                transition: color 0.2s ease, transform 0.1s linear;
+                filter: drop-shadow(0 0 8px rgba(251,191,36,0.4));
+            }
+            #ptrIndicator.ptr-ready #ptrIcon {
+                color: #ffdd88;
+                filter: drop-shadow(0 0 14px rgba(251,191,36,0.7));
+            }
+            #ptrIndicator.ptr-refreshing #ptrIcon {
+                animation: ptrSpin 0.8s linear infinite;
+            }
+            @keyframes ptrSpin {
+                from { transform: rotate(0deg); }
+                to { transform: rotate(360deg); }
+            }
+            #ptrText {
+                font-family: 'JetBrains Mono', monospace;
+                font-size: 0.6rem;
+                color: #888;
+                text-transform: uppercase;
+                letter-spacing: 2px;
+                font-weight: 700;
+                transition: color 0.2s ease;
+            }
+            #ptrIndicator.ptr-ready #ptrText,
+            #ptrIndicator.ptr-refreshing #ptrText {
+                color: #fbbf24;
+            }
+        `;
+        document.head.appendChild(style);
+    }
+
+    function createIndicator() {
+        if (container) return;
+        injectStyles();
+        container = document.createElement('div');
+        container.id = 'ptrIndicator';
+        container.innerHTML = `
+            <i class="fas fa-sync-alt" id="ptrIcon"></i>
+            <span id="ptrText">Потяни</span>
+        `;
+        document.body.appendChild(container);
+        iconEl = container.querySelector('#ptrIcon');
+        textEl = container.querySelector('#ptrText');
+    }
+
+    function setText(text) {
+        if (textEl) textEl.textContent = text;
+    }
+
+    function setIcon(cls) {
+        if (!iconEl) return;
+        iconEl.className = cls;
+    }
+
+    function updateVisuals() {
+        if (!container) return;
+
+        // Высота и прозрачность
+        const h = Math.min(distance * 0.5, INDICATOR_HEIGHT);
+        container.style.height = h + 'px';
+        container.style.opacity = Math.min(distance / 60, 1);
+
+        // Вращение иконки
+        if (iconEl && !refreshing) {
+            iconEl.style.transform = `rotate(${distance * 2.5}deg)`;
+        }
+
+        // Готовность к обновлению
+        if (distance >= THRESHOLD) {
+            container.classList.add('ptr-ready');
+            setIcon('fas fa-arrow-up');
+            setText('Отпусти');
+        } else {
+            container.classList.remove('ptr-ready');
+            setIcon('fas fa-sync-alt');
+            setText('Потяни');
+        }
+    }
+
+    function haptic(ms) {
+        try { if (navigator.vibrate) navigator.vibrate(ms); } catch (e) {}
+    }
+
+    function swoosh() {
+        try {
+            const ctx = new (window.AudioContext || window.webkitAudioContext)();
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(200, ctx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(1400, ctx.currentTime + 0.4);
+            gain.gain.setValueAtTime(0.04, ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.4);
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.start(ctx.currentTime);
+            osc.stop(ctx.currentTime + 0.42);
+        } catch (e) {}
+    }
+
+    function reset() {
+        if (!container) return;
+        container.classList.remove('ptr-active', 'ptr-ready', 'ptr-refreshing');
+        container.style.height = '0px';
+        container.style.opacity = '0';
+        if (iconEl) {
+            iconEl.style.transform = '';
+            iconEl.className = 'fas fa-sync-alt';
+        }
+        setText('Потяни');
+        distance = 0;
+        pulling = false;
+    }
+
+    function onTouchStart(e) {
+        if (refreshing) return;
+        if (window.scrollY > 0) return;
+        if (e.touches.length !== 1) return;
+
+        startY = e.touches[0].clientY;
+        currentY = startY;
+        distance = 0;
+        pulling = false;
+    }
+
+    function onTouchMove(e) {
+        if (refreshing) return;
+        if (window.scrollY > 0) {
+            if (pulling) reset();
+            return;
+        }
+        if (e.touches.length !== 1) return;
+
+        currentY = e.touches[0].clientY;
+        const rawDistance = currentY - startY;
+
+        // Только вниз
+        if (rawDistance <= 0) {
+            if (pulling) {
+                distance = 0;
+                updateVisuals();
+            }
+            return;
+        }
+
+        // Resistance после threshold
+        let d = rawDistance;
+        if (d > THRESHOLD) {
+            d = THRESHOLD + (d - THRESHOLD) * 0.5;
+        }
+        distance = Math.min(d, MAX_DISTANCE);
+
+        // Активируем индикатор
+        if (!pulling) {
+            pulling = true;
+            container.classList.add('ptr-active');
+            haptic(15);
+        }
+
+        updateVisuals();
+
+        // Блокируем нативный overscroll
+        if (e.cancelable) e.preventDefault();
+    }
+
+    function onTouchEnd() {
+        if (refreshing) return;
+        if (!pulling) return;
+
+        if (distance >= THRESHOLD) {
+            // Сработало
+            refreshing = true;
+            container.classList.remove('ptr-active');
+            container.classList.add('ptr-refreshing');
+            container.style.height = INDICATOR_HEIGHT + 'px';
+            container.style.opacity = '1';
+            setIcon('fas fa-sync-alt');
+            setText('Обновление...');
+            haptic(40);
+            swoosh();
+
+            setTimeout(() => {
+                window.location.reload();
+            }, 700);
+        } else {
+            // Snap-back
+            container.classList.remove('ptr-active');
+            reset();
+        }
+
+        pulling = false;
+    }
+
+    function init() {
+        // Проверяем, включён ли PTR на этой странице
+        const attr = document.body.getAttribute('data-ptr');
+        if (attr !== 'true') return;
+
+        enabled = true;
+        createIndicator();
+
+        document.addEventListener('touchstart', onTouchStart, { passive: true });
+        document.addEventListener('touchmove', onTouchMove, { passive: false });
+        document.addEventListener('touchend', onTouchEnd, { passive: true });
+        document.addEventListener('touchcancel', onTouchEnd, { passive: true });
+    }
+
+    return { init };
+})();
+
+// Автозапуск при DOMContentLoaded
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', PullToRefresh.init);
+} else {
+    PullToRefresh.init();
+}
