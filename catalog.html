@@ -10,7 +10,6 @@
     <meta name="theme-color" content="#fbbf24">
     <meta name="mobile-web-app-capable" content="yes">
     <meta charset="UTF-8">
-<!--🔧ФИКС: preconnect -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="dns-prefetch" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -27,7 +26,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700;14..32,800;14..32,900&display=swap" rel="stylesheet">
     <style>
-        /* ===== ВСЕ СТИЛИ ИЗ ПРЕДЫДУЩЕГО ФАЙЛА ===== */
         * { margin: 0; padding: 0; box-sizing: border-box; }
         
         body {
@@ -136,6 +134,8 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            min-width: 18px;
+            padding: 0 4px;
         }
 
         .header-icon-btn .badge-red {
@@ -176,33 +176,39 @@
             font-size: 0.9rem;
         }
 
-        /* ===== ФИЛЬТРЫ В ОДНУ СТРОКУ ===== */
-        .filters-row {
+        /* ===== ПОИСК (единственный фильтр) ===== */
+        .search-row {
             display: flex;
             gap: 8px;
             align-items: center;
-            background: rgba(15,15,15,0.3);
-            backdrop-filter: blur(8px);
-            border-radius: 12px;
-            padding: 6px 10px;
-            margin-bottom: 8px;
-            border: 1px solid rgba(251,191,36,0.04);
-            flex-wrap: wrap;
+            margin-bottom: 12px;
         }
 
         .search-group {
             flex: 1;
-            min-width: 120px;
+            position: relative;
+        }
+
+        .search-group .search-icon {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #666;
+            font-size: 0.9rem;
+            pointer-events: none;
+            transition: color 0.25s ease;
         }
 
         .search-group input {
             width: 100%;
-            padding: 8px 14px;
-            background: rgba(0,0,0,0.3);
+            padding: 12px 18px 12px 44px;
+            background: rgba(15,15,15,0.5);
+            backdrop-filter: blur(8px);
             border: 1px solid rgba(251,191,36,0.1);
             border-radius: 30px;
             color: #fff;
-            font-size: 0.8rem;
+            font-size: 0.85rem;
             transition: all 0.25s ease;
             font-family: 'Inter', sans-serif;
         }
@@ -218,240 +224,8 @@
             background: rgba(0,0,0,0.5);
         }
 
-        .filter-group {
-            min-width: 110px;
-            position: relative;
-        }
-
-        .filter-group select {
-            width: 100%;
-            padding: 8px 12px;
-            padding-right: 28px;
-            background: rgba(0,0,0,0.3);
-            border: 1px solid rgba(251,191,36,0.1);
-            border-radius: 30px;
-            color: #ccc;
-            font-size: 0.7rem;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            font-family: 'Inter', sans-serif;
-            appearance: none;
-            -webkit-appearance: none;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23666'/%3E%3C/svg%3E");
-            background-repeat: no-repeat;
-            background-position: right 10px center;
-            min-height: 34px;
-        }
-
-        .filter-group select:hover {
-            border-color: rgba(251,191,36,0.3);
-        }
-
-        .filter-group select:focus {
-            outline: none;
-            border-color: #fbbf24;
-            box-shadow: 0 0 0 3px rgba(251,191,36,0.08);
-        }
-
-        .filter-group select option {
-            background: #1a1a1a;
-            color: #fff;
-        }
-
-        .reset-filters {
-            background: rgba(255,255,255,0.05);
-            border: 1px solid rgba(251,191,36,0.15);
+        .search-group:focus-within .search-icon {
             color: #fbbf24;
-            padding: 6px 10px;
-            border-radius: 30px;
-            cursor: pointer;
-            font-size: 0.75rem;
-            transition: all 0.2s ease;
-            font-family: 'Inter', sans-serif;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            min-width: 36px;
-            min-height: 34px;
-            flex-shrink: 0;
-        }
-
-        .reset-filters:hover {
-            background: rgba(251,191,36,0.15);
-            transform: translateY(-2px);
-        }
-
-        .reset-filters:active {
-            transform: scale(0.95);
-        }
-
-        .reset-filters i {
-            font-size: 0.75rem;
-        }
-
-        /* ===== МАГАЗИНЫ (ГОРИЗОНТАЛЬНЫЙ СКРОЛЛ) ===== */
-        .stores-wrapper {
-            margin-bottom: 12px;
-            position: relative;
-        }
-
-        .stores-scroll-wrapper {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            background: rgba(15,15,15,0.3);
-            backdrop-filter: blur(8px);
-            border-radius: 12px;
-            padding: 6px 10px;
-            border: 1px solid rgba(251,191,36,0.04);
-            overflow: hidden;
-            transition: all 0.3s ease;
-        }
-
-        .stores-scroll-wrapper.collapsed .stores-label,
-        .stores-scroll-wrapper.collapsed .stores-scroll {
-            display: none;
-        }
-
-        .stores-scroll-wrapper.collapsed {
-            padding: 6px 10px;
-            max-width: 80px;
-        }
-
-        .stores-label {
-            font-size: 0.65rem;
-            color: #666;
-            white-space: nowrap;
-            font-weight: 500;
-            flex-shrink: 0;
-        }
-
-        .stores-scroll {
-            display: flex;
-            gap: 10px;
-            overflow-x: auto;
-            padding: 4px 2px 8px 2px;
-            scrollbar-width: thin;
-            scrollbar-color: #fbbf24 transparent;
-            -webkit-overflow-scrolling: touch;
-            flex: 1;
-            transition: all 0.3s ease;
-        }
-
-        .stores-scroll::-webkit-scrollbar {
-            height: 3px;
-        }
-
-        .stores-scroll::-webkit-scrollbar-track {
-            background: rgba(255,255,255,0.05);
-            border-radius: 10px;
-        }
-
-        .stores-scroll::-webkit-scrollbar-thumb {
-            background: #fbbf24;
-            border-radius: 10px;
-        }
-
-        .store-avatar {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 4px;
-            background: none;
-            border: none;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            flex-shrink: 0;
-            min-width: 56px;
-            padding: 0;
-            font-family: 'Inter', sans-serif;
-        }
-
-        .store-avatar:hover {
-            transform: translateY(-2px);
-        }
-
-        .store-avatar .store-avatar-img {
-            width: 48px;
-            height: 48px;
-            border-radius: 50%;
-            overflow: hidden;
-            border: 2px solid rgba(255,255,255,0.1);
-            background: rgba(15,15,15,0.5);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.25s ease;
-            flex-shrink: 0;
-        }
-
-        .store-avatar .store-avatar-img img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        .store-avatar .store-avatar-img .store-emoji {
-            font-size: 1.3rem;
-        }
-
-        .store-avatar.active .store-avatar-img {
-            border-color: #fbbf24;
-            box-shadow: 0 0 20px rgba(251,191,36,0.2);
-        }
-
-        .store-avatar .store-name {
-            font-size: 0.55rem;
-            color: #888;
-            white-space: nowrap;
-            max-width: 60px;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            transition: color 0.2s ease;
-        }
-
-        .store-avatar:hover .store-name {
-            color: #fff;
-        }
-
-        .store-avatar.active .store-name {
-            color: #fbbf24;
-            font-weight: 500;
-        }
-
-        .stores-toggle-btn {
-            background: rgba(255,255,255,0.05);
-            border: 1px solid rgba(251,191,36,0.15);
-            color: #666;
-            width: 30px;
-            height: 30px;
-            border-radius: 50%;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 0.8rem;
-            flex-shrink: 0;
-            font-family: 'Inter', sans-serif;
-        }
-
-        .stores-toggle-btn:hover {
-            background: rgba(251,191,36,0.15);
-            color: #fbbf24;
-            transform: scale(1.05);
-        }
-
-        .stores-toggle-btn:active {
-            transform: scale(0.9);
-        }
-
-        .stores-toggle-btn .toggle-icon {
-            transition: transform 0.3s ease;
-        }
-
-        .stores-scroll-wrapper.collapsed .stores-toggle-btn .toggle-icon {
-            transform: rotate(180deg);
         }
 
         /* ===== КАТЕГОРИИ ===== */
@@ -459,7 +233,7 @@
             display: flex;
             gap: 10px;
             overflow-x: auto;
-            padding: 4px 0 16px;
+            padding: 4px 0 18px;
             scrollbar-width: none;
             -webkit-overflow-scrolling: touch;
         }
@@ -470,10 +244,9 @@
             flex-direction: column;
             align-items: center;
             gap: 6px;
-            padding: 10px 18px;
-            background: rgba(15,15,15,0.5);
-            border: 2px solid rgba(251,191,36,0.08);
-            border-radius: 16px;
+            padding: 10px 6px;
+            background: none;
+            border: none;
             color: #888;
             font-size: 0.7rem;
             font-weight: 500;
@@ -481,56 +254,59 @@
             transition: all 0.25s ease;
             font-family: 'Inter', sans-serif;
             flex-shrink: 0;
-            min-width: 70px;
-            min-height: 70px;
+            min-width: 76px;
         }
 
-        .category-chip:hover {
-            background: rgba(251,191,36,0.05);
-            color: #fff;
-            transform: translateY(-3px);
-            border-color: rgba(251,191,36,0.2);
-        }
-
-        .category-chip.active {
-            border-color: #fbbf24;
-            background: rgba(251,191,36,0.12);
-            color: #fbbf24;
-            box-shadow: 0 4px 20px rgba(251,191,36,0.1);
-        }
-
-        .category-chip .cat-icon {
+        .category-chip .cat-icon-wrap {
             width: 60px;
             height: 60px;
             border-radius: 50%;
-            object-fit: cover;
             background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.06);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.5rem;
-            transition: all 0.3s ease;
+            transition: all 0.25s ease;
         }
 
-        .category-chip.active .cat-icon {
-            background: rgba(251,191,36,0.1);
-            box-shadow: 0 0 20px rgba(251,191,36,0.1);
+        .category-chip .cat-icon-wrap svg {
+            width: 26px;
+            height: 26px;
+            stroke: #aaa;
+            fill: none;
+            stroke-width: 1.6;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            transition: all 0.25s ease;
         }
 
-        .category-chip .cat-icon img {
-            width: 100%;
-            height: 100%;
-            border-radius: 50%;
-            object-fit: cover;
+        .category-chip:hover .cat-icon-wrap {
+            background: rgba(251,191,36,0.06);
+            border-color: rgba(251,191,36,0.2);
+            transform: translateY(-3px);
         }
 
-        .category-chip .cat-icon .placeholder-icon {
-            font-size: 1.5rem;
-            color: #555;
+        .category-chip:hover .cat-icon-wrap svg {
+            stroke: #fbbf24;
         }
 
-        .category-chip.active .cat-icon .placeholder-icon {
+        .category-chip:hover {
+            color: #fff;
+        }
+
+        .category-chip.active .cat-icon-wrap {
+            background: #fbbf24;
+            border-color: #fbbf24;
+            box-shadow: 0 4px 20px rgba(251,191,36,0.25);
+        }
+
+        .category-chip.active .cat-icon-wrap svg {
+            stroke: #000;
+        }
+
+        .category-chip.active {
             color: #fbbf24;
+            font-weight: 600;
         }
 
         /* ===== СЧЁТЧИК ===== */
@@ -588,13 +364,8 @@
             display: block;
         }
 
-        .skeleton-card .skeleton-title .line:first-child {
-            width: 85%;
-        }
-
-        .skeleton-card .skeleton-title .line:last-child {
-            width: 70%;
-        }
+        .skeleton-card .skeleton-title .line:first-child { width: 85%; }
+        .skeleton-card .skeleton-title .line:last-child { width: 70%; }
 
         .skeleton-card .skeleton-rating {
             height: 14px;
@@ -730,20 +501,9 @@
             z-index: 2;
         }
 
-        .badge-hit {
-            background: rgba(239,68,68,0.9);
-            color: #fff;
-        }
-
-        .badge-sale {
-            background: rgba(251,191,36,0.9);
-            color: #000;
-        }
-
-        .badge-new {
-            background: rgba(16,185,129,0.9);
-            color: #fff;
-        }
+        .badge-hit { background: rgba(239,68,68,0.9); color: #fff; }
+        .badge-sale { background: rgba(251,191,36,0.9); color: #000; }
+        .badge-new { background: rgba(16,185,129,0.9); color: #fff; }
 
         .product-favorite {
             position: absolute;
@@ -959,6 +719,7 @@
             align-items: center;
             z-index: 2000;
             animation: fadeIn 0.2s ease;
+            padding: 16px;
         }
 
         .product-modal-content {
@@ -967,10 +728,11 @@
             padding: 24px;
             width: 90%;
             max-width: 800px;
-            max-height: 85vh;
+            max-height: 90vh;
             overflow-y: auto;
             border: 1px solid rgba(251,191,36,0.3);
             animation: slideUp 0.3s ease;
+            position: relative;
         }
 
         .product-modal-header {
@@ -983,6 +745,7 @@
         }
 
         .product-modal-header h2 { color: #fbbf24; font-size: 1.3rem; }
+
         .close-modal {
             background: rgba(255,255,255,0.1);
             border: none;
@@ -993,6 +756,9 @@
             height: 40px;
             border-radius: 50%;
             transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .close-modal:hover {
@@ -1006,12 +772,79 @@
             gap: 20px;
         }
 
+        /* ===== ОБЁРТКА ДЛЯ ФОТО С КНОПКОЙ МАГАЗИНА ===== */
+        .modal-image-wrapper {
+            position: relative;
+            width: 100%;
+            border-radius: 20px;
+            overflow: hidden;
+            background: #0a0a0a;
+        }
+
         .product-modal-image {
             width: 100%;
             max-height: 400px;
             object-fit: contain;
-            border-radius: 20px;
-            background: #0a0a0a;
+            display: block;
+        }
+
+        /* ===== КНОПКА "ПЕРЕЙТИ В ПРОФИЛЬ МАГАЗИНА" ===== */
+        .modal-store-btn {
+            position: absolute;
+            bottom: 12px;
+            left: 12px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(0,0,0,0.75);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(251,191,36,0.3);
+            color: #fff;
+            padding: 8px 14px 8px 12px;
+            border-radius: 40px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            font-family: 'Inter', sans-serif;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            max-width: calc(100% - 24px);
+            text-decoration: none;
+        }
+
+        .modal-store-btn:hover {
+            background: rgba(251,191,36,0.15);
+            border-color: #fbbf24;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+        }
+
+        .modal-store-btn:active {
+            transform: scale(0.97);
+        }
+
+        .modal-store-btn .store-btn-icon {
+            color: #fbbf24;
+            font-size: 0.85rem;
+            flex-shrink: 0;
+        }
+
+        .modal-store-btn .store-btn-name {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 160px;
+        }
+
+        .modal-store-btn .store-btn-arrow {
+            color: #888;
+            font-size: 0.7rem;
+            flex-shrink: 0;
+            transition: transform 0.2s ease;
+        }
+
+        .modal-store-btn:hover .store-btn-arrow {
+            transform: translateX(3px);
+            color: #fbbf24;
         }
 
         .product-modal-info { flex: 1; }
@@ -1074,6 +907,12 @@
             font-size: 0.85rem;
             resize: vertical;
             margin-bottom: 12px;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .review-textarea:focus {
+            outline: none;
+            border-color: #fbbf24;
         }
 
         .btn-submit-review {
@@ -1085,6 +924,7 @@
             font-weight: 600;
             cursor: pointer;
             transition: all 0.2s ease;
+            font-family: 'Inter', sans-serif;
         }
 
         .btn-submit-review:hover {
@@ -1150,34 +990,6 @@
             font-size: 0.8rem;
         }
 
-        /* ===== УВЕДОМЛЕНИЕ ===== */
-        .toast-notification {
-            position: fixed;
-            bottom: 80px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(15,15,15,0.95);
-            border: 1px solid rgba(251,191,36,0.2);
-            border-radius: 16px;
-            padding: 12px 24px;
-            color: #fff;
-            font-size: 0.85rem;
-            font-weight: 500;
-            z-index: 5000;
-            backdrop-filter: blur(12px);
-            animation: slideUp 0.3s ease, fadeOut 0.3s ease 2.5s forwards;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
-        }
-
-        .toast-notification i { color: #10b981; font-size: 1.2rem; }
-
-        @keyframes fadeOut {
-            to { opacity: 0; transform: translateX(-50%) translateY(20px); }
-        }
-
         /* ============================================================
            АДАПТИВ
            ============================================================ */
@@ -1198,31 +1010,15 @@
                 min-height: 38px; 
             }
 
-            .filters-row {
-                flex-direction: column;
-                gap: 6px;
-                padding: 8px 10px;
+            .search-group input {
+                font-size: 0.8rem;
+                padding: 10px 16px 10px 40px;
             }
-            .search-group { width: 100%; min-width: auto; }
-            .filter-group { width: 100%; min-width: auto; }
-            .reset-filters { width: 100%; justify-content: center; padding: 8px; }
 
-            .stores-scroll-wrapper {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 6px;
-                padding: 8px 10px;
+            .search-group .search-icon {
+                left: 14px;
+                font-size: 0.8rem;
             }
-            .stores-scroll-wrapper.collapsed {
-                max-width: 100%;
-                flex-direction: row;
-                align-items: center;
-            }
-            .stores-label { font-size: 0.6rem; }
-            .store-avatar .store-avatar-img { width: 40px; height: 40px; }
-            .store-avatar { min-width: 48px; }
-            .store-avatar .store-name { font-size: 0.5rem; max-width: 48px; }
-            .stores-toggle-btn { width: 28px; height: 28px; font-size: 0.7rem; }
 
             .products-grid {
                 grid-template-columns: repeat(2, 1fr) !important;
@@ -1234,9 +1030,13 @@
             .product-actions { flex-direction: column; gap: 6px; }
             .btn-add-to-cart { font-size: 0.65rem !important; padding: 6px 10px !important; min-height: 32px !important; }
             .btn-buy-now { font-size: 0.6rem !important; padding: 6px 10px !important; min-height: 32px !important; justify-content: center; }
-            .category-chip { padding: 8px 14px; min-width: 60px; min-height: 60px; font-size: 0.6rem; }
-            .category-chip .cat-icon { width: 46px; height: 46px; font-size: 1.2rem; }
+            .category-chip { min-width: 68px; }
+            .category-chip .cat-icon-wrap { width: 52px; height: 52px; }
+            .category-chip .cat-icon-wrap svg { width: 22px; height: 22px; }
+            .category-chip { font-size: 0.65rem; }
             .product-modal-content { width: 95%; padding: 16px; }
+            .modal-store-btn { font-size: 0.7rem; padding: 7px 12px 7px 10px; bottom: 10px; left: 10px; }
+            .modal-store-btn .store-btn-name { max-width: 110px; }
 
             .skeleton-grid {
                 grid-template-columns: repeat(2, 1fr) !important;
@@ -1247,8 +1047,6 @@
                 min-height: 280px !important;
             }
             .skeleton-card .skeleton-title .line { height: 16px !important; }
-            .skeleton-card .skeleton-title .line:first-child { width: 80% !important; }
-            .skeleton-card .skeleton-title .line:last-child { width: 65% !important; }
             .skeleton-card .skeleton-rating { height: 12px !important; width: 45% !important; }
             .skeleton-card .skeleton-store { height: 10px !important; width: 55% !important; }
             .skeleton-card .skeleton-price { height: 18px !important; width: 35% !important; }
@@ -1272,12 +1070,10 @@
             .product-badge { font-size: 0.45rem !important; padding: 2px 8px !important; top: 6px !important; left: 6px !important; }
             .btn-add-to-cart { font-size: 0.55rem !important; padding: 5px 8px !important; min-height: 28px !important; }
             .btn-buy-now { font-size: 0.5rem !important; padding: 5px 8px !important; min-height: 28px !important; }
-            .category-chip { padding: 6px 10px; min-width: 60px; min-height: 60px; font-size: 0.5rem; border-radius: 12px; }
-            .category-chip .cat-icon { width: 48px; height: 48px; font-size: 1rem; }
-            .store-avatar .store-avatar-img { width: 36px; height: 36px; }
-            .store-avatar { min-width: 42px; }
-            .store-avatar .store-name { font-size: 0.45rem; max-width: 40px; }
-            .stores-scroll { gap: 8px; }
+            .category-chip { min-width: 62px; }
+            .category-chip .cat-icon-wrap { width: 46px; height: 46px; }
+            .category-chip .cat-icon-wrap svg { width: 20px; height: 20px; }
+            .category-chip { font-size: 0.6rem; }
 
             .skeleton-grid {
                 grid-template-columns: repeat(2, 1fr) !important;
@@ -1289,16 +1085,11 @@
                 min-height: 240px !important;
             }
             .skeleton-card .skeleton-image { border-radius: 8px !important; margin-bottom: 6px !important; }
-            .skeleton-card .skeleton-title { gap: 3px !important; }
             .skeleton-card .skeleton-title .line { height: 14px !important; }
-            .skeleton-card .skeleton-title .line:first-child { width: 75% !important; }
-            .skeleton-card .skeleton-title .line:last-child { width: 60% !important; }
             .skeleton-card .skeleton-rating { height: 10px !important; width: 40% !important; margin: 2px 0 !important; }
             .skeleton-card .skeleton-store { height: 9px !important; width: 50% !important; margin-bottom: 2px !important; }
-            .skeleton-card .skeleton-price-block { margin: 2px 0 4px !important; gap: 6px !important; }
             .skeleton-card .skeleton-price { height: 16px !important; width: 30% !important; }
             .skeleton-card .skeleton-old-price { height: 10px !important; width: 18% !important; }
-            .skeleton-card .skeleton-actions { padding-top: 2px !important; }
             .skeleton-card .skeleton-actions .skeleton-btn { height: 28px !important; }
             .skeleton-card .skeleton-actions .skeleton-btn:last-child { flex: 0 0 32px !important; }
         }
@@ -1359,14 +1150,8 @@
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         @keyframes slideUp { from { opacity: 0; transform: translateY(50px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(16px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            from { opacity: 0; transform: translateY(16px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         ::-webkit-scrollbar { width: 4px; }
@@ -1412,104 +1197,66 @@
                 <a href="partner-products.html" class="seller-btn" id="myProductsBtn" style="display:none;">
                     <i class="fas fa-boxes"></i> Мои товары
                 </a>
-                <div class="header-icon-btn" id="ordersBtn">
+                <div class="header-icon-btn" id="ordersBtn" title="Мои заказы">
                     <i class="fas fa-box"></i>
+                    <span class="badge badge-red" id="ordersCount" style="display:none;">0</span>
                 </div>
-                <div class="header-icon-btn" id="favoritesBtn">
+                <div class="header-icon-btn" id="favoritesBtn" title="Избранное">
                     <i class="fas fa-heart"></i>
                     <span class="badge badge-red" id="favoritesCount">0</span>
                 </div>
                 <!-- КОРЗИНА — СКРЫВАЕМ ДЛЯ ПРОДАВЦА -->
-                <div class="header-icon-btn" id="cartIcon">
+                <div class="header-icon-btn" id="cartIcon" title="Корзина">
                     <i class="fas fa-shopping-cart"></i>
                     <span class="badge" id="cartCount">0</span>
                 </div>
             </div>
         </div>
 
-        <!-- ===== ФИЛЬТРЫ ===== -->
-        <div class="filters-row">
+        <!-- ===== ПОИСК (единственный фильтр) ===== -->
+        <div class="search-row">
             <div class="search-group">
-                <input type="text" id="searchInput" placeholder="🔍 Поиск товаров...">
-            </div>
-            <div class="filter-group">
-                <select id="sortSelect">
-                    <option value="name">📋 По названию</option>
-                    <option value="price_asc">💰 Дешёвые</option>
-                    <option value="price_desc">💰 Дорогие</option>
-                    <option value="rating">⭐ По рейтингу</option>
-                </select>
-            </div>
-            <div class="filter-group">
-                <select id="stockFilter">
-                    <option value="all">📦 Все товары</option>
-                    <option value="in_stock">✅ В наличии</option>
-                    <option value="low_stock">⚠️ Осталось мало</option>
-                    <option value="out_of_stock">❌ Нет в наличии</option>
-                </select>
-            </div>
-            <button id="resetFiltersBtn" class="reset-filters"><i class="fas fa-undo-alt"></i></button>
-        </div>
-
-        <!-- ===== МАГАЗИНЫ ===== -->
-        <div class="stores-wrapper">
-            <div class="stores-scroll-wrapper" id="storesWrapper">
-                <span class="stores-label">🏪 Магазины</span>
-                <div class="stores-scroll" id="storesScroll">
-                    <button class="store-avatar active" data-store="all">
-                        <div class="store-avatar-img">
-                            <span class="store-emoji">🏪</span>
-                        </div>
-                        <span class="store-name">Все</span>
-                    </button>
-                </div>
-                <button class="stores-toggle-btn" id="storesToggleBtn" title="Свернуть/развернуть">
-                    <i class="fas fa-chevron-left toggle-icon"></i>
-                </button>
+                <input type="text" id="searchInput" placeholder="Поиск товаров...">
+                <i class="fas fa-search search-icon"></i>
             </div>
         </div>
 
-        <!-- ===== КАТЕГОРИИ ===== -->
+        <!-- ===== КАТЕГОРИИ (SVG иконки) ===== -->
         <div class="categories-scroll" id="categoriesScroll">
             <button class="category-chip active" data-category="all">
-                <div class="cat-icon">
-                    <img src="category-icons/all.webp" alt="Все" class="category-icon" 
-                        onerror="this.style.display='none';this.parentElement.innerHTML='🏪'">
+                <div class="cat-icon-wrap">
+                    <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
                 </div>
                 <span>Все</span>
             </button>
             <button class="category-chip" data-category="equipment">
-                <div class="cat-icon">
-                    <img src="category-icons/equipment.webp" alt="Экипировка" class="category-icon" 
-                        onerror="this.style.display='none';this.parentElement.innerHTML='🥊'">
+                <div class="cat-icon-wrap">
+                    <svg viewBox="0 0 24 24"><path d="M14.5 4.5a2 2 0 1 0-4 0 2 2 0 0 0 4 0z"/><path d="M6 20h12"/><path d="M8 20v-4a4 4 0 0 1 4-4h0a4 4 0 0 1 4 4v4"/><path d="M9 9l-2 3"/><path d="M15 9l2 3"/></svg>
                 </div>
                 <span>Экипировка</span>
             </button>
             <button class="category-chip" data-category="sportpit">
-                <div class="cat-icon">
-                    <img src="category-icons/sportpit.webp" alt="Спорт-пит" class="category-icon" 
-                        onerror="this.style.display='none';this.parentElement.innerHTML='💪'">
+                <div class="cat-icon-wrap">
+                    <svg viewBox="0 0 24 24"><path d="M6.5 6.5h11v11h-11z"/><path d="M4 9v6"/><path d="M20 9v6"/><path d="M9 4v2"/><path d="M15 4v2"/><path d="M9 18v2"/><path d="M15 18v2"/></svg>
                 </div>
                 <span>Спорт-пит</span>
             </button>
             <button class="category-chip" data-category="clothing">
-                <div class="cat-icon">
-                    <img src="category-icons/clothing.webp" alt="Одежда" class="category-icon" 
-                        onerror="this.style.display='none';this.parentElement.innerHTML='👕'">
+                <div class="cat-icon-wrap">
+                    <svg viewBox="0 0 24 24"><path d="M16 3l4 2-2 4-2-1v13H8V8L6 9 4 5l4-2"/><path d="M12 3a2 2 0 1 0 0 4 2 2 0 0 0 0-4z"/></svg>
                 </div>
                 <span>Одежда</span>
             </button>
             <button class="category-chip" data-category="accessories">
-                <div class="cat-icon">
-                    <img src="category-icons/accessories.webp" alt="Аксессуары" class="category-icon" 
-                        onerror="this.style.display='none';this.parentElement.innerHTML='⌚'">
+                <div class="cat-icon-wrap">
+                    <svg viewBox="0 0 24 24"><circle cx="12" cy="9" r="6"/><path d="M9 14l-2 7h10l-2-7"/><path d="M12 6v3"/></svg>
                 </div>
                 <span>Аксессуары</span>
             </button>
         </div>
 
         <!-- ===== СЧЁТЧИК ===== -->
-        <div class="products-counter" id="productsCounter">Найдено: <span id="productsCount">0</span> товаров</div>
+        <div class="products-counter">Найдено: <span id="productsCount">0</span> товаров</div>
 
         <!-- ===== ТОВАРЫ ===== -->
         <div id="productsGrid" class="products-grid">
@@ -1552,11 +1299,19 @@
                 <button class="close-modal" id="closeModalBtn"><i class="fas fa-times"></i></button>
             </div>
             <div class="product-modal-body">
-                <img id="modalProductImage" class="product-modal-image" src="" alt="">
+                <!-- ОБЁРТКА ДЛЯ ФОТО + КНОПКА МАГАЗИНА -->
+                <div class="modal-image-wrapper">
+                    <img id="modalProductImage" class="product-modal-image" src="" alt="">
+                    <!-- Кнопка "Перейти в профиль магазина" -->
+                    <a id="modalStoreBtn" class="modal-store-btn" href="#" style="display:none;">
+                        <i class="fas fa-store store-btn-icon"></i>
+                        <span class="store-btn-name" id="modalStoreName">Магазин</span>
+                        <i class="fas fa-chevron-right store-btn-arrow"></i>
+                    </a>
+                </div>
                 <div class="product-modal-info">
                     <div class="product-modal-price" id="modalProductPrice"></div>
                     <div class="product-modal-desc" id="modalProductDesc"></div>
-                    <div class="product-store" id="modalProductStore"></div>
                     <div style="display:flex;gap:10px;margin-top:10px;" id="modalActions">
                         <button id="modalAddToCartBtn" class="btn-add-to-cart" style="flex:1;"><i class="fas fa-cart-plus"></i> В корзину</button>
                         <button id="modalBuyNowBtn" class="btn-buy-now" style="flex:1;"><i class="fas fa-bolt"></i> Купить</button>
@@ -1607,7 +1362,7 @@
     <script src="modals.js"></script>
     <script type="module">
     import { initializeApp } from "firebase/app";
-    import { getFirestore, collection, getDocs, doc, getDoc, addDoc, query, where, orderBy, deleteDoc, setDoc, updateDoc } from "firebase/firestore";
+    import { getFirestore, collection, getDocs, doc, getDoc, addDoc, query, where, orderBy, deleteDoc, setDoc } from "firebase/firestore";
     import { getAuth, onAuthStateChanged } from "firebase/auth";
 
     const firebaseConfig = {
@@ -1630,17 +1385,14 @@
     let currentRating = 0;
     let favorites = [];
     let currentCategory = 'all';
-    let selectedStore = 'all';
-    let isSeller = false; // Флаг — является ли пользователь продавцом
+    let isSeller = false;
 
     // ===== УВЕДОМЛЕНИЯ =====
     function showNotification(message, type = 'success') {
-        // Используем единый тост из modals.js (если он загружен)
         if (typeof window.showToast === 'function') {
             window.showToast(message, type);
             return;
         }
-        // Fallback — старая плашка (на случай, если modals.js не подключён)
         const container = document.getElementById('errorContainer');
         if (!container) return;
         const colors = { success: '#22c55e', error: '#ef4444', warning: '#f59e0b', info: '#fbbf24' };
@@ -1657,22 +1409,9 @@
         const container = document.getElementById('productsGrid');
         if (!container) return;
         container.innerHTML = '';
-        container.style.display = 'grid';
-        container.style.gridTemplateColumns = 'repeat(auto-fill, minmax(240px, 1fr))';
-        container.style.gap = '16px';
-        container.style.width = '100%';
         for (let i = 0; i < 8; i++) {
             const card = document.createElement('div');
             card.className = 'skeleton-card';
-            card.style.width = '100%';
-            card.style.minHeight = '320px';
-            card.style.display = 'flex';
-            card.style.flexDirection = 'column';
-            card.style.background = 'rgba(15, 15, 15, 0.5)';
-            card.style.borderRadius = '16px';
-            card.style.padding = '12px';
-            card.style.border = '1px solid rgba(255, 255, 255, 0.03)';
-            card.style.animation = 'pulse 1.5s ease-in-out infinite';
             card.innerHTML = `
                 <div class="skeleton-image"></div>
                 <div class="skeleton-title"><div class="line"></div><div class="line"></div></div>
@@ -1732,7 +1471,6 @@
 
     // ===== КОРЗИНА =====
     function updateCartCount() {
-        // Если пользователь — продавец, корзина не показывается
         if (isSeller) {
             const cartIcon = document.getElementById('cartIcon');
             if (cartIcon) cartIcon.style.display = 'none';
@@ -1743,6 +1481,42 @@
         if (cartCount) cartCount.innerText = cart.length;
         const cartIcon = document.getElementById('cartIcon');
         if (cartIcon) cartIcon.style.display = 'flex';
+    }
+
+    // ===== СЧЁТЧИК АКТИВНЫХ ЗАКАЗОВ =====
+    async function updateOrdersCount() {
+        if (!currentUser || isSeller) {
+            const badge = document.getElementById('ordersCount');
+            if (badge) badge.style.display = 'none';
+            return;
+        }
+        try {
+            const q = query(
+                collection(db, "physical_orders"),
+                where("userId", "==", currentUser.uid)
+            );
+            const snapshot = await getDocs(q);
+            let count = 0;
+            snapshot.forEach(docSnap => {
+                const status = docSnap.data().status;
+                if (status === 'pending' || status === 'paid' || status === 'shipped' || status === 'delivered') {
+                    count++;
+                }
+            });
+            const badge = document.getElementById('ordersCount');
+            if (badge) {
+                if (count > 0) {
+                    badge.innerText = count > 99 ? '99+' : count;
+                    badge.style.display = 'flex';
+                } else {
+                    badge.style.display = 'none';
+                }
+            }
+        } catch (err) {
+            console.error('Ошибка подсчёта заказов:', err);
+            const badge = document.getElementById('ordersCount');
+            if (badge) badge.style.display = 'none';
+        }
     }
 
     // ===== ИЗБРАННОЕ =====
@@ -1769,11 +1543,11 @@
             if (favorites.includes(productId)) {
                 await deleteDoc(favRef);
                 favorites = favorites.filter(id => id !== productId);
-                showNotification('❤️ Удалено из избранного', 'info');
+                showNotification('Удалено из избранного', 'info');
             } else {
                 await setDoc(favRef, { productId, addedAt: new Date() });
                 favorites.push(productId);
-                showNotification('❤️ Добавлено в избранное', 'success');
+                showNotification('Добавлено в избранное', 'success');
             }
             const favCount = document.getElementById('favoritesCount');
             if (favCount) favCount.innerText = favorites.length;
@@ -1789,65 +1563,8 @@
         try {
             const snapshot = await getDocs(collection(db, "partners"));
             allPartners = snapshot.docs.map(doc => ({ id: doc.id, name: doc.data().name }));
-            
-            const storesContainer = document.getElementById('storesScroll');
-            storesContainer.innerHTML = `
-                <button class="store-avatar active" data-store="all">
-                    <div class="store-avatar-img"><span class="store-emoji">🏪</span></div>
-                    <span class="store-name">Все</span>
-                </button>
-            `;
-            allPartners.forEach(partner => {
-                const btn = document.createElement('button');
-                btn.className = 'store-avatar';
-                btn.dataset.store = partner.id;
-                //🔧ФИКС (XSS): название магазина вставляется в innerHTML и alt
-                // только после экранирования — оно приходит из Firestore.
-                const safePartnerName = escapeHtml(partner.name || 'Магазин');
-                btn.innerHTML = `
-                    <div class="store-avatar-img">
-                        <img src="https://ui-avatars.com/api/?name=${encodeURIComponent((partner.name || '?').substring(0,2))}&background=fbbf24&color=000&size=64" alt="${safePartnerName}">
-                    </div>
-                    <span class="store-name">${safePartnerName}</span>
-                `;
-                storesContainer.appendChild(btn);
-            });
-            
-            document.querySelectorAll('.store-avatar').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    document.querySelectorAll('.store-avatar').forEach(b => b.classList.remove('active'));
-                    this.classList.add('active');
-                    selectedStore = this.dataset.store;
-                    applyFilters();
-                });
-            });
-            
         } catch (err) {
-            console.error('Ошибка загрузки магазинов:', err);
-        }
-    }
-
-    // ===== КНОПКА СВОРАЧИВАНИЯ МАГАЗИНОВ =====
-    function initStoresToggle() {
-        const toggleBtn = document.getElementById('storesToggleBtn');
-        const wrapper = document.getElementById('storesWrapper');
-        let isCollapsed = false;
-        
-        toggleBtn?.addEventListener('click', () => {
-            isCollapsed = !isCollapsed;
-            wrapper.classList.toggle('collapsed', isCollapsed);
-            const icon = toggleBtn.querySelector('.toggle-icon');
-            if (icon) {
-                icon.style.transform = isCollapsed ? 'rotate(180deg)' : 'rotate(0deg)';
-            }
-            localStorage.setItem('storesCollapsed', isCollapsed ? 'true' : 'false');
-        });
-        
-        const saved = localStorage.getItem('storesCollapsed');
-        if (saved === 'true') {
-            wrapper.classList.add('collapsed');
-            const icon = toggleBtn?.querySelector('.toggle-icon');
-            if (icon) icon.style.transform = 'rotate(180deg)';
+            console.error('Ошибка загрузки партнёров:', err);
         }
     }
 
@@ -1862,7 +1579,7 @@
             );
             const snapshot = await getDocs(reviewsQuery);
             if (snapshot.empty) {
-                reviewsList.innerHTML = '<div class="empty-reviews">⭐ Нет отзывов. Будьте первым!</div>';
+                reviewsList.innerHTML = '<div class="empty-reviews">Нет отзывов. Будьте первым!</div>';
                 return;
             }
             let html = '';
@@ -1921,7 +1638,7 @@
         }
     }
 
-    // ===== ФИЛЬТРЫ =====
+    // ===== ФИЛЬТРЫ (поиск + категория) =====
     function applyFilters() {
         let filtered = [...allProducts];
         
@@ -1929,40 +1646,25 @@
             filtered = filtered.filter(p => p.category === currentCategory);
         }
         
-        if (selectedStore !== 'all') {
-            filtered = filtered.filter(p => p.partnerId === selectedStore);
-        }
-        
-        const stockFilter = document.getElementById('stockFilter')?.value || 'all';
-        if (stockFilter === 'in_stock') {
-            filtered = filtered.filter(p => (p.stock || 0) > 0);
-        } else if (stockFilter === 'low_stock') {
-            filtered = filtered.filter(p => (p.stock || 0) > 0 && (p.stock || 0) < 5);
-        } else if (stockFilter === 'out_of_stock') {
-            filtered = filtered.filter(p => (p.stock || 0) === 0);
-        }
-        
         const searchTerm = document.getElementById('searchInput')?.value.toLowerCase() || '';
         if (searchTerm) {
-            filtered = filtered.filter(p => p.name?.toLowerCase().includes(searchTerm) || p.desc?.toLowerCase().includes(searchTerm));
+            filtered = filtered.filter(p => 
+                p.name?.toLowerCase().includes(searchTerm) || 
+                p.desc?.toLowerCase().includes(searchTerm)
+            );
         }
         
-        const sort = document.getElementById('sortSelect')?.value || 'name';
-        if (sort === 'price_asc') filtered.sort((a, b) => (a.price || 0) - (b.price || 0));
-        else if (sort === 'price_desc') filtered.sort((a, b) => (b.price || 0) - (a.price || 0));
-        else if (sort === 'rating') filtered.sort((a, b) => (b.rating || 0) - (a.rating || 0));
-        else filtered.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+        filtered.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
         
         document.getElementById('productsCount').innerText = filtered.length;
         renderProducts(filtered);
     }
 
-    
     // ===== РЕНДЕР ТОВАРОВ =====
     function renderProducts(products) {
         const container = document.getElementById('productsGrid');
         if (products.length === 0) {
-            container.innerHTML = '<div class="empty-state"><i class="fas fa-search"></i><p>Ничего не найдено</p></div>';
+            container.innerHTML = '<div class="empty-state" style="grid-column:1/-1;"><i class="fas fa-search"></i><p>Ничего не найдено</p></div>';
             return;
         }
         
@@ -2025,12 +1727,10 @@
                 badgeHtml = `<span class="product-badge badge-new">Новинка</span>`;
             }
             
-            // ===== ПРОВЕРКА: ЯВЛЯЕТСЯ ЛИ ПОЛЬЗОВАТЕЛЬ ПРОДАВЦОМ ЭТОГО ТОВАРА =====
             const isProductOwner = isSeller && product.partnerId === currentUser?.uid;
             
             let buyButtons = '';
             if (isSeller) {
-                // Продавец видит только свои товары как "управление", чужие — только просмотр
                 if (isProductOwner) {
                     buyButtons = `
                         <div class="seller-message" style="margin-top:4px;">
@@ -2045,10 +1745,6 @@
                     `;
                 }
             } else if (stock > 0) {
-                //🔧ФИКС (XSS): JSON товара лежит в одинарных кавычках атрибута,
-                // поэтому одиночная кавычка в названии товара могла «закрыть»
-                // data-product и внедрить свой атрибут/тег. Экранируем JSON:
-                // dataset.product декодирует HTML-сущности, JSON.parse работает.
                 const cartJson = escapeHtml(JSON.stringify(productForCart));
                 buyButtons = `
                     <button class="btn-add-to-cart" data-product='${cartJson}'><i class="fas fa-cart-plus"></i> В корзину</button>
@@ -2060,10 +1756,6 @@
                 `;
             }
             
-            //🔧ФИКС (XSS): id товара, ссылка на картинку и alt-текст экранируются.
-            // Раньше в data-product-id и src="${product.image}" подставлялись
-            // значения из Firestore «как есть» — кавычка в них могла добавить
-            // свой атрибут (например onerror) и выполнить чужой JS.
             const safeProductId = escapeHtml(product.id);
             const safeImage = safeImageUrl(product.image);
             const safeTitle = escapeHtml(product.name);
@@ -2120,18 +1812,17 @@
             });
         });
         
-        // ===== ИЗБРАННОЕ (только для покупателей) =====
+        // ===== ИЗБРАННОЕ =====
         if (!isSeller) {
             document.querySelectorAll('.product-favorite').forEach(btn => {
                 btn.addEventListener('click', async (e) => {
                     e.stopPropagation();
-                    const productId = btn.dataset.productId;
-                    await toggleFavorite(productId);
+                    await toggleFavorite(btn.dataset.productId);
                 });
             });
         }
         
-        // ===== В КОРЗИНУ (только для покупателей) =====
+        // ===== В КОРЗИНУ =====
         if (!isSeller) {
             document.querySelectorAll('.btn-add-to-cart:not([disabled])').forEach(btn => {
                 btn.addEventListener('click', (e) => {
@@ -2144,16 +1835,13 @@
                     
                     const product = JSON.parse(btn.dataset.product);
                     
-                    // ===== НОВАЯ ПРОВЕРКА: ЕСТЬ ЛИ partnerId У ТОВАРА =====
                     if (!product.partnerId) {
-                        showNotification('❌ Ошибка: у товара нет продавца', 'error');
-                        console.error('Товар без partnerId:', product);
+                        showNotification('Ошибка: у товара нет продавца', 'error');
                         return;
                     }
                     
-                    // ===== ПРОВЕРКА: НЕ ЯВЛЯЕТСЯ ЛИ ПОЛЬЗОВАТЕЛЬ ПРОДАВЦОМ =====
                     if (product.partnerId === currentUser?.uid) {
-                        showNotification('❌ Вы не можете купить свой товар', 'warning');
+                        showNotification('Вы не можете купить свой товар', 'warning');
                         return;
                     }
                     
@@ -2169,7 +1857,7 @@
                     });
                     localStorage.setItem('cart', JSON.stringify(cart));
                     updateCartCount();
-                    showNotification(`✅ ${product.name} добавлен в корзину`, 'success');
+                    showNotification(`${product.name} добавлен в корзину`, 'success');
                     const originalText = btn.innerHTML;
                     btn.innerHTML = '<i class="fas fa-check"></i> Добавлено!';
                     btn.style.background = '#10b981';
@@ -2193,16 +1881,13 @@
                     
                     const product = JSON.parse(btn.dataset.product);
                     
-                    // ===== НОВАЯ ПРОВЕРКА: ЕСТЬ ЛИ partnerId У ТОВАРА =====
                     if (!product.partnerId) {
-                        showNotification('❌ Ошибка: у товара нет продавца', 'error');
-                        console.error('Товар без partnerId:', product);
+                        showNotification('Ошибка: у товара нет продавца', 'error');
                         return;
                     }
                     
-                    // ===== ПРОВЕРКА: НЕ ЯВЛЯЕТСЯ ЛИ ПОЛЬЗОВАТЕЛЬ ПРОДАВЦОМ =====
                     if (product.partnerId === currentUser?.uid) {
-                        showNotification('❌ Вы не можете купить свой товар', 'warning');
+                        showNotification('Вы не можете купить свой товар', 'warning');
                         return;
                     }
                     
@@ -2240,11 +1925,19 @@
         document.getElementById('modalProductTitle').innerText = product.name;
         document.getElementById('modalProductPrice').innerHTML = `${(product.price || 0).toLocaleString()} ₽`;
         document.getElementById('modalProductDesc').innerText = product.desc || 'Описание отсутствует';
-        document.getElementById('modalProductStore').innerHTML = `<i class="fas fa-store"></i> ${escapeHtml(storeName)}`;
+        
+        // ===== КНОПКА "ПЕРЕЙТИ В ПРОФИЛЬ МАГАЗИНА" =====
+        const storeBtn = document.getElementById('modalStoreBtn');
+        const storeNameSpan = document.getElementById('modalStoreName');
+        if (product.partnerId) {
+            storeBtn.href = `partner-dashboard.html?id=${product.partnerId}`;
+            storeNameSpan.textContent = storeName || 'Магазин';
+            storeBtn.style.display = 'inline-flex';
+        } else {
+            storeBtn.style.display = 'none';
+        }
         
         const modalImage = document.getElementById('modalProductImage');
-        //ФИКС (XSS): ссылка на картинку проверяется по схеме (только http(s)
-        // и относительные пути) — мусорные схемы в src не попадают.
         const modalImageUrl = safeImageUrl(product.image);
         if (modalImageUrl) {
             modalImage.src = modalImageUrl;
@@ -2255,7 +1948,6 @@
         
         await loadProductReviews(product.id);
         
-        // ===== МОДАЛЬНОЕ ОКНО: СКРЫВАЕМ КНОПКИ ДЛЯ ПРОДАВЦА =====
         const modalActions = document.getElementById('modalActions');
         const modalSellerMessage = document.getElementById('modalSellerMessage');
         
@@ -2309,7 +2001,7 @@
                 text: reviewText,
                 createdAt: new Date()
             });
-            showNotification('✅ Спасибо за отзыв!', 'success');
+            showNotification('Спасибо за отзыв!', 'success');
             document.getElementById('reviewText').value = '';
             currentRating = 0;
             updateStarsUI(0);
@@ -2327,21 +2019,7 @@
         }
     }
 
-    // ===== СБРОС =====
-    function resetFilters() {
-        document.getElementById('searchInput').value = '';
-        document.getElementById('sortSelect').value = 'name';
-        currentCategory = 'all';
-        selectedStore = 'all';
-        document.querySelectorAll('.category-chip').forEach(c => c.classList.remove('active'));
-        document.querySelector('.category-chip[data-category="all"]')?.classList.add('active');
-        document.querySelectorAll('.store-avatar').forEach(b => b.classList.remove('active'));
-        document.querySelector('.store-avatar[data-store="all"]')?.classList.add('active');
-        applyFilters();
-    }
-
-    //🔧ФИКС (XSS): экранирование теперь покрывает и кавычки — значения
-    // попадают не только в текст, но и в HTML-атрибуты (src, data-*, alt).
+    // ===== XSS-защита =====
     function escapeHtml(str) {
         if (str === null || str === undefined) return '';
         return String(str)
@@ -2352,9 +2030,6 @@
             .replace(/'/g, '&#39;');
     }
 
-    //🔧ФИКС (XSS через ${product.image}): в src картинки товара допускаются
-    // только http(s)-ссылки и относительные пути. Всё остальное (javascript:,
-    // data:, попытки закрыть атрибут кавычкой) отбрасывается.
     function safeImageUrl(url) {
         if (!url) return '';
         const raw = String(url).trim();
@@ -2373,8 +2048,6 @@
     });
 
     document.getElementById('searchInput')?.addEventListener('input', applyFilters);
-    document.getElementById('sortSelect')?.addEventListener('change', applyFilters);
-    document.getElementById('resetFiltersBtn')?.addEventListener('click', resetFilters);
     
     document.getElementById('cartIcon')?.addEventListener('click', () => {
         if (!isSeller) window.location.href = 'cart.html';
@@ -2393,7 +2066,6 @@
         }
     });
     
-    // Модальные кнопки (только для покупателей)
     document.getElementById('modalAddToCartBtn')?.addEventListener('click', () => {
         if (!currentUser || isSeller) {
             showNotification('Войдите в аккаунт', 'warning');
@@ -2418,7 +2090,7 @@
             });
             localStorage.setItem('cart', JSON.stringify(cart));
             updateCartCount();
-            showNotification(`✅ ${currentProduct.name} добавлен в корзину`, 'success');
+            showNotification(`${currentProduct.name} добавлен в корзину`, 'success');
             const btn = document.getElementById('modalAddToCartBtn');
             const originalText = btn.innerHTML;
             btn.innerHTML = '<i class="fas fa-check"></i> Добавлено!';
@@ -2453,7 +2125,7 @@
                 partnerName: storeName || null
             }];
             localStorage.setItem('cart', JSON.stringify(cart));
-            showNotification(`⚡ Быстрая покупка: ${currentProduct.name}`, 'success');
+            showNotification(`Быстрая покупка: ${currentProduct.name}`, 'success');
             setTimeout(() => {
                 window.location.href = 'cart.html';
             }, 800);
@@ -2476,51 +2148,50 @@
                     }
                 }
                 
-                console.log('isSeller:', isSeller);
-                
                 const myProductsBtn = document.getElementById('myProductsBtn');
                 const cartIcon = document.getElementById('cartIcon');
                 const favoritesBtn = document.getElementById('favoritesBtn');
                 const ordersBtn = document.getElementById('ordersBtn');
                 
                 if (isSeller) {
-                    // ===== ПРОДАВЕЦ =====
                     myProductsBtn.style.display = 'inline-flex';
                     if (cartIcon) cartIcon.style.display = 'none';
                     if (favoritesBtn) favoritesBtn.style.display = 'none';
-                    if (ordersBtn) ordersBtn.style.display = 'none'; // ← СКРЫВАЕМ
+                    if (ordersBtn) ordersBtn.style.display = 'none';
                 } else {
-                    // ===== ПОКУПАТЕЛЬ =====
                     myProductsBtn.style.display = 'none';
                     if (cartIcon) cartIcon.style.display = 'flex';
                     if (favoritesBtn) favoritesBtn.style.display = 'flex';
-                    if (ordersBtn) ordersBtn.style.display = 'flex'; // ← ПОКАЗЫВАЕМ
+                    if (ordersBtn) ordersBtn.style.display = 'flex';
                 }
-                
             } catch (err) {
                 console.error('Ошибка проверки продавца:', err);
                 isSeller = false;
             }
             
-            setTimeout(updateHeaderBalance, 1000);
+            setTimeout(() => {
+                updateHeaderBalance();
+                updateOrdersCount();
+            }, 1000);
         } else {
             isSeller = false;
             const balanceDiv = document.getElementById('balanceIndicator');
             if (balanceDiv) balanceDiv.style.display = 'none';
             
-            // Для неавторизованных показываем корзину и заказы (как покупатель)
             const cartIcon = document.getElementById('cartIcon');
             if (cartIcon) cartIcon.style.display = 'flex';
             const myProductsBtn = document.getElementById('myProductsBtn');
             if (myProductsBtn) myProductsBtn.style.display = 'none';
             const ordersBtn = document.getElementById('ordersBtn');
             if (ordersBtn) ordersBtn.style.display = 'flex';
+            
+            const ordersCount = document.getElementById('ordersCount');
+            if (ordersCount) ordersCount.style.display = 'none';
         }
         
         updateCartCount();
         await loadPartners();
         await loadProducts();
-        initStoresToggle();
     });
 
     const plusBtn = document.getElementById('balancePlusBtn');
@@ -2530,7 +2201,7 @@
     const navLinks = document.getElementById('navLinks');
     if (menuToggle && navLinks) menuToggle.addEventListener('click', () => navLinks.classList.toggle('show'));
     
-    console.log('✅ Каталог обновлён: продавцы видят только свои товары, кнопки покупки скрыты');
+    console.log('✅ Каталог обновлён по ТЗ');
     </script>
 </body>
 </html>

@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <!-- PWA Manifest & Icons -->
     <link rel="manifest" href="/prorank-live/manifest.json">
     <link rel="apple-touch-icon" href="/prorank-live/icons/icon-192.png">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -10,7 +9,6 @@
     <meta name="theme-color" content="#fbbf24">
     <meta name="mobile-web-app-capable" content="yes">
     <meta charset="UTF-8">
-<!--🔧ФИКС: preconnect -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="dns-prefetch" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -113,6 +111,7 @@
             align-items: center;
             justify-content: center;
             gap: 8px;
+            font-family: 'Inter', sans-serif;
         }
 
         .tab-btn:hover {
@@ -134,7 +133,7 @@
 
         .tab-content.active { display: block; }
 
-        /* ===== ВЫЗОВЫ ===== */
+        /* ===== СЕКЦИИ ===== */
         .challenges-section {
             background: rgba(15,15,15,0.7);
             backdrop-filter: blur(8px);
@@ -167,52 +166,75 @@
             margin-bottom: 0;
         }
 
+        /* ===== КНОПКА ОЧИСТКИ ИСТОРИИ (вынесена за пределы блока) ===== */
+        .history-actions-bar {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 16px;
+        }
+
         .btn-clear-history {
             background: rgba(239,68,68,0.15);
             border: 1px solid rgba(239,68,68,0.3);
             color: #ef4444;
-            padding: 6px 16px;
+            padding: 8px 18px;
             border-radius: 40px;
             cursor: pointer;
             font-size: 0.75rem;
             font-weight: 600;
             transition: all 0.2s;
-            min-height: 36px;
+            min-height: 38px;
             display: inline-flex;
             align-items: center;
-            gap: 6px;
+            gap: 8px;
+            font-family: 'Inter', sans-serif;
         }
 
         .btn-clear-history:hover {
             background: rgba(239,68,68,0.25);
             transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(239,68,68,0.15);
         }
 
         .btn-clear-history:active { transform: scale(0.95); }
 
-        .btn-refresh {
-            background: rgba(251,191,36,0.1);
-            border: 1px solid rgba(251,191,36,0.2);
-            color: #fbbf24;
-            padding: 6px 16px;
-            border-radius: 40px;
-            cursor: pointer;
-            font-size: 0.75rem;
-            font-weight: 600;
-            transition: all 0.2s;
-            min-height: 36px;
+        .btn-clear-history i { font-size: 0.75rem; }
+
+        .btn-clear-history:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        /* ===== LIVE-ИНДИКАТОР (замена кнопки "Обновить") ===== */
+        .live-indicator {
             display: inline-flex;
             align-items: center;
             gap: 6px;
+            font-size: 0.65rem;
+            color: #10b981;
+            font-weight: 600;
+            padding: 4px 12px;
+            border-radius: 40px;
+            background: rgba(16,185,129,0.08);
+            border: 1px solid rgba(16,185,129,0.2);
+            height: 26px;
         }
 
-        .btn-refresh:hover {
-            background: rgba(251,191,36,0.2);
-            transform: translateY(-2px);
+        .live-indicator .live-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: #10b981;
+            animation: livePulse 1.5s ease-in-out infinite;
         }
 
-        .btn-refresh:active { transform: scale(0.95); }
+        @keyframes livePulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.4; transform: scale(1.3); }
+        }
 
+        /* ===== КАРТОЧКИ ВЫЗОВОВ ===== */
         .challenge-card {
             background: #1a1a1a;
             border-radius: 20px;
@@ -283,6 +305,7 @@
             gap: 8px;
             transition: all 0.2s;
             min-height: 38px;
+            font-family: 'Inter', sans-serif;
         }
 
         .btn-accept { background: #16a34a; color: white; }
@@ -293,7 +316,13 @@
         .btn-chat:hover { background: #2563eb; transform: translateY(-2px); }
         .btn-respond { background: #fbbf24; color: #000; }
         .btn-respond:hover { background: #ffdd44; transform: translateY(-2px); }
-        .btn-respond:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+        .btn-respond:disabled { 
+            opacity: 0.5; 
+            cursor: not-allowed; 
+            transform: none; 
+            background: #333;
+            color: #888;
+        }
         .btn-cancel-challenge { background: #555; color: #fff; }
         .btn-cancel-challenge:hover { background: #444; transform: translateY(-2px); }
 
@@ -311,6 +340,7 @@
             display: inline-flex;
             align-items: center;
             gap: 8px;
+            font-family: 'Inter', sans-serif;
         }
 
         .btn-publish:hover { background: #ffdd44; transform: translateY(-2px); }
@@ -333,6 +363,7 @@
             display: inline-flex;
             align-items: center;
             gap: 8px;
+            font-family: 'Inter', sans-serif;
         }
 
         .empty-state .btn-buy-challenges:hover {
@@ -370,6 +401,7 @@
             border-radius: 40px;
             font-size: 0.8rem;
             transition: all 0.2s;
+            font-family: 'Inter', sans-serif;
         }
 
         .filter-group select:focus,
@@ -378,6 +410,7 @@
             border-color: #fbbf24;
         }
 
+        /* ===== КАРТОЧКА ОБЪЯВЛЕНИЯ ===== */
         .offer-card {
             background: rgba(20,20,25,0.8);
             border-radius: 20px;
@@ -442,6 +475,7 @@
             display: inline-flex;
             align-items: center;
             gap: 6px;
+            font-family: 'Inter', sans-serif;
         }
 
         .btn-delete-offer:hover {
@@ -449,7 +483,7 @@
             transform: translateY(-2px);
         }
 
-        /* ===== МОДАЛКА ПРЕДЛОЖЕНИЯ ===== */
+        /* ===== МОДАЛКА ===== */
         .modal {
             display: none;
             position: fixed;
@@ -463,6 +497,7 @@
             align-items: center;
             z-index: 2000;
             animation: fadeIn 0.2s ease;
+            padding: 20px;
         }
 
         .modal.active { display: flex; }
@@ -522,6 +557,7 @@
             cursor: pointer;
             border: none;
             min-height: 44px;
+            font-family: 'Inter', sans-serif;
         }
 
         .btn-confirm { background: #fbbf24; color: #000; }
@@ -588,8 +624,7 @@
             .filters-row { flex-direction: column; gap: 8px; }
             .filter-group { min-width: unset; }
             .challenges-section .section-header { flex-direction: column; align-items: stretch; }
-            .challenges-section .section-header .header-actions { display: flex; gap: 8px; flex-wrap: wrap; }
-            .challenges-section .section-header .header-actions .btn { flex: 1; justify-content: center; }
+            .history-actions-bar { justify-content: center; }
         }
 
         @media (max-width: 480px) {
@@ -598,6 +633,7 @@
             .challenge-name { font-size: 0.85rem; }
             .challenge-details { font-size: 0.65rem; }
             .tab-btn { min-width: 60px; padding: 6px 10px; font-size: 0.65rem; }
+            .btn-clear-history { width: 100%; justify-content: center; }
         }
 
         ::-webkit-scrollbar { width: 5px; }
@@ -620,9 +656,7 @@
 
         @keyframes spin { to { transform: rotate(360deg); } }
 
-        .manual-hall-input {
-            margin-top: 8px;
-        }
+        .manual-hall-input { margin-top: 8px; }
 
         .manual-hall-input input {
             width: 100%;
@@ -633,6 +667,7 @@
             border-radius: 12px;
             font-size: 0.85rem;
             transition: 0.2s;
+            font-family: 'Inter', sans-serif;
         }
 
         .manual-hall-input input:focus {
@@ -655,6 +690,7 @@
             border-radius: 12px;
             font-size: 0.9rem;
             transition: 0.2s;
+            font-family: 'Inter', sans-serif;
         }
 
         .hall-select-group select:focus {
@@ -692,19 +728,32 @@
 
         <!-- ===== ВКЛАДКА: МОИ ВЫЗОВЫ ===== -->
         <div id="my-challenges" class="tab-content active">
+            <!-- ===== КНОПКА ОЧИСТКИ ИСТОРИИ — вынесена за пределы блока "Входящие вызовы" ===== -->
+            <div class="history-actions-bar">
+                <button class="btn-clear-history" id="clearHistoryBtn">
+                    <i class="fas fa-trash"></i> Очистить историю
+                </button>
+            </div>
+
             <div id="incomingSection" class="challenges-section">
                 <div class="section-header">
                     <h2><i class="fas fa-arrow-down icon-gold"></i> Входящие вызовы</h2>
-                    <div class="header-actions" style="display:flex; gap:8px; flex-wrap:wrap;">
-                        <button class="btn-refresh" id="refreshChallengesBtn"><i class="fas fa-sync"></i> Обновить</button>
-                        <button class="btn-clear-history" id="clearHistoryBtn"><i class="fas fa-trash"></i> Очистить историю</button>
-                    </div>
+                    <span class="live-indicator" title="Автообновление активно">
+                        <span class="live-dot"></span>
+                        LIVE
+                    </span>
                 </div>
                 <div id="incomingList"><div class="loading"><div class="loading-spinner"></div> Загрузка...</div></div>
             </div>
 
             <div id="outgoingSection" class="challenges-section">
-                <h2><i class="fas fa-arrow-up icon-gold"></i> Исходящие вызовы</h2>
+                <div class="section-header">
+                    <h2><i class="fas fa-arrow-up icon-gold"></i> Исходящие вызовы</h2>
+                    <span class="live-indicator" title="Автообновление активно">
+                        <span class="live-dot"></span>
+                        LIVE
+                    </span>
+                </div>
                 <div id="outgoingList"><div class="loading"><div class="loading-spinner"></div> Загрузка...</div></div>
             </div>
         </div>
@@ -802,7 +851,6 @@
                 <div class="hall-select-group">
                     <select id="offerHall">
                         <option value="">-- Выберите зал --</option>
-                        <!-- Залы загружаются из Firebase -->
                         <option value="other" class="hall-option-other">✏️ Другое (ввести вручную)</option>
                     </select>
                     <div class="manual-hall-input" id="manualHallContainer" style="display:none;">
@@ -843,9 +891,8 @@
     <script type="module" src="header.js"></script>
     <script type="module">
         import { initializeApp } from "firebase/app";
-        import { getFirestore, collection, query, where, getDocs, updateDoc, doc, setDoc, getDoc, orderBy, addDoc, deleteDoc, Timestamp } from "firebase/firestore";
+        import { getFirestore, collection, query, where, getDocs, updateDoc, doc, setDoc, getDoc, orderBy, addDoc, deleteDoc, onSnapshot } from "firebase/firestore";
         import { getAuth, onAuthStateChanged } from "firebase/auth";
-        import { showError, handleFirebaseError, withErrorHandling } from './error-handler.js';
         import { notifyAboutChallenge, notifyAboutChallengeAccepted } from './push-sender.js';
 
         const firebaseConfig = {
@@ -861,13 +908,31 @@
         const db = getFirestore(app);
         const auth = getAuth(app);
 
-        //🔧ФИКС: неиспользуемая константа BOT_TOKEN с зашитым ключом бота
-        // удалена из этого файла — ни одного вызова api.telegram.org здесь нет,
-        // поэтому жёсткий ключ только зря утекал в открытый исходник страницы.
-
         let currentUser = null;
         let currentUserData = null;
         let allHalls = [];
+
+        // ===== ОТПИСКИ ОТ SNAPSHOT =====
+        let unsubIncoming = null;
+        let unsubOutgoing = null;
+        let unsubOffers = null;
+
+        // ===== УВЕДОМЛЕНИЯ =====
+        function showNotification(message, type = 'info') {
+            if (typeof window.showToast === 'function') {
+                window.showToast(message, type);
+                return;
+            }
+            const container = document.getElementById('errorContainer');
+            if (!container) return;
+            const colors = { success: '#22c55e', error: '#ef4444', warning: '#f59e0b', info: '#fbbf24' };
+            container.style.display = 'block';
+            container.style.background = colors[type] || colors.info;
+            container.style.color = '#000';
+            container.textContent = message;
+            clearTimeout(container._timeout);
+            container._timeout = setTimeout(() => { container.style.display = 'none'; }, 4000);
+        }
 
         // ===== ТАБЫ =====
         function initTabs() {
@@ -877,13 +942,7 @@
                 'sparring-board': document.getElementById('sparring-board')
             };
 
-            if (tabs.length === 0) {
-                console.error('❌ Кнопки вкладок не найдены');
-                return;
-            }
-
             tabs.forEach(btn => {
-                btn.removeEventListener('click', () => {});
                 btn.addEventListener('click', function(e) {
                     e.preventDefault();
                     const target = this.dataset.tab;
@@ -897,17 +956,12 @@
                     
                     if (contents[target]) {
                         contents[target].classList.add('active');
-                        console.log('✅ Показана вкладка:', target);
                     }
                 });
             });
 
             const defaultTab = document.querySelector('.tab-btn.active') || tabs[0];
-            if (defaultTab) {
-                defaultTab.click();
-            }
-
-            console.log('✅ Табы инициализированы');
+            if (defaultTab) defaultTab.click();
         }
 
         // ===== ОБНОВЛЕНИЕ БАЛАНСА =====
@@ -931,7 +985,6 @@
             try {
                 const snapshot = await getDocs(collection(db, "halls"));
                 allHalls = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                console.log(`✅ Загружено залов: ${allHalls.length}`);
                 populateHallSelect();
             } catch (err) {
                 console.error('Ошибка загрузки залов:', err);
@@ -944,13 +997,9 @@
             const select = document.getElementById('offerHall');
             if (!select) return;
 
-            // Сохраняем текущее выбранное значение
             const currentValue = select.value;
-
-            // Очищаем, оставляя только первую опцию
             select.innerHTML = '<option value="">-- Выберите зал --</option>';
 
-            // Добавляем залы из базы
             allHalls.forEach(hall => {
                 const option = document.createElement('option');
                 option.value = hall.id;
@@ -958,19 +1007,13 @@
                 select.appendChild(option);
             });
 
-            // Добавляем опцию "Другое"
             const otherOption = document.createElement('option');
             otherOption.value = 'other';
             otherOption.textContent = '✏️ Другое (ввести вручную)';
             otherOption.className = 'hall-option-other';
             select.appendChild(otherOption);
 
-            // Восстанавливаем выбранное значение, если оно было
-            if (currentValue) {
-                select.value = currentValue;
-            }
-
-            // Показываем/скрываем поле ручного ввода
+            if (currentValue) select.value = currentValue;
             toggleManualHallInput();
         }
 
@@ -982,41 +1025,44 @@
             }
         }
 
-        // ===== ЗАГРУЗКА ВЫЗОВОВ =====
-        async function loadChallenges() {
-            if (!currentUser) {
-                document.getElementById('incomingList').innerHTML = '<div class="empty-state"><i class="fas fa-lock icon-gold"></i><p>Войдите, чтобы видеть вызовы</p></div>';
-                document.getElementById('outgoingList').innerHTML = '<div class="empty-state"><i class="fas fa-lock icon-gold"></i><p>Войдите, чтобы видеть вызовы</p></div>';
-                return;
-            }
+        // ===== LIVE-ПОДПИСКА НА ВЫЗОВЫ =====
+        function subscribeToChallenges() {
+            if (!currentUser) return;
 
-            try {
-                const incomingQuery = query(
-                    collection(db, "challenges"),
-                    where("toUserId", "==", currentUser.uid),
-                    orderBy("createdAt", "desc")
-                );
+            // Отписываемся от предыдущих
+            if (unsubIncoming) unsubIncoming();
+            if (unsubOutgoing) unsubOutgoing();
 
-                const outgoingQuery = query(
-                    collection(db, "challenges"),
-                    where("fromUserId", "==", currentUser.uid),
-                    orderBy("createdAt", "desc")
-                );
+            // Входящие
+            const incomingQuery = query(
+                collection(db, "challenges"),
+                where("toUserId", "==", currentUser.uid),
+                orderBy("createdAt", "desc")
+            );
+            unsubIncoming = onSnapshot(incomingQuery, (snapshot) => {
+                renderIncoming(snapshot.docs);
+            }, (err) => {
+                console.error('Ошибка live входящих:', err);
+                document.getElementById('incomingList').innerHTML = 
+                    '<div class="empty-state"><i class="fas fa-exclamation-triangle icon-red"></i><p>Ошибка загрузки</p></div>';
+            });
 
-                const [incomingSnap, outgoingSnap] = await Promise.all([
-                    getDocs(incomingQuery),
-                    getDocs(outgoingQuery)
-                ]);
-
-                renderIncoming(incomingSnap.docs);
-                renderOutgoing(outgoingSnap.docs);
-            } catch (err) {
-                console.error('Ошибка загрузки вызовов:', err);
-                document.getElementById('incomingList').innerHTML = '<div class="empty-state"><i class="fas fa-exclamation-triangle icon-red"></i><p>Ошибка загрузки</p></div>';
-                document.getElementById('outgoingList').innerHTML = '<div class="empty-state"><i class="fas fa-exclamation-triangle icon-red"></i><p>Ошибка загрузки</p></div>';
-            }
+            // Исходящие
+            const outgoingQuery = query(
+                collection(db, "challenges"),
+                where("fromUserId", "==", currentUser.uid),
+                orderBy("createdAt", "desc")
+            );
+            unsubOutgoing = onSnapshot(outgoingQuery, (snapshot) => {
+                renderOutgoing(snapshot.docs);
+            }, (err) => {
+                console.error('Ошибка live исходящих:', err);
+                document.getElementById('outgoingList').innerHTML = 
+                    '<div class="empty-state"><i class="fas fa-exclamation-triangle icon-red"></i><p>Ошибка загрузки</p></div>';
+            });
         }
 
+        // ===== РЕНДЕР ВХОДЯЩИХ =====
         function renderIncoming(docs) {
             const container = document.getElementById('incomingList');
             
@@ -1037,10 +1083,12 @@
 
             // Активные вызовы
             if (active.length > 0) {
-                active.forEach(docSnap => renderChallengeCard(docSnap, container, 'incoming', true));
+                active.forEach(docSnap => {
+                    html += renderChallengeCardHTML(docSnap, 'incoming');
+                });
             }
 
-            // История (свернутая, с кнопкой показать)
+            // История (свернутая)
             if (history.length > 0) {
                 html += `<div style="margin-top:16px;padding-top:16px;border-top:1px solid rgba(255,255,255,0.05);">
                     <details>
@@ -1055,8 +1103,10 @@
             }
 
             container.innerHTML = html;
+            attachChallengeHandlers(container);
         }
 
+        // ===== РЕНДЕР ИСХОДЯЩИХ =====
         function renderOutgoing(docs) {
             const container = document.getElementById('outgoingList');
             
@@ -1071,54 +1121,15 @@
             }
 
             let html = '';
-
-            // ВСЕ вызовы (активные + история) — без разделения
             docs.forEach(docSnap => {
-                const challenge = docSnap.data();
-                const challengeId = docSnap.id;
-                const chatId = `${challenge.fromUserId}_${challenge.toUserId}`;
-
-                html += `
-                    <div class="challenge-card outgoing">
-                        <div class="challenge-header">
-                            <span class="challenge-name"><i class="fas fa-arrow-up icon-gold"></i> ${escapeHtml(challenge.toName || 'Соперник')}</span>
-                            <span class="challenge-status status-${challenge.status}">${getStatusText(challenge.status)}</span>
-                        </div>
-                        <div class="challenge-details">
-                            <span><i class="fas fa-weight-hanging"></i> Вес: ${challenge.toWeight || 'не указан'} кг</span>
-                            <span><i class="fas fa-calendar-alt"></i> ${challenge.date ? new Date(challenge.date).toLocaleString('ru-RU') : '—'}</span>
-                            <span><i class="fas fa-map-marker-alt"></i> ${challenge.place || '—'}</span>
-                            <span><i class="fas fa-fist-raised"></i> ${challenge.sport || '—'}</span>
-                        </div>
-                        ${challenge.message ? `<div class="challenge-message"><i class="fas fa-quote-left"></i> ${escapeHtml(challenge.message)}</div>` : ''}
-                        <div class="challenge-actions">
-                            ${challenge.status === 'pending' ? `
-                                <button class="btn-cancel-challenge" data-id="${challengeId}"><i class="fas fa-times"></i> Отменить вызов</button>
-                            ` : ''}
-                            ${challenge.status === 'accepted' ? `
-                                <button class="btn-chat" data-chat-id="${chatId}"><i class="fas fa-comments"></i> Перейти в чат</button>
-                                <div class="challenge-details"><i class="fas fa-check-circle icon-green"></i> Соперник принял вызов!</div>
-                            ` : ''}
-                            ${challenge.status === 'rejected' ? '<div class="challenge-details"><i class="fas fa-times-circle icon-red"></i> Соперник отклонил вызов</div>' : ''}
-                            ${challenge.status === 'completed' ? '<div class="challenge-details"><i class="fas fa-check-circle icon-green"></i> Вызов завершён</div>' : ''}
-                        </div>
-                    </div>
-                `;
+                html += renderChallengeCardHTML(docSnap, 'outgoing');
             });
 
             container.innerHTML = html;
-
-            // Обработчики
-            container.querySelectorAll('.btn-cancel-challenge').forEach(btn => {
-                btn.addEventListener('click', () => cancelChallenge(btn.dataset.id));
-            });
-            container.querySelectorAll('.btn-chat').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    window.location.href = `chat.html?id=${btn.dataset.chatId}`;
-                });
-            });
+            attachChallengeHandlers(container);
         }
 
+        // ===== HTML КАРТОЧКИ ВЫЗОВА =====
         function renderChallengeCardHTML(docSnap, type) {
             const challenge = docSnap.data();
             const challengeId = docSnap.id;
@@ -1159,8 +1170,8 @@
                     <div class="challenge-details">
                         <span><i class="fas fa-weight-hanging"></i> Вес: ${isIncoming ? (challenge.fromWeight || 'не указан') : (challenge.toWeight || 'не указан')} кг</span>
                         <span><i class="fas fa-calendar-alt"></i> ${challenge.date ? new Date(challenge.date).toLocaleString('ru-RU') : '—'}</span>
-                        <span><i class="fas fa-map-marker-alt"></i> ${challenge.place || '—'}</span>
-                        <span><i class="fas fa-fist-raised"></i> ${challenge.sport || '—'}</span>
+                        <span><i class="fas fa-map-marker-alt"></i> ${escapeHtml(challenge.place || '—')}</span>
+                        <span><i class="fas fa-fist-raised"></i> ${escapeHtml(challenge.sport || '—')}</span>
                     </div>
                     ${challenge.message ? `<div class="challenge-message"><i class="fas fa-quote-left"></i> ${escapeHtml(challenge.message)}</div>` : ''}
                     ${actionsHtml}
@@ -1168,13 +1179,8 @@
             `;
         }
 
-        function renderChallengeCard(docSnap, container, type) {
-            const html = renderChallengeCardHTML(docSnap, type);
-            const temp = document.createElement('div');
-            temp.innerHTML = html;
-            container.appendChild(temp.firstElementChild);
-
-            // Обработчики
+        // ===== ОБРАБОТЧИКИ КАРТОЧЕК ВЫЗОВОВ =====
+        function attachChallengeHandlers(container) {
             container.querySelectorAll('.btn-accept').forEach(btn => {
                 btn.addEventListener('click', () => updateChallengeStatus(btn.dataset.id, 'accepted'));
             });
@@ -1223,11 +1229,11 @@
                     await notifyAboutChallengeAccepted(challenge.fromUserId, challenge.toUserId, challenge.toName || 'Соперник');
                 }
 
-                showToast(`✅ Вызов ${newStatus === 'accepted' ? 'принят' : 'отклонён'}`, 'success');
-                loadChallenges();
+                showNotification(`✅ Вызов ${newStatus === 'accepted' ? 'принят' : 'отклонён'}`, 'success');
+                // onSnapshot сам перерисует
             } catch (err) {
                 console.error('Ошибка:', err);
-                showToast('❌ Ошибка при обновлении статуса', 'error');
+                showNotification('❌ Ошибка при обновлении статуса', 'error');
             }
         }
 
@@ -1235,11 +1241,11 @@
             if (!await showConfirm('Отменить вызов?')) return;
             try {
                 await deleteDoc(doc(db, "challenges", challengeId));
-                showToast('✅ Вызов отменён', 'success');
-                loadChallenges();
+                showNotification('✅ Вызов отменён', 'success');
+                // onSnapshot сам перерисует
             } catch (err) {
                 console.error('Ошибка:', err);
-                showToast('❌ Ошибка при отмене', 'error');
+                showNotification('❌ Ошибка при отмене', 'error');
             }
         }
 
@@ -1258,6 +1264,11 @@
             if (!currentUser) return;
             if (!await showConfirm('Удалить все завершённые вызовы (принятые и отклонённые)?')) return;
 
+            const btn = document.getElementById('clearHistoryBtn');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> Удаление...';
+            btn.disabled = true;
+
             try {
                 const incomingQuery = query(
                     collection(db, "challenges"),
@@ -1275,8 +1286,12 @@
 
                 let deleted = 0;
                 const allDocs = [...incomingSnap.docs, ...outgoingSnap.docs];
+                const processedIds = new Set();
                 
                 for (const docSnap of allDocs) {
+                    if (processedIds.has(docSnap.id)) continue;
+                    processedIds.add(docSnap.id);
+                    
                     const data = docSnap.data();
                     if (data.status === 'rejected' || data.status === 'completed') {
                         await deleteDoc(doc(db, "challenges", docSnap.id));
@@ -1284,35 +1299,37 @@
                     }
                 }
 
-                showToast(`✅ Удалено ${deleted} записей истории`, 'success');
-                loadChallenges();
+                showNotification(`✅ Удалено ${deleted} записей истории`, 'success');
+                // onSnapshot сам перерисует
             } catch (err) {
                 console.error('Ошибка очистки:', err);
-                showToast('❌ Ошибка при очистке истории', 'error');
+                showNotification('❌ Ошибка при очистке истории', 'error');
+            } finally {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
             }
         }
 
-        // ===== ДОСКА ОБЪЯВЛЕНИЙ =====
-        async function loadOffers() {
-            if (!currentUser) {
-                document.getElementById('offersList').innerHTML = '<div class="empty-state"><i class="fas fa-lock"></i><p>Войдите, чтобы видеть предложения</p></div>';
-                return;
-            }
+        // ===== LIVE-ПОДПИСКА НА ДОСКУ ОБЪЯВЛЕНИЙ =====
+        function subscribeToOffers() {
+            if (!currentUser) return;
+            if (unsubOffers) unsubOffers();
 
-            try {
-                const q = query(
-                    collection(db, "sparring_offers"),
-                    where("status", "==", "active"),
-                    orderBy("createdAt", "desc")
-                );
-                const snapshot = await getDocs(q);
+            const q = query(
+                collection(db, "sparring_offers"),
+                where("status", "==", "active"),
+                orderBy("createdAt", "desc")
+            );
+            unsubOffers = onSnapshot(q, (snapshot) => {
                 renderOffers(snapshot.docs);
-            } catch (err) {
-                console.error('Ошибка загрузки предложений:', err);
-                document.getElementById('offersList').innerHTML = '<div class="empty-state"><i class="fas fa-exclamation-triangle icon-red"></i><p>Ошибка загрузки</p></div>';
-            }
+            }, (err) => {
+                console.error('Ошибка live доски:', err);
+                document.getElementById('offersList').innerHTML = 
+                    '<div class="empty-state"><i class="fas fa-exclamation-triangle icon-red"></i><p>Ошибка загрузки</p></div>';
+            });
         }
 
+        // ===== РЕНДЕР ОБЪЯВЛЕНИЙ =====
         function renderOffers(docs) {
             const container = document.getElementById('offersList');
 
@@ -1328,7 +1345,7 @@
                 return true;
             });
 
-            // ===== СОРТИРОВКА: СВОИ ПЕРВЫМИ =====
+            // Свои объявления первыми
             filtered.sort((a, b) => {
                 const aData = a.data();
                 const bData = b.data();
@@ -1364,15 +1381,15 @@
                         </span>
                     </div>
                     <div class="offer-details">
-                        <span><i class="fas fa-fist-raised"></i> ${offer.sport || '—'}</span>
-                        <span><i class="fas fa-weight-hanging"></i> ${offer.userWeight || '—'}</span>
-                        <span><i class="fas fa-map-marker-alt"></i> ${offer.place || '—'}</span>
+                        <span><i class="fas fa-fist-raised"></i> ${escapeHtml(offer.sport || '—')}</span>
+                        <span><i class="fas fa-weight-hanging"></i> ${escapeHtml(offer.userWeight || '—')}</span>
+                        <span><i class="fas fa-map-marker-alt"></i> ${escapeHtml(offer.place || '—')}</span>
                         <span><i class="fas fa-calendar-alt"></i> ${offer.date ? new Date(offer.date).toLocaleString('ru-RU') : '—'}</span>
                     </div>
                     ${offer.message ? `<div class="offer-message">${escapeHtml(offer.message)}</div>` : ''}
                     <div class="offer-actions">
                         ${!isOwn ? `
-                            <button class="btn-respond" data-offer-id="${offerId}" data-user-id="${offer.userId}" data-user-name="${offer.userName}">
+                            <button class="btn-respond" data-offer-id="${offerId}" data-user-id="${offer.userId}" data-user-name="${escapeHtml(offer.userName)}">
                                 <i class="fas fa-fist-raised"></i> Хочу спарринг
                             </button>
                         ` : `
@@ -1391,7 +1408,7 @@
                     const offerId = btn.dataset.offerId;
                     const userId = btn.dataset.userId;
                     const userName = btn.dataset.userName;
-                    respondToOffer(offerId, userId, userName);
+                    respondToOffer(offerId, userId, userName, btn);
                 });
             });
 
@@ -1401,57 +1418,100 @@
                     if (await showConfirm('Удалить своё предложение?')) {
                         try {
                             await deleteDoc(doc(db, "sparring_offers", offerId));
-                            showToast('✅ Предложение удалено', 'success');
-                            loadOffers();
+                            showNotification('✅ Предложение удалено', 'success');
+                            // onSnapshot сам перерисует
                         } catch (err) {
                             console.error('Ошибка:', err);
-                            showToast('❌ Ошибка при удалении', 'error');
+                            showNotification('❌ Ошибка при удалении', 'error');
                         }
                     }
                 });
             });
         }
 
-        async function respondToOffer(offerId, userId, userName) {
+        // ===== ОТКЛИК НА ОБЪЯВЛЕНИЕ (с защитой от повторного вызова) =====
+        async function respondToOffer(offerId, userId, userName, btnElement) {
             if (!currentUser) {
-                showToast('Войдите в аккаунт', 'warning');
+                showNotification('Войдите в аккаунт', 'warning');
                 return;
             }
 
             if (currentUser.uid === userId) {
-                showToast('Нельзя откликнуться на своё предложение', 'warning');
+                showNotification('Нельзя откликнуться на своё предложение', 'warning');
                 return;
             }
 
-            if (!currentUserData) {
-                const userDoc = await getDoc(doc(db, "fighters", currentUser.uid));
-                if (!userDoc.exists()) {
-                    showToast('❌ Данные пользователя не найдены', 'error');
-                    return;
-                }
-                currentUserData = userDoc.data();
-            }
-
-            let freeChallenges = currentUserData.freeChallenges || 0;
-            let purchasedChallenges = currentUserData.purchasedChallenges || 0;
-            let totalChallenges = freeChallenges + purchasedChallenges;
-
-            if (totalChallenges <= 0) {
-                if (await showConfirm('❌ У вас закончились вызовы!\nПерейти в магазин?')) {
-                    window.location.href = 'shop.html';
-                }
-                return;
-            }
-
-            const offerDoc = await getDoc(doc(db, "sparring_offers", offerId));
-            const offer = offerDoc.data();
-
-            if (!offer) {
-                showToast('❌ Предложение больше не активно', 'error');
-                return;
+            // Блокируем кнопку СРАЗУ, чтобы избежать двойного клика
+            if (btnElement) {
+                btnElement.disabled = true;
+                btnElement.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> Отправка...';
             }
 
             try {
+                // ===== ПРОВЕРКА: НЕ ОТПРАВЛЯЛ ЛИ Я УЖЕ ВЫЗОВ НА ЭТО ОБЪЯВЛЕНИЕ =====
+                const existingQuery = query(
+                    collection(db, "challenges"),
+                    where("fromUserId", "==", currentUser.uid),
+                    where("offerId", "==", offerId)
+                );
+                const existingSnap = await getDocs(existingQuery);
+
+                // Если уже есть активный (pending/accepted) вызов на это объявление — не даём
+                const hasActive = existingSnap.docs.some(d => {
+                    const status = d.data().status;
+                    return status === 'pending' || status === 'accepted';
+                });
+
+                if (hasActive) {
+                    showNotification('❌ Вы уже отправили вызов на это объявление', 'error');
+                    if (btnElement) {
+                        btnElement.disabled = false;
+                        btnElement.innerHTML = '<i class="fas fa-fist-raised"></i> Хочу спарринг';
+                    }
+                    return;
+                }
+
+                if (!currentUserData) {
+                    const userDoc = await getDoc(doc(db, "fighters", currentUser.uid));
+                    if (!userDoc.exists()) {
+                        showNotification('❌ Данные пользователя не найдены', 'error');
+                        if (btnElement) {
+                            btnElement.disabled = false;
+                            btnElement.innerHTML = '<i class="fas fa-fist-raised"></i> Хочу спарринг';
+                        }
+                        return;
+                    }
+                    currentUserData = userDoc.data();
+                }
+
+                let freeChallenges = currentUserData.freeChallenges || 0;
+                let purchasedChallenges = currentUserData.purchasedChallenges || 0;
+                let totalChallenges = freeChallenges + purchasedChallenges;
+
+                if (totalChallenges <= 0) {
+                    if (await showConfirm('❌ У вас закончились вызовы!\nПерейти в магазин?')) {
+                        window.location.href = 'shop.html';
+                    }
+                    if (btnElement) {
+                        btnElement.disabled = false;
+                        btnElement.innerHTML = '<i class="fas fa-fist-raised"></i> Хочу спарринг';
+                    }
+                    return;
+                }
+
+                const offerDoc = await getDoc(doc(db, "sparring_offers", offerId));
+                const offer = offerDoc.data();
+
+                if (!offer || offer.status !== 'active') {
+                    showNotification('❌ Предложение больше не активно', 'error');
+                    if (btnElement) {
+                        btnElement.disabled = false;
+                        btnElement.innerHTML = '<i class="fas fa-fist-raised"></i> Хочу спарринг';
+                    }
+                    return;
+                }
+
+                // ===== СОЗДАЁМ ВЫЗОВ =====
                 await addDoc(collection(db, "challenges"), {
                     fromUserId: currentUser.uid,
                     fromName: currentUserData?.name || 'Боец',
@@ -1463,6 +1523,7 @@
                     place: offer.place || '—',
                     date: offer.date || new Date().toISOString(),
                     message: `Отклик на предложение: ${offer.message || 'Хочу спарринг'}`,
+                    offerId: offerId,  // ← ВАЖНО: связываем вызов с объявлением
                     status: 'pending',
                     createdAt: new Date(),
                     updatedAt: new Date()
@@ -1486,21 +1547,24 @@
                     takenAt: new Date()
                 });
 
-                showToast('✅ Вызов отправлен!', 'success');
-                loadOffers();
-                loadChallenges();
+                showNotification('✅ Вызов отправлен!', 'success');
                 updateHeaderBalance();
+                // onSnapshot сам перерисует доску и мои вызовы
 
             } catch (err) {
                 console.error('Ошибка:', err);
-                showToast('❌ Ошибка при отправке вызова', 'error');
+                showNotification('❌ Ошибка при отправке вызова', 'error');
+                if (btnElement) {
+                    btnElement.disabled = false;
+                    btnElement.innerHTML = '<i class="fas fa-fist-raised"></i> Хочу спарринг';
+                }
             }
         }
 
         // ===== ПУБЛИКАЦИЯ ПРЕДЛОЖЕНИЯ =====
         async function publishOffer() {
             if (!currentUser) {
-                showToast('Войдите в аккаунт', 'warning');
+                showNotification('Войдите в аккаунт', 'warning');
                 return;
             }
 
@@ -1510,11 +1574,10 @@
             const date = document.getElementById('offerDate').value;
             const message = document.getElementById('offerMessage').value.trim();
 
-            // Определяем место
             let place = '';
             if (hallSelect.value === 'other') {
                 if (!manualHall) {
-                    showToast('Введите название зала', 'warning');
+                    showNotification('Введите название зала', 'warning');
                     return;
                 }
                 place = manualHall;
@@ -1522,16 +1585,16 @@
                 const selectedHall = allHalls.find(h => h.id === hallSelect.value);
                 place = selectedHall ? selectedHall.name : hallSelect.value;
             } else {
-                showToast('Выберите зал или введите название', 'warning');
+                showNotification('Выберите зал или введите название', 'warning');
                 return;
             }
 
             if (!sport || !place || !date) {
-                showToast('Заполните все обязательные поля', 'warning');
+                showNotification('Заполните все обязательные поля', 'warning');
                 return;
             }
 
-            // ===== ПРОВЕРКА ЛИМИТА =====
+            // Проверка лимита
             try {
                 const userOffersQuery = query(
                     collection(db, "sparring_offers"),
@@ -1541,20 +1604,20 @@
                 const userOffersSnap = await getDocs(userOffersQuery);
                 
                 if (userOffersSnap.size >= 3) {
-                    showToast('❌ У вас уже 3 активных предложения на доске. Сначала удалите одно из них.', 'error');
+                    showNotification('❌ У вас уже 3 активных предложения на доске. Сначала удалите одно из них.', 'error');
                     return;
                 }
             } catch (err) {
                 console.error('Ошибка проверки лимита:', err);
-                showToast('❌ Ошибка при проверке лимита', 'error');
+                showNotification('❌ Ошибка при проверке лимита', 'error');
                 return;
             }
 
-            // ===== ПРОВЕРКА БАЛАНСА ВЫЗОВОВ =====
+            // Проверка баланса
             if (!currentUserData) {
                 const userDoc = await getDoc(doc(db, "fighters", currentUser.uid));
                 if (!userDoc.exists()) {
-                    showToast('❌ Данные пользователя не найдены', 'error');
+                    showNotification('❌ Данные пользователя не найдены', 'error');
                     return;
                 }
                 currentUserData = userDoc.data();
@@ -1576,7 +1639,6 @@
             btn.innerHTML = '<div class="loading-spinner" style="width:20px;height:20px;"></div> Публикация...';
 
             try {
-                // ===== СПИСЫВАЕМ ВЫЗОВ =====
                 if (freeChallenges > 0) {
                     await updateDoc(doc(db, "fighters", currentUser.uid), {
                         freeChallenges: freeChallenges - 1
@@ -1587,7 +1649,6 @@
                     });
                 }
 
-                // ===== СОЗДАЁМ ПРЕДЛОЖЕНИЕ =====
                 await addDoc(collection(db, "sparring_offers"), {
                     userId: currentUser.uid,
                     userName: currentUserData?.name || 'Боец',
@@ -1602,7 +1663,7 @@
                     expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
                 });
 
-                showToast('✅ Предложение опубликовано! Потрачен 1 вызов.', 'success');
+                showNotification('✅ Предложение опубликовано! Потрачен 1 вызов.', 'success');
                 document.getElementById('offerModal').classList.remove('active');
                 document.getElementById('offerMessage').value = '';
                 document.getElementById('offerDate').value = '';
@@ -1611,12 +1672,11 @@
                 document.getElementById('manualHallContainer').style.display = 'none';
                 
                 updateHeaderBalance();
-                loadOffers();
-                loadChallenges();
+                // onSnapshot сам перерисует
 
             } catch (err) {
                 console.error('Ошибка:', err);
-                showToast('❌ Ошибка при публикации', 'error');
+                showNotification('❌ Ошибка при публикации', 'error');
             } finally {
                 btn.disabled = false;
                 btn.innerHTML = '<i class="fas fa-paper-plane"></i> Опубликовать';
@@ -1624,14 +1684,32 @@
         }
 
         function initFilters() {
-            document.getElementById('filterSport').addEventListener('change', loadOffers);
-            document.getElementById('filterCity').addEventListener('input', loadOffers);
-            document.getElementById('filterWeight').addEventListener('change', loadOffers);
+            document.getElementById('filterSport').addEventListener('change', () => {
+                // Перерисовываем из последнего snapshot
+                // (проще всего заново вызвать подписку — onSnapshot даст свежие данные)
+                // Но так как мы храним только callback, перерисовываем вручную:
+                // Принудительно дёргаем последний snapshot через повторный вызов
+                // Проще всего: вызвать функцию renderOffers с пустым массивом — не сработает.
+                // Правильный путь: сохранить последний snapshot в переменную.
+                // Упрощаем: перезагружаем подписку
+                subscribeToOffers();
+            });
+            document.getElementById('filterCity').addEventListener('input', () => {
+                subscribeToOffers();
+            });
+            document.getElementById('filterWeight').addEventListener('change', () => {
+                subscribeToOffers();
+            });
         }
 
         function escapeHtml(str) {
-            if (!str) return '';
-            return str.replace(/[&<>]/g, m => m === '&' ? '&amp;' : m === '<' ? '&lt;' : '&gt;');
+            if (str === null || str === undefined) return '';
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
         }
 
         // ===== ИНИЦИАЛИЗАЦИЯ =====
@@ -1639,9 +1717,7 @@
         initFilters();
 
         document.getElementById('offerHall')?.addEventListener('change', toggleManualHallInput);
-
         document.getElementById('clearHistoryBtn')?.addEventListener('click', clearHistory);
-        document.getElementById('refreshChallengesBtn')?.addEventListener('click', loadChallenges);
 
         onAuthStateChanged(auth, async (user) => {
             currentUser = user;
@@ -1650,8 +1726,8 @@
                 currentUserData = userDoc.data();
                 updateHeaderBalance();
                 await loadHalls();
-                loadChallenges();
-                loadOffers();
+                subscribeToChallenges();
+                subscribeToOffers();
             } else {
                 const balanceDiv = document.getElementById('balanceIndicator');
                 if (balanceDiv) balanceDiv.style.display = 'none';
@@ -1661,8 +1737,15 @@
             }
         });
 
+        // Отписки
+        window.addEventListener('beforeunload', () => {
+            if (unsubIncoming) unsubIncoming();
+            if (unsubOutgoing) unsubOutgoing();
+            if (unsubOffers) unsubOffers();
+        });
+
         document.getElementById('publishOfferBtn').addEventListener('click', () => {
-            if (!currentUser) { showToast('Войдите в аккаунт', 'warning'); return; }
+            if (!currentUser) { showNotification('Войдите в аккаунт', 'warning'); return; }
             document.getElementById('offerModal').classList.add('active');
         });
 

@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <!-- PWA Manifest & Icons -->
     <link rel="manifest" href="/prorank-live/manifest.json">
     <link rel="apple-touch-icon" href="/prorank-live/icons/icon-192.png">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -10,7 +9,6 @@
     <meta name="theme-color" content="#fbbf24">
     <meta name="mobile-web-app-capable" content="yes">
     <meta charset="UTF-8">
-<!--🔧ФИКС: preconnect -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="dns-prefetch" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -21,17 +19,13 @@
     <link rel="dns-prefetch" href="https://www.gstatic.com">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="theme-color" content="#fbbf24">
-    <meta name="description" content="Рейтинговые лиги PRORANK — Bronze, Silver, Gold, Diamond, Elite, Legendary. Уровни и награды">
+    <meta name="description" content="Рейтинговые лиги PRORANK — Bronze, Silver, Gold, Diamond, Elite, Legendary. Уровни, награды и логика начисления">
     <title>Лиги и ранги | PRORANK</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700;14..32,800;14..32,900&display=swap" rel="stylesheet">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
@@ -46,9 +40,7 @@
             flex-direction: column;
         }
 
-        main {
-            flex: 1;
-        }
+        main { flex: 1; }
 
         .gold-top {
             position: fixed;
@@ -69,22 +61,14 @@
             width: 100%;
         }
 
-        .balance-indicator:hover {
-            border-color: #fbbf24;
-            box-shadow: 0 0 15px rgba(251,191,36,0.2);
-        }
-
-        .nav-links a:hover i {
-            transform: scale(1.1);
-        }
-
-        .page-header {
+        /* ===== HERO ===== */
+        .hero {
             text-align: center;
             padding: 50px 20px 30px;
             animation: fadeInUp 0.6s ease;
         }
 
-        .page-header h1 {
+        .hero h1 {
             font-size: clamp(1.6rem, 5vw, 2.2rem);
             font-weight: 800;
             background: linear-gradient(135deg, #fff, #fbbf24);
@@ -92,50 +76,66 @@
             color: transparent;
         }
 
-        .page-header h1 i {
+        .hero h1 i {
             background: none;
             background-clip: unset;
             color: #fbbf24;
         }
 
-        .page-header p {
+        .hero p {
             color: #aaa;
             margin-top: 12px;
             font-size: clamp(0.8rem, 3vw, 0.95rem);
         }
 
-        /* ===== ТЕКУЩАЯ ЛИГА ===== */
+        /* ===== СЕКЦИЯ: ТЕКУЩАЯ ЛИГА (плашка сверху) ===== */
         .current-league-banner {
-            background: linear-gradient(135deg, rgba(251,191,36,0.12), rgba(251,191,36,0.04));
+            background: linear-gradient(135deg, rgba(251,191,36,0.12), rgba(251,191,36,0.03));
             border: 2px solid rgba(251,191,36,0.3);
-            border-radius: 28px;
-            padding: 20px 28px;
-            margin-bottom: 30px;
+            border-radius: 24px;
+            padding: 18px 24px;
+            margin-bottom: 28px;
             display: flex;
             align-items: center;
             justify-content: space-between;
             flex-wrap: wrap;
-            gap: 16px;
+            gap: 14px;
             animation: fadeInUp 0.5s ease;
             transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
         }
 
-        .current-league-banner:hover {
-            border-color: rgba(251,191,36,0.5);
-            transform: translateY(-3px);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        .current-league-banner::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(251,191,36,0.08) 0%, transparent 60%);
+            animation: shine 6s linear infinite;
+            pointer-events: none;
+        }
+
+        @keyframes shine {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
 
         .current-league-banner .info {
             display: flex;
             align-items: center;
             gap: 16px;
+            position: relative;
+            z-index: 1;
         }
 
         .current-league-banner .info img {
-            width: 50px;
-            height: 50px;
+            width: 52px;
+            height: 52px;
             object-fit: contain;
+            filter: drop-shadow(0 0 12px rgba(251,191,36,0.4));
         }
 
         .current-league-banner .info .text {
@@ -144,172 +144,357 @@
         }
 
         .current-league-banner .info .text .label {
+            font-size: 0.65rem;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+            font-weight: 600;
+        }
+
+        .current-league-banner .info .text .name {
+            font-size: 1.3rem;
+            font-weight: 900;
+            color: #fbbf24;
+            text-shadow: 0 0 20px rgba(251,191,36,0.3);
+            letter-spacing: -0.3px;
+        }
+
+        .current-league-banner .frs-block {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .current-league-banner .frs-block i {
+            color: #fbbf24;
+            font-size: 1.3rem;
+        }
+
+        .current-league-banner .frs-block .frs-value {
+            font-size: 1.6rem;
+            font-weight: 900;
+            color: #fbbf24;
+            line-height: 1;
+        }
+
+        .current-league-banner .frs-block .frs-label {
             font-size: 0.7rem;
             color: #888;
             text-transform: uppercase;
             letter-spacing: 1px;
         }
 
-        .current-league-banner .info .text .name {
-            font-size: 1.3rem;
-            font-weight: 800;
-            color: #fbbf24;
-        }
-
-        .current-league-banner .frs {
-            font-size: 1.2rem;
-            font-weight: 700;
-            color: #fbbf24;
-        }
-
-        .current-league-banner .frs span {
-            font-size: 0.8rem;
-            color: #888;
-            font-weight: 400;
-        }
-
-        .leagues-grid {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-            margin: 30px 0;
-        }
-
-        .league-card {
-            background: rgba(15,15,15,0.7);
-            backdrop-filter: blur(8px);
-            border-radius: 28px;
-            padding: 24px;
-            display: flex;
-            align-items: center;
-            gap: 24px;
-            flex-wrap: wrap;
-            border-left: 5px solid;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            cursor: pointer;
+        /* ===== КАРУСЕЛЬ ЛИГ (Clash of Clans style) ===== */
+        .leagues-carousel-wrapper {
+            margin: 30px 0 40px;
             position: relative;
-            overflow: hidden;
+            padding: 20px 0;
         }
 
-        .league-card::before {
+        .leagues-carousel-wrapper::before,
+        .leagues-carousel-wrapper::after {
             content: '';
             position: absolute;
             top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(251,191,36,0.1), transparent);
-            transition: left 0.5s ease;
+            bottom: 0;
+            width: 80px;
+            pointer-events: none;
+            z-index: 3;
         }
 
-        .league-card:hover::before {
-            left: 100%;
+        .leagues-carousel-wrapper::before {
+            left: 0;
+            background: linear-gradient(90deg, rgba(15,15,15,0.95), transparent);
         }
 
-        .league-card:hover {
-            transform: translateY(-5px);
-            background: rgba(25,25,35,0.9);
-            box-shadow: 0 15px 35px rgba(0,0,0,0.3);
+        .leagues-carousel-wrapper::after {
+            right: 0;
+            background: linear-gradient(-90deg, rgba(15,15,15,0.95), transparent);
         }
 
-        .league-card:active {
-            transform: translateY(-2px) scale(0.99);
+        .leagues-carousel {
+            display: flex;
+            gap: 20px;
+            overflow-x: auto;
+            overflow-y: hidden;
+            padding: 40px 0 40px 0;
+            scroll-snap-type: x mandatory;
+            scroll-padding: 0 calc(50% - 150px);
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
+            position: relative;
         }
 
-        .league-card.current {
-            background: rgba(251,191,36,0.08);
-            border-color: #fbbf24 !important;
-            box-shadow: 0 0 30px rgba(251,191,36,0.1);
+        .leagues-carousel::-webkit-scrollbar { display: none; }
+
+        /* Внутренний трек — с отступами по краям, чтобы активная центрировалась */
+        .leagues-carousel::before,
+        .leagues-carousel::after {
+            content: '';
+            flex-shrink: 0;
+            width: calc(50vw - 150px);
+            min-width: calc(50% - 150px);
         }
 
-        .league-card.current::after {
-            content: '⭐ Текущая';
+        .league-slide {
+            flex: 0 0 300px;
+            width: 300px;
+            scroll-snap-align: center;
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            opacity: 0.5;
+            transform: scale(0.82);
+            cursor: pointer;
+            position: relative;
+        }
+
+        .league-slide.active {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        .league-slide.completed {
+            opacity: 0.7;
+        }
+
+        .league-slide.completed.active {
+            opacity: 1;
+        }
+
+        .league-slide-card {
+            background: linear-gradient(145deg, rgba(24,24,30,0.95), rgba(14,14,18,0.98));
+            border: 2px solid rgba(255,255,255,0.08);
+            border-radius: 28px;
+            padding: 30px 24px 26px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .league-slide.active .league-slide-card {
+            border-color: var(--league-color, #fbbf24);
+            box-shadow: 0 0 60px var(--league-glow, rgba(251,191,36,0.4)),
+                        inset 0 0 30px var(--league-glow, rgba(251,191,36,0.05));
+            transform: translateY(-4px);
+        }
+
+        .league-slide-card::before {
+            content: '';
             position: absolute;
-            top: 12px;
-            right: 16px;
-            font-size: 0.65rem;
-            font-weight: 700;
-            color: #fbbf24;
-            background: rgba(251,191,36,0.15);
-            padding: 4px 12px;
-            border-radius: 40px;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, transparent, var(--league-color, #fbbf24), transparent);
+            opacity: 0.6;
         }
 
-        .league-icon {
-            width: 70px;
-            height: 70px;
+        .league-slide.active .league-slide-card::before {
+            opacity: 1;
+            height: 5px;
+        }
+
+        /* ===== ИКОНКА ЛИГИ ===== */
+        .league-slide-icon-wrap {
+            width: 120px;
+            height: 120px;
+            margin: 0 auto 18px;
+            position: relative;
             display: flex;
             align-items: center;
             justify-content: center;
-            flex-shrink: 0;
-            transition: transform 0.3s ease;
         }
 
-        .league-icon img {
-            width: 100%;
-            height: 100%;
+        .league-slide-icon-bg {
+            position: absolute;
+            inset: 0;
+            border-radius: 50%;
+            background: radial-gradient(circle, var(--league-glow, rgba(251,191,36,0.3)) 0%, transparent 70%);
+            opacity: 0;
+            transition: opacity 0.4s ease;
+        }
+
+        .league-slide.active .league-slide-icon-bg {
+            opacity: 1;
+            animation: iconPulse 3s ease-in-out infinite;
+        }
+
+        @keyframes iconPulse {
+            0%, 100% { transform: scale(1); opacity: 0.8; }
+            50% { transform: scale(1.15); opacity: 1; }
+        }
+
+        .league-slide-icon {
+            width: 100px;
+            height: 100px;
             object-fit: contain;
+            position: relative;
+            z-index: 1;
+            filter: drop-shadow(0 4px 20px rgba(0,0,0,0.5));
+            transition: all 0.3s ease;
         }
 
-        .league-card:hover .league-icon {
+        .league-slide.active .league-slide-icon {
             transform: scale(1.1);
+            filter: drop-shadow(0 0 30px var(--league-glow, rgba(251,191,36,0.5)));
         }
 
-        .league-info {
-            flex: 1;
-        }
-
-        .league-name {
-            font-size: 1.3rem;
-            font-weight: 800;
-            margin-bottom: 8px;
+        .league-slide-icon-fallback {
+            width: 100px;
+            height: 100px;
             display: flex;
             align-items: center;
-            gap: 10px;
-            flex-wrap: wrap;
+            justify-content: center;
+            font-size: 3.5rem;
+            color: var(--league-color, #fbbf24);
+            position: relative;
+            z-index: 1;
+            filter: drop-shadow(0 0 20px var(--league-glow, rgba(251,191,36,0.4)));
         }
 
-        .league-range {
-            color: #aaa;
-            font-size: 0.85rem;
-            margin-bottom: 12px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            flex-wrap: wrap;
+        /* ===== НАЗВАНИЕ ЛИГИ ===== */
+        .league-slide-name {
+            font-size: 1.05rem;
+            font-weight: 900;
+            color: var(--league-color, #fbbf24);
+            letter-spacing: 0.5px;
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            text-shadow: 0 0 20px var(--league-glow, rgba(251,191,36,0.3));
         }
 
-        .league-rewards {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-
-        .reward-tag {
-            background: rgba(251,191,36,0.12);
-            padding: 5px 14px;
-            border-radius: 40px;
+        .league-slide-range {
             font-size: 0.75rem;
+            color: #aaa;
             font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            margin-bottom: 16px;
+        }
+
+        .league-slide-range i {
+            color: var(--league-color, #fbbf24);
+            font-size: 0.7rem;
+        }
+
+        /* ===== СТАТУС ЛИГИ (текущая/пройдена/закрыта) ===== */
+        .league-slide-status {
             display: inline-flex;
             align-items: center;
             gap: 6px;
-            color: #fbbf24;
+            padding: 5px 14px;
+            border-radius: 40px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 14px;
+        }
+
+        .league-slide-status.current {
+            background: var(--league-color, #fbbf24);
+            color: #000;
+            box-shadow: 0 4px 15px var(--league-glow, rgba(251,191,36,0.4));
+        }
+
+        .league-slide-status.completed {
+            background: rgba(16,185,129,0.15);
+            color: #10b981;
+            border: 1px solid rgba(16,185,129,0.3);
+        }
+
+        .league-slide-status.locked {
+            background: rgba(255,255,255,0.05);
+            color: #888;
+            border: 1px solid rgba(255,255,255,0.08);
+        }
+
+        /* ===== ПЛЮШКИ ЛИГИ ===== */
+        .league-slide-rewards {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-top: 4px;
+        }
+
+        .league-reward-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 12px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.04);
+            font-size: 0.72rem;
+            color: #ddd;
+            text-align: left;
             transition: all 0.2s ease;
         }
 
-        .reward-tag:hover {
-            background: rgba(251,191,36,0.25);
-            transform: translateY(-2px);
+        .league-slide.active .league-reward-item {
+            background: rgba(0,0,0,0.45);
+            border-color: rgba(255,255,255,0.08);
         }
 
+        .league-reward-item i {
+            color: var(--league-color, #fbbf24);
+            font-size: 0.85rem;
+            width: 16px;
+            text-align: center;
+            flex-shrink: 0;
+        }
+
+        .league-reward-item .reward-text {
+            flex: 1;
+            line-height: 1.3;
+        }
+
+        .league-reward-item .reward-text strong {
+            color: #fff;
+            font-weight: 700;
+        }
+
+        /* ===== ИНДИКАТОРЫ (точки под каруселью) ===== */
+        .carousel-dots {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 8px;
+        }
+
+        .carousel-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.15);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: none;
+            padding: 0;
+        }
+
+        .carousel-dot.active {
+            background: var(--dot-color, #fbbf24);
+            width: 24px;
+            border-radius: 4px;
+            box-shadow: 0 0 12px var(--dot-glow, rgba(251,191,36,0.5));
+        }
+
+        .carousel-dot.completed {
+            background: rgba(16,185,129,0.5);
+        }
+
+        /* ===== СЕКЦИЯ: ЛОГИКА НАЧИСЛЕНИЯ FRS ===== */
         .frs-calc {
             background: rgba(15,15,15,0.7);
             backdrop-filter: blur(8px);
             border-radius: 28px;
             padding: 32px 28px;
-            margin: 30px 0 50px;
-            text-align: center;
+            margin: 30px 0 30px;
             border: 1px solid rgba(251,191,36,0.2);
             transition: all 0.3s ease;
             animation: fadeInUp 0.6s ease 0.3s both;
@@ -317,7 +502,6 @@
 
         .frs-calc:hover {
             border-color: rgba(251,191,36,0.4);
-            transform: translateY(-3px);
             box-shadow: 0 15px 35px rgba(0,0,0,0.3);
         }
 
@@ -329,6 +513,7 @@
             align-items: center;
             justify-content: center;
             gap: 12px;
+            text-align: center;
         }
 
         .frs-calc h3 i {
@@ -340,38 +525,125 @@
             50% { transform: scale(1.1); }
         }
 
-        .frs-calc p {
-            color: #ccc;
-            line-height: 1.8;
-            margin-bottom: 20px;
-            font-size: 0.95rem;
-        }
-
         .frs-calc .formula {
-            background: rgba(0,0,0,0.3);
+            background: rgba(0,0,0,0.35);
             border-radius: 20px;
-            padding: 15px;
-            margin: 15px 0;
-            font-family: monospace;
-            font-size: 0.85rem;
+            padding: 18px 20px;
+            margin: 15px 0 20px;
+            font-family: 'Inter', monospace;
+            font-size: 0.9rem;
             color: #fbbf24;
+            text-align: center;
+            border: 1px solid rgba(251,191,36,0.15);
+            line-height: 1.6;
         }
 
-        .frs-calc a {
-            color: #fbbf24;
-            text-decoration: none;
-            font-weight: 600;
+        .frs-calc .formula strong {
+            color: #fff;
+        }
+
+        /* ===== СПИСОК НАЧИСЛЕНИЙ ===== */
+        .frs-actions-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .frs-action {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 14px 16px;
+            background: rgba(0,0,0,0.25);
+            border-radius: 16px;
+            border: 1px solid rgba(255,255,255,0.04);
             transition: all 0.2s ease;
+        }
+
+        .frs-action:hover {
+            background: rgba(251,191,36,0.05);
+            border-color: rgba(251,191,36,0.15);
+            transform: translateX(4px);
+        }
+
+        .frs-action .frs-action-icon {
+            width: 42px;
+            height: 42px;
+            border-radius: 12px;
+            background: rgba(251,191,36,0.12);
+            border: 1px solid rgba(251,191,36,0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fbbf24;
+            font-size: 1.05rem;
+            flex-shrink: 0;
+        }
+
+        .frs-action .frs-action-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .frs-action .frs-action-title {
+            font-weight: 700;
+            font-size: 0.85rem;
+            color: #fff;
+            margin-bottom: 2px;
+        }
+
+        .frs-action .frs-action-desc {
+            font-size: 0.7rem;
+            color: #888;
+        }
+
+        .frs-action .frs-action-value {
+            font-size: 1rem;
+            font-weight: 800;
+            color: #fbbf24;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        /* ===== БЛОК ПРАВИЛ ===== */
+        .rules-block {
+            text-align: center;
+            padding: 20px;
+            background: rgba(251,191,36,0.05);
+            border-radius: 20px;
+            border: 1px dashed rgba(251,191,36,0.25);
+        }
+
+        .rules-block p {
+            color: #ccc;
+            font-size: 0.85rem;
+            margin-bottom: 14px;
+            line-height: 1.6;
+        }
+
+        .rules-block a {
             display: inline-flex;
             align-items: center;
             gap: 8px;
+            color: #fbbf24;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 0.85rem;
+            padding: 10px 22px;
+            border-radius: 40px;
+            background: rgba(251,191,36,0.1);
+            border: 1px solid rgba(251,191,36,0.25);
+            transition: all 0.2s ease;
         }
 
-        .frs-calc a:hover {
-            transform: translateX(3px);
-            color: #ffdd77;
+        .rules-block a:hover {
+            background: rgba(251,191,36,0.2);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(251,191,36,0.2);
         }
 
+        /* ===== ФУТЕР ===== */
         .main-footer {
             background: #0a0a0a;
             border-top: 1px solid rgba(251,191,36,0.15);
@@ -388,21 +660,9 @@
             margin-bottom: 32px;
         }
 
-        .footer-logo .logo {
-            font-size: 1.3rem;
-            display: inline-block;
-        }
-
-        .footer-logo p {
-            font-size: 0.7rem;
-            color: #777;
-            margin-top: 6px;
-        }
-
-        .footer-social {
-            display: flex;
-            gap: 20px;
-        }
+        .footer-logo .logo { font-size: 1.3rem; display: inline-block; }
+        .footer-logo p { font-size: 0.7rem; color: #777; margin-top: 6px; }
+        .footer-social { display: flex; gap: 20px; }
 
         .social-icon {
             color: #aaa;
@@ -415,40 +675,14 @@
             transform: translateY(-3px) scale(1.1);
         }
 
-        .footer-links {
-            display: flex;
-            gap: 24px;
-            flex-wrap: wrap;
-        }
-
-        .footer-links a {
-            color: #888;
-            text-decoration: none;
-            font-size: 0.75rem;
-            transition: color 0.2s ease;
-        }
-
-        .footer-links a:hover {
-            color: #fbbf24;
-        }
-
-        .footer-bottom {
-            text-align: center;
-            padding-top: 24px;
-            border-top: 1px solid rgba(255,255,255,0.05);
-            font-size: 0.65rem;
-            color: #555;
-        }
+        .footer-links { display: flex; gap: 24px; flex-wrap: wrap; }
+        .footer-links a { color: #888; text-decoration: none; font-size: 0.75rem; transition: color 0.2s ease; }
+        .footer-links a:hover { color: #fbbf24; }
+        .footer-bottom { text-align: center; padding-top: 24px; border-top: 1px solid rgba(255,255,255,0.05); font-size: 0.65rem; color: #555; }
 
         @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         @keyframes fadeIn {
@@ -456,126 +690,86 @@
             to { opacity: 1; }
         }
 
+        /* ===== АДАПТИВ ===== */
         @media (max-width: 768px) {
-            .container {
-                padding: 0 16px;
-            }
-            
-            .navbar {
-                padding: 12px 18px;
-            }
-            
-            .nav-links.show {
-                display: flex;
-                animation: fadeIn 0.2s ease;
-            }
-            
-            .page-header h1 {
-                font-size: 1.6rem;
-            }
-            
-            .league-card {
-                flex-direction: column;
-                text-align: center;
-            }
-            
-            .league-name {
-                justify-content: center;
-            }
-            
-            .league-range {
-                justify-content: center;
-            }
-            
-            .league-rewards {
-                justify-content: center;
-            }
-            
-            .footer-inner {
-                flex-direction: column;
-                text-align: center;
-                align-items: center;
-            }
+            .container { padding: 0 16px; }
+            .navbar { padding: 12px 18px; }
+            .nav-links.show { display: flex; animation: fadeIn 0.2s ease; }
+
+            .hero { padding: 30px 12px 20px; }
+            .hero h1 { font-size: 1.5rem; }
 
             .current-league-banner {
+                padding: 14px 18px;
                 flex-direction: column;
-                text-align: center;
+                align-items: flex-start;
+                gap: 10px;
             }
+            .current-league-banner .info img { width: 42px; height: 42px; }
+            .current-league-banner .info .text .name { font-size: 1.1rem; }
+            .current-league-banner .frs-block .frs-value { font-size: 1.3rem; }
 
-            .current-league-banner .info {
-                flex-direction: column;
-                text-align: center;
+            .league-slide {
+                flex: 0 0 240px;
+                width: 240px;
             }
+            .leagues-carousel {
+                gap: 14px;
+                scroll-padding: 0 calc(50% - 120px);
+            }
+            .leagues-carousel::before,
+            .leagues-carousel::after {
+                width: calc(50vw - 120px);
+                min-width: calc(50% - 120px);
+            }
+            .league-slide-card { padding: 22px 18px 20px; border-radius: 22px; }
+            .league-slide-icon-wrap { width: 90px; height: 90px; margin-bottom: 14px; }
+            .league-slide-icon { width: 76px; height: 76px; }
+            .league-slide-icon-fallback { width: 76px; height: 76px; font-size: 2.6rem; }
+            .league-slide-name { font-size: 0.9rem; }
+            .league-slide-range { font-size: 0.68rem; }
+            .league-slide-rewards { gap: 6px; }
+            .league-reward-item { padding: 6px 10px; font-size: 0.65rem; gap: 8px; }
+            .league-reward-item i { font-size: 0.75rem; width: 14px; }
 
-            .league-card.current::after {
-                position: relative;
-                top: auto;
-                right: auto;
-                margin-top: 8px;
-                display: inline-block;
-            }
+            .frs-calc { padding: 22px 18px; border-radius: 22px; }
+            .frs-calc h3 { font-size: 1.05rem; }
+            .frs-calc .formula { font-size: 0.78rem; padding: 14px; }
+
+            .frs-actions-list { grid-template-columns: 1fr; gap: 10px; }
+            .frs-action { padding: 12px 14px; }
+            .frs-action .frs-action-icon { width: 38px; height: 38px; font-size: 0.95rem; }
+            .frs-action .frs-action-title { font-size: 0.8rem; }
+            .frs-action .frs-action-desc { font-size: 0.65rem; }
+            .frs-action .frs-action-value { font-size: 0.9rem; }
+
+            .leagues-carousel-wrapper::before,
+            .leagues-carousel-wrapper::after { width: 40px; }
+
+            .footer-inner { flex-direction: column; text-align: center; align-items: center; }
         }
 
         @media (max-width: 480px) {
-            .league-icon {
-                width: 55px;
-                height: 55px;
+            .league-slide { flex: 0 0 220px; width: 220px; }
+            .leagues-carousel { scroll-padding: 0 calc(50% - 110px); }
+            .leagues-carousel::before,
+            .leagues-carousel::after {
+                width: calc(50vw - 110px);
+                min-width: calc(50% - 110px);
             }
-            
-            .league-name {
-                font-size: 1rem;
-            }
-            
-            .league-range {
-                font-size: 0.7rem;
-            }
-            
-            .reward-tag {
-                font-size: 0.65rem;
-                padding: 4px 10px;
-            }
-            
-            .frs-calc {
-                padding: 20px 16px;
-            }
-            
-            .frs-calc h3 {
-                font-size: 1.1rem;
-            }
-            
-            .frs-calc p {
-                font-size: 0.8rem;
-            }
-
-            .current-league-banner {
-                padding: 16px;
-            }
-
-            .current-league-banner .info img {
-                width: 40px;
-                height: 40px;
-            }
-
-            .current-league-banner .info .text .name {
-                font-size: 1.1rem;
-            }
+            .league-slide-card { padding: 20px 16px 18px; border-radius: 20px; }
+            .league-slide-icon-wrap { width: 80px; height: 80px; }
+            .league-slide-icon { width: 68px; height: 68px; }
+            .league-slide-icon-fallback { width: 68px; height: 68px; font-size: 2.2rem; }
         }
 
-        ::-webkit-scrollbar {
-            width: 5px;
-        }
-        
-        ::-webkit-scrollbar-track {
-            background: #1a1a1a;
-        }
-        
-        ::-webkit-scrollbar-thumb {
-            background: #fbbf24;
-            border-radius: 10px;
-        }
-        
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-track { background: #1a1a1a; }
+        ::-webkit-scrollbar-thumb { background: #fbbf24; border-radius: 10px; }
+
         .icon-gold { color: #fbbf24; }
     </style>
+    <script src="modals.js"></script>
 </head>
 <body>
     <div class="gold-top"></div>
@@ -587,39 +781,91 @@
     </header>
 
     <main class="container">
-        <div class="page-header">
+        <!-- ===== HERO ===== -->
+        <div class="hero">
             <h1><i class="fas fa-trophy"></i> Рейтинговые лиги</h1>
             <p>Путь к вершине начинается здесь. Каждая лига открывает новые возможности!</p>
         </div>
 
-        <!-- ТЕКУЩАЯ ЛИГА -->
+        <!-- ===== ТЕКУЩАЯ ЛИГА ===== -->
         <div id="currentLeagueBanner" class="current-league-banner" style="display: none;">
             <div class="info">
-                <img id="currentLeagueIcon" src="" alt="Лига">
+                <img id="currentLeagueIcon" src="" alt="Лига" onerror="this.style.display='none'">
                 <div class="text">
                     <span class="label">Ваша текущая лига</span>
                     <span class="name" id="currentLeagueName">—</span>
                 </div>
             </div>
-            <div class="frs">
-                <span id="currentFrs">0</span> <span>FRS</span>
+            <div class="frs-block">
+                <i class="fas fa-star"></i>
+                <span class="frs-value" id="currentFrs">0</span>
+                <span class="frs-label">FRS</span>
             </div>
         </div>
 
-        <div class="leagues-grid" id="leaguesGrid">
-            <!-- Заполняется через JS -->
+        <!-- ===== КАРУСЕЛЬ ЛИГ (Clash of Clans style) ===== -->
+        <div class="leagues-carousel-wrapper">
+            <div class="leagues-carousel" id="leaguesCarousel">
+                <!-- Слайды будут вставлены через JS -->
+            </div>
         </div>
 
+        <!-- ===== ТОЧКИ-ИНДИКАТОРЫ ===== -->
+        <div class="carousel-dots" id="carouselDots"></div>
+
+        <!-- ===== ЛОГИКА НАЧИСЛЕНИЯ FRS ===== -->
         <div class="frs-calc">
             <h3><i class="fas fa-calculator"></i> Как заработать FRS?</h3>
+            
             <div class="formula">
-                <strong>Формула рейтинга:</strong> FRS = (Победы × 100) + (Финиши × 50) + (Бонусы активности)
+                <strong>FRS = (Победы × 100) + (Финиши × 50) + (Бонусы активности)</strong>
             </div>
-            <p>🏆 <strong>Победа в бою</strong> → +100 FRS<br>
-            ⚡ <strong>Досрочная победа (финиш)</strong> → +50 FRS (дополнительно)<br>
-            ❤️ <strong>Лайки и подписчики</strong> → влияют на хайп-рейтинг<br>
-            📅 <strong>Активность</strong> → регулярные бои дают бонусы</p>
-            <p><a href="rules.html"><i class="fas fa-book-open"></i> Подробнее о формуле рейтинга →</a></p>
+
+            <div class="frs-actions-list">
+                <div class="frs-action">
+                    <div class="frs-action-icon"><i class="fas fa-trophy"></i></div>
+                    <div class="frs-action-info">
+                        <div class="frs-action-title">Победа в бою</div>
+                        <div class="frs-action-desc">Основное начисление за победу</div>
+                    </div>
+                    <div class="frs-action-value">+100</div>
+                </div>
+
+                <div class="frs-action">
+                    <div class="frs-action-icon"><i class="fas fa-bolt"></i></div>
+                    <div class="frs-action-info">
+                        <div class="frs-action-title">Досрочная победа</div>
+                        <div class="frs-action-desc">Дополнительно за финиш</div>
+                    </div>
+                    <div class="frs-action-value">+50</div>
+                </div>
+
+                <div class="frs-action">
+                    <div class="frs-action-icon"><i class="fas fa-heart"></i></div>
+                    <div class="frs-action-info">
+                        <div class="frs-action-title">Лайки и подписчики</div>
+                        <div class="frs-action-desc">Влияют на хайп-рейтинг</div>
+                    </div>
+                    <div class="frs-action-value">+1..10</div>
+                </div>
+
+                <div class="frs-action">
+                    <div class="frs-action-icon"><i class="fas fa-calendar-check"></i></div>
+                    <div class="frs-action-info">
+                        <div class="frs-action-title">Активность</div>
+                        <div class="frs-action-desc">Регулярные бои дают бонусы</div>
+                    </div>
+                    <div class="frs-action-value">+20/мес</div>
+                </div>
+            </div>
+
+            <div class="rules-block">
+                <p>Подробное описание формулы, ограничений и правил рейтинга читайте в разделе «Правила».</p>
+                <a href="rules.html">
+                    <i class="fas fa-book-open"></i> Подробнее о формуле рейтинга
+                    <i class="fas fa-arrow-right" style="font-size:0.7rem;"></i>
+                </a>
+            </div>
         </div>
     </main>
 
@@ -683,80 +929,111 @@
         const LEAGUES = [
             {
                 id: 'bronze',
-                name: 'БРОНЗОВАЯ ЛИГА',
+                name: 'БРОНЗОВАЯ',
                 minFrs: 0,
                 maxFrs: 499,
-                icon: './league-icons/bronze.webp',
+                icon: 'fa-medal',
                 color: '#cd7f32',
+                glow: 'rgba(205,127,50,0.4)',
                 range: '0 – 499 FRS',
-                desc: 'Начальный уровень',
-                rewards: ['Доступ в рейтинг']
+                rewards: [
+                    { icon: 'fa-list-ol', text: '<strong>Доступ</strong> в общий рейтинг' },
+                    { icon: 'fa-fist-raised', text: '<strong>Базовые</strong> вызовы на спарринг' },
+                    { icon: 'fa-user', text: '<strong>Стандартный</strong> профиль бойца' }
+                ]
             },
             {
                 id: 'silver',
-                name: 'СЕРЕБРЯНАЯ ЛИГА',
+                name: 'СЕРЕБРЯНАЯ',
                 minFrs: 500,
                 maxFrs: 999,
-                icon: './league-icons/silver.webp',
+                icon: 'fa-medal',
                 color: '#c0c0c0',
+                glow: 'rgba(192,192,192,0.4)',
                 range: '500 – 999 FRS',
-                desc: 'Первые достижения',
-                rewards: ['+1 вызов в месяц', 'Серебряный бейдж']
+                rewards: [
+                    { icon: 'fa-fist-raised', text: '<strong>+1 вызов</strong> в месяц бесплатно' },
+                    { icon: 'fa-award', text: '<strong>Серебряный</strong> бейдж в профиль' },
+                    { icon: 'fa-chart-line', text: '<strong>Расширенная</strong> статистика' }
+                ]
             },
             {
                 id: 'gold',
-                name: 'ЗОЛОТАЯ ЛИГА',
+                name: 'ЗОЛОТАЯ',
                 minFrs: 1000,
                 maxFrs: 1999,
-                icon: './league-icons/gold.webp',
+                icon: 'fa-crown',
                 color: '#ffd700',
+                glow: 'rgba(255,215,0,0.4)',
                 range: '1000 – 1999 FRS',
-                desc: 'Уважение сообщества',
-                rewards: ['+3 вызова', 'Золотой бейдж', 'Топ 100']
+                rewards: [
+                    { icon: 'fa-fist-raised', text: '<strong>+3 вызова</strong> в месяц' },
+                    { icon: 'fa-award', text: '<strong>Золотой</strong> бейдж' },
+                    { icon: 'fa-medal', text: '<strong>Топ-100</strong> в общем рейтинге' }
+                ]
             },
             {
                 id: 'diamond',
-                name: 'АЛМАЗНАЯ ЛИГА',
+                name: 'АЛМАЗНАЯ',
                 minFrs: 2000,
                 maxFrs: 3499,
-                icon: './league-icons/diamond.webp',
+                icon: 'fa-gem',
                 color: '#00ffff',
+                glow: 'rgba(0,255,255,0.4)',
                 range: '2000 – 3499 FRS',
-                desc: 'Элита любителей',
-                rewards: ['+5 вызовов', 'Доступ в закрытый чат', 'Топ 50']
+                rewards: [
+                    { icon: 'fa-fist-raised', text: '<strong>+5 вызовов</strong> в месяц' },
+                    { icon: 'fa-comments', text: '<strong>Доступ</strong> в закрытый чат' },
+                    { icon: 'fa-medal', text: '<strong>Топ-50</strong> в общем рейтинге' }
+                ]
             },
             {
                 id: 'elite',
-                name: 'ЭЛИТНАЯ ЛИГА',
+                name: 'ЭЛИТНАЯ',
                 minFrs: 3500,
                 maxFrs: 4999,
-                icon: './league-icons/elite.webp',
+                icon: 'fa-dragon',
                 color: '#9400d3',
+                glow: 'rgba(148,0,211,0.4)',
                 range: '3500 – 4999 FRS',
-                desc: 'Легенды любительского спорта',
-                rewards: ['+10 вызовов', 'Премиум-значок', 'Приоритет в событиях']
+                rewards: [
+                    { icon: 'fa-fist-raised', text: '<strong>+10 вызовов</strong> в месяц' },
+                    { icon: 'fa-crown', text: '<strong>Премиум-значок</strong> в профиль' },
+                    { icon: 'fa-star', text: '<strong>Приоритет</strong> в событиях' }
+                ]
             },
             {
                 id: 'legendary',
-                name: 'ЛЕГЕНДАРНАЯ ЛИГА',
+                name: 'ЛЕГЕНДАРНАЯ',
                 minFrs: 5000,
                 maxFrs: Infinity,
-                icon: './league-icons/legendary.webp',
+                icon: 'fa-skull',
                 color: '#ff4500',
+                glow: 'rgba(255,69,0,0.4)',
                 range: '5000+ FRS',
-                desc: 'Абсолютная элита',
-                rewards: ['Премиум бесплатно', 'Публикация в ТГ-канале', 'Партнёрские предложения']
+                rewards: [
+                    { icon: 'fa-crown', text: '<strong>Премиум</strong> бесплатно' },
+                    { icon: 'fa-bullhorn', text: '<strong>Публикация</strong> в ТГ-канале' },
+                    { icon: 'fa-handshake', text: '<strong>Партнёрские</strong> предложения' }
+                ]
             }
         ];
 
+        let currentFrs = 0;
+        let currentLeagueId = null;
+        let slides = [];
+        let currentSlideIndex = 0;
+
+        // ===== ПОЛУЧЕНИЕ ЛИГИ ПО FRS =====
         function getLeagueByFrs(frs) {
-            return LEAGUES.find(l => frs >= l.minFrs && frs < l.maxFrs + 1);
+            return LEAGUES.find(l => frs >= l.minFrs && frs <= l.maxFrs) || LEAGUES[0];
         }
 
         function getLeagueIconPath(id) {
             return `./league-icons/${id}.webp`;
         }
 
+        // ===== БАЛАНС =====
         async function updateHeaderBalance() {
             const user = auth.currentUser;
             const balanceDiv = document.getElementById('balanceIndicator');
@@ -768,97 +1045,240 @@
                 const total = (data.freeChallenges || 0) + (data.purchasedChallenges || 0);
                 balanceCount.innerText = total;
                 balanceDiv.style.display = 'flex';
-            } catch (err) { 
+            } catch (err) {
                 console.error(err);
                 balanceDiv.style.display = 'none';
             }
         }
 
-        function renderLeagues(currentFrs) {
-            const grid = document.getElementById('leaguesGrid');
-            grid.innerHTML = '';
+        // ===== РЕНДЕР КАРУСЕЛИ =====
+        function renderCarousel() {
+            const carousel = document.getElementById('leaguesCarousel');
+            carousel.innerHTML = '';
+
+            slides = [];
 
             LEAGUES.forEach((league, index) => {
-                const isCurrent = currentFrs !== null && currentFrs >= league.minFrs && (currentFrs <= league.maxFrs || league.maxFrs === Infinity);
-                const iconPath = getLeagueIconPath(league.id);
+                const isCurrent = currentLeagueId === league.id;
+                const isCompleted = currentFrs > league.maxFrs;
+                const isLocked = currentFrs < league.minFrs;
 
-                const rewardsHtml = league.rewards.map(r => 
-                    `<span class="reward-tag"><i class="fas fa-gift"></i> ${r}</span>`
-                ).join('');
+                let statusHtml = '';
+                if (isCurrent) {
+                    statusHtml = `<div class="league-slide-status current"><i class="fas fa-star"></i> Текущая</div>`;
+                } else if (isCompleted) {
+                    statusHtml = `<div class="league-slide-status completed"><i class="fas fa-check"></i> Пройдена</div>`;
+                } else if (isLocked) {
+                    statusHtml = `<div class="league-slide-status locked"><i class="fas fa-lock"></i> Закрыта</div>`;
+                }
 
-                const card = document.createElement('div');
-                card.className = `league-card ${isCurrent ? 'current' : ''}`;
-                card.style.borderLeftColor = league.color;
-                card.style.animation = `fadeInUp 0.5s ease ${index * 0.1}s both`;
-                card.innerHTML = `
-                    <div class="league-icon">
-                        <img src="${iconPath}" alt="${league.name}" onerror="this.style.display='none'; this.parentElement.innerHTML='<i class=\\'fas fa-medal\\' style=\\'font-size: 2.5rem; color: ${league.color};\\'></i>';">
+                const rewardsHtml = league.rewards.map(r => `
+                    <div class="league-reward-item">
+                        <i class="fas ${r.icon}"></i>
+                        <div class="reward-text">${r.text}</div>
                     </div>
-                    <div class="league-info">
-                        <div class="league-name">
-                            <span style="color: ${league.color};">${league.name}</span>
+                `).join('');
+
+                const slide = document.createElement('div');
+                slide.className = `league-slide ${isCurrent ? 'active' : ''} ${isCompleted ? 'completed' : ''}`;
+                slide.dataset.leagueId = league.id;
+                slide.dataset.index = index;
+                slide.style.setProperty('--league-color', league.color);
+                slide.style.setProperty('--league-glow', league.glow);
+
+                slide.innerHTML = `
+                    <div class="league-slide-card">
+                        <div class="league-slide-icon-wrap">
+                            <div class="league-slide-icon-bg"></div>
+                            <img src="${getLeagueIconPath(league.id)}" alt="${league.name}" class="league-slide-icon"
+                                onerror="this.style.display='none'; this.parentElement.querySelector('.league-slide-icon-bg').insertAdjacentHTML('afterend', '<div class=\\'league-slide-icon-fallback\\'><i class=\\'fas ${league.icon}\\'></i></div>')">
                         </div>
-                        <div class="league-range">
-                            <i class="fas fa-chart-simple"></i> ${league.range} | <i class="fas fa-users"></i> ${league.desc}
+                        <div class="league-slide-name">${league.name}</div>
+                        <div class="league-slide-range">
+                            <i class="fas fa-chart-simple"></i> ${league.range}
                         </div>
-                        <div class="league-rewards">
+                        ${statusHtml}
+                        <div class="league-slide-rewards">
                             ${rewardsHtml}
                         </div>
                     </div>
                 `;
-                card.onclick = () => window.location.href = `rating.html?league=${league.id}`;
-                grid.appendChild(card);
+
+                carousel.appendChild(slide);
+                slides.push(slide);
+            });
+
+            // Если нет текущей лиги (не залогинен) — делаем первую активной
+            if (!currentLeagueId) {
+                if (slides[0]) {
+                    slides[0].classList.add('active');
+                }
+                currentSlideIndex = 0;
+            } else {
+                // Находим индекс текущей лиги
+                currentSlideIndex = LEAGUES.findIndex(l => l.id === currentLeagueId);
+                if (currentSlideIndex < 0) currentSlideIndex = 0;
+            }
+
+            // Рендер точек
+            renderDots();
+
+            // Скролл к активной
+            setTimeout(() => scrollToSlide(currentSlideIndex, false), 100);
+
+            // Обработчики кликов
+            slides.forEach((slide, idx) => {
+                slide.addEventListener('click', () => {
+                    scrollToSlide(idx, true);
+                });
+            });
+
+            // Отслеживание скролла для обновления активного слайда
+            initScrollListener();
+        }
+
+        // ===== РЕНДЕР ТОЧЕК =====
+        function renderDots() {
+            const dotsContainer = document.getElementById('carouselDots');
+            dotsContainer.innerHTML = '';
+
+            LEAGUES.forEach((league, index) => {
+                const dot = document.createElement('button');
+                dot.className = 'carousel-dot';
+                dot.dataset.index = index;
+                dot.style.setProperty('--dot-color', league.color);
+                dot.style.setProperty('--dot-glow', league.glow);
+
+                if (league.id === currentLeagueId) {
+                    dot.classList.add('active');
+                } else if (currentFrs > league.maxFrs) {
+                    dot.classList.add('completed');
+                }
+
+                dot.addEventListener('click', () => scrollToSlide(index, true));
+                dotsContainer.appendChild(dot);
             });
         }
 
+        // ===== СКРОЛЛ К СЛАЙДУ =====
+        function scrollToSlide(index, smooth = true) {
+            const carousel = document.getElementById('leaguesCarousel');
+            const slide = slides[index];
+            if (!slide) return;
+
+            const carouselRect = carousel.getBoundingClientRect();
+            const slideRect = slide.getBoundingClientRect();
+            const targetScroll = carousel.scrollLeft + (slideRect.left - carouselRect.left) - (carouselRect.width - slideRect.width) / 2;
+
+            carousel.scrollTo({
+                left: targetScroll,
+                behavior: smooth ? 'smooth' : 'auto'
+            });
+        }
+
+        // ===== СЛУШАТЕЛЬ СКРОЛЛА — определяет ближайший к центру слайд =====
+        let scrollTimeout = null;
+        function initScrollListener() {
+            const carousel = document.getElementById('leaguesCarousel');
+
+            carousel.removeEventListener('scroll', handleCarouselScroll);
+            carousel.addEventListener('scroll', handleCarouselScroll, { passive: true });
+
+            carousel.removeEventListener('scrollend', handleScrollEnd);
+            if ('onscrollend' in window) {
+                carousel.addEventListener('scrollend', handleScrollEnd, { passive: true });
+            }
+        }
+
+        function handleCarouselScroll() {
+            const carousel = document.getElementById('leaguesCarousel');
+            const carouselCenter = carousel.getBoundingClientRect().left + carousel.clientWidth / 2;
+
+            let closestIndex = 0;
+            let closestDistance = Infinity;
+
+            slides.forEach((slide, idx) => {
+                const rect = slide.getBoundingClientRect();
+                const slideCenter = rect.left + rect.width / 2;
+                const distance = Math.abs(slideCenter - carouselCenter);
+                if (distance < closestDistance) {
+                    closestDistance = distance;
+                    closestIndex = idx;
+                }
+            });
+
+            if (closestIndex !== currentSlideIndex) {
+                currentSlideIndex = closestIndex;
+                updateActiveSlide();
+            }
+
+            // Дебаунс для scrollend-подобного поведения
+            clearTimeout(scrollTimeout);
+            scrollTimeout = setTimeout(() => {
+                scrollToSlide(closestIndex, true);
+            }, 150);
+        }
+
+        function handleScrollEnd() {
+            scrollToSlide(currentSlideIndex, true);
+        }
+
+        // ===== ОБНОВЛЕНИЕ АКТИВНОГО СЛАЙДА =====
+        function updateActiveSlide() {
+            slides.forEach((slide, idx) => {
+                slide.classList.toggle('active', idx === currentSlideIndex);
+            });
+            document.querySelectorAll('.carousel-dot').forEach((dot, idx) => {
+                dot.classList.toggle('active', idx === currentSlideIndex);
+            });
+        }
+
+        // ===== ОБНОВЛЕНИЕ ТЕКУЩЕЙ ЛИГИ =====
         function updateCurrentLeague(frs) {
             const banner = document.getElementById('currentLeagueBanner');
-            const nameEl = document.getElementById('currentLeagueName');
-            const iconEl = document.getElementById('currentLeagueIcon');
-            const frsEl = document.getElementById('currentFrs');
-
+            
             if (frs === null || frs === undefined) {
                 banner.style.display = 'none';
+                currentLeagueId = null;
                 return;
             }
 
             const league = getLeagueByFrs(frs);
-            if (!league) {
-                banner.style.display = 'none';
-                return;
-            }
+            currentLeagueId = league.id;
 
             banner.style.display = 'flex';
-            nameEl.textContent = league.name;
-            iconEl.src = getLeagueIconPath(league.id);
-            iconEl.onerror = () => {
-                iconEl.style.display = 'none';
-                iconEl.parentElement.innerHTML = `<i class="fas fa-medal" style="font-size: 1.8rem; color: ${league.color};"></i>`;
+            document.getElementById('currentLeagueName').textContent = league.name;
+            document.getElementById('currentLeagueIcon').src = getLeagueIconPath(league.id);
+            document.getElementById('currentLeagueIcon').onerror = function() {
+                this.style.display = 'none';
             };
-            frsEl.textContent = frs;
+            document.getElementById('currentFrs').textContent = frs.toLocaleString();
         }
 
         // ===== ИНИЦИАЛИЗАЦИЯ =====
         onAuthStateChanged(auth, async (user) => {
             if (user) {
                 setTimeout(updateHeaderBalance, 500);
-                
+
                 try {
                     const userDoc = await getDoc(doc(db, "fighters", user.uid));
                     const data = userDoc.data();
-                    const frs = data?.frs || 0;
-                    renderLeagues(frs);
-                    updateCurrentLeague(frs);
+                    currentFrs = data?.frs || 0;
+                    updateCurrentLeague(currentFrs);
+                    renderCarousel();
                 } catch (err) {
                     console.error('Ошибка загрузки FRS:', err);
-                    renderLeagues(null);
+                    currentFrs = 0;
                     updateCurrentLeague(null);
+                    renderCarousel();
                 }
             } else {
                 const balanceDiv = document.getElementById('balanceIndicator');
                 if (balanceDiv) balanceDiv.style.display = 'none';
-                renderLeagues(null);
+                currentFrs = 0;
+                currentLeagueId = null;
                 updateCurrentLeague(null);
+                renderCarousel();
             }
         });
 
@@ -868,16 +1288,13 @@
         const menuToggle = document.getElementById('menuToggle');
         const navLinks = document.getElementById('navLinks');
         if (menuToggle && navLinks) {
-            menuToggle.addEventListener('click', () => {
-                navLinks.classList.toggle('show');
-            });
-            
+            menuToggle.addEventListener('click', () => navLinks.classList.toggle('show'));
             navLinks.querySelectorAll('a').forEach(link => {
-                link.addEventListener('click', () => {
-                    navLinks.classList.remove('show');
-                });
+                link.addEventListener('click', () => navLinks.classList.remove('show'));
             });
         }
+
+        console.log('✅ Лиги: карусель в стиле Clash of Clans');
     </script>
 </body>
 </html>

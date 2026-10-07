@@ -9,7 +9,6 @@
     <meta name="theme-color" content="#fbbf24">
     <meta name="mobile-web-app-capable" content="yes">
     <meta charset="UTF-8">
-<!--🔧ФИКС: preconnect -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="dns-prefetch" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -26,13 +25,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700;14..32,800;14..32,900&display=swap" rel="stylesheet">
     <style>
-        /* ===== ВСЕ СТИЛИ ОСТАЮТСЯ БЕЗ ИЗМЕНЕНИЙ ===== */
-        /* ... (весь CSS из предыдущей версии) ... */
-        
-        /* Добавляем стиль для статуса pending */
-        .status-pending { background: rgba(245,158,11,0.2); color: #f59e0b; }
-        
-        /* Остальные стили такие же как были */
         * { margin: 0; padding: 0; box-sizing: border-box; }
         
         body {
@@ -69,57 +61,45 @@
             width: 100%;
         }
         
-        .balance-indicator:hover {
-            border-color: #fbbf24;
-            box-shadow: 0 0 15px rgba(251,191,36,0.2);
-        }
-        
-        /* ===== ХЛЕБНЫЕ КРОШКИ С КНОПКОЙ НАЗАД (ДОБАВЛЕНО) ===== */
-        .breadcrumb {
+        /* ===== ВЕРХНЯЯ ПАНЕЛЬ С КНОПКОЙ НАЗАД ===== */
+        .top-nav {
             margin: 20px 0 10px;
             display: flex;
             align-items: center;
-            gap: 8px;
-            flex-wrap: wrap;
-            font-size: 0.85rem;
         }
         
-        .breadcrumb a {
-            color: #aaa;
-            text-decoration: none;
-            transition: all 0.2s ease;
-        }
-        
-        .breadcrumb a:hover { color: #fbbf24; transform: translateX(2px); }
-        .breadcrumb .current { color: #fbbf24; }
-        .breadcrumb .separator { color: #444; }
-        
-        .back-btn {
-            background: rgba(255,255,255,0.1);
-            border: 1px solid rgba(251,191,36,0.3);
-            color: #fff;
-            padding: 8px 16px;
-            border-radius: 40px;
+        .back-arrow-btn {
+            background: rgba(255,255,255,0.06);
+            border: 1px solid rgba(251,191,36,0.15);
+            color: #fbbf24;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
             cursor: pointer;
-            font-size: 0.8rem;
+            font-size: 1rem;
             display: inline-flex;
             align-items: center;
-            gap: 8px;
+            justify-content: center;
             transition: all 0.2s ease;
-            min-height: 38px;
+            font-family: 'Inter', sans-serif;
+            flex-shrink: 0;
         }
         
-        .back-btn:hover {
-            background: rgba(251,191,36,0.2);
-            color: #fbbf24;
-            transform: translateX(-2px);
+        .back-arrow-btn:hover {
+            background: rgba(251,191,36,0.15);
+            border-color: rgba(251,191,36,0.4);
+            transform: translateX(-3px);
+            box-shadow: 0 4px 15px rgba(251,191,36,0.1);
         }
         
-        .back-btn:active { transform: translateX(-1px) scale(0.97); }
+        .back-arrow-btn:active {
+            transform: translateX(-1px) scale(0.95);
+        }
         
+        /* ===== ЗАГОЛОВОК ===== */
         .page-header { 
             text-align: center; 
-            padding: 20px 20px 20px;
+            padding: 4px 20px 20px;
         }
         
         .page-header h1 { 
@@ -128,6 +108,16 @@
             background: linear-gradient(135deg, #fff, #fbbf24); 
             background-clip: text; 
             color: transparent;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        .page-header h1 i {
+            color: #fbbf24;
+            background: none;
+            -webkit-text-fill-color: #fbbf24;
         }
         
         .page-header p { 
@@ -136,6 +126,7 @@
             font-size: clamp(0.85rem, 3vw, 0.95rem);
         }
         
+        /* ===== ТАБЫ ===== */
         .tabs {
             display: flex;
             gap: 8px;
@@ -193,14 +184,8 @@
         }
         
         @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(12px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            from { opacity: 0; transform: translateY(12px); }
+            to { opacity: 1; transform: translateY(0); }
         }
         
         .orders-list {
@@ -210,6 +195,7 @@
             margin-bottom: 30px;
         }
         
+        /* ===== КАРТОЧКА ЗАКАЗА ===== */
         .order-card {
             background: rgba(15,15,15,0.7);
             backdrop-filter: blur(8px);
@@ -608,6 +594,7 @@
             border-radius: 30px;
         }
         
+        /* ===== ПУСТОЕ СОСТОЯНИЕ ===== */
         .empty-state {
             text-align: center;
             padding: 60px 20px;
@@ -623,23 +610,6 @@
         .empty-state h3 {
             color: #ccc;
             margin-bottom: 8px;
-        }
-        
-        .empty-state a {
-            color: #fbbf24;
-            text-decoration: none;
-            display: inline-block;
-            margin-top: 12px;
-            padding: 10px 24px;
-            border-radius: 40px;
-            background: rgba(251,191,36,0.1);
-            border: 1px solid rgba(251,191,36,0.2);
-            transition: all 0.2s ease;
-        }
-        
-        .empty-state a:hover {
-            background: rgba(251,191,36,0.2);
-            transform: translateY(-2px);
         }
         
         .loading {
@@ -663,104 +633,81 @@
         }
         
         @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
         }
         
-/* ===== ИСТОРИЯ — ХЕДЕР С КНОПКОЙ ОЧИСТКИ ===== */
-.history-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 12px;
-    padding: 8px 4px 16px;
-    border-bottom: 1px solid rgba(255,255,255,0.05);
-    margin-bottom: 4px;
-}
-
-.history-info {
-    font-size: 0.8rem;
-    color: #888;
-}
-
-.history-info span {
-    color: #fbbf24;
-    font-weight: 600;
-}
-
-.history-count {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-}
-
-.history-count i {
-    color: #666;
-}
-
-.btn-clear-history {
-    background: rgba(220,38,38,0.08);
-    color: #888;
-    border: 1px solid rgba(220,38,38,0.12);
-    padding: 8px 18px;
-    border-radius: 40px;
-    font-size: 0.75rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    font-family: 'Inter', sans-serif;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    min-height: 36px;
-}
-
-.btn-clear-history:hover {
-    background: rgba(220,38,38,0.15);
-    color: #dc2626;
-    border-color: rgba(220,38,38,0.25);
-    transform: translateY(-1px);
-}
-
-.btn-clear-history:active {
-    transform: scale(0.96);
-}
-
-.btn-clear-history i {
-    font-size: 0.75rem;
-}
-
-.btn-clear-history:disabled {
-    opacity: 0.4;
-    cursor: not-allowed;
-    transform: none !important;
-}
-
-/* Адаптив */
-@media (max-width: 480px) {
-    .history-header {
-        flex-direction: column;
-        align-items: stretch;
-        gap: 8px;
-        padding: 8px 0 12px;
-    }
-    
-    .btn-clear-history {
-        justify-content: center;
-        padding: 8px 14px;
-        font-size: 0.7rem;
-        min-height: 32px;
-        width: 100%;
-    }
-}
-
+        /* ===== ИСТОРИЯ — ХЕДЕР С КНОПКОЙ ОЧИСТКИ ===== */
+        .history-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+            padding: 8px 4px 16px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            margin-bottom: 4px;
+        }
+        
+        .history-info {
+            font-size: 0.8rem;
+            color: #888;
+        }
+        
+        .history-info span {
+            color: #fbbf24;
+            font-weight: 600;
+        }
+        
+        .history-count {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .history-count i {
+            color: #666;
+        }
+        
+        .btn-clear-history {
+            background: rgba(220,38,38,0.08);
+            color: #888;
+            border: 1px solid rgba(220,38,38,0.12);
+            padding: 8px 18px;
+            border-radius: 40px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: 'Inter', sans-serif;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            min-height: 36px;
+        }
+        
+        .btn-clear-history:hover {
+            background: rgba(220,38,38,0.15);
+            color: #dc2626;
+            border-color: rgba(220,38,38,0.25);
+            transform: translateY(-1px);
+        }
+        
+        .btn-clear-history:active {
+            transform: scale(0.96);
+        }
+        
+        .btn-clear-history i {
+            font-size: 0.75rem;
+        }
+        
+        .btn-clear-history:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+        
+        /* ===== МОДАЛ ОТЗЫВА ===== */
         .modal-overlay {
             position: fixed;
             top: 0; left: 0; right: 0; bottom: 0;
@@ -825,12 +772,14 @@
             cursor: pointer;
             transition: all 0.2s ease;
             font-size: 0.9rem;
+            font-family: 'Inter', sans-serif;
         }
         .modal .cancel-btn { background: rgba(255,255,255,0.08); color: #fff; }
         .modal .cancel-btn:hover { background: rgba(255,255,255,0.15); }
         .modal .submit-btn { background: #fbbf24; color: #000; }
         .modal .submit-btn:hover { background: #ffdd44; transform: scale(1.02); }
         
+        /* ===== ФУТЕР ===== */
         .main-footer {
             background: #0a0a0a;
             border-top: 1px solid rgba(251,191,36,0.15);
@@ -898,6 +847,7 @@
             color: #555;
         }
         
+        /* ===== АДАПТИВ ===== */
         @media (max-width: 768px) {
             .navbar {
                 padding: 12px 18px;
@@ -973,9 +923,20 @@
                 text-align: center;
                 gap: 16px;
             }
-
-            .breadcrumb {
+            
+            .history-header {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 8px;
+                padding: 8px 0 12px;
+            }
+            
+            .btn-clear-history {
                 justify-content: center;
+                padding: 8px 14px;
+                font-size: 0.7rem;
+                min-height: 32px;
+                width: 100%;
             }
         }
         
@@ -990,9 +951,6 @@
             }
             .seller-item-price {
                 font-size: 0.65rem;
-            }
-            .order-total-amount {
-                font-size: 0.95rem;
             }
             .tab-btn {
                 font-size: 0.6rem;
@@ -1037,13 +995,11 @@
     </header>
 
     <main class="container">
-        <!-- ===== ХЛЕБНЫЕ КРОШКИ С КНОПКОЙ НАЗАД ===== -->
-        <div class="breadcrumb">
-            <button class="back-btn" id="backBtn"><i class="fas fa-arrow-left"></i> Назад</button>
-            <span class="separator">/</span>
-            <a href="catalog.html">Каталог</a>
-            <span class="separator">/</span>
-            <span class="current">Мои заказы</span>
+        <!-- ===== ВЕРХНЯЯ ПАНЕЛЬ С КНОПКОЙ НАЗАД ===== -->
+        <div class="top-nav">
+            <button class="back-arrow-btn" id="backBtn" title="Назад">
+                <i class="fas fa-arrow-left"></i>
+            </button>
         </div>
 
         <div class="page-header">
@@ -1173,12 +1129,10 @@
 
     // ===== УВЕДОМЛЕНИЯ =====
     function showNotification(message, type = 'info') {
-        // Используем единый тост из modals.js (если он загружен)
         if (typeof window.showToast === 'function') {
             window.showToast(message, type);
             return;
         }
-        // Fallback — старая плашка (на случай, если modals.js не подключён)
         const container = document.getElementById('errorContainer');
         if (!container) return;
         const colors = { success: '#22c55e', error: '#ef4444', warning: '#f59e0b', info: '#fbbf24' };
@@ -1205,6 +1159,8 @@
     }
 
     // ===== ОЧИСТКА ИСТОРИИ =====
+    // ВАЖНО: удаляются только документы из physical_orders.
+    // wallet_balances, wallet_transactions и выручка партнёра НЕ ТРОГАЮТСЯ.
     async function clearHistory() {
         const historyOrders = allOrders.filter(o => o.status === 'completed' || o.status === 'cancelled' || o.status === 'rejected');
         
@@ -1225,6 +1181,8 @@
         try {
             const batch = writeBatch(db);
             historyOrders.forEach(order => {
+                // Удаляем ТОЛЬКО сам заказ из physical_orders.
+                // НЕ трогаем wallet_balances, wallet_transactions, products, partners.
                 const orderRef = doc(db, "physical_orders", order.id);
                 batch.delete(orderRef);
             });
@@ -1249,7 +1207,7 @@
 
     function getStatusInfo(status) {
         const map = {
-            'pending': { label: '⏳ Ожидает оплаты', class: 'pending', icon: 'fa-hourglass-half' },  // ← ДОБАВЛЕНО
+            'pending': { label: '⏳ Ожидает оплаты', class: 'pending', icon: 'fa-hourglass-half' },
             'paid': { label: '💳 Оплачен', class: 'paid', icon: 'fa-credit-card' },
             'shipped': { label: '🚚 В пути', class: 'shipped', icon: 'fa-truck' },
             'delivered': { label: '📦 Доставлен', class: 'delivered', icon: 'fa-box-open' },
@@ -1261,8 +1219,13 @@
     }
 
     function escapeHtml(str) {
-        if (!str) return '';
-        return String(str).replace(/[&<>]/g, m => m === '&' ? '&amp;' : m === '<' ? '&lt;' : '&gt;');
+        if (str === null || str === undefined) return '';
+        return String(str)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
     }
 
     // ===== ЗАГРУЗКА ПРОДАВЦА =====
@@ -1297,7 +1260,6 @@
     function groupItemsBySeller(items) {
         const groups = {};
         items.forEach(item => {
-            // ===== ИСПРАВЛЕНО: если partnerId нет — берём из item =====
             const sellerId = item.partnerId || item.sellerId || item.partner_id || null;
             if (!sellerId || sellerId === 'null' || sellerId === 'undefined') return;
             
@@ -1320,15 +1282,12 @@
     async function loadOrders() {
         if (!currentUser) return;
         
-        // ===== ПОКАЗЫВАЕМ СКЕЛЕТОН =====
         const activeContainer = document.getElementById('ordersListActive');
-        const historyContainer = document.getElementById('ordersListHistory');
         if (activeContainer && !allOrders.length) {
-            activeContainer.innerHTML = showSkeletonLoader(5);
+            activeContainer.innerHTML = '<div class="loading"><div class="loading-spinner"></div> Загрузка...</div>';
         }
         
         try {
-            // ===== ЗАГРУЖАЕМ СВЕЖИЕ ДАННЫЕ =====
             const ordersQuery = query(
                 collection(db, "physical_orders"),
                 where("userId", "==", currentUser.uid),
@@ -1336,7 +1295,6 @@
             );
             const snapshot = await getDocs(ordersQuery);
             
-            // ===== ОБНОВЛЯЕМ STATE =====
             allOrders = [];
             for (const docSnap of snapshot.docs) {
                 const order = { id: docSnap.id, ...docSnap.data() };
@@ -1409,7 +1367,6 @@
                 <div class="empty-state">
                     <i class="fas fa-box-open"></i>
                     <h3>${messages[tab] || 'Нет заказов'}</h3>
-                    ${tab === 'active' ? '<a href="catalog.html"><i class="fas fa-shopping-bag"></i> Перейти в каталог</a>' : ''}
                 </div>
             `;
             return;
@@ -1566,24 +1523,6 @@
         attachHandlers(container);
     }
 
-    function showSkeletonLoader(count = 3) {
-        return Array(count).fill(`
-            <div class="order-card skeleton">
-                <div style="display:flex;justify-content:space-between;padding:16px;">
-                    <div style="flex:1;display:flex;flex-direction:column;gap:8px;">
-                        <div class="skeleton-line" style="width:30%;height:14px;background:rgba(255,255,255,0.05);border-radius:4px;"></div>
-                        <div class="skeleton-line" style="width:60%;height:14px;background:rgba(255,255,255,0.05);border-radius:4px;"></div>
-                        <div class="skeleton-line" style="width:40%;height:14px;background:rgba(255,255,255,0.05);border-radius:4px;"></div>
-                    </div>
-                    <div style="flex:1;display:flex;flex-direction:column;gap:8px;align-items:flex-end;">
-                        <div class="skeleton-line" style="width:40%;height:14px;background:rgba(255,255,255,0.05);border-radius:4px;"></div>
-                        <div class="skeleton-line" style="width:30%;height:14px;background:rgba(255,255,255,0.05);border-radius:4px;"></div>
-                    </div>
-                </div>
-            </div>
-        `).join('');
-    }
-
     // ===== ОБРАБОТЧИКИ =====
     function attachHandlers(container) {
         container.querySelectorAll('.order-card').forEach(card => {
@@ -1620,8 +1559,6 @@
         e.stopPropagation();
         const el = e.currentTarget;
         const sellerId = el.dataset.sellerId;
-        
-        console.log('🔄 Клик по продавцу, sellerId:', sellerId);
         
         if (sellerId && sellerId !== 'null' && sellerId !== 'undefined' && sellerId !== 'unknown') {
             window.location.href = `partner-dashboard.html?id=${sellerId}`;
@@ -1680,8 +1617,6 @@
         const action = btn.dataset.action;
         const orderId = btn.dataset.orderId;
         
-        console.log('🔍 Действие:', action, 'ID заказа:', orderId);
-        
         if (!orderId || orderId === 'undefined' || orderId === 'null') {
             showNotification('Ошибка: ID заказа не найден', 'error');
             return;
@@ -1719,7 +1654,6 @@
             
             const orderData = orderSnap.data() || {};
             
-            // ===== ПРОВЕРКА: НЕЛЬЗЯ ОТМЕНИТЬ ПОСЛЕ ОТПРАВКИ =====
             if (orderData.status === 'shipped' || orderData.status === 'delivered' || orderData.status === 'completed') {
                 showNotification('Заказ уже отправлен. Отмена невозможна. Обратитесь в поддержку.', 'error');
                 btn.innerHTML = originalText;
@@ -1727,9 +1661,7 @@
                 return;
             }
             
-            // ===== ОТМЕНА ДО ПОДТВЕРЖДЕНИЯ ПРОДАВЦОМ =====
             if (orderData.status === 'pending') {
-                // Если оплата была с баланса — возвращаем деньги
                 if (orderData.paymentMethod === 'balance' && orderData.totalPrice > 0) {
                     const { refundFunds } = await import('./wallet.js');
                     await refundFunds(currentUser.uid, orderData.totalPrice || 0, orderId);
@@ -1747,9 +1679,7 @@
                 return;
             }
             
-            // ===== ОТМЕНА ПОСЛЕ ОПЛАТЫ, НО ДО ОТПРАВКИ =====
             if (orderData.status === 'paid') {
-                // Возвращаем деньги
                 if (orderData.totalPrice > 0) {
                     const { refundFunds } = await import('./wallet.js');
                     await refundFunds(currentUser.uid, orderData.totalPrice || 0, orderId);
@@ -1798,10 +1728,8 @@
                 return;
             }
             
-            // ✅ ИСПРАВЛЕНО: data() может вернуть undefined
             const orderData = orderSnap.data() || {};
             
-            // ✅ ПРОВЕРКА НА items
             if (!orderData.items || !Array.isArray(orderData.items) || orderData.items.length === 0) {
                 showNotification('В заказе нет товаров', 'error');
                 btn.innerHTML = originalText;
@@ -1824,7 +1752,6 @@
                 return;
             }
             
-            // Уменьшаем stock
             for (const item of orderData.items) {
                 const productId = item.productId || item.id;
                 if (!productId) continue;
@@ -1991,7 +1918,7 @@
         }
     }
 
-    // ===== КНОПКА НАЗАД =====
+    // ===== КНОПКА НАЗАД (СТРЕЛКА) =====
     document.getElementById('backBtn')?.addEventListener('click', () => {
         window.history.back();
     });
@@ -2010,7 +1937,6 @@
                     <i class="fas fa-lock"></i>
                     <h3>Требуется авторизация</h3>
                     <p>Войдите, чтобы увидеть свои заказы</p>
-                    <a href="login.html"><i class="fas fa-sign-in-alt"></i> Войти</a>
                 </div>
             `;
             document.getElementById('ordersListHistory').innerHTML = '';
@@ -2030,11 +1956,7 @@
         });
     }
 
-    console.log('✅ Мои заказы: вкладки "Активные" и "История"');
-    console.log('📦 Статус "На рассмотрении" добавлен в активные');
-    console.log('💬 Одна кнопка чата на продавца');
-    console.log('⬅️ Добавлена стрелка назад');
-    console.log('🗑️ Кнопка "Очистить историю" работает');
+    console.log('✅ Мои заказы обновлены по ТЗ');
     </script>
 </body>
 </html>

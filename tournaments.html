@@ -1,8 +1,14 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
+    <link rel="manifest" href="/prorank-live/manifest.json">
+    <link rel="apple-touch-icon" href="/prorank-live/icons/icon-192.png">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="PRORANK">
+    <meta name="theme-color" content="#fbbf24">
+    <meta name="mobile-web-app-capable" content="yes">
     <meta charset="UTF-8">
-<!--🔧ФИКС: preconnect -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="dns-prefetch" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -12,12 +18,15 @@
     <link rel="preconnect" href="https://www.gstatic.com" crossorigin>
     <link rel="dns-prefetch" href="https://www.gstatic.com">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="theme-color" content="#fbbf24">
+    <meta name="description" content="Турниры PRORANK — участвуй, побеждай, становись чемпионом">
     <title>Турниры | PRORANK</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700;14..32,800;14..32,900&display=swap" rel="stylesheet">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
+
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
             background: radial-gradient(ellipse at 30% 40%, rgba(251, 191, 36, 0.15) 0%, transparent 60%),
@@ -30,64 +39,198 @@
             display: flex;
             flex-direction: column;
         }
-        .gold-top { position: fixed; top: 0; left: 0; width: 100%; height: 2px; background: linear-gradient(90deg, #fbbf24, #ffdd88, #fbbf24, #b8860b); z-index: 1001; }
-        
-        .container { max-width: 1280px; margin: 1rem auto; padding: 0 20px; width: 100%; flex: 1; }
 
-        .breadcrumbs { display: flex; align-items: center; gap: 6px; margin-bottom: 12px; font-size: 0.68rem; color: #888; flex-wrap: wrap; }
-        .breadcrumbs a { color: #888; text-decoration: none; transition: color 0.2s ease; }
-        .breadcrumbs a:hover { color: #fbbf24; }
-        .breadcrumbs i { font-size: 0.55rem; color: #555; }
-        .breadcrumbs .current { color: #fbbf24; font-weight: 600; }
+        .gold-top {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(90deg, #fbbf24, #ffdd88, #fbbf24, #b8860b);
+            z-index: 1001;
+        }
 
-        .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; flex-wrap: wrap; gap: 12px; }
-        .page-title { font-size: 1.4rem; font-weight: 800; color: #fff; letter-spacing: -0.02em; }
-        .page-title span { color: #fbbf24; }
-        .page-subtitle { font-size: 0.72rem; color: #777; margin-top: 2px; }
+        .container {
+            max-width: 1400px;
+            margin: 1rem auto;
+            padding: 0 20px;
+            width: 100%;
+            flex: 1;
+        }
+
+        /* ===== ЗАГОЛОВОК СТРАНИЦЫ (в стиле сайта) ===== */
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+            padding: 8px 0 16px;
+            margin-top: 12px;
+        }
+
+        .page-title {
+            font-size: clamp(1.5rem, 4vw, 1.8rem);
+            font-weight: 800;
+            background: linear-gradient(135deg, #fff, #fbbf24);
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+            -webkit-text-fill-color: transparent;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            line-height: 1.2;
+        }
+
+        .page-title i {
+            color: #fbbf24;
+            background: none;
+            -webkit-text-fill-color: #fbbf24;
+            font-size: 0.95em;
+        }
+
+        .page-subtitle {
+            font-size: 0.75rem;
+            color: #888;
+            margin-top: 6px;
+            font-weight: 400;
+            width: 100%;
+        }
 
         /* ===== ПАНЕЛЬ УПРАВЛЕНИЯ ===== */
         .controls-bar {
             display: flex;
-            gap: 8px;
+            gap: 10px;
             margin-bottom: 14px;
             flex-wrap: wrap;
             align-items: center;
             background: rgba(15,15,15,0.5);
             border: 1px solid rgba(251,191,36,0.1);
-            border-radius: 14px;
-            padding: 8px 10px;
+            border-radius: 16px;
+            padding: 10px 12px;
         }
-        .search-box { display: flex; align-items: center; gap: 8px; background: rgba(0,0,0,0.3); border: 1px solid rgba(251,191,36,0.15); border-radius: 10px; padding: 0 12px; min-height: 34px; flex: 1; min-width: 180px; transition: border-color 0.2s ease; }
-        .search-box:focus-within { border-color: rgba(251,191,36,0.4); }
-        .search-box i { color: #888; font-size: 0.72rem; }
-        .search-box input { background: transparent; border: none; color: #fff; font-family: 'Inter', sans-serif; font-size: 0.72rem; width: 100%; outline: none; }
-        .search-box input::placeholder { color: #555; }
 
-        .sort-select { background: rgba(0,0,0,0.3); border: 1px solid rgba(251,191,36,0.15); border-radius: 10px; padding: 0 30px 0 12px; min-height: 34px; color: #fff; font-family: 'Inter', sans-serif; font-size: 0.7rem; font-weight: 600; cursor: pointer; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%23fbbf24' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 10px center; transition: border-color 0.2s ease; }
-        .sort-select:focus { outline: none; border-color: rgba(251,191,36,0.4); }
+        .search-box {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(0,0,0,0.3);
+            border: 1px solid rgba(251,191,36,0.15);
+            border-radius: 10px;
+            padding: 0 14px;
+            min-height: 40px;
+            flex: 1;
+            min-width: 200px;
+            transition: border-color 0.2s ease;
+        }
 
-        .reset-btn { background: rgba(0,0,0,0.3); border: 1px solid rgba(251,191,36,0.15); border-radius: 10px; padding: 0 12px; min-height: 34px; color: #aaa; font-family: 'Inter', sans-serif; font-size: 0.7rem; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 5px; transition: all 0.2s ease; }
-        .reset-btn:hover { color: #fbbf24; border-color: rgba(251,191,36,0.4); }
-        .reset-btn i { color: #fbbf24; font-size: 0.65rem; }
+        .search-box:focus-within {
+            border-color: rgba(251,191,36,0.4);
+        }
 
-        .results-count { font-size: 0.7rem; color: #777; font-weight: 600; padding: 0 8px; }
+        .search-box i {
+            color: #888;
+            font-size: 0.75rem;
+        }
 
-        /* ===== СПОРТ-ФИЛЬТРЫ ===== */
-        .sport-filters { display: flex; gap: 4px; background: rgba(15,15,15,0.5); border-radius: 12px; padding: 3px; border: 1px solid rgba(251,191,36,0.1); overflow-x: auto; scrollbar-width: none; }
-        .sport-filters::-webkit-scrollbar { display: none; }
-        .sport-btn { flex: 0 0 auto; padding: 6px 12px; border: none; background: transparent; color: #888; font-family: 'Inter', sans-serif; font-weight: 600; font-size: 0.68rem; border-radius: 9px; cursor: pointer; transition: all 0.3s ease; min-height: 30px; white-space: nowrap; }
-        .sport-btn:hover { color: #fff; background: rgba(255,255,255,0.05); }
-        .sport-btn.active { color: #fbbf24; background: rgba(251,191,36,0.12); }
+        .search-box input {
+            background: transparent;
+            border: none;
+            color: #fff;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.78rem;
+            width: 100%;
+            outline: none;
+        }
+
+        .search-box input::placeholder {
+            color: #555;
+        }
+
+        /* ===== ФИЛЬТР ПО СТАТУСУ ===== */
+        .status-filters {
+            display: flex;
+            gap: 6px;
+            background: rgba(0,0,0,0.3);
+            padding: 4px;
+            border-radius: 12px;
+            border: 1px solid rgba(251,191,36,0.1);
+            overflow-x: auto;
+            scrollbar-width: none;
+        }
+
+        .status-filters::-webkit-scrollbar { display: none; }
+
+        .status-btn {
+            flex-shrink: 0;
+            padding: 8px 14px;
+            border: none;
+            background: transparent;
+            color: #888;
+            font-family: 'Inter', sans-serif;
+            font-weight: 700;
+            font-size: 0.72rem;
+            border-radius: 9px;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            min-height: 34px;
+            white-space: nowrap;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .status-btn i {
+            font-size: 0.7rem;
+            transition: transform 0.2s ease;
+        }
+
+        .status-btn:hover {
+            color: #fff;
+            background: rgba(255,255,255,0.05);
+        }
+
+        .status-btn:hover i {
+            transform: scale(1.15);
+        }
+
+        .status-btn.active {
+            color: #fbbf24;
+            background: rgba(251,191,36,0.12);
+            box-shadow: inset 0 0 0 1px rgba(251,191,36,0.25);
+        }
+
+        .status-btn.active i {
+            color: #fbbf24;
+        }
+
+        .status-btn .status-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: currentColor;
+        }
+
+        .results-count {
+            font-size: 0.7rem;
+            color: #777;
+            font-weight: 600;
+            padding: 0 8px;
+            margin-left: auto;
+            white-space: nowrap;
+        }
 
         /* ===== СЕКЦИИ ===== */
         .section {
-            margin-bottom: 12px;
+            margin-bottom: 22px;
             position: relative;
-            border-radius: 12px;
+            border-radius: 14px;
             overflow: hidden;
             background: rgba(15,15,15,0.4);
             border: 1px solid rgba(255,255,255,0.04);
         }
+
         .section::before {
             content: '';
             position: absolute;
@@ -95,29 +238,33 @@
             width: 3px;
             background: var(--section-color, #fbbf24);
         }
+
         .section.collapsed .section-content { display: none; }
 
         .section-header {
             display: flex;
             align-items: center;
             gap: 10px;
-            padding: 9px 14px 9px 16px;
+            padding: 10px 16px 10px 18px;
             cursor: pointer;
             user-select: none;
             transition: background 0.2s ease;
         }
-        .section-header:hover { background: rgba(255,255,255,0.02); }
+
+        .section-header:hover {
+            background: rgba(255,255,255,0.02);
+        }
 
         .section-icon {
-            width: 26px;
-            height: 26px;
+            width: 28px;
+            height: 28px;
             border-radius: 8px;
             background: var(--section-bg, rgba(251,191,36,0.12));
             color: var(--section-color, #fbbf24);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 0.72rem;
+            font-size: 0.75rem;
             flex-shrink: 0;
         }
 
@@ -126,74 +273,141 @@
             display: flex;
             align-items: center;
             gap: 8px;
-            font-size: 0.78rem;
+            font-size: 0.8rem;
             font-weight: 700;
             color: #fff;
             letter-spacing: -0.01em;
             text-transform: uppercase;
         }
+
         .section-count {
             background: rgba(255,255,255,0.06);
             color: #aaa;
-            font-size: 0.58rem;
+            font-size: 0.6rem;
             font-weight: 800;
-            padding: 2px 8px;
+            padding: 2px 9px;
             border-radius: 20px;
             letter-spacing: 0.3px;
         }
 
         .section-arrow {
             color: #666;
-            font-size: 0.65rem;
+            font-size: 0.7rem;
             transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        .section.collapsed .section-arrow { transform: rotate(-90deg); }
+
+        .section.collapsed .section-arrow {
+            transform: rotate(-90deg);
+        }
 
         .section-content {
-            padding: 2px 14px 14px 14px;
+            padding: 4px 14px 16px 14px;
         }
 
-        /* ===== СЕТКА КАРТОЧЕК ===== */
-        .cards-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 12px;
+        /* ===== ГОРИЗОНТАЛЬНЫЙ СКРОЛЛ ТУРНИРОВ ===== */
+        .tournaments-scroll {
+            display: flex;
+            gap: 14px;
+            overflow-x: auto;
+            overflow-y: hidden;
+            scroll-snap-type: x mandatory;
+            -webkit-overflow-scrolling: touch;
+            padding: 6px 2px 14px 2px;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(251,191,36,0.4) transparent;
         }
 
+        .tournaments-scroll::-webkit-scrollbar {
+            height: 4px;
+        }
+
+        .tournaments-scroll::-webkit-scrollbar-track {
+            background: rgba(255,255,255,0.04);
+            border-radius: 10px;
+        }
+
+        .tournaments-scroll::-webkit-scrollbar-thumb {
+            background: rgba(251,191,36,0.5);
+            border-radius: 10px;
+        }
+
+        .tournaments-scroll::-webkit-scrollbar-thumb:hover {
+            background: #fbbf24;
+        }
+
+        /* ===== КАРТОЧКА ТУРНИРА ===== */
         .tournament-card {
             position: relative;
+            flex: 0 0 300px;
+            width: 300px;
+            scroll-snap-align: start;
             background: rgba(15,15,15,0.85);
             backdrop-filter: blur(12px);
             border: 1px solid rgba(251,191,36,0.1);
-            border-radius: 14px;
+            border-radius: 16px;
             overflow: hidden;
-            transition: all 0.22s ease;
+            transition: all 0.25s ease;
             cursor: pointer;
             display: flex;
             flex-direction: column;
         }
+
         .tournament-card:hover {
             border-color: rgba(251,191,36,0.35);
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(0,0,0,0.4);
-        }
-        .tournament-card.is-registered {
-            border-color: rgba(16,185,129,0.3);
-        }
-        .tournament-card.is-pending {
-            border-color: rgba(251,191,36,0.3);
-        }
-        .tournament-card.is-rejected {
-            border-color: rgba(239,68,68,0.25);
-            opacity: 0.8;
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.4);
         }
 
-        .card-cover { position: relative; width: 100%; height: 100px; background: linear-gradient(135deg, rgba(251,191,36,0.15), rgba(15,15,15,0.8)); overflow: hidden; }
-        .card-cover img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.4s ease; }
-        .tournament-card:hover .card-cover img { transform: scale(1.06); }
-        .card-cover::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 60%; background: linear-gradient(to top, rgba(15,15,15,0.95), transparent); pointer-events: none; }
-        .card-cover.no-image { display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, rgba(251,191,36,0.08), rgba(15,15,15,0.6)); }
-        .card-cover.no-image i { font-size: 2rem; color: rgba(251,191,36,0.2); }
+        .tournament-card.is-registered {
+            border-color: rgba(16,185,129,0.35);
+        }
+        .tournament-card.is-pending {
+            border-color: rgba(251,191,36,0.35);
+        }
+        .tournament-card.is-rejected {
+            border-color: rgba(239,68,68,0.3);
+            opacity: 0.75;
+        }
+
+        .card-cover {
+            position: relative;
+            width: 100%;
+            height: 120px;
+            background: linear-gradient(135deg, rgba(251,191,36,0.15), rgba(15,15,15,0.8));
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+
+        .card-cover img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.4s ease;
+        }
+
+        .tournament-card:hover .card-cover img {
+            transform: scale(1.06);
+        }
+
+        .card-cover::after {
+            content: '';
+            position: absolute;
+            bottom: 0; left: 0; right: 0;
+            height: 60%;
+            background: linear-gradient(to top, rgba(15,15,15,0.95), transparent);
+            pointer-events: none;
+        }
+
+        .card-cover.no-image {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .card-cover.no-image i {
+            font-size: 2.2rem;
+            color: rgba(251,191,36,0.2);
+        }
 
         .card-cover-badges {
             position: absolute;
@@ -206,7 +420,12 @@
             z-index: 2;
             gap: 6px;
         }
-        .badges-left { display: flex; gap: 4px; flex-wrap: wrap; }
+
+        .badges-left {
+            display: flex;
+            gap: 4px;
+            flex-wrap: wrap;
+        }
 
         .status-badge {
             display: inline-flex;
@@ -214,20 +433,40 @@
             gap: 3px;
             font-size: 0.5rem;
             font-weight: 800;
-            padding: 2px 8px;
+            padding: 3px 9px;
             border-radius: 30px;
-            height: 18px;
+            height: 20px;
             text-transform: uppercase;
-            letter-spacing: 0.3px;
+            letter-spacing: 0.4px;
             white-space: nowrap;
             flex-shrink: 0;
             backdrop-filter: blur(8px);
         }
-        .status-badge i { font-size: 0.4rem; }
-        .status-badge.registration { background: rgba(251,191,36,0.15); color: #fbbf24; border: 1px solid rgba(251,191,36,0.3); }
-        .status-badge.scheduled { background: rgba(139,92,246,0.15); color: #a78bfa; border: 1px solid rgba(139,92,246,0.3); }
-        .status-badge.active { background: rgba(16,185,129,0.15); color: #10b981; border: 1px solid rgba(16,185,129,0.3); }
-        .status-badge.completed { background: rgba(59,130,246,0.15); color: #60a5fa; border: 1px solid rgba(59,130,246,0.3); }
+
+        .status-badge i {
+            font-size: 0.45rem;
+        }
+
+        .status-badge.registration {
+            background: rgba(251,191,36,0.18);
+            color: #fbbf24;
+            border: 1px solid rgba(251,191,36,0.35);
+        }
+        .status-badge.scheduled {
+            background: rgba(139,92,246,0.18);
+            color: #a78bfa;
+            border: 1px solid rgba(139,92,246,0.35);
+        }
+        .status-badge.active {
+            background: rgba(16,185,129,0.18);
+            color: #10b981;
+            border: 1px solid rgba(16,185,129,0.35);
+        }
+        .status-badge.completed {
+            background: rgba(59,130,246,0.18);
+            color: #60a5fa;
+            border: 1px solid rgba(59,130,246,0.35);
+        }
 
         .live-badge {
             display: inline-flex;
@@ -235,15 +474,16 @@
             gap: 3px;
             font-size: 0.5rem;
             font-weight: 800;
-            padding: 2px 8px;
+            padding: 3px 9px;
             border-radius: 30px;
-            height: 18px;
+            height: 20px;
             text-transform: uppercase;
-            letter-spacing: 0.3px;
+            letter-spacing: 0.4px;
             background: rgba(239,68,68,0.9);
             color: #fff;
             backdrop-filter: blur(8px);
         }
+
         .live-badge .pulse {
             width: 5px;
             height: 5px;
@@ -251,12 +491,12 @@
             border-radius: 50%;
             animation: pulse 1.2s infinite;
         }
+
         @keyframes pulse {
             0%, 100% { opacity: 1; transform: scale(1); }
             50% { opacity: 0.4; transform: scale(1.4); }
         }
 
-        /* Бейджи статуса бойца (моя заявка) */
         .my-status-badge {
             display: inline-flex;
             align-items: center;
@@ -272,13 +512,14 @@
             flex-shrink: 0;
             box-shadow: 0 2px 8px rgba(0,0,0,0.4);
         }
+
         .my-status-badge.pending { background: #fbbf24; color: #000; }
         .my-status-badge.approved { background: #10b981; color: #000; }
         .my-status-badge.rejected { background: #ef4444; color: #fff; }
 
         .winner-badge {
             position: absolute;
-            bottom: 6px;
+            bottom: 8px;
             left: 8px;
             right: 8px;
             z-index: 2;
@@ -288,121 +529,299 @@
             background: rgba(16,185,129,0.15);
             backdrop-filter: blur(8px);
             border: 1px solid rgba(16,185,129,0.3);
-            border-radius: 8px;
-            padding: 4px 8px;
+            border-radius: 10px;
+            padding: 5px 9px;
         }
-        .winner-badge i { color: #fbbf24; font-size: 0.7rem; }
-        .winner-badge .winner-text { flex: 1; min-width: 0; }
-        .winner-badge .winner-label { font-size: 0.48rem; color: #888; text-transform: uppercase; letter-spacing: 0.4px; }
-        .winner-badge .winner-name { font-size: 0.65rem; font-weight: 700; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-        .card-body { padding: 10px 12px 12px; flex: 1; display: flex; flex-direction: column; }
+        .winner-badge i {
+            color: #fbbf24;
+            font-size: 0.75rem;
+        }
+
+        .winner-badge .winner-text {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .winner-badge .winner-label {
+            font-size: 0.48rem;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+        }
+
+        .winner-badge .winner-name {
+            font-size: 0.65rem;
+            font-weight: 700;
+            color: #fff;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .card-body {
+            padding: 12px 14px 14px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
         .tournament-name {
             font-weight: 700;
-            font-size: 0.82rem;
+            font-size: 0.88rem;
             color: #fff;
-            margin-bottom: 4px;
+            margin-bottom: 5px;
             line-height: 1.25;
             display: -webkit-box;
             -webkit-line-clamp: 2;
             -webkit-box-orient: vertical;
             overflow: hidden;
+            min-height: 36px;
         }
+
         .tournament-org {
-            font-size: 0.62rem;
+            font-size: 0.65rem;
             color: #888;
             display: flex;
             align-items: center;
             gap: 5px;
-            margin-bottom: 8px;
+            margin-bottom: 10px;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
         }
-        .tournament-org i { color: #fbbf24; font-size: 0.58rem; flex-shrink: 0; }
+
+        .tournament-org i {
+            color: #fbbf24;
+            font-size: 0.6rem;
+            flex-shrink: 0;
+        }
 
         .card-info {
             display: flex;
             flex-direction: column;
-            gap: 3px;
-            margin-bottom: 10px;
-            font-size: 0.62rem;
+            gap: 4px;
+            margin-bottom: 12px;
+            font-size: 0.68rem;
             color: #aaa;
         }
-        .card-info span { display: flex; align-items: center; gap: 5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .card-info i { color: #fbbf24; font-size: 0.55rem; width: 10px; text-align: center; flex-shrink: 0; }
 
-        .progress-bar { height: 4px; background: #2a2a2a; border-radius: 10px; overflow: hidden; margin-bottom: 5px; }
-        .progress-fill { height: 100%; background: linear-gradient(90deg, #fbbf24, #ffdd77); border-radius: 10px; transition: width 0.5s ease; }
-        .progress-text { display: flex; justify-content: space-between; font-size: 0.55rem; color: #666; margin-bottom: 8px; }
+        .card-info span {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .card-info i {
+            color: #fbbf24;
+            font-size: 0.6rem;
+            width: 12px;
+            text-align: center;
+            flex-shrink: 0;
+        }
+
+        .progress-bar {
+            height: 4px;
+            background: #2a2a2a;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 6px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #fbbf24, #ffdd77);
+            border-radius: 10px;
+            transition: width 0.5s ease;
+        }
+
+        .progress-text {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.6rem;
+            color: #666;
+            margin-bottom: 10px;
+        }
 
         .card-footer {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding-top: 8px;
+            padding-top: 10px;
             border-top: 1px solid rgba(255,255,255,0.05);
-            gap: 6px;
+            gap: 8px;
             margin-top: auto;
         }
-        .card-footer .fee { font-size: 0.75rem; font-weight: 800; color: #fbbf24; }
+
+        .card-footer .fee {
+            font-size: 0.82rem;
+            font-weight: 800;
+            color: #fbbf24;
+            white-space: nowrap;
+        }
 
         .btn {
             font-family: 'Inter', sans-serif;
             font-weight: 700;
-            font-size: 0.62rem;
+            font-size: 0.65rem;
             border: none;
             cursor: pointer;
             display: inline-flex;
             align-items: center;
             justify-content: center;
             gap: 5px;
-            padding: 6px 12px;
+            padding: 7px 13px;
             border-radius: 40px;
-            min-height: 30px;
+            min-height: 32px;
             transition: all 0.2s ease;
             white-space: nowrap;
             text-decoration: none;
         }
+
         .btn:active { transform: scale(0.96); }
-        .btn-primary { background: #fbbf24; color: #0a0a0a; }
-        .btn-primary:hover { background: #ffd94d; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(251, 191, 36, 0.3); }
-        .btn-outline { background: transparent; border: 1px solid rgba(251,191,36,0.4); color: #fbbf24; }
-        .btn-outline:hover { background: rgba(251,191,36,0.08); }
-        .btn-results { background: rgba(59,130,246,0.15); border: 1px solid rgba(59,130,246,0.3); color: #60a5fa; }
-        .btn-results:hover { background: rgba(59,130,246,0.25); }
-        .btn-disabled { background: rgba(255,255,255,0.04); color: #555; cursor: not-allowed; border: 1px solid rgba(255,255,255,0.05); }
+
+        .btn-primary {
+            background: #fbbf24;
+            color: #0a0a0a;
+        }
+        .btn-primary:hover {
+            background: #ffd94d;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(251, 191, 36, 0.3);
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 1px solid rgba(251,191,36,0.4);
+            color: #fbbf24;
+        }
+        .btn-outline:hover {
+            background: rgba(251,191,36,0.08);
+        }
+
+        .btn-results {
+            background: rgba(59,130,246,0.15);
+            border: 1px solid rgba(59,130,246,0.3);
+            color: #60a5fa;
+        }
+        .btn-results:hover {
+            background: rgba(59,130,246,0.25);
+        }
+
+        .btn-disabled {
+            background: rgba(255,255,255,0.04);
+            color: #555;
+            cursor: not-allowed;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
         .btn-disabled:hover { transform: none; box-shadow: none; }
-        .btn-approved { background: rgba(16,185,129,0.15); border: 1px solid rgba(16,185,129,0.35); color: #10b981; cursor: default; }
-        .btn-pending { background: rgba(251,191,36,0.12); border: 1px solid rgba(251,191,36,0.3); color: #fbbf24; cursor: default; }
-        .btn-rejected { background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.25); color: #ef4444; cursor: default; }
+
+        .btn-approved {
+            background: rgba(16,185,129,0.15);
+            border: 1px solid rgba(16,185,129,0.35);
+            color: #10b981;
+            cursor: default;
+        }
+
+        .btn-pending {
+            background: rgba(251,191,36,0.12);
+            border: 1px solid rgba(251,191,36,0.3);
+            color: #fbbf24;
+            cursor: default;
+        }
+
+        .btn-rejected {
+            background: rgba(239,68,68,0.1);
+            border: 1px solid rgba(239,68,68,0.25);
+            color: #ef4444;
+            cursor: default;
+        }
 
         /* ===== СКЕЛЕТОНЫ ===== */
-        .skeleton-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; }
+        .skeleton-scroll {
+            display: flex;
+            gap: 14px;
+            overflow-x: hidden;
+            padding: 6px 2px 14px 2px;
+        }
+
         .skeleton-card {
+            flex: 0 0 300px;
+            width: 300px;
             background: rgba(15,15,15,0.6);
             border: 1px solid rgba(255,255,255,0.04);
-            border-radius: 14px;
+            border-radius: 16px;
             overflow: hidden;
-            height: 250px;
+            height: 340px;
         }
+
         .skeleton-shimmer {
             background: linear-gradient(90deg, rgba(255,255,255,0.03) 25%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.03) 75%);
             background-size: 200% 100%;
             animation: shimmer 1.5s infinite;
             height: 100%;
         }
-        @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+
+        @keyframes shimmer {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
 
         /* ===== ПУСТОЕ СОСТОЯНИЕ ===== */
-        .empty-state { text-align: center; padding: 60px 20px; color: #666; }
-        .empty-state i { font-size: 3rem; color: #333; display: block; margin-bottom: 14px; }
-        .empty-state h3 { color: #888; margin-bottom: 6px; font-size: 0.95rem; }
-        .empty-state p { font-size: 0.75rem; margin-bottom: 16px; }
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #666;
+        }
+
+        .empty-state i {
+            font-size: 3rem;
+            color: #333;
+            display: block;
+            margin-bottom: 14px;
+        }
+
+        .empty-state h3 {
+            color: #888;
+            margin-bottom: 6px;
+            font-size: 0.95rem;
+        }
+
+        .empty-state p {
+            font-size: 0.75rem;
+            margin-bottom: 16px;
+        }
 
         /* ===== TOAST ===== */
-        .toast-container { position: fixed; top: 16px; right: 16px; z-index: 9999; display: flex; flex-direction: column; gap: 8px; pointer-events: none; }
-        .toast { background: rgba(15,15,15,0.95); backdrop-filter: blur(12px); border-radius: 10px; padding: 11px 16px; display: flex; align-items: center; gap: 10px; min-width: 240px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); transform: translateX(120%); transition: transform 0.4s cubic-bezier(0.175,0.885,0.32,1.275); pointer-events: auto; }
+        .toast-container {
+            position: fixed;
+            top: 16px;
+            right: 16px;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            pointer-events: none;
+        }
+
+        .toast {
+            background: rgba(15,15,15,0.95);
+            backdrop-filter: blur(12px);
+            border-radius: 10px;
+            padding: 11px 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            min-width: 240px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            transform: translateX(120%);
+            transition: transform 0.4s cubic-bezier(0.175,0.885,0.32,1.275);
+            pointer-events: auto;
+        }
+
         .toast.show { transform: translateX(0); }
         .toast.success { border-left: 3px solid #10b981; }
         .toast.error { border-left: 3px solid #ef4444; }
@@ -411,22 +830,68 @@
         .toast.success i { color: #10b981; }
         .toast.error i { color: #ef4444; }
         .toast.info i { color: #60a5fa; }
-        .toast-message { font-size: 0.75rem; font-weight: 500; color: #fff; }
+
+        .toast-message {
+            font-size: 0.75rem;
+            font-weight: 500;
+            color: #fff;
+        }
 
         /* ===== АДАПТИВ ===== */
         @media (max-width: 768px) {
             .container { padding: 0 12px; }
             .navbar { padding: 10px 14px; }
-            
             .nav-links.show { display: flex; }
-            .page-title { font-size: 1.15rem; }
-            .controls-bar { flex-direction: column; align-items: stretch; padding: 8px; }
-            .search-box, .sort-select, .reset-btn { width: 100%; }
-            .cards-grid, .skeleton-grid { grid-template-columns: 1fr; }
-            .toast-container { top: auto; bottom: 16px; right: 12px; left: 12px; }
-            .toast { min-width: auto; width: 100%; }
-            .card-cover { height: 90px; }
+
+            .page-title { font-size: 1.5rem; }
+            .page-subtitle { font-size: 0.7rem; }
+
+            .controls-bar {
+                flex-direction: column;
+                align-items: stretch;
+                padding: 10px;
+            }
+            .search-box { width: 100%; }
+            .status-filters {
+                width: 100%;
+                overflow-x: auto;
+            }
+            .results-count {
+                margin-left: 0;
+                text-align: center;
+            }
+
+            .tournament-card,
+            .skeleton-card {
+                flex: 0 0 260px;
+                width: 260px;
+            }
+            .card-cover { height: 100px; }
+
+            .toast-container {
+                top: auto;
+                bottom: 16px;
+                right: 12px;
+                left: 12px;
+            }
+            .toast {
+                min-width: auto;
+                width: 100%;
+            }
         }
+
+        @media (max-width: 480px) {
+            .tournament-card,
+            .skeleton-card {
+                flex: 0 0 240px;
+                width: 240px;
+            }
+            .page-title { font-size: 1.4rem; }
+        }
+
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-track { background: #1a1a1a; }
+        ::-webkit-scrollbar-thumb { background: #fbbf24; border-radius: 10px; }
     </style>
 </head>
 <body>
@@ -441,38 +906,47 @@
 
     <main>
         <div class="container">
-            
-
+            <!-- ===== ЗАГОЛОВОК ===== -->
             <div class="page-header">
-                <div>
-                    <div class="page-title">Тур<span>ниры</span></div>
-                    <div class="page-subtitle">Найдите турнир и примите участие</div>
+                <div style="width:100%;">
+                    <div class="page-title"><i class="fas fa-trophy"></i> Турниры</div>
+                    <div class="page-subtitle">Участвуй, побеждай, становись чемпионом PRORANK</div>
                 </div>
             </div>
 
+            <!-- ===== ПАНЕЛЬ УПРАВЛЕНИЯ ===== -->
             <div class="controls-bar">
                 <div class="search-box">
                     <i class="fas fa-search"></i>
                     <input type="text" id="searchInput" placeholder="Поиск: название, город, организатор...">
                 </div>
-                <select class="sort-select" id="sportSelect">
-                    <option value="all">🥊 Все виды спорта</option>
-                    <option value="Бокс">🥊 Бокс</option>
-                    <option value="ММА">🤼 ММА</option>
-                    <option value="Борьба">🤼 Борьба</option>
-                    <option value="Кикбоксинг">🦵 Кикбоксинг</option>
-                    <option value="Муай-тай">🥋 Муай-тай</option>
-                    <option value="Грэпплинг">🤼 Грэпплинг</option>
-                    <option value="Другое">⚔️ Другое</option>
-                </select>
-                <button class="reset-btn" id="resetBtn">
-                    <i class="fas fa-times"></i> Сбросить
-                </button>
                 <span class="results-count" id="resultsCount"></span>
             </div>
 
+            <!-- ===== ФИЛЬТР ПО СТАТУСУ ===== -->
+            <div class="controls-bar" style="padding: 8px 10px;">
+                <div class="status-filters" id="statusFilters">
+                    <button class="status-btn active" data-status="all">
+                        <i class="fas fa-th-large"></i> Все
+                    </button>
+                    <button class="status-btn" data-status="registration">
+                        <span class="status-dot" style="color:#fbbf24;"></span> Набор
+                    </button>
+                    <button class="status-btn" data-status="scheduled">
+                        <span class="status-dot" style="color:#a78bfa;"></span> Скоро
+                    </button>
+                    <button class="status-btn" data-status="active">
+                        <span class="status-dot" style="color:#10b981;"></span> LIVE
+                    </button>
+                    <button class="status-btn" data-status="completed">
+                        <span class="status-dot" style="color:#60a5fa;"></span> Завершены
+                    </button>
+                </div>
+            </div>
+
+            <!-- ===== КОНТЕЙНЕР СЕКЦИЙ ===== -->
             <div id="sectionsContainer">
-                <div class="skeleton-grid">
+                <div class="skeleton-scroll">
                     <div class="skeleton-card"><div class="skeleton-shimmer"></div></div>
                     <div class="skeleton-card"><div class="skeleton-shimmer"></div></div>
                     <div class="skeleton-card"><div class="skeleton-shimmer"></div></div>
@@ -516,7 +990,7 @@
 
         // ===== СОСТОЯНИЕ =====
         let allTournaments = [];
-        let currentSport = 'all';
+        let currentStatus = 'all';
         let searchQuery = '';
         let currentUser = null;
         let currentFighterData = null;
@@ -524,14 +998,8 @@
         let userRole = 'guest';
         let unsubscribeLive = null;
 
-        // Кэш победителей — против N+1
         const winnerCache = new Map();
-
-        // Кэш заявок текущего бойца — { tournamentId: {status, registrationId} }
         let myRegistrationsCache = new Map();
-        let myRegistrationsLoaded = false;
-
-        // Свёрнутые секции
         const collapsedSections = new Set();
 
         const formatDate = (dateStr) => {
@@ -540,16 +1008,41 @@
         };
 
         // ===== TOAST =====
-        window.showToast = function(message, type = 'info') {
+        function showNotification(message, type = 'info') {
+            if (typeof window.showToast === 'function') {
+                window.showToast(message, type);
+                return;
+            }
             const container = document.getElementById('toastContainer');
             const toast = document.createElement('div');
             toast.className = `toast ${type}`;
             const icons = { success: 'fa-check-circle', error: 'fa-exclamation-circle', info: 'fa-info-circle' };
-            toast.innerHTML = `<i class="fas ${icons[type]}"></i><span class="toast-message">${message}</span>`;
+            toast.innerHTML = `<i class="fas ${icons[type] || icons.info}"></i><span class="toast-message">${message}</span>`;
             container.appendChild(toast);
             requestAnimationFrame(() => toast.classList.add('show'));
-            setTimeout(() => { toast.classList.remove('show'); setTimeout(() => toast.remove(), 400); }, 3200);
-        };
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => toast.remove(), 400);
+            }, 3200);
+        }
+
+        // ===== ЭКРАНИРОВАНИЕ =====
+        function escapeHtml(value) {
+            if (value === null || value === undefined) return '';
+            return String(value)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
+        function safeImageUrl(url) {
+            if (!url) return '';
+            const raw = String(url).trim();
+            if (!/^(https?:\/\/|\/\/|\/|\.\/|\.\.\/)/i.test(raw)) return '';
+            return escapeHtml(raw);
+        }
 
         // ===== ФИЛЬТРЫ =====
         document.getElementById('searchInput').addEventListener('input', (e) => {
@@ -557,20 +1050,19 @@
             renderSections();
         });
 
-        document.getElementById('sportSelect').addEventListener('change', (e) => {
-            currentSport = e.target.value;
-            renderSections();
+        document.querySelectorAll('#statusFilters .status-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const status = btn.dataset.status;
+                currentStatus = status;
+
+                document.querySelectorAll('#statusFilters .status-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+
+                renderSections();
+            });
         });
 
-        document.getElementById('resetBtn').addEventListener('click', () => {
-            document.getElementById('searchInput').value = '';
-            document.getElementById('sportSelect').value = 'all';
-            searchQuery = '';
-            currentSport = 'all';
-            renderSections();
-        });
-
-        // ===== ПОЛУЧЕНИЕ ПОБЕДИТЕЛЯ =====
+        // ===== ПОБЕДИТЕЛЬ =====
         async function getTournamentWinner(tournamentId) {
             if (winnerCache.has(tournamentId)) return winnerCache.get(tournamentId);
             try {
@@ -586,17 +1078,15 @@
                 winnerCache.set(tournamentId, winner);
                 return winner;
             } catch (err) {
-                console.error('Ошибка получения победителя:', err);
                 winnerCache.set(tournamentId, null);
                 return null;
             }
         }
 
-        // ===== ЗАГРУЗКА МОИХ ЗАЯВОК =====
+        // ===== МОИ ЗАЯВКИ =====
         async function loadMyRegistrations() {
             if (!currentUser) {
                 myRegistrationsCache = new Map();
-                myRegistrationsLoaded = true;
                 return;
             }
             try {
@@ -613,10 +1103,8 @@
                         paymentStatus: data.paymentStatus
                     });
                 });
-                myRegistrationsLoaded = true;
             } catch (err) {
                 console.error('Ошибка загрузки заявок:', err);
-                myRegistrationsLoaded = true;
             }
         }
 
@@ -633,19 +1121,17 @@
             let renderDebounce = null;
 
             unsubscribeLive = onSnapshot(q, async (snapshot) => {
-                // Фильтруем deleted + турниры без даты
                 allTournaments = snapshot.docs
                     .map(doc => ({ id: doc.id, ...doc.data() }))
                     .filter(t => !t.deleted);
 
-                // Обогащаем победителями (только те, у кого их нет в кэше)
                 await enrichWithWinners();
 
                 if (renderDebounce) clearTimeout(renderDebounce);
                 renderDebounce = setTimeout(() => renderSections(), 100);
             }, (err) => {
                 console.error('Ошибка live-обновления:', err);
-                showToast('Ошибка загрузки турниров', 'error');
+                showNotification('Ошибка загрузки турниров', 'error');
             });
         }
 
@@ -653,14 +1139,13 @@
             const completed = allTournaments.filter(t => t.status === 'completed' && !winnerCache.has(t.id));
             if (!completed.length) return;
 
-            const promises = completed.map(async (t) => {
+            await Promise.all(completed.map(async (t) => {
                 const winner = await getTournamentWinner(t.id);
                 if (winner) t.winner = winner;
-            });
-            await Promise.all(promises);
+            }));
         }
 
-        // ===== ОПРЕДЕЛЕНИЕ СЕКЦИЙ =====
+        // ===== СЕКЦИИ =====
         const SECTIONS = [
             {
                 key: 'active',
@@ -696,30 +1181,7 @@
             }
         ];
 
-        // ===== РЕНДЕР =====
-        // 🔧ФИКС (XSS): раньше данные из Firestore вставлялись в innerHTML «как есть»,
-        // поэтому имя турнира или ссылка на картинку могли внедрить чужой тег/атрибут
-        // (например src="x" onerror="..."). Теперь всё непроверенное экранируется.
-        function escapeHtml(value) {
-            if (value === null || value === undefined) return '';
-            return String(value)
-                .replace(/&/g, '&amp;')
-                .replace(/</g, '&lt;')
-                .replace(/>/g, '&gt;')
-                .replace(/"/g, '&quot;')
-                .replace(/'/g, '&#39;');
-        }
-
-        // 🔧ФИКС (XSS): в src допускаются только http(s) и относительные пути —
-        // javascript:, data: и попытки «закрыть» атрибут отбрасываются.
-        function safeImageUrl(url) {
-            if (!url) return '';
-            const raw = String(url).trim();
-            if (!/^(https?:\/\/|\/\/|\/|\.\/|\.\.\/)/i.test(raw)) return '';
-            return escapeHtml(raw);
-        }
-
-
+        // ===== РЕНДЕР СЕКЦИЙ =====
         function renderSections() {
             const container = document.getElementById('sectionsContainer');
             const resultsCountEl = document.getElementById('resultsCount');
@@ -728,14 +1190,10 @@
             let totalVisible = 0;
 
             for (const section of SECTIONS) {
+                if (currentStatus !== 'all' && section.key !== currentStatus) continue;
+
                 let items = allTournaments.filter(section.filter);
 
-                // Фильтр по спорту
-                if (currentSport !== 'all') {
-                    items = items.filter(t => t.sport === currentSport);
-                }
-
-                // Поиск
                 if (searchQuery) {
                     items = items.filter(t =>
                         (t.name || '').toLowerCase().includes(searchQuery) ||
@@ -759,7 +1217,6 @@
                         <i class="fas fa-search"></i>
                         <h3>${hasAny ? 'Ничего не найдено' : 'Нет доступных турниров'}</h3>
                         <p>${hasAny ? 'Попробуйте изменить фильтры или поиск' : 'Скоро появятся новые турниры'}</p>
-                        ${hasAny ? `<button class="btn btn-outline" onclick="document.getElementById('resetBtn').click()"><i class="fas fa-times"></i> Сбросить фильтры</button>` : ''}
                     </div>
                 `;
                 return;
@@ -767,7 +1224,6 @@
 
             container.innerHTML = html;
 
-            // Обработчики сворачивания
             document.querySelectorAll('.section-header').forEach(header => {
                 header.addEventListener('click', (e) => {
                     if (e.target.closest('button')) return;
@@ -782,7 +1238,6 @@
                 });
             });
 
-            // Восстанавливаем состояние свёрнутости
             document.querySelectorAll('.section').forEach(s => {
                 if (collapsedSections.has(s.dataset.section)) {
                     s.classList.add('collapsed');
@@ -806,7 +1261,7 @@
                         <i class="fas fa-chevron-down section-arrow"></i>
                     </div>
                     <div class="section-content">
-                        <div class="cards-grid">
+                        <div class="tournaments-scroll">
                             ${items.map(t => renderCard(t)).join('')}
                         </div>
                     </div>
@@ -825,18 +1280,15 @@
             };
             const statusLabel = statusLabels[t.status] || t.status;
 
-            // Моя заявка?
             const myReg = myRegistrationsCache.get(t.id);
             const isOwner = userRole === 'organizer' && myOrgId && t.organizationId === myOrgId;
             const isOtherOrganizer = userRole === 'organizer' && !isOwner;
 
-            // Проверка дедлайна
             const today = new Date();
             today.setHours(0, 0, 0, 0);
             const deadlinePassed = t.registrationDeadline && new Date(t.registrationDeadline + 'T00:00:00') < today;
             const datePassed = t.date && new Date(t.date + 'T00:00:00') < today;
 
-            // ===== Действие на карточке =====
             let actionBtn = '';
             let cardClass = '';
 
@@ -847,7 +1299,6 @@
             } else if (isOtherOrganizer) {
                 actionBtn = `<button class="btn btn-outline" onclick="event.stopPropagation(); goToDetails('${t.id}')"><i class="fas fa-eye"></i> Просмотр</button>`;
             } else if (myReg) {
-                // Уже подал заявку
                 cardClass = myReg.status === 'approved' ? 'is-registered' : myReg.status === 'rejected' ? 'is-rejected' : 'is-pending';
                 if (myReg.status === 'approved') {
                     actionBtn = `<button class="btn btn-approved" disabled><i class="fas fa-check-circle"></i> Вы участвуете</button>`;
@@ -872,20 +1323,15 @@
                 actionBtn = `<button class="btn btn-outline" onclick="event.stopPropagation(); goToDetails('${t.id}')"><i class="fas fa-eye"></i> Просмотр</button>`;
             }
 
-            // Обложка
-            //🔧ФИКС (XSS): URL картинки проходит через safeImageUrl(), имя — через
-            // escapeHtml(), поэтому «подставленная» ссылка не может вырваться из src.
             const coverUrl = safeImageUrl(t.imageUrl);
             const coverHtml = coverUrl
                 ? `<div class="card-cover"><img src="${coverUrl}" alt="${escapeHtml(t.name || 'Турнир')}" onerror="this.parentElement.classList.add('no-image'); this.outerHTML='<i class=\\'fas fa-trophy\\'></i>'"></div>`
                 : `<div class="card-cover no-image"><i class="fas fa-trophy"></i></div>`;
 
-            // LIVE-бейдж
             const liveBadgeHtml = t.status === 'active'
                 ? `<div class="live-badge"><span class="pulse"></span> LIVE</div>`
                 : '';
 
-            // Мой статус-бейдж (отдельно от LIVE)
             let myStatusBadgeHtml = '';
             if (myReg && t.status !== 'completed') {
                 const badges = {
@@ -896,8 +1342,6 @@
                 myStatusBadgeHtml = badges[myReg.status] || '';
             }
 
-            // Победитель
-            //🔧ФИКС (XSS): имя победителя экранируется перед вставкой в innerHTML.
             const winnerHtml = (t.status === 'completed' && t.winner) ? `
                 <div class="winner-badge">
                     <i class="fas fa-trophy"></i>
@@ -908,12 +1352,10 @@
                 </div>
             ` : '';
 
-            // Прогресс-бар — только для registration и scheduled
             const showProgress = t.status === 'registration' || t.status === 'scheduled';
 
-            // Предупреждение о просрочке
             const overdueWarning = (t.status === 'registration' && datePassed) ? `
-                <div style="font-size: 0.55rem; color: #f59e0b; margin-top: 4px; display: flex; align-items: center; gap: 4px;">
+                <div style="font-size: 0.58rem; color: #f59e0b; margin-top: 4px; display: flex; align-items: center; gap: 4px;">
                     <i class="fas fa-exclamation-triangle"></i>
                     Дата турнира прошла — уточните у организатора
                 </div>
@@ -967,7 +1409,7 @@
         };
 
         window.requireLogin = function(tournamentId) {
-            showToast('Войдите в аккаунт чтобы записаться', 'info');
+            showNotification('Войдите в аккаунт чтобы записаться', 'info');
             setTimeout(() => {
                 window.location.href = `login.html?redirect=${encodeURIComponent(`tournament-details.html?id=${tournamentId}&register=1`)}`;
             }, 800);
@@ -977,16 +1419,12 @@
             window.location.href = `tournament-details.html?id=${tournamentId}`;
         };
 
-        // ===== ЗАГРУЗКА ДАННЫХ БОЙЦА =====
+        // ===== ЗАГРУЗКА БОЙЦА =====
         async function loadFighterData(userId) {
             try {
                 const fighterDoc = await getDoc(doc(db, "fighters", userId));
                 if (fighterDoc.exists()) {
                     currentFighterData = fighterDoc.data();
-                    if (currentFighterData.clubId) {
-                        const clubDoc = await getDoc(doc(db, "clubs", currentFighterData.clubId));
-                        if (clubDoc.exists()) currentFighterData.clubName = clubDoc.data().name;
-                    }
                 }
             } catch (err) { console.error('Ошибка загрузки бойца:', err); }
         }
@@ -1022,22 +1460,28 @@
             } else {
                 userRole = 'guest';
                 myRegistrationsCache = new Map();
-                myRegistrationsLoaded = true;
             }
 
-            // Подписываемся только один раз
             if (!unsubscribeLive) {
                 subscribeToTournaments();
             } else {
-                // Если уже подписаны — просто перерисуем (роль могла измениться)
                 renderSections();
             }
         });
 
-        // Отписка
         window.addEventListener('beforeunload', () => {
             if (unsubscribeLive) unsubscribeLive();
         });
+
+        // ===== МЕНЮ =====
+        const menuToggle = document.getElementById('menuToggle');
+        const navLinks = document.getElementById('navLinks');
+        if (menuToggle && navLinks) {
+            menuToggle.addEventListener('click', () => navLinks.classList.toggle('show'));
+            navLinks.querySelectorAll('a').forEach(link => {
+                link.addEventListener('click', () => navLinks.classList.remove('show'));
+            });
+        }
     </script>
 </body>
 </html>
