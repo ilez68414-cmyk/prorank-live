@@ -9,7 +9,6 @@
     <meta name="theme-color" content="#fbbf24">
     <meta name="mobile-web-app-capable" content="yes">
     <meta charset="UTF-8">
-<!--🔧ФИКС: preconnect -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="dns-prefetch" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -23,7 +22,7 @@
     <title>Сезон | PRORANK</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700;14..32,800;14..32,900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700;14..32,800;14..32,900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -192,9 +191,13 @@
         }
 
         .season-stat-box-value.timer {
-            font-family: 'Inter', monospace;
+            font-family: 'JetBrains Mono', monospace;
             font-size: 1.1rem;
             letter-spacing: 0.5px;
+        }
+
+        .season-stat-box-value.finished {
+            color: #60a5fa;
         }
 
         .season-stat-box-sub {
@@ -239,7 +242,35 @@
             margin-left: auto;
         }
 
-        /* ===== ТОП-3 БОЙЦА/КЛУБА ===== */
+        /* ===== ПОБЕДИТЕЛИ — ПОДИУМ ===== */
+        .winners-section-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.1rem;
+            font-weight: 900;
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid rgba(251,191,36,0.15);
+            color: #fbbf24;
+            letter-spacing: 0.3px;
+        }
+
+        .winners-section-title i {
+            color: #fbbf24;
+            filter: drop-shadow(0 0 8px rgba(251,191,36,0.5));
+            font-size: 1.2rem;
+        }
+
+        .winners-subtitle {
+            font-size: 0.75rem;
+            color: #888;
+            margin-bottom: 18px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
         .top-podium {
             display: grid;
             grid-template-columns: 1fr 1fr 1fr;
@@ -500,7 +531,149 @@
             color: #fbbf24;
         }
 
-        /* ===== ПРАВИЛА ===== */
+        /* ============================================================
+           ФИШКА 12 — ACCORDION ДЛЯ ПРАВИЛ
+           ============================================================ */
+        .acc-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .acc-item {
+            background: rgba(20,20,28,0.85);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 16px;
+            overflow: hidden;
+            transition: border-color 0.3s ease, background 0.3s ease;
+        }
+
+        .acc-item.open {
+            border-color: rgba(251,191,36,0.35);
+            background: rgba(25,25,32,0.95);
+        }
+
+        .acc-head {
+            padding: 16px 18px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            user-select: none;
+            transition: background 0.2s ease;
+        }
+
+        .acc-head:hover {
+            background: rgba(251,191,36,0.04);
+        }
+
+        .acc-head-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            min-width: 0;
+            flex: 1;
+        }
+
+        .acc-head-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, rgba(251,191,36,0.15), rgba(251,191,36,0.05));
+            border: 1px solid rgba(251,191,36,0.25);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fbbf24;
+            font-size: 0.9rem;
+            flex-shrink: 0;
+            transition: all 0.3s ease;
+        }
+
+        .acc-item.open .acc-head-icon {
+            background: linear-gradient(135deg, #fbbf24, #d4a24a);
+            color: #000;
+            box-shadow: 0 0 18px rgba(251,191,36,0.4);
+        }
+
+        .acc-head-text {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            min-width: 0;
+        }
+
+        .acc-head-title {
+            font-size: 0.88rem;
+            font-weight: 800;
+            color: #fff;
+            letter-spacing: -0.2px;
+        }
+
+        .acc-head-sub {
+            font-size: 0.65rem;
+            color: #888;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .acc-chevron {
+            color: #888;
+            font-size: 0.85rem;
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), color 0.3s ease;
+            flex-shrink: 0;
+        }
+
+        .acc-item.open .acc-chevron {
+            transform: rotate(180deg);
+            color: #fbbf24;
+        }
+
+        .acc-body {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .acc-body-inner {
+            padding: 0 18px 18px 18px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .acc-rule {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            padding: 10px 12px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 10px;
+            border-left: 3px solid #fbbf24;
+            font-size: 0.82rem;
+            color: #ccc;
+            line-height: 1.5;
+        }
+
+        .acc-rule i {
+            color: #fbbf24;
+            font-size: 0.7rem;
+            margin-top: 3px;
+            flex-shrink: 0;
+        }
+
+        .acc-rule-num {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.65rem;
+            color: #fbbf24;
+            font-weight: 700;
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+
+        /* ===== СТАРЫЙ rules-list (оставлен для совместимости — на случай, если где-то используется) ===== */
         .rules-list {
             display: flex;
             flex-direction: column;
@@ -541,6 +714,65 @@
             margin-bottom: 10px;
         }
 
+        /* ===== ЗАВЕРШЁННЫЙ СЕЗОН — БАННЕР ===== */
+        .finished-banner {
+            background:
+                radial-gradient(circle at 0% 50%, rgba(59,130,246,0.12), transparent 60%),
+                linear-gradient(135deg, rgba(59,130,246,0.1), rgba(59,130,246,0.02));
+            border: 1px solid rgba(59,130,246,0.35);
+            border-radius: 20px;
+            padding: 16px 22px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            flex-wrap: wrap;
+            animation: fadeInUp 0.5s ease;
+        }
+
+        .finished-banner.paid {
+            background:
+                radial-gradient(circle at 0% 50%, rgba(168,85,247,0.12), transparent 60%),
+                linear-gradient(135deg, rgba(168,85,247,0.1), rgba(168,85,247,0.02));
+            border-color: rgba(168,85,247,0.35);
+        }
+
+        .finished-banner-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-size: 1.2rem;
+            flex-shrink: 0;
+            box-shadow: 0 0 22px rgba(59,130,246,0.5);
+        }
+
+        .finished-banner.paid .finished-banner-icon {
+            background: linear-gradient(135deg, #a855f7, #7c3aed);
+            box-shadow: 0 0 22px rgba(168,85,247,0.5);
+        }
+
+        .finished-banner-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .finished-banner-title {
+            font-size: 0.95rem;
+            font-weight: 800;
+            color: #fff;
+            margin-bottom: 2px;
+        }
+
+        .finished-banner-sub {
+            font-size: 0.72rem;
+            color: #aaa;
+        }
+
         /* ===== ФУТЕР ===== */
         .main-footer {
             background: #0a0a0a;
@@ -579,9 +811,7 @@
         /* ===== АДАПТИВ ===== */
         @media (max-width: 768px) {
             .navbar { padding: 12px 18px; }
-            
             .nav-links.show { display: flex; }
-            
             .container { padding: 1.2rem 14px; }
 
             .season-hero { padding: 20px 18px; border-radius: 22px; }
@@ -613,6 +843,14 @@
             .season-list-frs { font-size: 0.9rem; }
 
             .prize-table { grid-template-columns: 1fr; }
+
+            .acc-head { padding: 14px 16px; }
+            .acc-head-icon { width: 32px; height: 32px; font-size: 0.8rem; }
+            .acc-head-title { font-size: 0.82rem; }
+            .acc-head-sub { font-size: 0.6rem; }
+            .acc-body-inner { padding: 0 16px 16px 16px; }
+            .acc-rule { font-size: 0.78rem; padding: 9px 11px; }
+
             .footer-inner { flex-direction: column; text-align: center; align-items: center; gap: 16px; }
         }
 
@@ -622,6 +860,10 @@
             .podium-card.place-1 { transform: none; margin-bottom: 0; }
             .podium-card.place-1:hover { transform: translateY(-6px); }
         }
+
+        ::-webkit-scrollbar { width: 5px; height: 5px; }
+        ::-webkit-scrollbar-track { background: #1a1a1a; }
+        ::-webkit-scrollbar-thumb { background: #fbbf24; border-radius: 10px; }
     </style>
 </head>
 <body>
@@ -704,7 +946,7 @@
         const auth = getAuth(app);
 
         // 🔧 Импорт модуля сезонов
-        import { initSeasons, getSeason, getActiveSeason } from './seasons.js';
+        import { initSeasons, getSeason, getActiveSeason, getSeasonWinners } from './seasons.js';
 
         let seasonId = null;
         let seasonData = null;
@@ -716,8 +958,13 @@
 
         // ===== УТИЛИТЫ =====
         function escapeHtml(str) {
-            if (!str) return '';
-            return String(str).replace(/[&<>]/g, m => m === '&' ? '&amp;' : m === '<' ? '&lt;' : '&gt;');
+            if (str === null || str === undefined) return '';
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
         }
 
         function formatDate(d) {
@@ -734,11 +981,11 @@
         function getStatusBadge(status) {
             const map = {
                 upcoming: { cls: 'upcoming', label: '📅 Скоро' },
-                active: { cls: 'active', label: '🟢 Активный' },
+                active:   { cls: 'active',   label: '🟢 Активный' },
                 finished: { cls: 'finished', label: '✅ Завершён' },
-                paid: { cls: 'paid', label: '💰 Выплачен' }
+                paid:     { cls: 'paid',     label: '💰 Выплачен' }
             };
-            return map[status] || { cls: 'upcoming', label: status };
+            return map[status] || { cls: 'upcoming', label: status || '—' };
         }
 
         // ===== ЗАГРУЗКА =====
@@ -749,7 +996,6 @@
                 initSeasons(db, auth);
 
                 if (!seasonId) {
-                    // Если ID нет — берём активный сезон
                     const active = await getActiveSeason();
                     if (!active) {
                         container.innerHTML = `
@@ -757,7 +1003,7 @@
                                 <i class="fas fa-trophy"></i>
                                 <div style="font-size:1.1rem; font-weight:700; color:#fbbf24; margin-bottom:8px;">Активного сезона нет</div>
                                 <div style="color:#888; margin-bottom:20px;">Сейчас между сезонами. Следите за анонсами!</div>
-                                <a href="rating.html" class="season-banner-details-btn" style="text-decoration:none; display:inline-flex;">
+                                <a href="rating.html" style="text-decoration:none; display:inline-flex; padding:10px 24px; background:rgba(251,191,36,0.12); border:1px solid rgba(251,191,36,0.3); border-radius:40px; color:#fbbf24; font-weight:700; gap:8px; align-items:center;">
                                     <i class="fas fa-arrow-left"></i> К рейтингу
                                 </a>
                             </div>
@@ -774,7 +1020,7 @@
                                 <i class="fas fa-exclamation-triangle" style="color:#ef4444;"></i>
                                 <div style="font-size:1.1rem; font-weight:700; color:#ef4444; margin-bottom:8px;">Сезон не найден</div>
                                 <div style="color:#888; margin-bottom:20px;">Возможно, он был удалён</div>
-                                <a href="rating.html" class="season-banner-details-btn" style="text-decoration:none; display:inline-flex;">
+                                <a href="rating.html" style="text-decoration:none; display:inline-flex; padding:10px 24px; background:rgba(251,191,36,0.12); border:1px solid rgba(251,191,36,0.3); border-radius:40px; color:#fbbf24; font-weight:700; gap:8px; align-items:center;">
                                     <i class="fas fa-arrow-left"></i> К рейтингу
                                 </a>
                             </div>
@@ -790,7 +1036,7 @@
                 container.innerHTML = `
                     <div class="empty-state" style="padding:80px 20px;">
                         <i class="fas fa-exclamation-triangle" style="color:#ef4444;"></i>
-                        <div style="color:#ef4444;">Ошибка загрузки: ${e.message}</div>
+                        <div style="color:#ef4444;">Ошибка загрузки: ${escapeHtml(e.message)}</div>
                     </div>
                 `;
             }
@@ -804,6 +1050,8 @@
             const st = getStatusBadge(s.status);
             const startDate = s.startDate?.toDate?.() || (s.startDate ? new Date(s.startDate) : null);
             const endDate = s.endDate?.toDate?.() || (s.endDate ? new Date(s.endDate) : null);
+            const isFinished = s.status === 'finished' || s.status === 'paid';
+            const isPaid = s.status === 'paid';
 
             // Считаем общий фонд
             const fighterTotal = Array.isArray(s.fighterPrizes)
@@ -828,9 +1076,9 @@
 
                     <div class="season-hero-grid">
                         <div class="season-stat-box">
-                            <div class="season-stat-box-label">До конца сезона</div>
-                            <div class="season-stat-box-value timer" id="seasonTimer">—</div>
-                            <div class="season-stat-box-sub" id="seasonTimerSub">—</div>
+                            <div class="season-stat-box-label">${isFinished ? 'Статус' : 'До конца сезона'}</div>
+                            <div class="season-stat-box-value ${isFinished ? 'finished' : 'timer'}" id="seasonTimer">${isFinished ? (isPaid ? '💰 Выплачен' : '✅ Завершён') : '—'}</div>
+                            <div class="season-stat-box-sub" id="seasonTimerSub">${isFinished ? (isPaid ? 'Награды выплачены' : 'Ожидает выплаты') : '—'}</div>
                         </div>
                         <div class="season-stat-box">
                             <div class="season-stat-box-label">Призовой фонд</div>
@@ -851,13 +1099,56 @@
                 </div>
             `;
 
-            // ===== ТОП-3 (если завершён) =====
-            let winnersHtml = '';
-            if (s.winners && (s.winners.fighters?.length > 0 || s.winners.clubs?.length > 0)) {
-                winnersHtml = `
-                    ${s.winners.fighters?.length > 0 ? renderTopPodium('🥊 Топ-3 бойца сезона', s.winners.fighters, 'fighter') : ''}
-                    ${s.winners.clubs?.length > 0 ? renderTopPodium('👥 Топ-3 клуба сезона', s.winners.clubs, 'club') : ''}
+            // ===== БАННЕР ЗАВЕРШЁННОГО СЕЗОНА =====
+            let finishedBannerHtml = '';
+            if (isFinished) {
+                finishedBannerHtml = `
+                    <div class="finished-banner ${isPaid ? 'paid' : ''}">
+                        <div class="finished-banner-icon">
+                            <i class="fas ${isPaid ? 'fa-money-bill-wave' : 'fa-flag-checkered'}"></i>
+                        </div>
+                        <div class="finished-banner-info">
+                            <div class="finished-banner-title">${isPaid ? 'Сезон завершён и выплачен' : 'Сезон завершён'}</div>
+                            <div class="finished-banner-sub">
+                                ${isPaid
+                                    ? 'Награды зачислены победителям'
+                                    : 'Победители определены. Награды ждут выплаты'}
+                            </div>
+                        </div>
+                    </div>
                 `;
+            }
+
+            // ===== ПОБЕДИТЕЛИ (если finished/paid и есть winners) =====
+            let winnersHtml = '';
+            if (isFinished) {
+                try {
+                    const winners = await getSeasonWinners(seasonId);
+                    const hasFighters = winners.fighters.length > 0;
+                    const hasClubs = winners.clubs.length > 0;
+
+                    if (hasFighters) {
+                        winnersHtml += renderTopPodium('🥊 Топ-3 бойца сезона', winners.fighters, 'fighter');
+                    }
+                    if (hasClubs) {
+                        winnersHtml += renderTopPodium('👥 Топ-3 клуба сезона', winners.clubs, 'club');
+                    }
+                    if (!hasFighters && !hasClubs) {
+                        winnersHtml = `
+                            <div class="season-panel">
+                                <div class="season-panel-title">
+                                    <i class="fas fa-trophy"></i> Победители сезона
+                                </div>
+                                <div class="empty-state">
+                                    <i class="fas fa-user-slash"></i>
+                                    <div>Победители ещё не определены</div>
+                                </div>
+                            </div>
+                        `;
+                    }
+                } catch (e) {
+                    console.warn('Ошибка загрузки победителей:', e);
+                }
             }
 
             // ===== ПРИЗЫ =====
@@ -872,7 +1163,7 @@
                             <i class="fas fa-fist-raised"></i> Бойцам (топ-3 по FRS)
                         </div>
                         <div class="prize-table">
-                            ${(s.fighterPrizes || []).map((p, i) => `
+                            ${(s.fighterPrizes || []).map((p) => `
                                 <div class="prize-card ${p.place === 1 ? 'place-1' : ''}">
                                     <div class="prize-place">${p.place === 1 ? '🥇' : p.place === 2 ? '🥈' : '🥉'}</div>
                                     <div class="prize-label">${p.place}-е место</div>
@@ -887,7 +1178,7 @@
                             <i class="fas fa-users"></i> Клубам (топ-3 по clubFRS)
                         </div>
                         <div class="prize-table">
-                            ${(s.clubPrizes || []).map((p, i) => `
+                            ${(s.clubPrizes || []).map((p) => `
                                 <div class="prize-card ${p.place === 1 ? 'place-1' : ''}">
                                     <div class="prize-place">${p.place === 1 ? '🥇' : p.place === 2 ? '🥈' : '🥉'}</div>
                                     <div class="prize-label">${p.place}-е место</div>
@@ -903,25 +1194,45 @@
                 </div>
             `;
 
-            // ===== ПРАВИЛА =====
+            // ===== ПРАВИЛА (ФИШКА 12 — ACCORDION) =====
             const rules = Array.isArray(s.rules) ? s.rules : [];
             const rulesHtml = rules.length > 0 ? `
                 <div class="season-panel">
                     <div class="season-panel-title">
                         <i class="fas fa-scroll"></i> Правила сезона
+                        <span class="count-badge">${rules.length}</span>
                     </div>
-                    <div class="rules-list">
-                        ${rules.map(r => `
-                            <div class="rule-item">
-                                <i class="fas fa-check-circle"></i>
-                                <span>${escapeHtml(r)}</span>
+
+                    <div class="acc-list" id="rulesAccordion">
+                        <div class="acc-item open" data-acc="0">
+                            <div class="acc-head">
+                                <div class="acc-head-left">
+                                    <div class="acc-head-icon">
+                                        <i class="fas fa-book"></i>
+                                    </div>
+                                    <div class="acc-head-text">
+                                        <div class="acc-head-title">Правила и условия</div>
+                                        <div class="acc-head-sub">${rules.length} ${declension(rules.length, 'правило', 'правила', 'правил')}</div>
+                                    </div>
+                                </div>
+                                <i class="fas fa-chevron-down acc-chevron"></i>
                             </div>
-                        `).join('')}
+                            <div class="acc-body">
+                                <div class="acc-body-inner">
+                                    ${rules.map((r, i) => `
+                                        <div class="acc-rule">
+                                            <span class="acc-rule-num">${String(i + 1).padStart(2, '0')}</span>
+                                            <span>${escapeHtml(r)}</span>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             ` : '';
 
-            // ===== ТОП-100 БОЙЦОВ / ТОП-50 КЛУБОВ (текущий сезон) =====
+            // ===== ТОП-100 БОЙЦОВ / ТОП-50 КЛУБОВ (только для active/upcoming) =====
             let leaderboardHtml = '';
             if (s.status === 'active' || s.status === 'upcoming') {
                 leaderboardHtml = `
@@ -947,16 +1258,69 @@
                 `;
             }
 
-            container.innerHTML = heroHtml + winnersHtml + prizesHtml + leaderboardHtml + rulesHtml;
+            container.innerHTML = heroHtml + finishedBannerHtml + winnersHtml + prizesHtml + leaderboardHtml + rulesHtml;
 
-            // Запускаем таймер
-            startTimer(endDate);
+            // Запускаем таймер (только для active/upcoming)
+            if (!isFinished) {
+                startTimer(endDate);
+            }
 
-            // Загружаем лидерборды асинхронно
+            // Инициализируем accordion
+            initAccordion();
+
+            // Загружаем лидерборды асинхронно (только для active/upcoming)
             if (s.status === 'active' || s.status === 'upcoming') {
                 loadFightersLeaderboard();
                 loadClubsLeaderboard();
             }
+        }
+
+        // ===== СКЛОНЕНИЕ =====
+        function declension(n, one, two, five) {
+            n = Math.abs(n) % 100;
+            const n1 = n % 10;
+            if (n > 10 && n < 20) return five;
+            if (n1 > 1 && n1 < 5) return two;
+            if (n1 === 1) return one;
+            return five;
+        }
+
+        // ===== ФИШКА 12 — ACCORDION =====
+        function initAccordion() {
+            const items = document.querySelectorAll('.acc-item');
+            items.forEach(item => {
+                const head = item.querySelector('.acc-head');
+                const body = item.querySelector('.acc-body');
+                if (!head || !body) return;
+
+                // Устанавливаем начальную высоту для .open
+                if (item.classList.contains('open')) {
+                    body.style.maxHeight = body.scrollHeight + 'px';
+                }
+
+                head.addEventListener('click', () => {
+                    const isOpen = item.classList.contains('open');
+                    if (isOpen) {
+                        // Закрываем
+                        body.style.maxHeight = body.scrollHeight + 'px';
+                        requestAnimationFrame(() => {
+                            body.style.maxHeight = '0px';
+                        });
+                        item.classList.remove('open');
+                    } else {
+                        // Открываем
+                        item.classList.add('open');
+                        body.style.maxHeight = body.scrollHeight + 'px';
+                    }
+                });
+            });
+
+            // Пересчёт при ресайзе
+            window.addEventListener('resize', () => {
+                document.querySelectorAll('.acc-item.open .acc-body').forEach(body => {
+                    body.style.maxHeight = body.scrollHeight + 'px';
+                });
+            });
         }
 
         // ===== ТОП-ПОДИУМ =====
@@ -965,18 +1329,19 @@
 
             // Подиум: 2-1-3 (серебро слева, золото в центре, бронза справа)
             const order = [];
-            if (sorted[1]) order.push(sorted[1]);  // 2-е
-            if (sorted[0]) order.push(sorted[0]);  // 1-е
-            if (sorted[2]) order.push(sorted[2]);  // 3-е
+            if (sorted[1]) order.push(sorted[1]);
+            if (sorted[0]) order.push(sorted[0]);
+            if (sorted[2]) order.push(sorted[2]);
 
             const medalMap = { 1: '🥇', 2: '🥈', 3: '🥉' };
             const placeLabelMap = { 1: 'ЧЕМПИОН', 2: '2-е место', 3: '3-е место' };
 
             return `
                 <div class="season-panel">
-                    <div class="season-panel-title">
-                        <i class="fas fa-trophy"></i> ${title}
+                    <div class="winners-section-title">
+                        <i class="fas fa-trophy"></i> ${escapeHtml(title)}
                     </div>
+                    <div class="winners-subtitle">Итоги сезона · пьедестал почёта</div>
                     <div class="top-podium">
                         ${order.map(w => {
                             const isFighter = type === 'fighter';
@@ -992,7 +1357,7 @@
                                 <div class="podium-card place-${w.place}" onclick="window.location='${link}'">
                                     <div class="podium-place-label">${placeLabelMap[w.place] || w.place + '-е'}</div>
                                     <div class="podium-medal">${medalMap[w.place] || ''}</div>
-                                    <img src="${avatar}" class="podium-avatar" onerror="this.src='https://ui-avatars.com/api/?name=?&background=fbbf24&color=000&size=100'">
+                                    <img src="${escapeHtml(avatar)}" class="podium-avatar" onerror="this.src='https://ui-avatars.com/api/?name=?&background=fbbf24&color=000&size=100'">
                                     <div class="podium-name">${escapeHtml(name || '—')}</div>
                                     <div class="podium-frs"><i class="fas fa-star"></i> ${(frs || 0).toLocaleString()} ${isFighter ? 'FRS' : 'clubFRS'}</div>
                                     ${w.amount > 0 ? `<div class="podium-prize">${w.amount.toLocaleString()} ₽</div>` : ''}
@@ -1044,7 +1409,7 @@
                     html += `
                         <div class="season-list-item" onclick="window.location='profile.html?id=${f.id}'">
                             <div class="season-list-rank ${rankCls}">${rank}</div>
-                            <img src="${avatar}" class="season-list-avatar" onerror="this.src='https://ui-avatars.com/api/?name=?&background=fbbf24&color=000&size=80'">
+                            <img src="${escapeHtml(avatar)}" class="season-list-avatar" onerror="this.src='https://ui-avatars.com/api/?name=?&background=fbbf24&color=000&size=80'">
                             <div class="season-list-info">
                                 <div class="season-list-name">${escapeHtml(f.name || 'Боец')}</div>
                                 <div class="season-list-details">
@@ -1108,7 +1473,7 @@
                     html += `
                         <div class="season-list-item" onclick="window.location='club-profile.html?id=${c.id}'">
                             <div class="season-list-rank ${rankCls}">${rank}</div>
-                            <img src="${logo}" class="season-list-avatar" onerror="this.src='https://ui-avatars.com/api/?name=?&background=fbbf24&color=000&size=80'">
+                            <img src="${escapeHtml(logo)}" class="season-list-avatar" onerror="this.src='https://ui-avatars.com/api/?name=?&background=fbbf24&color=000&size=80'">
                             <div class="season-list-info">
                                 <div class="season-list-name">${escapeHtml(c.name || 'Клуб')}</div>
                                 <div class="season-list-details">

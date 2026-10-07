@@ -22,7 +22,7 @@
     <title>Профиль | PRORANK</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700;14..32,800;14..32,900&family=Bebas+Neue&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700;14..32,800;14..32,900&family=Bebas+Neue&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
@@ -72,8 +72,6 @@ main { flex: 1; }
     width: 100%;
 }
 
-/* NAVBAR */
-
 .profile-container {
     max-width: 680px;
     margin: 0 auto;
@@ -86,8 +84,14 @@ main { flex: 1; }
 }
 
 /* ============================================================
-   ШАПКА INSTAGRAM (СТАТИЧНАЯ)
+   ФИШКА 8 — AVATAR PULL-DOWN (guest-mode)
    ============================================================ */
+.ig-header-wrapper {
+    position: relative;
+    overflow: hidden;
+    background: #08080c;
+}
+
 .ig-header {
     padding: 22px 18px 14px;
     display: grid;
@@ -97,6 +101,25 @@ main { flex: 1; }
     border-bottom: 1px solid var(--line);
     min-width: 0;
     overflow: hidden;
+    position: relative;
+    z-index: 2;
+    background: #08080c;
+    transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.3, 1);
+    transform-origin: top center;
+    will-change: transform;
+}
+.ig-header.pulling {
+    transition: none;
+}
+
+.ig-header-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(0,0,0,0.85), rgba(0,0,0,0.4) 60%, transparent);
+    opacity: 0;
+    pointer-events: none;
+    z-index: 1;
+    transition: opacity 0.3s ease;
 }
 
 .ig-avatar-col { position: relative; flex-shrink: 0; }
@@ -153,7 +176,6 @@ main { flex: 1; }
 .ig-avatar-plus:hover { transform: scale(1.1); }
 .ig-avatar-plus.hidden { display: none; }
 
-/* Правая колонка: имя → рекорд → кнопки */
 .ig-right-col {
     min-width: 0;
     overflow: hidden;
@@ -217,7 +239,6 @@ main { flex: 1; }
 }
 .ig-premium i { font-size: 0.5rem; }
 
-/* Рекорд под именем — W-L и FRS */
 .ig-record-row {
     display: flex;
     gap: 14px;
@@ -255,8 +276,6 @@ main { flex: 1; }
     gap: 8px;
     min-width: 0;
 }
-/* Кнопки в сетке действий могут сжиматься и переносить текст,
-   иначе длинное «Добавить в друзья» распирает grid и уезжает за экран. */
 .ig-actions-row .ig-btn {
     min-width: 0;
     white-space: normal;
@@ -304,7 +323,7 @@ main { flex: 1; }
 .ig-btn.full { grid-column: 1 / -1; }
 
 /* ============================================================
-   ИНФО ПОД ШАПКОЙ — BIO
+   ИНФО-БЛОК
    ============================================================ */
 .ig-info {
     padding: 14px 18px 16px;
@@ -361,8 +380,184 @@ main { flex: 1; }
     line-height: 1.55;
     white-space: pre-wrap;
     word-break: break-word;
+    margin-bottom: 14px;
 }
 .ig-bio.empty { color: var(--text-mute); font-style: italic; }
+
+/* ============================================================
+   PROGRESS BAR С ИКОНКАМИ ЛИГ (ВАРИАНТ 3)
+   ============================================================ */
+.ig-league-progress {
+    background:
+        radial-gradient(circle at 0% 50%, rgba(251,191,36,0.08), transparent 60%),
+        linear-gradient(135deg, rgba(22,20,16,0.7), rgba(14,14,18,0.85));
+    border: 1px solid rgba(251,191,36,0.2);
+    border-radius: 16px;
+    padding: 12px 14px;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.25s ease;
+}
+.ig-league-progress:hover {
+    border-color: rgba(251,191,36,0.4);
+    box-shadow: 0 4px 18px rgba(0,0,0,0.3);
+}
+.ig-league-progress::before {
+    content: '';
+    position: absolute;
+    top: -1px; left: 18px; right: 18px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(251,191,36,0.6), transparent);
+}
+
+.ig-lp-header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+.ig-lp-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.55rem;
+    letter-spacing: 2px;
+    color: #71717a;
+    text-transform: uppercase;
+    font-weight: 700;
+}
+.ig-lp-frs {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 0.95rem;
+    color: #fbbf24;
+    letter-spacing: 0.5px;
+}
+.ig-lp-frs span {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.6rem;
+    color: #5a5a62;
+    font-weight: 700;
+    letter-spacing: 1px;
+    margin-left: 3px;
+}
+
+.ig-lp-row {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 12px;
+    align-items: center;
+}
+
+.ig-lp-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    flex-shrink: 0;
+    position: relative;
+    overflow: hidden;
+}
+.ig-lp-icon img {
+    width: 26px;
+    height: 26px;
+    object-fit: contain;
+    filter: drop-shadow(0 0 6px rgba(0,0,0,0.5));
+}
+.ig-lp-icon.current {
+    background: linear-gradient(135deg, #cd7f32, #a0522d);
+    color: #fff;
+    box-shadow: 0 0 20px rgba(205,127,50,0.5);
+}
+.ig-lp-icon.next {
+    background: rgba(255,255,255,0.03);
+    color: #3a3a42;
+    border: 1px solid rgba(255,255,255,0.05);
+}
+.ig-lp-icon.next.active-next {
+    background: rgba(203,213,225,0.1);
+    color: #cbd5e1;
+    border-color: rgba(203,213,225,0.25);
+}
+
+.ig-lp-track {
+    height: 8px;
+    border-radius: 100px;
+    background: rgba(255,255,255,0.05);
+    position: relative;
+    overflow: hidden;
+    border: 1px solid rgba(255,255,255,0.06);
+    box-shadow: inset 0 1px 3px rgba(0,0,0,0.4);
+}
+.ig-lp-fill {
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 0%;
+    background: linear-gradient(90deg, #a0522d, #cd7f32 50%, #fbbf24 100%);
+    border-radius: 100px;
+    box-shadow: 0 0 12px rgba(251,191,36,0.5);
+    transition: width 1.4s cubic-bezier(0.2, 0.8, 0.3, 1);
+    position: relative;
+    overflow: hidden;
+}
+.ig-lp-fill::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.5), transparent);
+    animation: lpShine 2.4s linear infinite;
+}
+@keyframes lpShine {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(200%); }
+}
+
+.ig-lp-info {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 10px;
+    padding-left: 52px;
+    padding-right: 52px;
+    gap: 8px;
+}
+.ig-lp-info-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.55rem;
+    letter-spacing: 1.5px;
+    color: #5a5a62;
+    text-transform: uppercase;
+    font-weight: 700;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.ig-lp-info-label b { color: #fbbf24; }
+
+.ig-lp-hint {
+    margin-top: 10px;
+    font-size: 0.65rem;
+    color: #999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    text-align: center;
+}
+.ig-lp-hint i { color: #fbbf24; font-size: 0.55rem; }
+.ig-lp-hint strong { color: #fbbf24; font-weight: 800; }
+
+/* ============================================================
+   СКРЫТЫЙ UI
+   ============================================================ */
+.hidden-ui {
+    position: absolute;
+    width: 1px; height: 1px;
+    overflow: hidden;
+    clip: rect(0,0,0,0);
+    pointer-events: none;
+    opacity: 0;
+}
 
 /* ============================================================
    ТАБЫ
@@ -413,158 +608,7 @@ main { flex: 1; }
 .tab-content.active { display: block; animation: fadeIn 0.3s ease; }
 
 /* ============================================================
-   ГЕРОЙ FRS + ЛИГА
-   ============================================================ */
-.ig-hero {
-    margin: 18px 0;
-    border-radius: 22px;
-    background:
-        radial-gradient(circle at 85% 0%, rgba(251,191,36,0.18), transparent 55%),
-        linear-gradient(145deg, rgba(28,26,22,0.92), rgba(15,15,20,0.96));
-    border: 1px solid rgba(251,191,36,0.28);
-    padding: 20px 20px;
-    position: relative;
-    overflow: hidden;
-    box-shadow: 0 12px 36px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,217,138,0.1);
-}
-.ig-hero::before {
-    content: '';
-    position: absolute;
-    top: -1px; left: 26px; right: 26px;
-    height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(251,191,36,0.9), transparent);
-}
-.ig-hero-top {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 18px;
-    flex-wrap: wrap;
-}
-.ig-hero-label {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.62rem;
-    letter-spacing: 3px;
-    color: #fbbf24;
-    text-transform: uppercase;
-    margin-bottom: 6px;
-    font-weight: 700;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-.ig-hero-label::before {
-    content: '';
-    width: 6px; height: 6px;
-    border-radius: 50%;
-    background: #fbbf24;
-    box-shadow: 0 0 10px rgba(251,191,36,0.9);
-    animation: pulseDot 1.6s ease-in-out infinite;
-}
-@keyframes pulseDot {
-    0%, 100% { opacity: 1; transform: scale(1); }
-    50% { opacity: 0.4; transform: scale(0.7); }
-}
-.ig-hero-frs {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 3.4rem;
-    line-height: 0.9;
-    background: linear-gradient(135deg, #fff 0%, #fbbf24 60%, #d4a24a 100%);
-    background-clip: text;
-    -webkit-background-clip: text;
-    color: transparent;
-    letter-spacing: 1px;
-    filter: drop-shadow(0 0 24px rgba(251,191,36,0.35));
-    margin-bottom: 2px;
-}
-.ig-hero-sub {
-    font-size: 0.62rem;
-    color: var(--text-dim);
-    font-weight: 700;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-}
-.ig-hero-league {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 10px 14px;
-    background: rgba(0,0,0,0.4);
-    border-radius: 14px;
-    border: 1px solid rgba(251,191,36,0.18);
-    flex-shrink: 0;
-}
-.ig-hero-league-icon {
-    width: 46px; height: 46px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-}
-.ig-hero-league-icon img {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-    filter: drop-shadow(0 0 12px rgba(251,191,36,0.6));
-}
-.ig-hero-league-info { min-width: 120px; }
-.ig-hero-league-name {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 1.05rem;
-    color: #fff;
-    letter-spacing: 0.8px;
-    line-height: 1;
-    margin-bottom: 3px;
-}
-.ig-hero-league-nums {
-    font-size: 0.6rem;
-    color: #888;
-    font-weight: 700;
-    letter-spacing: 0.4px;
-    margin-bottom: 6px;
-}
-.ig-hero-progress {
-    height: 5px;
-    background: rgba(0,0,0,0.6);
-    border-radius: 100px;
-    overflow: hidden;
-}
-.ig-hero-progress-fill {
-    height: 100%;
-    width: 0;
-    background: linear-gradient(90deg, #d4a24a, #fbbf24, #ffdd88);
-    border-radius: 100px;
-    transition: width 1.2s cubic-bezier(0.2, 0.6, 0.4, 1);
-    box-shadow: 0 0 12px rgba(251,191,36,0.7);
-    position: relative;
-}
-.ig-hero-progress-fill::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.6) 50%, transparent 100%);
-    background-size: 200% 100%;
-    animation: shineBar 2.4s linear infinite;
-}
-@keyframes shineBar {
-    0% { background-position: 200% 0; }
-    100% { background-position: -200% 0; }
-}
-
-/* ============================================================
-   СКРЫТЫЙ UI (для profile.js)
-   ============================================================ */
-.hidden-ui {
-    position: absolute;
-    width: 1px; height: 1px;
-    overflow: hidden;
-    clip: rect(0,0,0,0);
-    pointer-events: none;
-    opacity: 0;
-}
-
-/* ============================================================
-   БОЕВАЯ СТАТИСТИКА — КРУГ ВИНРЕЙТА (вариант 2)
+   БОЕВАЯ СТАТИСТИКА
    ============================================================ */
 .ig-compact-stats {
     margin: 18px 0;
@@ -832,7 +876,6 @@ main { flex: 1; }
     gap: 14px;
     min-width: 0;
 }
-/* Осенний лист вместо короны */
 .ig-season-icon {
     width: 52px;
     height: 52px;
@@ -1025,7 +1068,7 @@ main { flex: 1; }
 }
 
 /* ============================================================
-   ДОСТИЖЕНИЯ — ТОЛЬКО ПОЛУЧЕННЫЕ
+   ДОСТИЖЕНИЯ
    ============================================================ */
 .ig-achieve-header {
     display: flex;
@@ -1084,9 +1127,8 @@ main { flex: 1; }
     color: #fbbf24;
     font-size: 0.85rem;
     margin-left: 2px;
+    transform: rotate(0deg);
 }
-/* Стрелка: свёрнуто → повёрнута вправо (+), развёрнуто → исходное положение */
-.ig-achieve-toggle-icon { transform: rotate(0deg); }
 .achievements-collapsed .ig-achieve-toggle-icon { transform: rotate(-90deg); }
 
 .ig-achieve-grid {
@@ -1117,7 +1159,6 @@ main { flex: 1; }
     border-color: rgba(255,255,255,0.15);
 }
 
-/* Иконка — img напрямую, без золотой круглой подложки */
 .ig-achieve-icon {
     display: flex;
     align-items: center;
@@ -1215,23 +1256,12 @@ main { flex: 1; }
     border-color: rgba(255,255,255,0.08);
 }
 
-/* Свёрнутый вид: только ПОЛУЧЕННЫЕ, максимум 4.
-   Ограничение «максимум 4» считаем по полученным (JS добавляет класс
-   .ig-achieve-overflow на 5-ю и последующие полученные карточки), потому
-   что :nth-child считает все элементы подряд, а не только .earned. */
 .achievements-collapsed .ig-achieve-card { display: none; }
 .achievements-collapsed .ig-achieve-card.earned { display: flex; }
-/* Страховка на чистом CSS: 5-я и последующие .earned внутри сетки скрыты.
-   :nth-child считает ВСЕ карточки подряд (включая locked), поэтому он может
-   спрятать, например, 3-ю полученную, если она стоит 5-й по счёту. Точный
-   лимит «первые 4 полученные» держит мостик (метка .ig-achieve-overflow),
-   и правило ниже возвращает показ всем earned без этой метки. */
 .achievements-collapsed .ig-achieve-card.earned:nth-child(n+5) { display: none; }
 .achievements-collapsed .ig-achieve-card.earned:not(.ig-achieve-overflow):nth-child(n+5) { display: flex; }
 .achievements-collapsed .ig-achieve-card.ig-achieve-overflow { display: none; }
 
-/* Заглушка «нет полученных» — видна только в свёрнутом виде при 0 полученных.
-   Класс .no-earned ставит profile.js (и дублирует мостик) на саму сетку. */
 .ig-achieve-none {
     display: none;
     text-align: center;
@@ -1247,34 +1277,6 @@ main { flex: 1; }
     margin-bottom: 12px;
 }
 .achievements-collapsed .ig-achieve-grid.no-earned + .ig-achieve-none { display: block; }
-
-.ig-achieve-collapsed-hint {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 12px 18px;
-    background: rgba(251,191,36,0.05);
-    border: 1.5px dashed rgba(251,191,36,0.3);
-    border-radius: 14px;
-    color: #888;
-    font-size: 0.76rem;
-    font-weight: 700;
-    cursor: pointer;
-    transition: all 0.25s ease;
-    justify-content: center;
-    margin-top: 14px;
-}
-.ig-achieve-collapsed-hint:hover {
-    background: rgba(251,191,36,0.12);
-    border-color: rgba(251,191,36,0.5);
-    color: #fbbf24;
-}
-.ig-achieve-collapsed-hint i { color: #fbbf24; }
-/* Текст подсказки зависит от состояния секции */
-.ig-achieve-collapsed-hint .hint-when-collapsed { display: none; align-items: center; gap: 8px; }
-.ig-achieve-collapsed-hint .hint-when-expanded { display: inline-flex; align-items: center; gap: 8px; }
-.achievements-collapsed .ig-achieve-collapsed-hint .hint-when-collapsed { display: inline-flex; }
-.achievements-collapsed .ig-achieve-collapsed-hint .hint-when-expanded { display: none; }
 
 .ig-achieve-empty {
     grid-column: 1 / -1;
@@ -1292,7 +1294,7 @@ main { flex: 1; }
 }
 
 /* ============================================================
-   НАСТРОЙКИ + TOGGLE
+   НАСТРОЙКИ
    ============================================================ */
 .ig-settings { padding: 22px 0; }
 .ig-settings-title {
@@ -1313,14 +1315,7 @@ main { flex: 1; }
     align-items: center;
     padding: 16px 4px;
     border-bottom: 1px solid rgba(255,255,255,0.05);
-    transition: all 0.25s ease;
     gap: 12px;
-}
-.ig-setting-item:hover {
-    padding-left: 10px;
-    padding-right: 10px;
-    background: rgba(251,191,36,0.03);
-    border-radius: 12px;
 }
 .ig-setting-item:last-child { border-bottom: none; }
 .ig-setting-label {
@@ -1341,12 +1336,11 @@ main { flex: 1; }
     background: rgba(255,255,255,0.08);
     border: 1.5px solid rgba(255,255,255,0.12);
     cursor: pointer;
-    transition: all 0.3s cubic-bezier(0.2, 0.8, 0.3, 1);
+    transition: background 0.3s cubic-bezier(0.2, 0.8, 0.3, 1), border-color 0.3s ease;
     flex-shrink: 0;
     display: inline-flex;
     align-items: center;
     padding: 0 3px;
-    box-shadow: inset 0 1px 3px rgba(0,0,0,0.3);
 }
 .ig-toggle-knob {
     width: 22px;
@@ -1354,18 +1348,17 @@ main { flex: 1; }
     border-radius: 50%;
     background: linear-gradient(135deg, #e8e8ee, #b8b8c0);
     box-shadow: 0 2px 6px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.5);
-    transition: all 0.3s cubic-bezier(0.2, 0.8, 0.3, 1);
+    transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.3, 1);
     flex-shrink: 0;
 }
 .ig-toggle.on {
-    background: linear-gradient(135deg, #fbbf24, #d4a24a);
-    border-color: rgba(251,191,36,0.7);
-    box-shadow: 0 0 20px rgba(251,191,36,0.4), inset 0 1px 3px rgba(0,0,0,0.2);
+    background: rgba(255,255,255,0.08);
+    border-color: rgba(255,255,255,0.2);
 }
 .ig-toggle.on .ig-toggle-knob {
     transform: translateX(26px);
-    background: linear-gradient(135deg, #fff, #ffe4a3);
-    box-shadow: 0 2px 8px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.8);
+    background: linear-gradient(135deg, #fbbf24, #d4a24a);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.6), 0 0 12px rgba(251,191,36,0.4);
 }
 
 .ig-setting-item select {
@@ -1753,29 +1746,154 @@ main { flex: 1; }
 ::-webkit-scrollbar-track { background: #1a1a1a; }
 ::-webkit-scrollbar-thumb { background: linear-gradient(180deg, #fbbf24, #d4a24a); border-radius: 10px; }
 
-/* Базово блок гостевых кнопок скрыт. */
+/* Guest-mode */
 .ig-actions-row .guest-only { display: none; }
-/* В режиме гостя контейнер "растворяется" в grid — 3 кнопки раскладываются
-   по 2 колонки (Подписаться | Написать) + «Вызвать на спарринг» на всю ширину.
-   Без !important: specificity .guest-mode .ig-actions-row .guest-only (0,3,0)
-   выше, чем .ig-actions-row .guest-only (0,2,0), поэтому порядок не важен. */
 .guest-mode .ig-actions-row .guest-only { display: contents; }
-/* Контейнер кнопок владельца тоже растворяется, чтобы 2 кнопки
-   занимали те же 2 колонки, что и гостевые. */
 #ownerButtons { display: contents; }
 .guest-mode .settings-tab-btn { display: none; }
 .guest-mode .settings-tab-content { display: none; }
 .guest-mode .owner-only { display: none; }
-/* У гостя вкладка «Настройки» скрыта — колонок остаётся одна. */
 .guest-mode #profileTabs { grid-template-columns: 1fr; }
+.guest-mode #igAvatarPlus { display: none !important; }
+.guest-mode #badgeWrapper { display: none !important; }
 
-/* АДАПТИВ */
+/* ============================================================
+   ФИШКА 4 — LEVEL UP OVERLAY
+   ============================================================ */
+.levelup-overlay {
+    position: fixed;
+    inset: 0;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 6000;
+    opacity: 0;
+    transition: opacity 0.5s ease;
+    overflow: hidden;
+}
+.levelup-overlay.show {
+    display: flex;
+    opacity: 1;
+}
+.levelup-overlay::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    background: radial-gradient(circle at 50% 50%, var(--levelup-color-soft, rgba(251,191,36,0.25)) 0%, rgba(0,0,0,0.92) 60%);
+    z-index: -1;
+    transition: background 0.5s ease;
+}
+.levelup-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 40px 24px;
+    transform: scale(0.7);
+    opacity: 0;
+    transition: transform 0.7s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.5s ease;
+    max-width: 480px;
+    position: relative;
+    z-index: 1;
+}
+.levelup-overlay.show .levelup-content {
+    transform: scale(1);
+    opacity: 1;
+}
+
+.levelup-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 6px;
+    color: var(--levelup-color, #fbbf24);
+    text-transform: uppercase;
+    font-weight: 700;
+    margin-bottom: 24px;
+    opacity: 0;
+    animation: levelupFadeIn 0.6s ease 0.3s forwards;
+}
+@keyframes levelupFadeIn {
+    to { opacity: 1; }
+}
+
+.levelup-icon-big {
+    font-size: 5rem;
+    color: var(--levelup-color, #fbbf24);
+    margin-bottom: 20px;
+    filter: drop-shadow(0 0 50px var(--levelup-color, #fbbf24));
+    animation: levelIconFloat 2s ease-in-out infinite;
+}
+.levelup-icon-big img {
+    width: 120px;
+    height: 120px;
+    object-fit: contain;
+    filter: drop-shadow(0 0 50px var(--levelup-color, #fbbf24));
+}
+@keyframes levelIconFloat {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+}
+
+.levelup-name {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 4.5rem;
+    line-height: 0.9;
+    letter-spacing: 2px;
+    background: linear-gradient(135deg, #fff 0%, var(--levelup-color, #fbbf24) 100%);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 8px;
+    text-shadow: 0 0 60px var(--levelup-color, #fbbf24);
+    filter: drop-shadow(0 0 30px var(--levelup-color, #fbbf24));
+}
+
+.levelup-sub {
+    font-size: 0.95rem;
+    color: #aaa;
+    margin-bottom: 32px;
+    max-width: 320px;
+    line-height: 1.5;
+}
+.levelup-sub strong {
+    color: var(--levelup-color, #fbbf24);
+    font-weight: 800;
+}
+
+.levelup-btn {
+    font-family: 'Inter', sans-serif;
+    font-weight: 800;
+    font-size: 0.95rem;
+    background: linear-gradient(135deg, var(--levelup-color, #fbbf24), var(--levelup-color-dark, #d4a24a));
+    color: #000;
+    border: none;
+    padding: 16px 40px;
+    border-radius: 40px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    min-height: 54px;
+    box-shadow: 0 8px 30px var(--levelup-color-soft, rgba(251,191,36,0.5));
+    transition: all 0.25s ease;
+}
+.levelup-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 40px var(--levelup-color-soft, rgba(251,191,36,0.7));
+}
+.levelup-btn:active { transform: scale(0.97); }
+
+/* ============================================================
+   АДАПТИВ
+   ============================================================ */
 @media (max-width: 768px) {
     .container { padding: 0 16px; }
     .navbar { padding: 12px 18px; }
-    
     .nav-links.show { display: flex; }
-    
+
     .profile-container { padding: 0 0 30px; }
     .ig-header { padding: 18px 16px 12px; gap: 14px; }
     .ig-avatar-ring { width: 84px; height: 84px; }
@@ -1786,17 +1904,18 @@ main { flex: 1; }
     .ig-btn { font-size: 0.74rem; padding: 8px 12px; min-height: 36px; }
 
     .ig-info { padding: 12px 16px 14px; }
-    .ig-bio { font-size: 0.82rem; }
+    .ig-bio { font-size: 0.82rem; margin-bottom: 12px; }
+
+    .ig-lp-icon { width: 34px; height: 34px; font-size: 0.95rem; }
+    .ig-lp-icon img { width: 22px; height: 22px; }
+    .ig-lp-info { padding-left: 46px; padding-right: 46px; }
+    .ig-lp-frs { font-size: 0.85rem; }
 
     .ig-tabs { top: 54px; }
     .ig-tab { font-size: 0.68rem; padding: 13px 4px 11px; }
     .ig-tab i { font-size: 1rem; }
 
     .tab-content { padding: 0 16px 24px; }
-
-    .ig-hero { padding: 18px 16px; }
-    .ig-hero-frs { font-size: 3rem; }
-    .ig-hero-league { width: 100%; }
 
     .ig-circle-body { gap: 14px; }
     .ig-circle-wrap { width: 120px; height: 120px; }
@@ -1811,6 +1930,11 @@ main { flex: 1; }
     .ig-season-icon { width: 46px; height: 46px; }
     .ig-season-icon svg { width: 46px; height: 46px; }
     .ig-season-icon > i { font-size: 1.9rem; }
+
+    .levelup-name { font-size: 3rem; }
+    .levelup-icon-big { font-size: 4rem; }
+    .levelup-icon-big img { width: 96px; height: 96px; }
+    .levelup-btn { padding: 14px 32px; font-size: 0.88rem; min-height: 48px; }
 
     .footer-inner { flex-direction: column; text-align: center; }
     .modal-content { border-radius: 22px; }
@@ -1828,7 +1952,10 @@ main { flex: 1; }
     .ig-avatar-ring { width: 76px; height: 76px; }
     .ig-name { font-size: 1.15rem; }
     .ig-record-num { font-size: 0.95rem; }
-    .ig-hero-frs { font-size: 2.7rem; }
+    .ig-lp-icon { width: 32px; height: 32px; font-size: 0.9rem; }
+    .ig-lp-icon img { width: 20px; height: 20px; }
+    .ig-lp-info { padding-left: 44px; padding-right: 44px; }
+
     .ig-circle-body { gap: 12px; }
     .ig-circle-wrap { width: 110px; height: 110px; }
     .ig-circle-pct { font-size: 1.7rem; }
@@ -1844,6 +1971,11 @@ main { flex: 1; }
     .ig-achieve-reward { font-size: 0.52rem; padding: 2px 7px; }
     .ig-achieve-status { font-size: 0.52rem; padding: 3px 8px; }
     .badge-grid { grid-template-columns: repeat(2, 1fr) !important; }
+
+    .levelup-name { font-size: 2.4rem; }
+    .levelup-icon-big { font-size: 3.2rem; }
+    .levelup-icon-big img { width: 80px; height: 80px; }
+    .levelup-sub { font-size: 0.85rem; }
 }
 
 @media (max-width: 360px) {
@@ -1853,7 +1985,7 @@ main { flex: 1; }
     .ig-circle-item .val { font-size: 0.9rem; }
     .ig-circle-item .dot { width: 6px; height: 6px; }
 }
-    </style>
+</style>
     <script src="modals.js"></script>
 </head>
 <body>
@@ -1880,70 +2012,71 @@ main { flex: 1; }
 
             <div id="profileContent" style="display: none;">
 
-                <!-- ШАПКА INSTAGRAM -->
-                <div class="ig-header">
-                    <div class="ig-avatar-col">
-                        <div class="ig-avatar-ring">
-                            <div class="ig-avatar-img-wrap">
-                                <img id="profAvatar" class="ig-avatar-img" src="Avatar.png" onerror="this.src='Avatar.png'" alt="Аватар">
+                <div class="ig-header-wrapper" id="igHeaderWrapper">
+                    <div class="ig-header-overlay" id="igHeaderOverlay"></div>
+                    <div class="ig-header" id="igHeader">
+                        <div class="ig-avatar-col">
+                            <div class="ig-avatar-ring">
+                                <div class="ig-avatar-img-wrap">
+                                    <img id="profAvatar" class="ig-avatar-img" src="Avatar.png" onerror="this.src='Avatar.png'" alt="Аватар">
+                                </div>
                             </div>
-                        </div>
-                        <div class="ig-avatar-plus hidden" id="igAvatarPlus">
-                            <i class="fas fa-plus"></i>
-                        </div>
-                    </div>
-
-                    <div class="ig-right-col">
-                        <div class="ig-name-inline">
-                            <span class="ig-name" id="fighterName">Боец</span>
-                            <span class="ig-badge-wrapper" id="badgeWrapper" onclick="window.openBadgeSelector && window.openBadgeSelector()" style="display: none;">
-                                <img id="profileBadgeImg" src="" alt="Бейдж" style="display: none;">
-                                <span class="badge-emoji" id="badgeEmoji" style="display: none;">👑</span>
-                            </span>
-                            <span class="ig-premium" id="premiumBadge" style="display: none;">
-                                <i class="fas fa-crown"></i> PREMIUM
-                            </span>
-                        </div>
-
-                        <!-- Рекорд W-L и FRS под именем -->
-                        <div class="ig-record-row">
-                            <div class="ig-record-item">
-                                <span class="ig-record-num" id="igRecordWL">0-0</span>
-                                <span class="ig-record-label">Рекорд</span>
-                            </div>
-                            <div class="ig-record-item">
-                                <span class="ig-record-num gold" id="igRecordFRS">0</span>
-                                <span class="ig-record-label">FRS</span>
+                            <div class="ig-avatar-plus hidden" id="igAvatarPlus">
+                                <i class="fas fa-plus"></i>
                             </div>
                         </div>
 
-                        <div class="ig-actions-row">
-                            <div id="ownerButtons">
-                                <button id="editProfileBtn" class="ig-btn primary">
-                                    <i class="fas fa-pen"></i> Редактировать
-                                </button>
-                                <button class="ig-btn secondary" onclick="window.location.href='buyer-wallet.html'">
-                                    <i class="fas fa-wallet"></i> Кошелёк
-                                </button>
+                        <div class="ig-right-col">
+                            <div class="ig-name-inline">
+                                <span class="ig-name" id="fighterName">Боец</span>
+                                <span class="ig-badge-wrapper" id="badgeWrapper" onclick="window.openBadgeSelector && window.openBadgeSelector()" style="display: none;">
+                                    <img id="profileBadgeImg" src="" alt="Бейдж" style="display: none;">
+                                    <span class="badge-emoji" id="badgeEmoji" style="display: none;">👑</span>
+                                </span>
+                                <span class="ig-premium" id="premiumBadge" style="display: none;">
+                                    <i class="fas fa-crown"></i> PREMIUM
+                                </span>
                             </div>
 
-                            <div id="visitorButtons" class="guest-only">
-                                <button id="btnAddFriend" class="ig-btn guest">
-                                    <i class="fas fa-user-plus"></i>
-                                    <span class="friend-text">Подписаться</span>
-                                </button>
-                                <button id="btnMessage" class="ig-btn secondary">
-                                    <i class="fas fa-comment-dots"></i> Написать
-                                </button>
-                                <button id="btnChallenge" class="ig-btn primary full">
-                                    <i class="fas fa-fist-raised"></i> Вызвать на спарринг
-                                </button>
+                            <div class="ig-record-row">
+                                <div class="ig-record-item">
+                                    <span class="ig-record-num" id="igRecordWL">0-0</span>
+                                    <span class="ig-record-label">Рекорд</span>
+                                </div>
+                                <div class="ig-record-item">
+                                    <span class="ig-record-num gold" id="igRecordFRS">0</span>
+                                    <span class="ig-record-label">FRS</span>
+                                </div>
+                            </div>
+
+                            <div class="ig-actions-row">
+                                <div id="ownerButtons">
+                                    <button id="editProfileBtn" class="ig-btn primary">
+                                        <i class="fas fa-pen"></i> Редактировать
+                                    </button>
+                                    <button class="ig-btn secondary" onclick="window.location.href='buyer-wallet.html'">
+                                        <i class="fas fa-wallet"></i> Кошелёк
+                                    </button>
+                                </div>
+
+                                <div id="visitorButtons" class="guest-only">
+                                    <button id="btnAddFriend" class="ig-btn guest">
+                                        <i class="fas fa-user-plus"></i>
+                                        <span class="friend-text">Добавить</span>
+                                    </button>
+                                    <button id="btnMessage" class="ig-btn secondary">
+                                        <i class="fas fa-comment-dots"></i> Написать
+                                    </button>
+                                    <button id="btnChallenge" class="ig-btn primary full">
+                                        <i class="fas fa-fist-raised"></i> Вызвать на спарринг
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- BIO + ЧИПЫ ЛИГИ -->
+                <!-- BIO + PROGRESS BAR -->
                 <div class="ig-info">
                     <div class="ig-league-row">
                         <span class="ig-chip league">
@@ -1969,9 +2102,38 @@ main { flex: 1; }
                         О себе
                     </div>
                     <div class="ig-bio empty" id="bioText">Тут пока пусто...</div>
+
+                    <!-- PROGRESS BAR С ИКОНКАМИ ЛИГ (ВАРИАНТ 3) -->
+                    <div class="ig-league-progress">
+                        <div class="ig-lp-header">
+                            <span class="ig-lp-label">Прогресс до новой лиги</span>
+                            <span class="ig-lp-frs">
+                                <span id="igLpCurrentFrs">0</span> <span>/ <span id="igLpNextFrs">500</span> FRS</span>
+                            </span>
+                        </div>
+                        <div class="ig-lp-row">
+                            <div class="ig-lp-icon current" id="igLpCurrentIcon">
+                                <i class="fas fa-medal"></i>
+                            </div>
+                            <div class="ig-lp-track">
+                                <div class="ig-lp-fill" id="igLpFill"></div>
+                            </div>
+                            <div class="ig-lp-icon next" id="igLpNextIcon">
+                                <i class="fas fa-medal"></i>
+                            </div>
+                        </div>
+                        <div class="ig-lp-info">
+                            <span class="ig-lp-info-label"><b id="igLpCurrentName">Бронза</b></span>
+                            <span class="ig-lp-info-label" id="igLpNextName">Серебро</span>
+                        </div>
+                        <div class="ig-lp-hint">
+                            <i class="fas fa-arrow-up"></i>
+                            Осталось набрать: <strong id="igLpRemaining">500</strong> FRS
+                        </div>
+                    </div>
                 </div>
 
-                <!-- ТАБЫ: 2 -->
+                <!-- ТАБЫ -->
                 <div class="ig-tabs" id="profileTabs">
                     <button type="button" class="ig-tab active" data-tab="statistics">
                         <i class="fas fa-chart-simple"></i> <span>Статистика</span>
@@ -1983,29 +2145,6 @@ main { flex: 1; }
 
                 <!-- СТАТИСТИКА -->
                 <div class="tab-content active" id="tab-statistics">
-
-                    <!-- ГЕРОЙ FRS -->
-                    <div class="ig-hero">
-                        <div class="ig-hero-top">
-                            <div>
-                                <div class="ig-hero-label">Рейтинг FRS</div>
-                                <div class="ig-hero-frs" id="heroFRSValue">0</div>
-                                <div class="ig-hero-sub">Общий рейтинг</div>
-                            </div>
-                            <div class="ig-hero-league">
-                                <div class="ig-hero-league-icon" id="heroLeagueIcon">
-                                    <i class="fas fa-medal" style="font-size: 2.2rem; color: #cd7f32;"></i>
-                                </div>
-                                <div class="ig-hero-league-info">
-                                    <div class="ig-hero-league-name" id="heroLeagueName">Бронза</div>
-                                    <div class="ig-hero-league-nums" id="heroLeagueNums">0 / 500 FRS</div>
-                                    <div class="ig-hero-progress">
-                                        <div class="ig-hero-progress-fill" id="heroLeagueFill" style="width: 0%"></div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
 
                     <!-- СКРЫТЫЙ UI -->
                     <div class="hidden-ui">
@@ -2033,7 +2172,7 @@ main { flex: 1; }
                         <select id="privacySetting"><option value="public"></option></select>
                     </div>
 
-                    <!-- БОЕВАЯ СТАТИСТИКА (круг винрейта + 5 строк) -->
+                    <!-- БОЕВАЯ СТАТИСТИКА -->
                     <div class="ig-compact-stats">
                         <div class="ig-compact-title">Боевая статистика</div>
 
@@ -2173,10 +2312,6 @@ main { flex: 1; }
                             <div class="ig-achieve-empty"><i class="fas fa-trophy"></i>Загрузка...</div>
                         </div>
                         <div class="ig-achieve-none ig-achieve-empty" id="achievementsNone"><i class="fas fa-trophy"></i>Пока нет полученных достижений</div>
-                        <div class="ig-achieve-collapsed-hint" onclick="toggleAchievements()">
-                            <span class="hint-when-collapsed"><i class="fas fa-chevron-down"></i> Показать все достижения</span>
-                            <span class="hint-when-expanded"><i class="fas fa-chevron-up"></i> Свернуть</span>
-                        </div>
                     </div>
                 </div>
 
@@ -2205,55 +2340,6 @@ main { flex: 1; }
                             </div>
                         </div>
 
-                        <div class="ig-setting-item">
-                            <div>
-                                <div class="ig-setting-label">🔒 Приватный профиль</div>
-                                <div class="ig-setting-desc">Только бойцы смогут видеть профиль</div>
-                            </div>
-                            <div class="ig-toggle" id="togglePrivacy">
-                                <div class="ig-toggle-knob"></div>
-                            </div>
-                        </div>
-
-                        <div class="ig-setting-item">
-                            <div>
-                                <div class="ig-setting-label">📢 Уведомления о вызовах</div>
-                                <div class="ig-setting-desc">Push при новом вызове</div>
-                            </div>
-                            <div class="ig-toggle on" id="toggleChallenges">
-                                <div class="ig-toggle-knob"></div>
-                            </div>
-                        </div>
-
-                        <div class="ig-setting-item">
-                            <div>
-                                <div class="ig-setting-label">💬 Уведомления о сообщениях</div>
-                                <div class="ig-setting-desc">Push при новом сообщении</div>
-                            </div>
-                            <div class="ig-toggle on" id="toggleMessages">
-                                <div class="ig-toggle-knob"></div>
-                            </div>
-                        </div>
-
-                        <div class="ig-setting-item">
-                            <div>
-                                <div class="ig-setting-label"><i class="fab fa-telegram" style="color: #0088cc;"></i> Telegram</div>
-                                <div class="ig-setting-desc">Привяжите для уведомлений</div>
-                            </div>
-                            <button id="telegramVerifyBtn2" class="ig-btn-blue" style="display: none;">
-                                <i class="fab fa-telegram"></i> Привязать
-                            </button>
-                        </div>
-
-                        <div id="referralSection2" style="display: none; padding: 16px 0; border-bottom: 1px solid rgba(255,255,255,0.05);">
-                            <div style="font-weight: 800; font-size: 0.88rem; margin-bottom: 10px;">👥 Реферальная программа</div>
-                            <div style="display: flex; gap: 8px;">
-                                <input type="text" id="referralLink2" readonly style="flex: 1; background: #1a1a1a; border: 1.5px solid rgba(251,191,36,0.2); color: #fff; padding: 10px 12px; border-radius: 10px; font-size: 0.7rem; outline: none;">
-                                <button id="copyReferralBtn2" class="ig-btn primary" style="padding: 8px 14px; font-size: 0.7rem;">Копировать</button>
-                            </div>
-                            <div id="referralStats2" style="font-size: 0.7rem; color: #888; margin-top: 8px;"></div>
-                        </div>
-
                         <button id="logoutBtn2" class="ig-btn-logout">
                             <i class="fas fa-sign-out-alt"></i> Выйти из аккаунта
                         </button>
@@ -2263,7 +2349,7 @@ main { flex: 1; }
         </div>
     </main>
 
-    <!-- МОДАЛКИ -->
+    <!-- МОДАЛКА РЕДАКТИРОВАНИЯ -->
     <div id="editProfileModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -2321,6 +2407,7 @@ main { flex: 1; }
         </div>
     </div>
 
+    <!-- МОДАЛКА БЕЙДЖА -->
     <div id="badgeSelectModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -2337,6 +2424,7 @@ main { flex: 1; }
         </div>
     </div>
 
+    <!-- МОДАЛКА ВЫЗОВА -->
     <div id="challengeModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -2384,6 +2472,19 @@ main { flex: 1; }
         </div>
     </div>
 
+    <!-- ФИШКА 4 — LEVEL UP OVERLAY -->
+    <div class="levelup-overlay" id="levelupOverlay">
+        <div class="levelup-content">
+            <div class="levelup-label">— Level Up —</div>
+            <div class="levelup-icon-big" id="levelupIcon">🏆</div>
+            <div class="levelup-name" id="levelupName">СЕРЕБРЯНАЯ</div>
+            <div class="levelup-sub" id="levelupSub">Ты достиг <strong>500 FRS</strong> и перешёл в новую лигу!</div>
+            <button class="levelup-btn" id="levelupBtn">
+                <i class="fas fa-arrow-right"></i> Продолжить
+            </button>
+        </div>
+    </div>
+
     <footer class="main-footer">
         <div class="container">
             <div class="footer-inner">
@@ -2410,6 +2511,8 @@ main { flex: 1; }
 
     <div id="mobileBottomNavContainer"></div>
     <div id="errorContainer" style="position: fixed; top: 15px; left: 50%; transform: translateX(-50%); z-index: 9999; max-width: 90%; width: 480px; padding: 14px 20px; border-radius: 16px; font-weight: 600; font-size: 0.9rem; box-shadow: 0 10px 30px rgba(0,0,0,0.4); backdrop-filter: blur(8px); display: none; text-align: center; border: 1px solid rgba(255,255,255,0.1);"></div>
+
+    <canvas id="confettiCanvas" style="position:fixed;inset:0;pointer-events:none;z-index:8000;display:none;"></canvas>
 
     <script type="importmap">
         {
@@ -2463,9 +2566,8 @@ main { flex: 1; }
             });
         }
 
-        // ===== FRS =====
+        // ===== FRS → PROGRESS BAR =====
         const statFRSCard = document.getElementById('statFRSCard');
-        const heroFRSValue = document.getElementById('heroFRSValue');
         const igRecordFRS = document.getElementById('igRecordFRS');
         let lastFRS = null;
 
@@ -2476,30 +2578,88 @@ main { flex: 1; }
                 if (num === lastFRS) return;
                 lastFRS = num;
                 if (igRecordFRS) igRecordFRS.textContent = num.toLocaleString('ru-RU');
-                if (heroFRSValue) {
-                    const start = parseInt((heroFRSValue.textContent || '0').replace(/\s/g, ''), 10) || 0;
-                    const duration = 800;
-                    const startTime = performance.now();
-                    function tick(now) {
-                        const t = Math.min((now - startTime) / duration, 1);
-                        const eased = 1 - Math.pow(1 - t, 3);
-                        const val = Math.round(start + (num - start) * eased);
-                        heroFRSValue.textContent = val.toLocaleString('ru-RU');
-                        if (t < 1) requestAnimationFrame(tick);
-                    }
-                    requestAnimationFrame(tick);
-                }
+                updateLeagueProgress(num);
             };
             new MutationObserver(syncFRS).observe(statFRSCard, { childList: true, characterData: true, subtree: true });
             syncFRS();
         }
 
-        // ===== Метрики + рекорд W-L + круг винрейта =====
+        // ===== ЛИГИ + PROGRESS =====
+        function getLeagueByFrs(frs) {
+            if (frs >= 5000) return { name: 'ЛЕГЕНДАРНАЯ', min: 5000, max: Infinity, icon: 'fa-skull', color: '#ff4500', file: 'legendary' };
+            if (frs >= 3500) return { name: 'ЭЛИТНАЯ', min: 3500, max: 5000, icon: 'fa-dragon', color: '#9400d3', file: 'elite' };
+            if (frs >= 2000) return { name: 'АЛМАЗНАЯ', min: 2000, max: 3500, icon: 'fa-gem', color: '#00ffff', file: 'diamond' };
+            if (frs >= 1000) return { name: 'ЗОЛОТАЯ', min: 1000, max: 2000, icon: 'fa-crown', color: '#ffd700', file: 'gold' };
+            if (frs >= 500) return { name: 'СЕРЕБРЯНАЯ', min: 500, max: 1000, icon: 'fa-medal', color: '#c0c0c0', file: 'silver' };
+            return { name: 'БРОНЗОВАЯ', min: 0, max: 500, icon: 'fa-medal', color: '#cd7f32', file: 'bronze' };
+        }
+        function getNextLeague(current) {
+            if (current.name === 'БРОНЗОВАЯ') return getLeagueByFrs(500);
+            if (current.name === 'СЕРЕБРЯНАЯ') return getLeagueByFrs(1000);
+            if (current.name === 'ЗОЛОТАЯ') return getLeagueByFrs(2000);
+            if (current.name === 'АЛМАЗНАЯ') return getLeagueByFrs(3500);
+            if (current.name === 'ЭЛИТНАЯ') return getLeagueByFrs(5000);
+            return null;
+        }
+        function displayName(name) {
+            // ЛЕГЕНДАРНАЯ → Легендарная
+            return name.charAt(0) + name.slice(1).toLowerCase();
+        }
+
+        function updateLeagueProgress(frs) {
+            const current = getLeagueByFrs(frs);
+            const next = getNextLeague(current);
+
+            const currentFrsEl = document.getElementById('igLpCurrentFrs');
+            const nextFrsEl = document.getElementById('igLpNextFrs');
+            const fillEl = document.getElementById('igLpFill');
+            const currentNameEl = document.getElementById('igLpCurrentName');
+            const nextNameEl = document.getElementById('igLpNextName');
+            const remainingEl = document.getElementById('igLpRemaining');
+            const currentIconEl = document.getElementById('igLpCurrentIcon');
+            const nextIconEl = document.getElementById('igLpNextIcon');
+
+            if (!currentFrsEl || !fillEl) return;
+
+            // Текущая лига
+            currentFrsEl.textContent = frs.toLocaleString();
+            currentNameEl.textContent = displayName(current.name);
+
+            // Иконка текущей лиги
+            const currentImgHtml = `<img src="./league-icons/${current.file}.webp" alt="${current.name}" onerror="this.style.display='none'; this.parentElement.innerHTML='<i class=\\'fas ${current.icon}\\' style=\\'color:${current.color};\\'></i>';"><i class="fas ${current.icon}" style="display:none;color:${current.color};"></i>`;
+            currentIconEl.innerHTML = currentImgHtml;
+
+            if (next) {
+                const total = next.min - current.min;
+                const progressInLeague = frs - current.min;
+                const progress = Math.max(0, Math.min(100, (progressInLeague / total) * 100));
+                const remaining = next.min - frs;
+
+                nextFrsEl.textContent = next.min.toLocaleString();
+                fillEl.style.width = progress + '%';
+                nextNameEl.textContent = displayName(next.name);
+                remainingEl.textContent = remaining.toLocaleString();
+
+                // Иконка следующей лиги — активная (полупрозрачная)
+                nextIconEl.classList.add('active-next');
+                const nextImgHtml = `<img src="./league-icons/${next.file}.webp" alt="${next.name}" onerror="this.style.display='none'; this.parentElement.innerHTML='<i class=\\'fas ${next.icon}\\' style=\\'color:${next.color};\\'></i>';"><i class="fas ${next.icon}" style="display:none;color:${next.color};"></i>`;
+                nextIconEl.innerHTML = nextImgHtml;
+            } else {
+                // Максимальная лига
+                nextFrsEl.textContent = frs.toLocaleString();
+                fillEl.style.width = '100%';
+                nextNameEl.textContent = 'МАКС';
+                remainingEl.textContent = '0';
+                nextIconEl.classList.remove('active-next');
+                nextIconEl.innerHTML = `<i class="fas fa-trophy" style="color:#fbbf24;"></i>`;
+            }
+        }
+
+        // ===== Метрики + круг винрейта =====
         const statWins = document.getElementById('statWins');
         const statLosses = document.getElementById('statLosses');
         const statFinishes = document.getElementById('statFinishes');
 
-        // Элементы круга винрейта
         const igCirclePercent = document.getElementById('igCirclePercent');
         const igCircleFill = document.getElementById('igCircleFill');
         const igCircleWins = document.getElementById('igCircleWins');
@@ -2514,24 +2674,20 @@ main { flex: 1; }
             const f = parseInt((statFinishes?.textContent || '0').replace(/\D/g, ''), 10) || 0;
             const frs = parseInt((statFRSCard?.textContent || '0').replace(/\D/g, ''), 10) || 0;
 
-            // Рекорд W-L в шапке
             const igRecordWL = document.getElementById('igRecordWL');
             if (igRecordWL) igRecordWL.textContent = w + '-' + l;
 
             const total = w + l;
             const winrate = total > 0 ? Math.round((w / total) * 100) : 0;
 
-            // Список метрик
             if (igCircleWins) igCircleWins.textContent = w;
             if (igCircleLosses) igCircleLosses.textContent = l;
             if (igCircleFinishes) igCircleFinishes.textContent = f;
             if (igCircleTotal) igCircleTotal.textContent = total;
             if (igCircleFRS) igCircleFRS.textContent = frs.toLocaleString('ru-RU');
 
-            // Процент в центре круга
             if (igCirclePercent) igCirclePercent.textContent = winrate + '%';
 
-            // Заполнение круга пропорционально винрейту
             if (igCircleFill) {
                 const circumference = 2 * Math.PI * 52;
                 const dash = (winrate / 100) * circumference;
@@ -2546,12 +2702,8 @@ main { flex: 1; }
         setTimeout(syncMetrics, 1000);
         setTimeout(syncMetrics, 2500);
 
-        // ===== НОРМАЛИЗАЦИЯ КЛАССОВ (мостик legacy → новый дизайн) =====
-        // profile.js рендерит карточки достижений и строки сезонов со старыми
-        // классами (.achievement-*, .season-*). Добавляем им .ig-* классы,
-        // чтобы применились стили из этого файла (profile.html).
+        // ===== НОРМАЛИЗАЦИЯ legacy классов =====
         function normalizeLegacy() {
-            // --- Достижения ---
             const achGrid = document.getElementById('achievementsList');
             if (achGrid) {
                 achGrid.querySelectorAll('.achievement-card').forEach(card => {
@@ -2560,31 +2712,22 @@ main { flex: 1; }
                     if (icon) icon.classList.add('ig-achieve-icon');
                     const name = card.querySelector('.achievement-name');
                     if (name) name.classList.add('ig-achieve-name');
-                    const desc = card.querySelector('.achievement-desc')
-                        || card.querySelector('.achievement-how');
+                    const desc = card.querySelector('.achievement-desc') || card.querySelector('.achievement-how');
                     if (desc) desc.classList.add('ig-achieve-desc');
                     card.querySelectorAll('.achievement-reward').forEach(r => r.classList.add('ig-achieve-reward'));
-
-                    // Снимаем инлайновые размеры картинки — размер задаёт CSS
                     card.querySelectorAll('.ig-achieve-icon img').forEach(img => {
                         img.style.width = '';
                         img.style.height = '';
                     });
-
-                    // Статус-бейдж «✅ Получено» / «🔒 Не получено»
                     if (!card.querySelector('.ig-achieve-status')) {
                         const earned = card.classList.contains('earned');
                         const st = document.createElement('span');
                         st.className = 'ig-achieve-status ' + (earned ? 'earned' : 'locked');
-                        st.innerHTML = earned
-                            ? '<i class="fas fa-check-circle"></i> Получено'
-                            : '<i class="fas fa-lock"></i> Не получено';
+                        st.innerHTML = earned ? '<i class="fas fa-check-circle"></i> Получено' : '<i class="fas fa-lock"></i> Не получено';
                         card.appendChild(st);
                     }
                 });
 
-                // Свёрнутый вид: только полученные, максимум 4.
-                // Помечаем 5-ю и последующие полученные карточки.
                 let earnedSeen = 0;
                 achGrid.querySelectorAll('.ig-achieve-card').forEach(card => {
                     if (!card.classList.contains('earned')) return;
@@ -2594,13 +2737,10 @@ main { flex: 1; }
 
                 achGrid.querySelectorAll('.empty-state').forEach(el => el.classList.add('ig-achieve-empty'));
 
-                // .no-earned вешаем на сетку (так же, как это делает profile.js).
-                // Заглушку показываем только если карточки есть, но полученных — нет.
                 const hasCards = achGrid.querySelectorAll('.ig-achieve-card').length > 0;
                 achGrid.classList.toggle('no-earned', hasCards && earnedSeen === 0);
             }
 
-            // --- Сезоны ---
             const hist = document.getElementById('seasonHistoryList');
             if (hist) {
                 hist.querySelectorAll('.season-history-item').forEach(el => el.classList.add('ig-season-history-item'));
@@ -2622,48 +2762,16 @@ main { flex: 1; }
         setTimeout(normalizeLegacy, 1200);
         setTimeout(normalizeLegacy, 3000);
 
-        // ===== Лига =====
+        // ===== Лига (для чипа) =====
         const leagueNameEl = document.getElementById('leagueName');
-        const heroLeagueName = document.getElementById('heroLeagueName');
         const leagueNameText = document.getElementById('leagueNameText');
         function syncLeagueName() {
             const txt = (leagueNameEl?.textContent || '').replace(/\s*ЛИГА\s*/i, '').trim() || 'Бронза';
-            if (heroLeagueName) heroLeagueName.textContent = txt;
             if (leagueNameText) leagueNameText.textContent = txt;
         }
         if (leagueNameEl) {
             new MutationObserver(syncLeagueName).observe(leagueNameEl, { childList: true, characterData: true, subtree: true });
             setTimeout(syncLeagueName, 800);
-        }
-
-        const leagueIconBig = document.getElementById('leagueIconBig');
-        const heroLeagueIcon = document.getElementById('heroLeagueIcon');
-        if (leagueIconBig && heroLeagueIcon) {
-            const syncIcon = () => {
-                const html = leagueIconBig.innerHTML.trim();
-                if (html) heroLeagueIcon.innerHTML = html;
-            };
-            new MutationObserver(syncIcon).observe(leagueIconBig, { childList: true, subtree: true });
-            setTimeout(syncIcon, 800);
-        }
-
-        const leagueProgressFill = document.getElementById('leagueProgressFill');
-        const heroLeagueFill = document.getElementById('heroLeagueFill');
-        if (leagueProgressFill && heroLeagueFill) {
-            const syncFill = () => {
-                const w = leagueProgressFill.style.width || '0%';
-                if (heroLeagueFill.style.width !== w) heroLeagueFill.style.width = w;
-            };
-            new MutationObserver(syncFill).observe(leagueProgressFill, { attributes: true, attributeFilter: ['style'] });
-            setTimeout(syncFill, 800);
-        }
-
-        const leagueProgressText = document.getElementById('leagueProgressText');
-        const heroLeagueNums = document.getElementById('heroLeagueNums');
-        if (leagueProgressText && heroLeagueNums) {
-            const syncText = () => { heroLeagueNums.textContent = leagueProgressText.textContent || '—'; };
-            new MutationObserver(syncText).observe(leagueProgressText, { childList: true, characterData: true, subtree: true });
-            setTimeout(syncText, 800);
         }
 
         // ===== Био =====
@@ -2675,18 +2783,6 @@ main { flex: 1; }
         if (bioTextEl) {
             new MutationObserver(syncBio).observe(bioTextEl, { childList: true, characterData: true, subtree: true });
             setTimeout(syncBio, 1000);
-        }
-
-        // ===== Кнопка "+" =====
-        const igAvatarPlus = document.getElementById('igAvatarPlus');
-        if (igAvatarPlus) {
-            setTimeout(() => {
-                const container = document.getElementById('profileContainer');
-                if (container && !container.classList.contains('guest-mode')) {
-                    igAvatarPlus.classList.remove('hidden');
-                    igAvatarPlus.addEventListener('click', () => document.getElementById('profAvatar').click());
-                }
-            }, 1000);
         }
 
         // ===== Toggle =====
@@ -2702,23 +2798,6 @@ main { flex: 1; }
             const btn = document.getElementById('notificationToggleBtn');
             if (btn) btn.click();
         });
-        bindToggle('toggleChallenges');
-        bindToggle('toggleMessages');
-        bindToggle('togglePrivacy', (on) => {
-            const sel = document.getElementById('privacySetting');
-            if (sel) {
-                sel.value = on ? 'fighters' : 'public';
-                sel.dispatchEvent(new Event('change'));
-            }
-        });
-        const privacySel = document.getElementById('privacySetting');
-        const togglePrivacy = document.getElementById('togglePrivacy');
-        if (privacySel && togglePrivacy) {
-            setInterval(() => {
-                const isPrivate = privacySel.value === 'fighters' || privacySel.value === 'private';
-                togglePrivacy.classList.toggle('on', isPrivate);
-            }, 800);
-        }
 
         // ===== Редиректы =====
         const editProfileBtn2 = document.getElementById('editProfileBtn2');
@@ -2744,38 +2823,248 @@ main { flex: 1; }
             });
         }
 
-        const telegramVerifyBtn = document.getElementById('telegramVerifyBtn');
-        const telegramVerifyBtn2 = document.getElementById('telegramVerifyBtn2');
-        if (telegramVerifyBtn && telegramVerifyBtn2) {
-            setInterval(() => {
-                telegramVerifyBtn2.style.display = telegramVerifyBtn.style.display;
-            }, 800);
-            telegramVerifyBtn2.addEventListener('click', () => telegramVerifyBtn.click());
+        // ===== Первичная инициализация =====
+        setTimeout(() => {
+            if (statFRSCard) {
+                const num = parseInt((statFRSCard.textContent || '0').replace(/\s/g, ''), 10) || 0;
+                updateLeagueProgress(num);
+            }
+        }, 1200);
+
+        // ============================================================
+        // ФИШКА 4 — LEVEL UP OVERLAY
+        // ============================================================
+        function checkLevelUp() {
+            try {
+                const params = new URLSearchParams(window.location.search);
+                const profileId = params.get('id');
+                if (!profileId) return;
+
+                const myUid = localStorage.getItem('prorank_my_uid');
+                if (!myUid || myUid !== profileId) return;
+
+                const frs = parseInt((statFRSCard?.textContent || '0').replace(/\D/g, ''), 10) || 0;
+                if (frs <= 0) return;
+
+                const league = getLeagueByFrs(frs);
+                const storageKey = `prorank_last_league_${profileId}`;
+                const lastLeague = localStorage.getItem(storageKey);
+
+                if (lastLeague && lastLeague !== league.name) {
+                    const order = ['БРОНЗОВАЯ','СЕРЕБРЯНАЯ','ЗОЛОТАЯ','АЛМАЗНАЯ','ЭЛИТНАЯ','ЛЕГЕНДАРНАЯ'];
+                    const oldIdx = order.indexOf(lastLeague);
+                    const newIdx = order.indexOf(league.name);
+
+                    if (newIdx > oldIdx) {
+                        showLevelUpOverlay(league, frs);
+                    }
+                }
+
+                localStorage.setItem(storageKey, league.name);
+            } catch(e) {
+                console.warn('checkLevelUp error:', e);
+            }
         }
 
-        const referralSection = document.getElementById('referralSection');
-        const referralSection2 = document.getElementById('referralSection2');
-        if (referralSection && referralSection2) {
-            setInterval(() => {
-                referralSection2.style.display = referralSection.style.display;
-            }, 800);
+        function showLevelUpOverlay(league, frs) {
+            const overlay = document.getElementById('levelupOverlay');
+            const nameEl = document.getElementById('levelupName');
+            const subEl = document.getElementById('levelupSub');
+            const iconEl = document.getElementById('levelupIcon');
+            if (!overlay) return;
+
+            const colors = {
+                'БРОНЗОВАЯ':   { color: '#cd7f32', dark: '#8b4513', soft: 'rgba(205,127,50,0.25)' },
+                'СЕРЕБРЯНАЯ':  { color: '#cbd5e1', dark: '#94a3b8', soft: 'rgba(203,213,225,0.25)' },
+                'ЗОЛОТАЯ':     { color: '#fbbf24', dark: '#d4a24a', soft: 'rgba(251,191,36,0.25)' },
+                'АЛМАЗНАЯ':    { color: '#67e8f9', dark: '#06b6d4', soft: 'rgba(103,232,249,0.25)' },
+                'ЭЛИТНАЯ':     { color: '#a78bfa', dark: '#7c3aed', soft: 'rgba(167,139,250,0.25)' },
+                'ЛЕГЕНДАРНАЯ': { color: '#f472b6', dark: '#db2777', soft: 'rgba(244,114,182,0.25)' }
+            };
+            const c = colors[league.name] || colors['ЗОЛОТАЯ'];
+
+            overlay.style.setProperty('--levelup-color', c.color);
+            overlay.style.setProperty('--levelup-color-dark', c.dark);
+            overlay.style.setProperty('--levelup-color-soft', c.soft);
+
+            nameEl.textContent = league.name;
+            subEl.innerHTML = `Ты достиг <strong>${frs.toLocaleString()} FRS</strong> и перешёл в новую лигу!`;
+            iconEl.innerHTML = `<img src="./league-icons/${league.file}.webp" alt="${league.name}" onerror="this.style.display='none'; this.parentElement.innerHTML='<i class=\\'fas ${league.icon}\\'></i>';"><i class="fas ${league.icon}" style="display:none;"></i>`;
+
+            overlay.classList.add('show');
+            fireConfetti();
+            AudioFX_fanfare();
+            haptic(60);
+
+            const closeBtn = document.getElementById('levelupBtn');
+            const closeHandler = () => {
+                overlay.classList.remove('show');
+                closeBtn.removeEventListener('click', closeHandler);
+            };
+            closeBtn.addEventListener('click', closeHandler);
         }
-        const referralLink = document.getElementById('referralLink');
-        const referralLink2 = document.getElementById('referralLink2');
-        if (referralLink && referralLink2) {
-            setInterval(() => {
-                if (referralLink.value !== referralLink2.value) {
-                    referralLink2.value = referralLink.value || '';
+
+        // Confetti
+        let _confettiAnim = null;
+        function fireConfetti() {
+            const canvas = document.getElementById('confettiCanvas');
+            if (!canvas) return;
+            canvas.style.display = 'block';
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            const ctx = canvas.getContext('2d');
+
+            const colors = ['#fbbf24', '#ffffff', '#22c55e', '#3b82f6', '#ef4444', '#f472b6'];
+            const particles = [];
+            const cx = canvas.width / 2;
+            const cy = canvas.height / 2;
+
+            for (let i = 0; i < 200; i++) {
+                const angle = Math.random() * Math.PI * 2;
+                const speed = 4 + Math.random() * 8;
+                particles.push({
+                    x: cx, y: cy,
+                    vx: Math.cos(angle) * speed * (Math.random() * 1.5 + 0.3),
+                    vy: Math.sin(angle) * speed * (Math.random() * 1.5 + 0.3) - 3,
+                    size: 5 + Math.random() * 7,
+                    color: colors[Math.floor(Math.random() * colors.length)],
+                    rotation: Math.random() * Math.PI * 2,
+                    rotSpeed: (Math.random() - 0.5) * 0.3,
+                    life: 1,
+                    decay: 0.008 + Math.random() * 0.006,
+                    shape: Math.random() > 0.5 ? 'rect' : 'circle'
+                });
+            }
+
+            const startTime = performance.now();
+            function animate(now) {
+                const elapsed = now - startTime;
+                if (elapsed > 3000) {
+                    canvas.style.display = 'none';
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    _confettiAnim = null;
+                    return;
                 }
-            }, 800);
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                particles.forEach(p => {
+                    p.x += p.vx; p.y += p.vy; p.vy += 0.5; p.vx *= 0.99;
+                    p.rotation += p.rotSpeed; p.life -= p.decay;
+                    if (p.life <= 0) return;
+                    ctx.save();
+                    ctx.globalAlpha = Math.max(0, p.life);
+                    ctx.translate(p.x, p.y); ctx.rotate(p.rotation);
+                    ctx.fillStyle = p.color;
+                    if (p.shape === 'rect') ctx.fillRect(-p.size/2, -p.size/2, p.size, p.size);
+                    else { ctx.beginPath(); ctx.arc(0, 0, p.size/2, 0, Math.PI*2); ctx.fill(); }
+                    ctx.restore();
+                });
+                _confettiAnim = requestAnimationFrame(animate);
+            }
+            if (_confettiAnim) cancelAnimationFrame(_confettiAnim);
+            _confettiAnim = requestAnimationFrame(animate);
         }
-        const copyReferralBtn2 = document.getElementById('copyReferralBtn2');
-        if (copyReferralBtn2) {
-            copyReferralBtn2.addEventListener('click', () => {
-                const btn = document.getElementById('copyReferralBtn');
-                if (btn) btn.click();
+
+        // Audio
+        let _audioCtx = null;
+        function getAudioCtx() {
+            if (!_audioCtx) {
+                try { _audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
+                catch(e) { return null; }
+            }
+            if (_audioCtx && _audioCtx.state === 'suspended') _audioCtx.resume();
+            return _audioCtx;
+        }
+        function AudioFX_fanfare() {
+            const ctx = getAudioCtx();
+            if (!ctx) return;
+            const notes = [523, 659, 784, 1047];
+            notes.forEach((freq, i) => {
+                const t0 = ctx.currentTime + i * 0.09;
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(freq, t0);
+                gain.gain.setValueAtTime(0, t0);
+                gain.gain.linearRampToValueAtTime(0.08, t0 + 0.02);
+                gain.gain.exponentialRampToValueAtTime(0.001, t0 + 0.45);
+                osc.connect(gain); gain.connect(ctx.destination);
+                osc.start(t0); osc.stop(t0 + 0.5);
             });
         }
+        function haptic(ms = 15) {
+            try { if (navigator.vibrate) navigator.vibrate(ms); } catch(e) {}
+        }
+
+        setTimeout(checkLevelUp, 3000);
+
+        // ============================================================
+        // ФИШКА 8 — AVATAR PULL-DOWN
+        // ============================================================
+        (function initPullDown() {
+            const wrapper = document.getElementById('igHeaderWrapper');
+            const header = document.getElementById('igHeader');
+            const overlay = document.getElementById('igHeaderOverlay');
+            if (!wrapper || !header || !overlay) return;
+
+            let startY = 0;
+            let currentPull = 0;
+            let dragging = false;
+            const MAX_PULL = 200;
+
+            function isGuestMode() {
+                const container = document.getElementById('profileContainer');
+                return container && container.classList.contains('guest-mode');
+            }
+
+            function onStart(e) {
+                if (!isGuestMode()) return;
+                if (window.scrollY > 0) return;
+                const y = e.touches ? e.touches[0].clientY : e.clientY;
+                if (y > 250) return;
+                startY = y;
+                currentPull = 0;
+                dragging = true;
+                header.classList.add('pulling');
+            }
+
+            function onMove(e) {
+                if (!dragging) return;
+                const y = e.touches ? e.touches[0].clientY : e.clientY;
+                const diff = y - startY;
+                if (diff > 0) {
+                    currentPull = Math.min(diff * 0.6, MAX_PULL);
+                    const scale = 1 + (currentPull / 500);
+                    header.style.transform = `scale(${scale})`;
+                    overlay.style.opacity = Math.min(currentPull / 300, 0.9);
+                }
+            }
+
+            function onEnd() {
+                if (!dragging) return;
+                dragging = false;
+                header.classList.remove('pulling');
+                header.style.transform = '';
+                overlay.style.opacity = '';
+                currentPull = 0;
+            }
+
+            wrapper.addEventListener('touchstart', onStart, { passive: true });
+            wrapper.addEventListener('touchmove', onMove, { passive: true });
+            wrapper.addEventListener('touchend', onEnd);
+            wrapper.addEventListener('mousedown', onStart);
+            document.addEventListener('mousemove', onMove);
+            document.addEventListener('mouseup', onEnd);
+        })();
+
+        // ===== Запоминаем uid =====
+        try {
+            const params = new URLSearchParams(window.location.search);
+            const profileId = params.get('id');
+            if (profileId) {
+                localStorage.setItem('prorank_current_user_uid', profileId);
+            }
+        } catch(e) {}
+
     });
     </script>
 </body>

@@ -9,7 +9,6 @@
     <meta name="theme-color" content="#fbbf24">
     <meta name="mobile-web-app-capable" content="yes">
     <meta charset="UTF-8">
-<!--🔧ФИКС: preconnect -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="dns-prefetch" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -23,37 +22,57 @@
     <title>Достижения | PRORANK</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700;14..32,800;14..32,900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700;14..32,800;14..32,900&family=Bebas+Neue&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
     <style>
-    * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
+    * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+    :root {
+        --gold: #fbbf24;
+        --gold-2: #d4a24a;
+        --gold-deep: #b8860b;
+        --gold-glow: rgba(251,191,36,0.35);
+        --line: rgba(255,255,255,0.08);
+        --text: #f2f2f5;
+        --text-dim: #a8a8b0;
+        --text-mute: #6a6a72;
+
+        /* Рарности */
+        --common: #a1a1aa;
+        --common-b: rgba(160,160,168,0.5);
+        --rare: #60a5fa;
+        --rare-b: rgba(59,130,246,0.5);
+        --epic: #a78bfa;
+        --epic-b: rgba(167,139,250,0.5);
+        --legend: #f472b6;
+        --legend-b: rgba(244,114,182,0.5);
+        --claimed: #22c55e;
+        --claimed-b: rgba(34,197,94,0.5);
     }
 
     body {
         font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-        background: radial-gradient(ellipse at 30% 40%, rgba(251, 191, 36, 0.15) 0%, transparent 60%),
-                    radial-gradient(ellipse at 70% 80%, rgba(251, 191, 36, 0.08) 0%, transparent 50%),
-                    linear-gradient(135deg, #1a1a1a 0%, #0f0f0f 40%, #1a1a1a 100%);
+        background:
+            radial-gradient(ellipse at 20% -10%, rgba(251, 191, 36, 0.10) 0%, transparent 55%),
+            radial-gradient(ellipse at 85% 100%, rgba(251, 191, 36, 0.05) 0%, transparent 55%),
+            linear-gradient(135deg, #101014 0%, #08080c 45%, #101014 100%);
         background-attachment: fixed;
-        color: #fff;
-        line-height: 1.4;
+        color: var(--text);
+        line-height: 1.45;
         min-height: 100vh;
         display: flex;
         flex-direction: column;
+        -webkit-font-smoothing: antialiased;
     }
 
     main { flex: 1; }
 
     .gold-top {
         position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
+        top: 0; left: 0; right: 0;
         height: 3px;
-        background: linear-gradient(90deg, #fbbf24, #ffdd88, #fbbf24, #b8860b);
+        background: linear-gradient(90deg, transparent, #fbbf24 30%, #ffdd88 50%, #fbbf24 70%, transparent);
         z-index: 1001;
+        box-shadow: 0 0 20px rgba(251,191,36,0.5);
     }
 
     .container {
@@ -65,337 +84,428 @@
         width: 100%;
     }
 
-    .simple-header {
+    /* ===== ЗАГОЛОВОК СТРАНИЦЫ ===== */
+    .page-header {
         display: flex;
         align-items: center;
-        gap: 20px;
-        padding: 20px 0;
-        margin-bottom: 10px;
-        position: relative;
-    }
-    .back-arrow {
-        background: rgba(251,191,36,0.1);
-        border: 1px solid rgba(251,191,36,0.3);
-        color: #fbbf24;
-        font-size: 1.3rem;
-        cursor: pointer;
-        width: 44px;
-        height: 44px;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        transition: all 0.2s ease;
-    }
-    .back-arrow:hover {
-        background: rgba(251,191,36,0.2);
-        transform: scale(1.05);
-    }
-    .simple-header h1 {
-        font-size: clamp(1.3rem, 5vw, 1.6rem);
-        font-weight: 700;
-        background: linear-gradient(135deg, #fff, #fbbf24);
-        background-clip: text;
-        color: transparent;
-    }
-    .simple-header h1 i {
-        background: none;
-        background-clip: unset;
-        color: #fbbf24;
+        gap: 14px;
+        padding: 22px 0 16px;
+        flex-wrap: wrap;
     }
 
-    .balance-indicator {
-        background: #111;
-        border: 1px solid rgba(251, 191, 36, 0.5);
-        border-radius: 60px;
-        padding: 7px 18px;
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        font-weight: 700;
-        font-size: 0.9rem;
-        position: absolute;
-        top: 20px;
-        right: 0;
-        transition: all 0.2s ease;
-    }
-    .balance-indicator:hover {
-        border-color: #fbbf24;
-        box-shadow: 0 0 15px rgba(251,191,36,0.2);
-    }
-    .balance-count { color: #fbbf24; font-size: 1.1rem; }
-    .balance-plus {
-        background: rgba(251,191,36,0.15);
-        border: none;
+    .back-arrow-btn {
+        background: rgba(251,191,36,0.08);
+        border: 1px solid rgba(251,191,36,0.22);
         color: #fbbf24;
-        cursor: pointer;
-        width: 28px;
-        height: 28px;
+        width: 42px;
+        height: 42px;
         border-radius: 50%;
-        transition: all 0.2s ease;
-    }
-    .balance-plus:hover {
-        background: rgba(251,191,36,0.3);
-        transform: scale(1.05);
-    }
-
-    .progress-stats {
         display: inline-flex;
         align-items: center;
-        gap: 12px;
+        justify-content: center;
+        cursor: pointer;
+        font-size: 1rem;
+        transition: all 0.25s ease;
+        flex-shrink: 0;
+        font-family: inherit;
+    }
+    .back-arrow-btn:hover {
+        background: rgba(251,191,36,0.18);
+        border-color: rgba(251,191,36,0.5);
+        transform: translateX(-3px);
+        box-shadow: 0 0 20px rgba(251,191,36,0.2);
+    }
+    .back-arrow-btn:active { transform: scale(0.94); }
+
+    .page-title {
+        font-size: clamp(1.5rem, 4vw, 1.8rem);
+        font-weight: 800;
+        background: linear-gradient(135deg, #fff, #fbbf24);
+        background-clip: text;
+        -webkit-background-clip: text;
+        color: transparent;
+        -webkit-text-fill-color: transparent;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        line-height: 1.2;
+    }
+    .page-title i {
+        color: #fbbf24;
+        -webkit-text-fill-color: #fbbf24;
+        font-size: 0.95em;
+    }
+
+    .page-subtitle {
+        width: 100%;
+        font-size: 0.75rem;
+        color: #888;
+        margin-top: 2px;
+        padding-left: 56px;
+    }
+
+    /* ===== ПРОГРЕСС-СТАТИСТИКА ===== */
+    .progress-stats {
+        display: flex;
+        align-items: center;
+        gap: 14px;
         background: rgba(15,15,15,0.7);
-        backdrop-filter: blur(8px);
-        padding: 12px 28px;
-        border-radius: 60px;
-        margin: 20px 0;
-        border: 1px solid rgba(251,191,36,0.2);
-        font-size: 0.9rem;
-        font-weight: 600;
+        backdrop-filter: blur(12px);
+        padding: 16px 22px;
+        border-radius: 20px;
+        margin: 20px 0 22px;
+        border: 1px solid rgba(251,191,36,0.18);
+        position: relative;
+        overflow: hidden;
+        transition: all 0.3s ease;
     }
     .progress-stats:hover {
         border-color: rgba(251,191,36,0.4);
         transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.3);
     }
-    .progress-stats .earned-count {
-        color: #fbbf24;
-        font-size: 1.2rem;
-        font-weight: 800;
+    .progress-stats::before {
+        content: '';
+        position: absolute;
+        top: -1px; left: 26px; right: 26px;
+        height: 1px;
+        background: linear-gradient(90deg, transparent, rgba(251,191,36,0.7), transparent);
     }
 
-    /* ===== ОБНОВЛЕННАЯ СЕТКА АЧИВОК С УВЕЛИЧЕННЫМИ ИКОНКАМИ ===== */
+    .progress-stats .stat-icon {
+        width: 52px; height: 52px;
+        border-radius: 14px;
+        background: linear-gradient(135deg, rgba(251,191,36,0.2), rgba(251,191,36,0.05));
+        border: 1.5px solid rgba(251,191,36,0.3);
+        display: flex; align-items: center; justify-content: center;
+        color: #fbbf24;
+        font-size: 1.4rem;
+        flex-shrink: 0;
+        filter: drop-shadow(0 0 12px rgba(251,191,36,0.3));
+    }
+
+    .progress-stats .stat-info {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        flex: 1;
+        min-width: 0;
+    }
+
+    .progress-stats .stat-line {
+        display: flex;
+        align-items: baseline;
+        gap: 6px;
+    }
+
+    .progress-stats .earned-count {
+        font-family: 'Bebas Neue', sans-serif;
+        font-size: 1.8rem;
+        color: #fbbf24;
+        line-height: 1;
+        letter-spacing: 0.5px;
+        filter: drop-shadow(0 0 12px rgba(251,191,36,0.4));
+    }
+
+    .progress-stats .stat-total {
+        font-size: 0.95rem;
+        color: #888;
+        font-weight: 700;
+    }
+
+    .progress-stats .stat-label {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.6rem;
+        letter-spacing: 2px;
+        color: #888;
+        text-transform: uppercase;
+        font-weight: 700;
+    }
+
+    .progress-stats .stat-percent {
+        font-family: 'Bebas Neue', sans-serif;
+        font-size: 1.4rem;
+        color: #fbbf24;
+        line-height: 1;
+        padding: 8px 14px;
+        background: rgba(251,191,36,0.08);
+        border-radius: 12px;
+        border: 1px solid rgba(251,191,36,0.2);
+        flex-shrink: 0;
+    }
+
+    /* ===== СЕТКА АЧИВОК ===== */
     .achievements-grid {
         display: grid;
         grid-template-columns: repeat(2, 1fr);
-        gap: 14px;
-        margin: 20px 0 50px;
+        gap: 12px;
+        margin: 20px 0 60px;
     }
-    
+
     .achievement-card {
-        background: rgba(15,15,15,0.7);
-        backdrop-filter: blur(8px);
+        background: linear-gradient(145deg, rgba(24,24,30,0.9), rgba(14,14,18,0.95));
+        border: 1px solid rgba(255,255,255,0.06);
         border-radius: 20px;
-        padding: 16px 14px;
+        padding: 18px 14px 14px;
         display: flex;
         flex-direction: column;
         align-items: center;
         text-align: center;
-        border: 1px solid rgba(251,191,36,0.1);
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         position: relative;
         overflow: hidden;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        min-height: 240px;
     }
 
-    .achievement-card::before {
+    /* Рарность */
+    .achievement-card.rarity-common   { border-color: var(--common-b); }
+    .achievement-card.rarity-rare     { border-color: var(--rare-b); }
+    .achievement-card.rarity-epic     { border-color: var(--epic-b); }
+    .achievement-card.rarity-legend   { border-color: var(--legend-b); box-shadow: 0 0 30px rgba(244,114,182,0.12); }
+    .achievement-card.rarity-legend::before {
         content: '';
         position: absolute;
-        top: -50%;
-        left: -50%;
-        width: 200%;
-        height: 200%;
-        background: radial-gradient(circle at center, rgba(251,191,36,0.03), transparent 70%);
-        opacity: 0;
-        transition: opacity 0.4s ease;
+        inset: 0;
+        background: radial-gradient(circle at 50% 0%, rgba(244,114,182,0.12), transparent 60%);
         pointer-events: none;
+        animation: legendPulse 3s ease-in-out infinite;
     }
-
-    .achievement-card:hover::before {
-        opacity: 1;
-    }
-
-    .achievement-card:hover {
-        transform: translateY(-4px);
-        border-color: rgba(251,191,36,0.35);
-        background: rgba(25,25,35,0.95);
-        box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+    @keyframes legendPulse {
+        0%, 100% { opacity: 0.5; }
+        50% { opacity: 1; }
     }
 
     .achievement-card.earned {
-        border: 1px solid rgba(251,191,36,0.35);
-        background: linear-gradient(145deg, rgba(30,42,26,0.75), rgba(15,26,15,0.7));
-        box-shadow: 0 4px 15px rgba(251,191,36,0.05);
+        background:
+            radial-gradient(circle at 50% 0%, rgba(251,191,36,0.1), transparent 60%),
+            linear-gradient(145deg, rgba(30,28,22,0.9), rgba(18,16,12,0.95));
     }
 
-    .achievement-card.earned:hover {
-        border-color: rgba(251,191,36,0.6);
-        box-shadow: 0 8px 30px rgba(251,191,36,0.12);
+    .achievement-card.earned-claimed {
+        border-color: var(--claimed-b) !important;
+        background:
+            radial-gradient(circle at 50% 0%, rgba(34,197,94,0.1), transparent 60%),
+            linear-gradient(145deg, rgba(22,30,22,0.9), rgba(14,20,14,0.95));
     }
+    .achievement-card.earned-claimed .ach-icon-img { filter: drop-shadow(0 0 12px rgba(34,197,94,0.4)); }
+    .achievement-card.earned-claimed .ach-icon-fallback { color: var(--claimed); }
 
     .achievement-card.locked {
-        background: rgba(30,30,35,0.6);
-        border: 1px solid rgba(100,100,120,0.15);
-        opacity: 0.8;
+        opacity: 0.55;
+    }
+    .achievement-card.locked .ach-icon-img { filter: grayscale(0.8) opacity(0.7); }
+    .achievement-card.locked .ach-icon-fallback { color: #555; }
+
+    .achievement-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 12px 35px rgba(0,0,0,0.4);
     }
 
-    .achievement-card.locked:hover {
-        opacity: 0.95;
-        border-color: rgba(100,100,120,0.3);
-        background: rgba(30,30,35,0.85);
+    /* ===== РАРНОСТЬ-БЕЙДЖ ===== */
+    .ach-rarity {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.5rem;
+        letter-spacing: 1.2px;
+        font-weight: 700;
+        padding: 3px 8px;
+        border-radius: 30px;
+        background: rgba(0,0,0,0.5);
+        border: 1px solid currentColor;
+        text-transform: uppercase;
+        z-index: 3;
     }
-    
-    /* ===== УВЕЛИЧЕННЫЙ КОНТЕЙНЕР ИКОНКИ С ФОНОМ ===== */
-    .achievement-icon {
-        width: 80px;
-        height: 80px;
-        margin-bottom: 12px;
-        flex-shrink: 0;
+    .rarity-common .ach-rarity   { color: var(--common); }
+    .rarity-rare .ach-rarity     { color: var(--rare); }
+    .rarity-epic .ach-rarity     { color: var(--epic); }
+    .rarity-legend .ach-rarity   { color: var(--legend); box-shadow: 0 0 12px rgba(244,114,182,0.4); }
+
+    /* ===== SHARE-КНОПКА ===== */
+    .ach-share-btn {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        background: rgba(0,0,0,0.5);
+        border: 1px solid rgba(255,255,255,0.1);
+        color: #888;
         display: flex;
         align-items: center;
         justify-content: center;
-        border-radius: 18px;
-        background: rgba(255,255,255,0.03);
-        border: 1px solid rgba(255,255,255,0.05);
-        transition: all 0.3s ease;
+        font-size: 0.75rem;
+        cursor: pointer;
+        transition: all 0.25s ease;
+        z-index: 3;
+        font-family: inherit;
+        opacity: 0;
+        pointer-events: none;
+    }
+    .achievement-card.earned .ach-share-btn,
+    .achievement-card.earned-claimed .ach-share-btn {
+        opacity: 1;
+        pointer-events: auto;
+    }
+    .ach-share-btn:hover {
+        background: rgba(251,191,36,0.2);
+        border-color: rgba(251,191,36,0.4);
+        color: #fbbf24;
+        transform: scale(1.1);
+    }
+    .ach-share-btn:active { transform: scale(0.92); }
+
+    /* ===== ИКОНКА ===== */
+    .ach-icon {
+        width: 96px;
+        height: 96px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 10px 0 12px;
+        flex-shrink: 0;
         position: relative;
     }
 
-    .earned .achievement-icon {
-        background: rgba(251,191,36,0.06);
-        border-color: rgba(251,191,36,0.12);
-        box-shadow: 0 0 20px rgba(251,191,36,0.04);
-    }
-
-    .earned:hover .achievement-icon {
-        background: rgba(251,191,36,0.1);
-        border-color: rgba(251,191,36,0.2);
-        box-shadow: 0 0 30px rgba(251,191,36,0.08);
-        transform: scale(1.03);
-    }
-
-    .locked .achievement-icon {
-        background: rgba(255,255,255,0.01);
-        border-color: rgba(255,255,255,0.02);
-        opacity: 0.6;
-    }
-
-    /* ===== УВЕЛИЧЕННЫЕ PNG КАРТИНКИ ===== */
-    .achievement-icon img {
-        width: 80px;
-        height: 80px;
+    .ach-icon-img {
+        width: 100%;
+        height: 100%;
         object-fit: contain;
+        filter: drop-shadow(0 4px 12px rgba(0,0,0,0.5));
         transition: all 0.3s ease;
-        filter: drop-shadow(0 2px 4px rgba(0,0,0,0.15));
     }
-
-    .earned .achievement-icon img {
-        filter: drop-shadow(0 2px 8px rgba(251,191,36,0.15));
+    .achievement-card.earned .ach-icon-img {
+        filter: drop-shadow(0 0 14px rgba(251,191,36,0.4));
     }
-
-    .earned:hover .achievement-icon img {
-        filter: drop-shadow(0 4px 16px rgba(251,191,36,0.25));
+    .achievement-card:hover .ach-icon-img {
         transform: scale(1.05);
     }
 
-    .achievement-icon i {
-        font-size: 2.8rem;
+    .ach-icon-fallback {
+        font-size: 3.4rem;
         color: #fbbf24;
         transition: all 0.3s ease;
     }
 
-    .locked .achievement-icon i {
-        color: #666;
-    }
-    
-    .achievement-info {
-        width: 100%;
-    }
-    .achievement-name {
+    /* ===== ИНФО ===== */
+    .ach-info { width: 100%; }
+
+    .ach-name {
         font-size: 0.85rem;
-        font-weight: 700;
-        margin-bottom: 4px;
-        word-break: break-word;
-        transition: color 0.3s ease;
-    }
-
-    .earned .achievement-name {
+        font-weight: 800;
         color: #fff;
+        margin-bottom: 5px;
+        line-height: 1.25;
+        word-break: break-word;
     }
+    .achievement-card.locked .ach-name { color: #999; }
 
-    .locked .achievement-name {
-        color: #999;
-    }
-
-    .achievement-card:hover .achievement-name {
-        color: #fbbf24;
-    }
-
-    .achievement-desc {
-        font-size: 0.6rem;
-        color: #aaa;
+    .ach-desc {
+        font-size: 0.65rem;
+        color: #888;
         margin-bottom: 6px;
+        line-height: 1.35;
         display: -webkit-box;
         -webkit-line-clamp: 2;
-        line-clamp: 2;
         -webkit-box-orient: vertical;
         overflow: hidden;
-        transition: color 0.3s ease;
     }
 
-    .achievement-card:hover .achievement-desc {
-        color: #ccc;
-    }
-
-    .achievement-how {
-        font-size: 0.55rem;
+    .ach-how {
+        font-size: 0.6rem;
         color: #fbbf24;
-        margin-top: 4px;
+        margin-bottom: 10px;
         display: flex;
         align-items: center;
         justify-content: center;
         gap: 4px;
-        transition: all 0.3s ease;
+        line-height: 1.3;
     }
+    .ach-how i { font-size: 0.6rem; }
+    .achievement-card.locked .ach-how { color: #666; }
 
-    .locked .achievement-how {
-        color: #888;
-    }
-
-    .achievement-card:hover .achievement-how {
-        color: #ffdd77;
-    }
-
-    .achievement-reward {
-        font-size: 0.55rem;
-        margin-top: 6px;
-        display: flex;
+    .ach-reward {
+        font-size: 0.6rem;
+        margin: 0 auto 10px;
+        display: inline-flex;
         align-items: center;
         justify-content: center;
-        gap: 4px;
-        padding: 2px 10px;
-        border-radius: 20px;
-        background: rgba(255,255,255,0.03);
-        transition: all 0.3s ease;
-    }
-
-    .earned:hover .achievement-reward {
-        background: rgba(255,255,255,0.06);
-    }
-
-    .achievement-reward.positive { color: #4ade80; }
-    .achievement-reward.negative { color: #f87171; }
-    
-    .achievement-status {
-        margin-top: 10px;
-        font-size: 0.65rem;
-        font-weight: 600;
-        text-align: center;
+        gap: 5px;
         padding: 4px 12px;
         border-radius: 30px;
-        background: rgba(255,255,255,0.03);
-        transition: all 0.3s ease;
+        background: rgba(255,255,255,0.04);
+        font-weight: 700;
+        width: fit-content;
+        max-width: 100%;
+    }
+    .ach-reward.positive { color: #4ade80; }
+    .ach-reward.negative { color: #f87171; }
+
+    /* ===== СТАТУС-КНОПКА ===== */
+    .ach-status-btn {
+        font-family: inherit;
+        font-size: 0.7rem;
+        font-weight: 800;
+        padding: 10px 18px;
+        border-radius: 40px;
+        border: none;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        transition: all 0.25s ease;
+        width: 100%;
+        min-height: 40px;
+        margin-top: auto;
     }
 
-    .earned .achievement-status {
-        background: rgba(22, 163, 74, 0.1);
+    .ach-status-btn.locked {
+        background: rgba(255,255,255,0.04);
+        color: #666;
+        cursor: not-allowed;
+        border: 1px solid rgba(255,255,255,0.05);
     }
 
-    .locked .achievement-status {
-        background: rgba(220, 38, 38, 0.05);
+    .ach-status-btn.claim {
+        background: linear-gradient(135deg, #fbbf24, #d4a24a);
+        color: #000;
+        box-shadow: 0 6px 22px rgba(251,191,36,0.4);
+        animation: claimPulse 2s ease-in-out infinite;
+    }
+    @keyframes claimPulse {
+        0%, 100% { box-shadow: 0 6px 22px rgba(251,191,36,0.4); }
+        50% { box-shadow: 0 8px 30px rgba(251,191,36,0.7); }
+    }
+    .ach-status-btn.claim:hover {
+        transform: translateY(-2px);
+        background: linear-gradient(135deg, #ffdd66, #e5b84a);
+        box-shadow: 0 10px 30px rgba(251,191,36,0.6);
+    }
+    .ach-status-btn.claim:active { transform: scale(0.97); }
+
+    .ach-status-btn.claimed {
+        background: rgba(34,197,94,0.15);
+        color: #22c55e;
+        border: 1.5px solid rgba(34,197,94,0.35);
+        cursor: default;
     }
 
-    .status-earned { color: #4ade80; display: flex; align-items: center; gap: 4px; justify-content: center; }
-    .status-locked { color: #f87171; display: flex; align-items: center; gap: 4px; justify-content: center; }
-    
-    .loading { text-align: center; padding: 60px; color: #888; }
+    .ach-status-btn.negative {
+        background: rgba(220,38,38,0.1);
+        color: #ef4444;
+        border: 1.5px solid rgba(220,38,38,0.3);
+        cursor: not-allowed;
+    }
+
+    /* ===== ЗАГРУЗКА ===== */
+    .loading {
+        text-align: center;
+        padding: 80px 20px;
+        color: #888;
+    }
     .loading-spinner {
         display: inline-block;
         width: 24px;
@@ -407,72 +517,395 @@
     }
     @keyframes spin { to { transform: rotate(360deg); } }
 
-    /* ===== АДАПТИВ ===== */
-    @media (min-width: 600px) {
-        .achievements-grid {
-            grid-template-columns: repeat(3, 1fr);
-            gap: 16px;
-        }
-        .achievement-icon {
-            width: 86px;
-            height: 86px;
-        }
-        .achievement-icon img {
-            width: 78px;
-            height: 78px;
-        }
+    /* ===== EMPTY STATE АНИМИРОВАННЫЙ ===== */
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        color: #666;
+    }
+    .empty-icon {
+        width: 120px;
+        height: 120px;
+        margin: 0 auto 24px;
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .empty-icon::before,
+    .empty-icon::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        border-radius: 50%;
+        border: 2px solid rgba(251,191,36,0.3);
+        animation: emptyPulse 2.5s ease-out infinite;
+    }
+    .empty-icon::after {
+        animation-delay: 1.25s;
+    }
+    @keyframes emptyPulse {
+        0% { transform: scale(0.7); opacity: 1; }
+        100% { transform: scale(1.4); opacity: 0; }
+    }
+    .empty-icon i {
+        font-size: 3rem;
+        color: #fbbf24;
+        filter: drop-shadow(0 0 20px rgba(251,191,36,0.5));
+        animation: emptyFloat 3s ease-in-out infinite;
+        position: relative;
+        z-index: 1;
+    }
+    @keyframes emptyFloat {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-10px); }
+    }
+    .empty-title {
+        font-family: 'Bebas Neue', sans-serif;
+        font-size: 1.5rem;
+        letter-spacing: 1px;
+        color: #fff;
+        margin-bottom: 8px;
+    }
+    .empty-text {
+        font-size: 0.85rem;
+        color: #666;
+        max-width: 300px;
+        margin: 0 auto;
+        line-height: 1.5;
     }
 
-    @media (min-width: 900px) {
-        .achievements-grid {
-            grid-template-columns: repeat(4, 1fr);
-            gap: 20px;
-        }
-        .achievement-icon {
-            width: 92px;
-            height: 92px;
-            border-radius: 20px;
-        }
-        .achievement-icon img {
-            width: 74px;
-            height: 74px;
-        }
-        .achievement-name {
-            font-size: 0.9rem;
-        }
+    /* ============================================================
+       ФИШКА 1 — ACHIEVEMENT UNLOCK OVERLAY
+       ============================================================ */
+    .unlock-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,0.88);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 5000;
+        padding: 20px;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+    .unlock-overlay.show {
+        display: flex;
+        opacity: 1;
     }
 
-    @media (max-width: 480px) {
-        .container { padding: 0 12px; }
-        .achievements-grid {
-            gap: 10px;
-        }
-        .achievement-card {
-            padding: 14px 10px;
-        }
-        .achievement-icon {
-            width: 76px;
-            height: 76px;
-            border-radius: 14px;
-        }
-        .achievement-icon img {
-            width: 52px;
-            height: 52px;
-        }
-        .achievement-name {
-            font-size: 0.75rem;
-        }
-        .achievement-desc {
-            font-size: 0.55rem;
-        }
-        .achievement-how, .achievement-reward {
-            font-size: 0.5rem;
-        }
-        .achievement-status {
-            font-size: 0.55rem;
-        }
+    .unlock-banner {
+        max-width: 380px;
+        width: 100%;
+        background:
+            radial-gradient(circle at 50% 0%, rgba(251,191,36,0.3), transparent 60%),
+            linear-gradient(145deg, rgba(30,26,20,0.98), rgba(14,12,8,0.98));
+        border: 2px solid #fbbf24;
+        border-radius: 28px;
+        padding: 32px 24px 26px;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+        box-shadow:
+            0 30px 80px rgba(0,0,0,0.8),
+            0 0 60px rgba(251,191,36,0.3),
+            inset 0 1px 0 rgba(255,255,255,0.1);
+        transform: translateY(-60px) scale(0.9);
+        opacity: 0;
+        transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.4s ease;
+    }
+    .unlock-overlay.show .unlock-banner {
+        transform: translateY(0) scale(1);
+        opacity: 1;
+        animation: bannerShake 0.7s ease 0.35s;
+    }
+    @keyframes bannerShake {
+        0%, 100% { transform: translateY(0) scale(1) rotate(0); }
+        15% { transform: translateY(0) scale(1) rotate(-2deg); }
+        30% { transform: translateY(0) scale(1) rotate(2deg); }
+        45% { transform: translateY(0) scale(1) rotate(-1.5deg); }
+        60% { transform: translateY(0) scale(1) rotate(1.5deg); }
+        75% { transform: translateY(0) scale(1) rotate(-0.5deg); }
     }
 
+    /* Shine-полоса */
+    .unlock-banner::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(120deg, transparent 30%, rgba(255,255,255,0.15) 50%, transparent 70%);
+        animation: bannerShine 2.5s ease-in-out infinite;
+        pointer-events: none;
+    }
+    @keyframes bannerShine {
+        0% { transform: translateX(-100%); }
+        100% { transform: translateX(200%); }
+    }
+
+    /* Иконка с кольцами */
+    .unlock-icon-wrap {
+        width: 120px;
+        height: 120px;
+        margin: 0 auto 18px;
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .unlock-icon-ring {
+        position: absolute;
+        inset: 0;
+        border-radius: 50%;
+        border: 2px solid rgba(251,191,36,0.5);
+        animation: unlockRing 1.8s ease-out infinite;
+    }
+    .unlock-icon-ring:nth-child(2) {
+        animation-delay: 0.6s;
+    }
+    .unlock-icon-ring:nth-child(3) {
+        animation-delay: 1.2s;
+    }
+    @keyframes unlockRing {
+        0% { transform: scale(0.6); opacity: 1; }
+        100% { transform: scale(1.6); opacity: 0; }
+    }
+
+    .unlock-icon {
+        width: 100px;
+        height: 100px;
+        position: relative;
+        z-index: 1;
+        object-fit: contain;
+        animation: iconUnlock 1s cubic-bezier(0.34, 1.56, 0.64, 1);
+        filter: drop-shadow(0 0 25px rgba(251,191,36,0.7));
+    }
+    @keyframes iconUnlock {
+        0% { transform: rotate(0deg) scale(1); }
+        50% { transform: rotate(360deg) scale(1.2); }
+        100% { transform: rotate(720deg) scale(1); }
+    }
+    .unlock-icon-fallback {
+        font-size: 4rem;
+        color: #fbbf24;
+        position: relative;
+        z-index: 1;
+        animation: iconUnlock 1s cubic-bezier(0.34, 1.56, 0.64, 1);
+        filter: drop-shadow(0 0 25px rgba(251,191,36,0.7));
+    }
+
+    .unlock-label {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.62rem;
+        letter-spacing: 4px;
+        color: #fbbf24;
+        text-transform: uppercase;
+        font-weight: 700;
+        margin-bottom: 8px;
+    }
+
+    .unlock-name {
+        font-family: 'Bebas Neue', sans-serif;
+        font-size: 1.9rem;
+        letter-spacing: 1px;
+        color: #fff;
+        line-height: 1.1;
+        margin-bottom: 8px;
+        text-shadow: 0 0 30px rgba(251,191,36,0.3);
+    }
+
+    .unlock-desc {
+        font-size: 0.82rem;
+        color: #aaa;
+        line-height: 1.5;
+        margin-bottom: 18px;
+        max-width: 300px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    .unlock-reward {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: linear-gradient(135deg, rgba(34,197,94,0.2), rgba(34,197,94,0.08));
+        border: 1.5px solid rgba(34,197,94,0.5);
+        color: #4ade80;
+        font-family: 'Bebas Neue', sans-serif;
+        font-size: 1.3rem;
+        letter-spacing: 0.5px;
+        padding: 10px 20px;
+        border-radius: 40px;
+        margin-bottom: 22px;
+        box-shadow: 0 0 25px rgba(34,197,94,0.2);
+        animation: rewardPulse 1.8s ease-in-out infinite;
+    }
+    @keyframes rewardPulse {
+        0%, 100% { transform: scale(1); box-shadow: 0 0 25px rgba(34,197,94,0.2); }
+        50% { transform: scale(1.04); box-shadow: 0 0 35px rgba(34,197,94,0.4); }
+    }
+    .unlock-reward i { font-size: 1rem; }
+
+    .unlock-btn {
+        font-family: 'Inter', sans-serif;
+        font-weight: 800;
+        font-size: 0.95rem;
+        background: linear-gradient(135deg, #fbbf24, #d4a24a);
+        color: #000;
+        border: none;
+        padding: 16px 32px;
+        border-radius: 40px;
+        cursor: pointer;
+        width: 100%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        min-height: 54px;
+        box-shadow: 0 8px 25px rgba(251,191,36,0.5);
+        transition: all 0.25s ease;
+    }
+    .unlock-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 12px 35px rgba(251,191,36,0.7);
+    }
+    .unlock-btn:active { transform: scale(0.97); }
+    .unlock-btn:disabled {
+        opacity: 0.7;
+        cursor: not-allowed;
+        transform: none;
+    }
+    .unlock-btn.claimed {
+        background: linear-gradient(135deg, #22c55e, #16a34a);
+        color: #fff;
+        box-shadow: 0 8px 25px rgba(34,197,94,0.5);
+        cursor: default;
+    }
+
+    /* ============================================================
+       ФИШКА 6 — BOTTOM SHEET (SHARE)
+       ============================================================ */
+    .sheet-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,0.7);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        z-index: 7000;
+        display: none;
+        opacity: 0;
+        transition: opacity 0.25s ease;
+    }
+    .sheet-overlay.show {
+        display: block;
+        opacity: 1;
+    }
+
+    .sheet {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: linear-gradient(180deg, #15151b, #0a0a0f);
+        border-top: 1px solid rgba(251,191,36,0.3);
+        border-radius: 26px 26px 0 0;
+        padding: 10px 20px 30px;
+        z-index: 7001;
+        transform: translateY(100%);
+        transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+        max-height: 85vh;
+        overflow-y: auto;
+        box-shadow: 0 -20px 60px rgba(0,0,0,0.7);
+    }
+    .sheet-overlay.show .sheet {
+        transform: translateY(0);
+    }
+    .sheet.dragging {
+        transition: none;
+    }
+
+    .sheet-handle {
+        width: 40px;
+        height: 4px;
+        border-radius: 4px;
+        background: rgba(255,255,255,0.2);
+        margin: 0 auto 16px;
+        cursor: grab;
+        touch-action: none;
+    }
+    .sheet-handle:active { cursor: grabbing; }
+
+    .sheet-title {
+        font-size: 1rem;
+        font-weight: 800;
+        color: #fff;
+        margin-bottom: 4px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    .sheet-title i { color: #fbbf24; }
+
+    .sheet-subtitle {
+        font-size: 0.72rem;
+        color: #888;
+        margin-bottom: 20px;
+    }
+
+    .sheet-share-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 12px;
+        margin-bottom: 18px;
+    }
+
+    .share-option {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+        padding: 14px 6px;
+        border-radius: 16px;
+        background: rgba(255,255,255,0.03);
+        border: 1px solid rgba(255,255,255,0.06);
+        cursor: pointer;
+        transition: all 0.2s ease;
+        font-family: inherit;
+        color: #fff;
+    }
+    .share-option:hover {
+        transform: translateY(-2px);
+        background: rgba(251,191,36,0.08);
+        border-color: rgba(251,191,36,0.3);
+    }
+    .share-option:active { transform: scale(0.96); }
+
+    .share-option-icon {
+        width: 44px;
+        height: 44px;
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+    }
+    .share-option-icon.tg { background: linear-gradient(135deg, #0088cc, #0066a3); color: #fff; }
+    .share-option-icon.vk { background: linear-gradient(135deg, #4c75a3, #2d5580); color: #fff; }
+    .share-option-icon.wa { background: linear-gradient(135deg, #25D366, #128C7E); color: #fff; }
+    .share-option-icon.copy { background: linear-gradient(135deg, #fbbf24, #d4a24a); color: #000; }
+
+    .share-option-name {
+        font-size: 0.68rem;
+        font-weight: 700;
+        color: #ccc;
+    }
+
+    /* ===== ФУТЕР ===== */
     .main-footer {
         background: #0a0a0a;
         border-top: 1px solid rgba(251,191,36,0.15);
@@ -490,10 +923,12 @@
     .footer-logo .logo {
         font-size: 1.3rem;
         font-weight: 800;
-        background: linear-gradient(135deg, #ffffff, #fbbf24);
+        background: linear-gradient(135deg, #fff, #fbbf24);
         background-clip: text;
+        -webkit-background-clip: text;
         color: transparent;
     }
+    .footer-logo p { font-size: 0.7rem; color: #777; margin-top: 6px; }
     .footer-links { display: flex; gap: 24px; flex-wrap: wrap; }
     .footer-links a { color: #888; text-decoration: none; font-size: 0.75rem; transition: color 0.2s; }
     .footer-links a:hover { color: #fbbf24; }
@@ -507,36 +942,112 @@
         font-size: 0.65rem;
         color: #555;
     }
-    
+
+    /* ===== CONFETTI CANVAS ===== */
+    #confettiCanvas {
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        z-index: 8000;
+        display: none;
+    }
+    #confettiCanvas.active { display: block; }
+
+    /* ===== АДАПТИВ ===== */
+    @media (min-width: 600px) {
+        .achievements-grid {
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+        }
+    }
+
+    @media (min-width: 900px) {
+        .achievements-grid {
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .container { padding: 0 16px; }
+        .navbar { padding: 12px 18px; }
+        .nav-links.show { display: flex; }
+
+        .page-title { font-size: 1.5rem; }
+        .page-subtitle { padding-left: 56px; }
+
+        .progress-stats { padding: 14px 18px; gap: 12px; }
+        .progress-stats .stat-icon { width: 44px; height: 44px; font-size: 1.2rem; }
+        .progress-stats .earned-count { font-size: 1.5rem; }
+        .progress-stats .stat-percent { font-size: 1.1rem; padding: 6px 10px; }
+
+        .achievement-card { padding: 14px 10px 12px; min-height: 220px; }
+        .ach-icon { width: 76px; height: 76px; margin: 8px 0 10px; }
+        .ach-name { font-size: 0.78rem; }
+        .ach-desc { font-size: 0.6rem; }
+        .ach-how { font-size: 0.55rem; }
+        .ach-reward { font-size: 0.55rem; padding: 3px 10px; }
+        .ach-status-btn { font-size: 0.65rem; padding: 8px 14px; min-height: 36px; }
+
+        .unlock-banner { padding: 26px 20px 22px; border-radius: 24px; }
+        .unlock-icon-wrap { width: 100px; height: 100px; margin-bottom: 14px; }
+        .unlock-icon { width: 84px; height: 84px; }
+        .unlock-icon-fallback { font-size: 3.2rem; }
+        .unlock-name { font-size: 1.6rem; }
+        .unlock-desc { font-size: 0.78rem; }
+        .unlock-reward { font-size: 1.1rem; padding: 8px 16px; }
+        .unlock-btn { padding: 14px 24px; min-height: 48px; font-size: 0.88rem; }
+
+        .footer-inner { flex-direction: column; text-align: center; }
+    }
+
+    @media (max-width: 480px) {
+        .achievements-grid { gap: 10px; }
+        .achievement-card { padding: 12px 8px 10px; min-height: 210px; border-radius: 16px; }
+        .ach-icon { width: 68px; height: 68px; }
+        .ach-name { font-size: 0.72rem; }
+        .ach-rarity { font-size: 0.45rem; padding: 2px 6px; }
+        .ach-share-btn { width: 24px; height: 24px; font-size: 0.65rem; }
+        .ach-status-btn { font-size: 0.6rem; padding: 8px 12px; }
+    }
+
     ::-webkit-scrollbar { width: 5px; }
     ::-webkit-scrollbar-track { background: #1a1a1a; }
-    ::-webkit-scrollbar-thumb { background: #fbbf24; border-radius: 10px; }  
-</style>
+    ::-webkit-scrollbar-thumb { background: #fbbf24; border-radius: 10px; }
+    </style>
 </head>
 <body>
     <div class="gold-top"></div>
+    <canvas id="confettiCanvas"></canvas>
 
-    <div class="container">
-        <div class="simple-header">
-            <button class="back-arrow" id="backBtn"><i class="fas fa-arrow-left"></i></button>
-            <h1><i class="fas fa-trophy"></i> Все достижения</h1>
-            <div class="balance-indicator" id="balanceIndicator" style="display: none;">
-                <i class="fas fa-crosshairs"></i>
-                <span class="balance-count" id="headerChallengesCount">0</span>
-                <button class="balance-plus" id="balancePlusBtn">+</button>
+    <header class="navbar">
+        <div class="logo" onclick="window.location='index.html'">PRO<span>RANK</span></div>
+        <button class="menu-toggle" id="menuToggle"><i class="fas fa-bars"></i></button>
+        <nav class="nav-links" id="navLinks"></nav>
+    </header>
+
+    <main class="container">
+        <div class="page-header">
+            <button class="back-arrow-btn" id="backBtn" title="Назад">
+                <i class="fas fa-arrow-left"></i>
+            </button>
+            <div>
+                <div class="page-title"><i class="fas fa-trophy"></i> Достижения</div>
+                <div class="page-subtitle">Получай награды за победы, активность и рост рейтинга</div>
             </div>
         </div>
 
-        <div style="text-align: center;">
-            <div id="progressStats" class="progress-stats">
-                <div class="loading-spinner"></div> Загрузка...
-            </div>
+        <div id="progressStats" class="progress-stats">
+            <div class="loading-spinner"></div>
+            <span style="color:#888;">Загрузка...</span>
         </div>
 
         <div id="achievementsGrid" class="achievements-grid">
-            <div class="loading"><div class="loading-spinner"></div> Загрузка достижений...</div>
+            <div class="loading" style="grid-column:1/-1;">
+                <div class="loading-spinner"></div>
+            </div>
         </div>
-    </div>
+    </main>
 
     <footer class="main-footer">
         <div class="container">
@@ -567,6 +1078,62 @@
 
     <div id="mobileBottomNavContainer"></div>
 
+    <!-- ============================================================
+         ФИШКА 1 — UNLOCK OVERLAY
+         ============================================================ -->
+    <div class="unlock-overlay" id="unlockOverlay">
+        <div class="unlock-banner" id="unlockBanner">
+            <div class="unlock-label">Achievement Unlocked</div>
+            <div class="unlock-icon-wrap">
+                <div class="unlock-icon-ring"></div>
+                <div class="unlock-icon-ring"></div>
+                <div class="unlock-icon-ring"></div>
+                <div id="unlockIconContainer"></div>
+            </div>
+            <div class="unlock-name" id="unlockName">—</div>
+            <div class="unlock-desc" id="unlockDesc">—</div>
+            <div class="unlock-reward" id="unlockReward" style="display:none;">
+                <i class="fas fa-gift"></i>
+                <span id="unlockRewardText">+0</span>
+            </div>
+            <button class="unlock-btn" id="unlockClaimBtn">
+                <i class="fas fa-hand-holding-usd"></i>
+                <span>Забрать награду</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- ============================================================
+         ФИШКА 6 — BOTTOM SHEET (SHARE)
+         ============================================================ -->
+    <div class="sheet-overlay" id="sheetOverlay">
+        <div class="sheet" id="sheet">
+            <div class="sheet-handle" id="sheetHandle"></div>
+            <div class="sheet-title"><i class="fas fa-share-alt"></i> Поделиться</div>
+            <div class="sheet-subtitle" id="sheetSubtitle">Расскажи друзьям о своём достижении</div>
+            <div class="sheet-share-grid">
+                <button class="share-option" data-share="tg">
+                    <div class="share-option-icon tg"><i class="fab fa-telegram"></i></div>
+                    <div class="share-option-name">Telegram</div>
+                </button>
+                <button class="share-option" data-share="vk">
+                    <div class="share-option-icon vk"><i class="fab fa-vk"></i></div>
+                    <div class="share-option-name">ВКонтакте</div>
+                </button>
+                <button class="share-option" data-share="wa">
+                    <div class="share-option-icon wa"><i class="fab fa-whatsapp"></i></div>
+                    <div class="share-option-name">WhatsApp</div>
+                </button>
+                <button class="share-option" data-share="copy">
+                    <div class="share-option-icon copy"><i class="fas fa-link"></i></div>
+                    <div class="share-option-name">Ссылка</div>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="modals.js"></script>
+
     <script type="importmap">
         {
             "imports": {
@@ -576,168 +1143,741 @@
             }
         }
     </script>
+
+    <script type="module" src="header.js?v=3"></script>
+
     <script type="module">
-        import { initializeApp } from "firebase/app";
-        import { getFirestore, collection, getDocs, query, where, doc, getDoc } from "firebase/firestore";
-        import { getAuth, onAuthStateChanged } from "firebase/auth";
+    import { initializeApp } from "firebase/app";
+    import {
+        getFirestore, collection, getDocs, query, where, doc, getDoc,
+        updateDoc, runTransaction, serverTimestamp, increment, setDoc
+    } from "firebase/firestore";
+    import { getAuth, onAuthStateChanged } from "firebase/auth";
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyDUGYJY7pX7q02MS5SACMIIQXpjpQ97mPw",
-            authDomain: "proranklive.firebaseapp.com",
-            projectId: "proranklive",
-            storageBucket: "proranklive.firebasestorage.app",
-            messagingSenderId: "716836144015",
-            appId: "1:716836144015:web:f1575147750608d0f881fa"
-        };
+    const firebaseConfig = {
+        apiKey: "AIzaSyDUGYJY7pX7q02MS5SACMIIQXpjpQ97mPw",
+        authDomain: "proranklive.firebaseapp.com",
+        projectId: "proranklive",
+        storageBucket: "proranklive.firebasestorage.app",
+        messagingSenderId: "716836144015",
+        appId: "1:716836144015:web:f1575147750608d0f881fa"
+    };
 
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-        const auth = getAuth(app);
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
 
-        let currentUser = null;
+    let currentUser = null;
+    let allAchievements = [];
+    let userAchievementsMap = new Map();
 
-        function getAchievementIconPath(achievementId) {
-            return `./achiev-icons/${achievementId}.webp`;
-        }
+    // ============================================================
+    // УТИЛИТЫ
+    // ============================================================
+    function escapeHtml(str) {
+        if (str === null || str === undefined) return '';
+        return String(str)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+    }
 
-        function renderAchievementIcon(achievementId, achievementName) {
-            const iconPath = getAchievementIconPath(achievementId);
-            return `<img src="${iconPath}" 
-                         alt="${escapeHtml(achievementName)}" 
-                         class="achievement-img"
-                         loading="lazy"
-                         onerror="this.style.display='none'; this.parentElement.innerHTML='<i class=\\'fas fa-medal\\'></i>';">`;
-        }
+    function getAchievementIconPath(id) {
+        return `./achiev-icons/${id}.webp`;
+    }
 
-        async function updateHeaderBalance() {
-            const user = auth.currentUser;
-            const balanceDiv = document.getElementById('balanceIndicator');
-            const balanceCount = document.getElementById('headerChallengesCount');
-            if (!user || !balanceDiv) return;
+    // ============================================================
+    // РАРНОСТЬ
+    // ============================================================
+    function getRarity(ach) {
+        const v = ach?.condition?.value;
+        if (v === undefined || v === null) return 'common';
+        if (v < 10) return 'common';
+        if (v < 50) return 'rare';
+        if (v < 200) return 'epic';
+        return 'legend';
+    }
+
+    function getRarityLabel(rarity) {
+        return {
+            common: 'Common',
+            rare: 'Rare',
+            epic: 'Epic',
+            legend: 'Legend'
+        }[rarity] || 'Common';
+    }
+
+    // ============================================================
+    // AUDIO (Web Audio API)
+    // ============================================================
+    let _audioCtx = null;
+    function getAudioCtx() {
+        if (!_audioCtx) {
             try {
-                const userDoc = await getDoc(doc(db, "fighters", user.uid));
-                const data = userDoc.data();
-                const total = (data.freeChallenges || 0) + (data.purchasedChallenges || 0);
-                balanceCount.innerText = total;
-                balanceDiv.style.display = 'flex';
-            } catch (err) { 
-                console.error(err);
-                balanceDiv.style.display = 'none';
+                _audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            } catch (e) {
+                return null;
             }
         }
+        if (_audioCtx && _audioCtx.state === 'suspended') _audioCtx.resume();
+        return _audioCtx;
+    }
 
-        async function loadAchievementsPage() {
-            const container = document.getElementById('achievementsGrid');
-            const progressStats = document.getElementById('progressStats');
-            
-            try {
-                const achievementsSnap = await getDocs(collection(db, "achievements"));
-                const allAchievements = [];
-                achievementsSnap.forEach(doc => allAchievements.push({ id: doc.id, ...doc.data() }));
-                
-                let earnedIds = new Set();
-                let earnedCount = 0;
-                
-                if (currentUser) {
-                    const userAchievementsSnap = await getDocs(query(collection(db, "userAchievements"), where("userId", "==", currentUser.uid)));
-                    userAchievementsSnap.forEach(doc => earnedIds.add(doc.data().achievementId));
-                    earnedCount = earnedIds.size;
-                }
-                
-                const totalCount = allAchievements.length;
-                
-                if (progressStats) {
-                    if (currentUser) {
-                        const percent = totalCount > 0 ? Math.round((earnedCount / totalCount) * 100) : 0;
-                        progressStats.innerHTML = `
-                            <i class="fas fa-medal icon-gold"></i>
-                            <span class="earned-count">${earnedCount}</span>
-                            <span>/ ${totalCount} достижений</span>
-                            <span style="margin-left: 8px; color: #fbbf24;">${percent}%</span>
-                        `;
-                    } else {
-                        progressStats.innerHTML = `<i class="fas fa-lock"></i> Войдите, чтобы отслеживать прогресс`;
-                    }
-                }
-                
-                if (allAchievements.length === 0) {
-                    container.innerHTML = '<div class="loading"><i class="fas fa-info-circle"></i> Достижения пока не добавлены</div>';
-                    return;
-                }
-                
-                let html = '';
-                for (const ach of allAchievements) {
-                    const earned = earnedIds.has(ach.id);
-                    
-                    let rewardText = '';
-                    let rewardClass = 'positive';
-                    if (ach.reward) {
-                        const amount = ach.reward.amount;
-                        const type = ach.reward.type === 'frs' ? 'FRS' : (ach.reward.type === 'challenges' ? 'вызовов' : (ach.reward.type === 'premium' ? 'дней премиума' : ''));
-                        const sign = amount > 0 ? '+' : '';
-                        rewardText = `${sign}${amount} ${type}`;
-                        rewardClass = amount > 0 ? 'positive' : 'negative';
-                    }
-                    
-                    html += `
-                        <div class="achievement-card ${earned ? 'earned' : 'locked'}">
-                            <div class="achievement-icon">
-                                ${renderAchievementIcon(ach.id, ach.name)}
-                            </div>
-                            <div class="achievement-info">
-                                <div class="achievement-name">${escapeHtml(ach.name)}</div>
-                                <div class="achievement-desc">${escapeHtml(ach.description || '')}</div>
-                                <div class="achievement-how"><i class="fas fa-question-circle"></i> ${escapeHtml(ach.howTo || ach.description || '')}</div>
-                                ${rewardText ? `<div class="achievement-reward ${rewardClass}"><i class="fas fa-gift"></i> Награда: ${rewardText}</div>` : ''}
-                            </div>
-                            <div class="achievement-status">
-                                ${earned ? '<span class="status-earned"><i class="fas fa-check-circle"></i> Получено</span>' : '<span class="status-locked"><i class="fas fa-lock"></i> Не получено</span>'}
-                            </div>
-                        </div>
-                    `;
-                }
-                
-                container.innerHTML = html;
-            } catch (err) {
-                console.error('Ошибка загрузки ачивок:', err);
-                container.innerHTML = '<div class="loading"><i class="fas fa-exclamation-triangle"></i> Ошибка загрузки достижений</div>';
-            }
+    const AudioFX = {
+        click() {
+            const ctx = getAudioCtx();
+            if (!ctx) return;
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(1800, ctx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(900, ctx.currentTime + 0.06);
+            gain.gain.setValueAtTime(0.08, ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.06);
+            osc.connect(gain); gain.connect(ctx.destination);
+            osc.start(ctx.currentTime);
+            osc.stop(ctx.currentTime + 0.07);
+        },
+        fanfare() {
+            const ctx = getAudioCtx();
+            if (!ctx) return;
+            const notes = [523, 659, 784, 1047];
+            notes.forEach((freq, i) => {
+                const t0 = ctx.currentTime + i * 0.09;
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(freq, t0);
+                gain.gain.setValueAtTime(0, t0);
+                gain.gain.linearRampToValueAtTime(0.08, t0 + 0.02);
+                gain.gain.exponentialRampToValueAtTime(0.001, t0 + 0.45);
+                osc.connect(gain); gain.connect(ctx.destination);
+                osc.start(t0);
+                osc.stop(t0 + 0.5);
+            });
+        },
+        swoosh() {
+            const ctx = getAudioCtx();
+            if (!ctx) return;
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(200, ctx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(1400, ctx.currentTime + 0.4);
+            gain.gain.setValueAtTime(0.04, ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.4);
+            osc.connect(gain); gain.connect(ctx.destination);
+            osc.start(ctx.currentTime);
+            osc.stop(ctx.currentTime + 0.42);
         }
+    };
 
-        function escapeHtml(str) {
-            if (!str) return '';
-            return str.replace(/[&<>]/g, function(m) {
-                if (m === '&') return '&amp;';
-                if (m === '<') return '&lt;';
-                if (m === '>') return '&gt;';
-                return m;
+    // ============================================================
+    // HAPTIC
+    // ============================================================
+    function haptic(ms = 15) {
+        try { if (navigator.vibrate) navigator.vibrate(ms); } catch(e) {}
+    }
+
+    // ============================================================
+    // CONFETTI
+    // ============================================================
+    let _confettiAnim = null;
+    function fireConfetti() {
+        const canvas = document.getElementById('confettiCanvas');
+        if (!canvas) return;
+        canvas.classList.add('active');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        const ctx = canvas.getContext('2d');
+
+        const colors = ['#fbbf24', '#ffffff', '#22c55e', '#3b82f6', '#ef4444', '#f472b6'];
+        const particles = [];
+        const cx = canvas.width / 2;
+        const cy = canvas.height / 2;
+
+        for (let i = 0; i < 200; i++) {
+            const angle = Math.random() * Math.PI * 2;
+            const speed = 4 + Math.random() * 8;
+            particles.push({
+                x: cx,
+                y: cy,
+                vx: Math.cos(angle) * speed * (Math.random() * 1.5 + 0.3),
+                vy: Math.sin(angle) * speed * (Math.random() * 1.5 + 0.3) - 3,
+                size: 5 + Math.random() * 7,
+                color: colors[Math.floor(Math.random() * colors.length)],
+                rotation: Math.random() * Math.PI * 2,
+                rotSpeed: (Math.random() - 0.5) * 0.3,
+                life: 1,
+                decay: 0.008 + Math.random() * 0.006,
+                shape: Math.random() > 0.5 ? 'rect' : 'circle'
             });
         }
 
-        onAuthStateChanged(auth, async (user) => {
-            currentUser = user;
-            if (user) {
-                setTimeout(updateHeaderBalance, 1000);
-            } else {
-                const balanceDiv = document.getElementById('balanceIndicator');
-                if (balanceDiv) balanceDiv.style.display = 'none';
+        const startTime = performance.now();
+        function animate(now) {
+            const elapsed = now - startTime;
+            if (elapsed > 3000) {
+                canvas.classList.remove('active');
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                _confettiAnim = null;
+                return;
             }
-            await loadAchievementsPage();
-        });
 
-        const plusBtn = document.getElementById('balancePlusBtn');
-        if (plusBtn) plusBtn.onclick = () => window.location.href = 'shop.html';
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-        const backBtn = document.getElementById('backBtn');
-        if (backBtn) {
-            backBtn.addEventListener('click', () => {
-                if (document.referrer && document.referrer.includes(window.location.host)) {
-                    window.history.back();
+            particles.forEach(p => {
+                p.x += p.vx;
+                p.y += p.vy;
+                p.vy += 0.5;
+                p.vx *= 0.99;
+                p.rotation += p.rotSpeed;
+                p.life -= p.decay;
+
+                if (p.life <= 0) return;
+
+                ctx.save();
+                ctx.globalAlpha = Math.max(0, p.life);
+                ctx.translate(p.x, p.y);
+                ctx.rotate(p.rotation);
+                ctx.fillStyle = p.color;
+
+                if (p.shape === 'rect') {
+                    ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size);
                 } else {
-                    window.location.href = 'profile.html';
+                    ctx.beginPath();
+                    ctx.arc(0, 0, p.size / 2, 0, Math.PI * 2);
+                    ctx.fill();
                 }
+
+                ctx.restore();
             });
+
+            _confettiAnim = requestAnimationFrame(animate);
         }
+
+        if (_confettiAnim) cancelAnimationFrame(_confettiAnim);
+        _confettiAnim = requestAnimationFrame(animate);
+    }
+
+    // ============================================================
+    // ЗАГРУЗКА ДАННЫХ
+    // ============================================================
+    async function loadAchievements() {
+        const grid = document.getElementById('achievementsGrid');
+        const stats = document.getElementById('progressStats');
+
+        try {
+            const achSnap = await getDocs(collection(db, "achievements"));
+            allAchievements = achSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+
+            userAchievementsMap.clear();
+            if (currentUser) {
+                const uaSnap = await getDocs(
+                    query(collection(db, "userAchievements"), where("userId", "==", currentUser.uid))
+                );
+                uaSnap.docs.forEach(d => {
+                    const data = d.data();
+                    userAchievementsMap.set(data.achievementId, {
+                        docId: d.id,
+                        earned: true,
+                        claimed: data.claimed === true,
+                        claimedAt: data.claimedAt || null,
+                        isNegative: data.isNegative === true
+                    });
+                });
+            }
+
+            renderAll();
+
+        } catch (err) {
+            console.error('Ошибка загрузки:', err);
+            grid.innerHTML = `<div class="loading" style="grid-column:1/-1;color:#ef4444;">
+                <i class="fas fa-exclamation-triangle" style="font-size:2rem;display:block;margin-bottom:10px;"></i>
+                Ошибка загрузки достижений
+            </div>`;
+            stats.innerHTML = `<i class="fas fa-exclamation-triangle" style="color:#ef4444;"></i> Ошибка`;
+        }
+    }
+
+    // ============================================================
+    // РЕНДЕР
+    // ============================================================
+    function renderAll() {
+        renderStats();
+        renderGrid();
+    }
+
+    function renderStats() {
+        const stats = document.getElementById('progressStats');
+        if (!currentUser) {
+            stats.innerHTML = `
+                <div class="stat-icon"><i class="fas fa-lock"></i></div>
+                <div class="stat-info">
+                    <div class="stat-label">Требуется вход</div>
+                    <div style="font-size:0.85rem;color:#ccc;">Войдите, чтобы отслеживать прогресс</div>
+                </div>
+            `;
+            return;
+        }
+
+        const earnedCount = userAchievementsMap.size;
+        const total = allAchievements.length;
+        const percent = total > 0 ? Math.round((earnedCount / total) * 100) : 0;
+
+        stats.innerHTML = `
+            <div class="stat-icon"><i class="fas fa-medal"></i></div>
+            <div class="stat-info">
+                <div class="stat-line">
+                    <span class="earned-count">${earnedCount}</span>
+                    <span class="stat-total">/ ${total}</span>
+                </div>
+                <div class="stat-label">Получено достижений</div>
+            </div>
+            <div class="stat-percent">${percent}%</div>
+        `;
+    }
+
+    function renderGrid() {
+        const grid = document.getElementById('achievementsGrid');
+
+        if (allAchievements.length === 0) {
+            grid.innerHTML = `
+                <div class="empty-state" style="grid-column:1/-1;">
+                    <div class="empty-icon"><i class="fas fa-trophy"></i></div>
+                    <div class="empty-title">Пока нет достижений</div>
+                    <div class="empty-text">Администратор ещё не добавил ни одного достижения в систему</div>
+                </div>
+            `;
+            return;
+        }
+
+        let html = '';
+        allAchievements.forEach(ach => {
+            html += renderCard(ach);
+        });
+        grid.innerHTML = html;
+
+        grid.querySelectorAll('[data-action]').forEach(el => {
+            el.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const action = el.dataset.action;
+                const achId = el.dataset.achId;
+                if (action === 'claim') handleClaimClick(achId);
+                else if (action === 'share') handleShareClick(achId);
+            });
+        });
+    }
+
+    function renderCard(ach) {
+        const ua = userAchievementsMap.get(ach.id);
+        const earned = !!ua;
+        const claimed = ua?.claimed === true;
+        const isNegative = ach.isNegative === true || ua?.isNegative === true;
+        const rarity = getRarity(ach);
+        const rarityLabel = getRarityLabel(rarity);
+
+        const classes = ['achievement-card', `rarity-${rarity}`];
+        if (claimed) classes.push('earned-claimed');
+        else if (earned) classes.push('earned');
+        else classes.push('locked');
+
+        const iconPath = getAchievementIconPath(ach.id);
+        const iconHtml = `
+            <img src="${escapeHtml(iconPath)}" alt="${escapeHtml(ach.name || '')}" class="ach-icon-img"
+                onerror="this.style.display='none'; this.parentElement.innerHTML='<i class=\\'fas fa-medal ach-icon-fallback\\'></i>';">
+        `;
+
+        let rewardHtml = '';
+        if (ach.reward && ach.reward.amount !== undefined && ach.reward.amount !== null) {
+            const amount = ach.reward.amount;
+            const type = ach.reward.type;
+            let typeText = '';
+            if (type === 'frs') typeText = 'FRS';
+            else if (type === 'challenges') typeText = 'вызовов';
+            else if (type === 'premium') typeText = 'дней премиума';
+            else typeText = type || '';
+
+            const sign = amount > 0 ? '+' : '';
+            const cls = amount > 0 ? 'positive' : 'negative';
+            rewardHtml = `
+                <div class="ach-reward ${cls}">
+                    <i class="fas fa-gift"></i>
+                    <span>${sign}${amount} ${escapeHtml(typeText)}</span>
+                </div>
+            `;
+        }
+
+        let statusBtnHtml = '';
+        if (isNegative) {
+            statusBtnHtml = `<button class="ach-status-btn negative" disabled><i class="fas fa-exclamation-triangle"></i> Штраф</button>`;
+        } else if (!earned) {
+            statusBtnHtml = `<button class="ach-status-btn locked" disabled><i class="fas fa-lock"></i> Не получено</button>`;
+        } else if (claimed) {
+            statusBtnHtml = `<button class="ach-status-btn claimed" disabled><i class="fas fa-check-circle"></i> Получено</button>`;
+        } else if (ach.reward && ach.reward.amount > 0) {
+            statusBtnHtml = `<button class="ach-status-btn claim" data-action="claim" data-ach-id="${escapeHtml(ach.id)}"><i class="fas fa-hand-holding-usd"></i> Забрать награду</button>`;
+        } else {
+            statusBtnHtml = `<button class="ach-status-btn claimed" disabled><i class="fas fa-check-circle"></i> Получено</button>`;
+        }
+
+        const shareBtnHtml = earned ? `
+            <button class="ach-share-btn" data-action="share" data-ach-id="${escapeHtml(ach.id)}" title="Поделиться">
+                <i class="fas fa-share-alt"></i>
+            </button>
+        ` : '';
+
+        return `
+            <div class="${classes.join(' ')}" data-ach-id="${escapeHtml(ach.id)}">
+                <div class="ach-rarity">${rarityLabel}</div>
+                ${shareBtnHtml}
+                <div class="ach-icon">${iconHtml}</div>
+                <div class="ach-info">
+                    <div class="ach-name">${escapeHtml(ach.name || 'Достижение')}</div>
+                    ${ach.description ? `<div class="ach-desc">${escapeHtml(ach.description)}</div>` : ''}
+                    ${ach.howTo ? `<div class="ach-how"><i class="fas fa-question-circle"></i>${escapeHtml(ach.howTo)}</div>` : ''}
+                    ${rewardHtml}
+                </div>
+                ${statusBtnHtml}
+            </div>
+        `;
+    }
+
+    // ============================================================
+    // ФИШКА 1 — ОБРАБОТКА "ЗАБРАТЬ"
+    // ============================================================
+    let _currentClaimAchId = null;
+
+    function handleClaimClick(achId) {
+        haptic(20);
+        AudioFX.click();
+
+        const ach = allAchievements.find(a => a.id === achId);
+        if (!ach) return;
+
+        const ua = userAchievementsMap.get(achId);
+        if (!ua || ua.claimed) {
+            if (window.showToast) window.showToast('Награда уже получена', 'info');
+            return;
+        }
+
+        _currentClaimAchId = achId;
+        showUnlockOverlay(ach);
+    }
+
+    function showUnlockOverlay(ach) {
+        const overlay = document.getElementById('unlockOverlay');
+        const iconContainer = document.getElementById('unlockIconContainer');
+        const nameEl = document.getElementById('unlockName');
+        const descEl = document.getElementById('unlockDesc');
+        const rewardEl = document.getElementById('unlockReward');
+        const rewardTextEl = document.getElementById('unlockRewardText');
+        const claimBtn = document.getElementById('unlockClaimBtn');
+
+        const iconPath = getAchievementIconPath(ach.id);
+        iconContainer.innerHTML = `
+            <img src="${escapeHtml(iconPath)}" class="unlock-icon" alt=""
+                onerror="this.style.display='none'; this.parentElement.innerHTML='<i class=\\'fas fa-medal unlock-icon-fallback\\'></i>';">
+        `;
+
+        nameEl.textContent = ach.name || 'Достижение';
+        descEl.textContent = ach.description || ach.howTo || '';
+
+        if (ach.reward && ach.reward.amount > 0) {
+            const amount = ach.reward.amount;
+            const type = ach.reward.type;
+            let typeText = 'FRS';
+            if (type === 'challenges') typeText = amount === 1 ? 'вызов' : (amount < 5 ? 'вызова' : 'вызовов');
+            else if (type === 'premium') typeText = amount === 1 ? 'день премиума' : (amount < 5 ? 'дня премиума' : 'дней премиума');
+            rewardTextEl.textContent = `+${amount} ${typeText}`;
+            rewardEl.style.display = 'inline-flex';
+        } else {
+            rewardEl.style.display = 'none';
+        }
+
+        claimBtn.className = 'unlock-btn';
+        claimBtn.disabled = false;
+        claimBtn.innerHTML = '<i class="fas fa-hand-holding-usd"></i><span>Забрать награду</span>';
+
+        overlay.classList.add('show');
+        haptic(30);
+
+        const newBtn = claimBtn.cloneNode(true);
+        claimBtn.parentNode.replaceChild(newBtn, claimBtn);
+        newBtn.addEventListener('click', () => executeClaim(ach));
+    }
+
+    async function executeClaim(ach) {
+        const overlay = document.getElementById('unlockOverlay');
+        const btn = document.getElementById('unlockClaimBtn');
+
+        if (!currentUser) return;
+
+        btn.disabled = true;
+        btn.innerHTML = '<div class="loading-spinner" style="width:16px;height:16px;border-color:rgba(0,0,0,0.3);border-top-color:#000;"></div><span>Обработка...</span>';
+
+        // ua объявляем ОДИН раз здесь
+        const ua = userAchievementsMap.get(ach.id);
+
+        try {
+            if (!ua) throw new Error('Запись не найдена');
+            if (ua.claimed) throw new Error('Награда уже получена');
+
+            const rewardType = ach.reward?.type;
+            const amount = ach.reward?.amount || 0;
+
+            if (amount <= 0) throw new Error('Некорректная сумма награды');
+
+            const userRef = doc(db, "fighters", currentUser.uid);
+            const uaRef = doc(db, "userAchievements", ua.docId);
+
+            // ===== АТОМАРНАЯ ТРАНЗАКЦИЯ =====
+            await runTransaction(db, async (tx) => {
+                const uaSnap = await tx.get(uaRef);
+                if (!uaSnap.exists()) throw new Error('Запись ачивки не найдена');
+                if (uaSnap.data().claimed === true) throw new Error('Уже забрано');
+
+                const userSnap = await tx.get(userRef);
+                if (!userSnap.exists()) throw new Error('Профиль не найден');
+                const ud = userSnap.data();
+
+                const updates = {};
+
+                if (rewardType === 'frs') {
+                    updates.frs = (ud.frs || 0) + amount;
+                } else if (rewardType === 'challenges') {
+                    updates.freeChallenges = (ud.freeChallenges || 0) + amount;
+                } else if (rewardType === 'premium') {
+                    const currentUntil = ud.premiumUntil?.toDate?.() || (ud.premiumUntil ? new Date(ud.premiumUntil) : new Date());
+                    const base = currentUntil > new Date() ? currentUntil : new Date();
+                    const newUntil = new Date(base.getTime() + amount * 24 * 60 * 60 * 1000);
+                    updates.premium = true;
+                    updates.premiumUntil = newUntil;
+                } else {
+                    throw new Error('Неизвестный тип награды');
+                }
+
+                tx.update(userRef, updates);
+                tx.update(uaRef, {
+                    claimed: true,
+                    claimedAt: serverTimestamp()
+                });
+            });
+
+            // ===== УСПЕХ! =====
+            haptic(40);
+            AudioFX.fanfare();
+            fireConfetti();
+
+            // Обновляем локальную мапу (ua уже объявлена выше)
+            ua.claimed = true;
+            ua.claimedAt = new Date();
+
+            btn.className = 'unlock-btn claimed';
+            btn.innerHTML = '<i class="fas fa-check-circle"></i><span>Получено ✓</span>';
+
+            showGhostReward(ach);
+
+            if (window.updateHeaderBalance) {
+                setTimeout(() => window.updateHeaderBalance(), 400);
+            }
+
+            setTimeout(() => {
+                renderAll();
+            }, 500);
+
+            setTimeout(() => {
+                overlay.classList.remove('show');
+                _currentClaimAchId = null;
+            }, 2200);
+
+        } catch (err) {
+            console.error('Ошибка получения награды:', err);
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-hand-holding-usd"></i><span>Попробовать снова</span>';
+            if (window.showToast) window.showToast(err.message || 'Ошибка', 'error');
+        }
+    }
+
+    function showGhostReward(ach) {
+        if (!ach.reward) return;
+        const amount = ach.reward.amount;
+        const type = ach.reward.type;
+        let text = `+${amount}`;
+        if (type === 'frs') text += ' FRS';
+        else if (type === 'challenges') text += ' 🎯';
+        else if (type === 'premium') text += ' 👑';
+
+        const ghost = document.createElement('div');
+        ghost.textContent = text;
+        ghost.style.cssText = `
+            position: fixed;
+            top: 80px;
+            right: 30px;
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 1.8rem;
+            font-weight: 900;
+            color: #4ade80;
+            text-shadow: 0 0 20px rgba(34,197,94,0.8);
+            z-index: 8500;
+            pointer-events: none;
+            animation: ghostFloat 1.8s ease-out forwards;
+        `;
+        document.body.appendChild(ghost);
+
+        if (!document.getElementById('ghostKeyframes')) {
+            const style = document.createElement('style');
+            style.id = 'ghostKeyframes';
+            style.textContent = `
+                @keyframes ghostFloat {
+                    0% { opacity: 0; transform: translateY(0) scale(0.6); }
+                    20% { opacity: 1; transform: translateY(-10px) scale(1.1); }
+                    70% { opacity: 1; transform: translateY(-60px) scale(1); }
+                    100% { opacity: 0; transform: translateY(-100px) scale(0.9); }
+                }
+            `;
+            document.head.appendChild(style);
+        }
+
+        setTimeout(() => ghost.remove(), 1900);
+    }
+
+    // ============================================================
+    // ФИШКА 5-6 — SHARE
+    // ============================================================
+    let _currentShareAchId = null;
+
+    function handleShareClick(achId) {
+        haptic(15);
+        AudioFX.click();
+        _currentShareAchId = achId;
+        openSheet();
+    }
+
+    function openSheet() {
+        const overlay = document.getElementById('sheetOverlay');
+        const sheet = document.getElementById('sheet');
+        sheet.style.transform = '';
+        sheet.classList.remove('dragging');
+        overlay.classList.add('show');
+    }
+
+    function closeSheet() {
+        const overlay = document.getElementById('sheetOverlay');
+        overlay.classList.remove('show');
+        _currentShareAchId = null;
+    }
+
+    document.querySelectorAll('.share-option').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const type = btn.dataset.share;
+            const ach = allAchievements.find(a => a.id === _currentShareAchId);
+            if (!ach) return;
+
+            const url = `${window.location.origin}${window.location.pathname}`;
+            const text = `🏆 Я получил достижение «${ach.name}» на PRORANK!`;
+            const fullText = `${text}\n${url}`;
+
+            haptic(20);
+            AudioFX.click();
+
+            if (type === 'tg') {
+                window.open(`https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`, '_blank');
+            } else if (type === 'vk') {
+                window.open(`https://vk.com/share.php?url=${encodeURIComponent(url)}&title=${encodeURIComponent(text)}`, '_blank');
+            } else if (type === 'wa') {
+                window.open(`https://wa.me/?text=${encodeURIComponent(fullText)}`, '_blank');
+            } else if (type === 'copy') {
+                navigator.clipboard.writeText(fullText).then(() => {
+                    if (window.showToast) window.showToast('Ссылка скопирована', 'success');
+                }).catch(() => {
+                    if (window.showToast) window.showToast('Не удалось скопировать', 'error');
+                });
+            }
+
+            closeSheet();
+        });
+    });
+
+    document.getElementById('sheetOverlay').addEventListener('click', (e) => {
+        if (e.target.id === 'sheetOverlay') closeSheet();
+    });
+
+    // ===== ФИШКА 6 — PULL-DOWN ЖЕСТ =====
+    (function initSheetDrag() {
+        const sheet = document.getElementById('sheet');
+        const handle = document.getElementById('sheetHandle');
+        const overlay = document.getElementById('sheetOverlay');
+        if (!sheet || !handle) return;
+
+        let startY = 0;
+        let currentY = 0;
+        let dragging = false;
+
+        function onStart(e) {
+            const y = e.touches ? e.touches[0].clientY : e.clientY;
+            startY = y;
+            currentY = 0;
+            dragging = true;
+            sheet.classList.add('dragging');
+        }
+
+        function onMove(e) {
+            if (!dragging) return;
+            const y = e.touches ? e.touches[0].clientY : e.clientY;
+            currentY = Math.max(0, y - startY);
+            sheet.style.transform = `translateY(${currentY}px)`;
+        }
+
+        function onEnd() {
+            if (!dragging) return;
+            dragging = false;
+            sheet.classList.remove('dragging');
+
+            if (currentY > 120) {
+                haptic(25);
+                sheet.style.transform = 'translateY(100%)';
+                setTimeout(() => {
+                    overlay.classList.remove('show');
+                    sheet.style.transform = '';
+                    _currentShareAchId = null;
+                }, 300);
+            } else {
+                sheet.style.transform = '';
+            }
+        }
+
+        handle.addEventListener('touchstart', onStart, { passive: true });
+        handle.addEventListener('touchmove', onMove, { passive: true });
+        handle.addEventListener('touchend', onEnd);
+        handle.addEventListener('mousedown', onStart);
+        document.addEventListener('mousemove', onMove);
+        document.addEventListener('mouseup', onEnd);
+    })();
+
+    // ============================================================
+    // КНОПКА НАЗАД
+    // ============================================================
+    document.getElementById('backBtn').addEventListener('click', () => {
+        haptic(15);
+        if (document.referrer && document.referrer.includes(window.location.host)) {
+            window.history.back();
+        } else {
+            window.location.href = 'profile.html';
+        }
+    });
+
+    // ============================================================
+    // АВТОРИЗАЦИЯ
+    // ============================================================
+    onAuthStateChanged(auth, async (user) => {
+        currentUser = user;
+        await loadAchievements();
+    });
+
+    console.log('✅ achievements.html — фишки 1, 2, 5, 6, confetti, web audio, haptic');
     </script>
 </body>
 </html>

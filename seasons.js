@@ -571,3 +571,51 @@ export async function claimClubReward(clubId, seasonId, members, memberFrsMap) {
 export function _debug() {
     return { _db, _auth, _activeSeasonCache };
 }
+
+// ============================================================
+// 🔧 НОВЫЕ ЭКСПОРТЫ (для season-details.html)
+// ============================================================
+
+/**
+ * Получить победителей сезона.
+ * Читает seasons/{seasonId}.winners → { fighters: [], clubs: [] }
+ * Если нет — возвращает пустые массивы.
+ */
+export async function getSeasonWinners(seasonId) {
+    _ensureInit();
+    if (!seasonId) return { fighters: [], clubs: [] };
+    try {
+        const ref = doc(_db, "seasons", seasonId);
+        const snap = await getDoc(ref);
+        if (!snap.exists()) return { fighters: [], clubs: [] };
+        const data = snap.data();
+        const w = data.winners || {};
+        return {
+            fighters: Array.isArray(w.fighters) ? w.fighters : [],
+            clubs: Array.isArray(w.clubs) ? w.clubs : []
+        };
+    } catch (e) {
+        console.warn('⚠️ seasons.js: getSeasonWinners error', e);
+        return { fighters: [], clubs: [] };
+    }
+}
+
+/**
+ * Получить историю сезонов бойца.
+ * Читает fighters/{uid}.seasonHistory → массив.
+ * Если пусто — [].
+ */
+export async function getSeasonHistory(uid) {
+    _ensureInit();
+    if (!uid) return [];
+    try {
+        const ref = doc(_db, "fighters", uid);
+        const snap = await getDoc(ref);
+        if (!snap.exists()) return [];
+        const data = snap.data();
+        return Array.isArray(data.seasonHistory) ? data.seasonHistory : [];
+    } catch (e) {
+        console.warn('⚠️ seasons.js: getSeasonHistory error', e);
+        return [];
+    }
+}
