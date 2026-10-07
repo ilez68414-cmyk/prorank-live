@@ -25,7 +25,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700;14..32,800;14..32,900&display=swap" rel="stylesheet">
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
@@ -88,58 +88,113 @@
             font-size: clamp(0.7rem, 2vw, 0.85rem);
         }
 
-        /* ===== ГЛАВНЫЙ ПЕРЕКЛЮЧАТЕЛЬ РАЗДЕЛОВ ===== */
-        .main-tabs {
-            display: flex;
-            gap: 6px;
+        /* ============================================================
+           iOS SEGMENTED CONTROL (общий стиль)
+           ============================================================ */
+        .segmented {
+            position: relative;
+            display: grid;
+            gap: 0;
             background: rgba(15,15,15,0.6);
-            backdrop-filter: blur(8px);
-            border: 1px solid rgba(251,191,36,0.12);
-            border-radius: 18px;
-            padding: 6px;
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(251,191,36,0.15);
+            border-radius: 14px;
+            padding: 4px;
             margin-bottom: 20px;
-            max-width: 560px;
-            margin-left: auto;
-            margin-right: auto;
+            overflow: hidden;
+            isolation: isolate;
         }
 
-        .main-tab-btn {
-            flex: 1;
-            padding: 14px 18px;
-            border: none;
-            border-radius: 13px;
+        .segmented::before {
+            content: '';
+            position: absolute;
+            top: 4px;
+            bottom: 4px;
+            left: 4px;
+            width: calc((100% - 8px) / var(--seg-count, 2));
+            background: linear-gradient(135deg, #fbbf24, #d4a24a);
+            border-radius: 10px;
+            box-shadow:
+                0 4px 16px rgba(251,191,36,0.4),
+                inset 0 1px 0 rgba(255,255,255,0.3);
+            transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 1;
+            will-change: transform;
+        }
+
+        .segmented[data-active="1"]::before { transform: translateX(100%); }
+        .segmented[data-active="2"]::before { transform: translateX(200%); }
+        .segmented[data-active="3"]::before { transform: translateX(300%); }
+        .segmented[data-active="4"]::before { transform: translateX(400%); }
+
+        .seg-btn {
+            position: relative;
+            z-index: 2;
             background: transparent;
+            border: none;
             color: #888;
             font-family: 'Inter', sans-serif;
             font-weight: 700;
-            font-size: 0.85rem;
+            font-size: 0.78rem;
+            padding: 12px 8px;
+            border-radius: 10px;
             cursor: pointer;
-            transition: all 0.25s ease;
+            transition: color 0.3s ease;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 8px;
-            min-height: 46px;
+            gap: 7px;
+            min-height: 44px;
+            white-space: nowrap;
         }
 
-        .main-tab-btn i {
-            font-size: 0.95rem;
+        .seg-btn i {
+            font-size: 0.85rem;
+            transition: color 0.3s ease, transform 0.3s ease;
         }
 
-        .main-tab-btn:hover {
+        .seg-btn:hover {
             color: #fff;
-            background: rgba(255,255,255,0.04);
         }
 
-        .main-tab-btn.active {
-            background: linear-gradient(135deg, #fbbf24, #d4a017);
+        .seg-btn.active {
             color: #000;
-            box-shadow: 0 4px 20px rgba(251,191,36,0.3), inset 0 1px 0 rgba(255,255,255,0.3);
         }
 
-        .main-tab-btn.active i {
+        .seg-btn.active i {
             color: #000;
+            transform: scale(1.08);
         }
+
+        /* Главные табы (2 кнопки) */
+        #mainTabs {
+            max-width: 560px;
+            margin-left: auto;
+            margin-right: auto;
+            grid-template-columns: repeat(2, 1fr);
+        }
+        #mainTabs::before { width: calc((100% - 8px) / 2); }
+
+        /* Переключатель Топы (2 кнопки) */
+        #topsSwitcher {
+            max-width: 560px;
+            margin-left: auto;
+            margin-right: auto;
+            grid-template-columns: repeat(2, 1fr);
+            margin-bottom: 16px;
+        }
+        #topsSwitcher::before { width: calc((100% - 8px) / 2); }
+
+        /* Спорт-фильтры (4 кнопки) */
+        #sportFiltersTop {
+            max-width: 560px;
+            margin-left: auto;
+            margin-right: auto;
+            grid-template-columns: repeat(4, 1fr);
+            margin-bottom: 16px;
+        }
+        #sportFiltersTop::before { width: calc((100% - 8px) / 4); }
 
         /* ===== КОНТЕНТ ВКЛАДОК ===== */
         .main-tab-pane {
@@ -149,62 +204,6 @@
         .main-tab-pane.active {
             display: block;
             animation: fadeIn 0.3s ease;
-        }
-
-        /* ===== ФИЛЬТР ПО ВИДАМ СПОРТА (НАВЕРХУ) ===== */
-        .sport-filters-top {
-            display: flex;
-            gap: 8px;
-            overflow-x: auto;
-            padding: 4px 0 16px;
-            scrollbar-width: none;
-            -webkit-overflow-scrolling: touch;
-            justify-content: center;
-            flex-wrap: wrap;
-        }
-
-        .sport-filters-top::-webkit-scrollbar { display: none; }
-
-        .sport-btn {
-            background: rgba(15,15,15,0.6);
-            border: 1px solid rgba(251,191,36,0.15);
-            color: #aaa;
-            padding: 10px 18px;
-            border-radius: 40px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            font-size: 0.8rem;
-            font-weight: 600;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            min-height: 40px;
-            font-family: 'Inter', sans-serif;
-            flex-shrink: 0;
-        }
-
-        .sport-btn i {
-            color: #fbbf24;
-            transition: transform 0.2s ease;
-            font-size: 0.85rem;
-        }
-
-        .sport-btn:hover {
-            transform: translateY(-2px);
-            border-color: rgba(251,191,36,0.5);
-            background: rgba(251,191,36,0.05);
-            color: #fff;
-        }
-
-        .sport-btn.active {
-            background: #fbbf24;
-            color: #000;
-            border-color: #fbbf24;
-            box-shadow: 0 4px 15px rgba(251,191,36,0.3);
-        }
-
-        .sport-btn.active i {
-            color: #000;
         }
 
         /* ===== ПОИСК ===== */
@@ -251,7 +250,7 @@
             color: #fbbf24;
         }
 
-        /* ===== ЛИГА-БАННЕР (твоя лига) ===== */
+        /* ===== ЛИГА-БАННЕР ===== */
         .my-league-banner {
             background: linear-gradient(135deg, rgba(251,191,36,0.15), rgba(251,191,36,0.04));
             border: 2px solid rgba(251,191,36,0.3);
@@ -490,18 +489,9 @@
             font-size: 1.2rem;
         }
 
-        .silver .rank-cell {
-            color: #C0C0C0;
-        }
-
-        .bronze .rank-cell {
-            color: #CD7F32;
-        }
-
-        .rank-cell i {
-            font-size: 1.1rem;
-        }
-
+        .silver .rank-cell { color: #C0C0C0; }
+        .bronze .rank-cell { color: #CD7F32; }
+        .rank-cell i { font-size: 1.1rem; }
         .gold .rank-cell i { font-size: 1.4rem; }
 
         .avatar-thumb {
@@ -566,9 +556,7 @@
             gap: 5px;
         }
 
-        .frs-cell i {
-            font-size: 0.7rem;
-        }
+        .frs-cell i { font-size: 0.7rem; }
 
         .league-badge {
             display: inline-flex;
@@ -589,9 +577,7 @@
             object-fit: contain;
         }
 
-        .league-badge span {
-            color: #ddd;
-        }
+        .league-badge span { color: #ddd; }
 
         .premium-badge {
             display: inline-flex;
@@ -606,9 +592,7 @@
             flex-shrink: 0;
         }
 
-        .premium-badge i {
-            font-size: 0.45rem;
-        }
+        .premium-badge i { font-size: 0.45rem; }
 
         /* ===== МОБИЛЬНЫЕ КАРТОЧКИ ===== */
         .fighters-list {
@@ -633,9 +617,7 @@
             box-shadow: 0 4px 15px rgba(0,0,0,0.3);
         }
 
-        .fighter-card-horizontal:active {
-            transform: scale(0.98);
-        }
+        .fighter-card-horizontal:active { transform: scale(0.98); }
 
         .fighter-card-horizontal.gold {
             border: 2px solid #fbbf24;
@@ -702,13 +684,8 @@
             box-shadow: 0 0 25px rgba(251,191,36,0.3);
         }
 
-        .fighter-card-horizontal.silver .card-avatar {
-            border-color: #C0C0C0;
-        }
-
-        .fighter-card-horizontal.bronze .card-avatar {
-            border-color: #CD7F32;
-        }
+        .fighter-card-horizontal.silver .card-avatar { border-color: #C0C0C0; }
+        .fighter-card-horizontal.bronze .card-avatar { border-color: #CD7F32; }
 
         .fighter-card-horizontal .card-info {
             flex: 1;
@@ -774,9 +751,7 @@
             gap: 4px;
         }
 
-        .fighter-card-horizontal .card-frs i {
-            font-size: 0.75rem;
-        }
+        .fighter-card-horizontal .card-frs i { font-size: 0.75rem; }
 
         .fighter-card-horizontal .card-league {
             display: flex;
@@ -905,21 +880,23 @@
             .hero { padding: 20px 12px 16px; }
             .hero h1 { font-size: 1.3rem; }
 
-            .main-tabs {
-                max-width: 100%;
-                gap: 4px;
-                padding: 4px;
-                border-radius: 14px;
+            .segmented {
+                border-radius: 12px;
+                padding: 3px;
+                margin-bottom: 14px;
             }
-            .main-tab-btn {
-                padding: 10px 12px;
-                font-size: 0.75rem;
-                min-height: 42px;
-                border-radius: 10px;
-            }
-            .main-tab-btn i { font-size: 0.85rem; }
+            .segmented::before { top: 3px; bottom: 3px; left: 3px; width: calc((100% - 6px) / var(--seg-count, 2)); border-radius: 9px; }
+            #mainTabs::before, #topsSwitcher::before { width: calc((100% - 6px) / 2); }
+            #sportFiltersTop::before { width: calc((100% - 6px) / 4); }
 
-            .sport-filters-top { justify-content: flex-start; }
+            .seg-btn {
+                font-size: 0.7rem;
+                padding: 9px 6px;
+                min-height: 38px;
+                border-radius: 9px;
+                gap: 5px;
+            }
+            .seg-btn i { font-size: 0.75rem; }
 
             .my-league-banner {
                 padding: 16px 18px;
@@ -939,15 +916,8 @@
         @media (max-width: 480px) {
             .container { padding: 0 8px; }
 
-            .main-tab-btn { font-size: 0.7rem; padding: 8px 10px; gap: 6px; }
-            .main-tab-btn i { font-size: 0.75rem; }
-
-            .sport-btn {
-                padding: 8px 14px;
-                font-size: 0.7rem;
-                min-height: 36px;
-                gap: 6px;
-            }
+            .seg-btn { font-size: 0.65rem; padding: 8px 4px; gap: 4px; }
+            .seg-btn i { font-size: 0.7rem; }
 
             .fighter-card-horizontal {
                 padding: 10px 12px;
@@ -1002,22 +972,22 @@
             <p>Топ бойцов PRORANK · Лиги · Текущий сезон</p>
         </section>
 
-        <!-- ===== ГЛАВНЫЕ ТАБЫ (МОЯ ЛИГА / ТОПЫ) ===== -->
-        <div class="main-tabs" id="mainTabs">
-            <button class="main-tab-btn active" data-main-tab="my-league">
+        <!-- ===== ГЛАВНЫЕ ТАБЫ (МОЯ ЛИГА / ТОПЫ) — SEGMENTED ===== -->
+        <div class="segmented" id="mainTabs" data-active="0" style="--seg-count:2;">
+            <button class="seg-btn active" data-main-tab="my-league" data-index="0">
                 <i class="fas fa-trophy"></i> Моя лига
             </button>
-            <button class="main-tab-btn" data-main-tab="tops">
+            <button class="seg-btn" data-main-tab="tops" data-index="1">
                 <i class="fas fa-crown"></i> Топы
             </button>
         </div>
 
-        <!-- ===== ФИЛЬТР ПО ВИДАМ СПОРТА (НАВЕРХУ, ОБЩИЙ ДЛЯ ОБЕИХ ВКЛАДОК) ===== -->
-        <div class="sport-filters-top" id="sportFiltersTop">
-            <button class="sport-btn active" data-sport="all"><i class="fas fa-globe"></i> Все</button>
-            <button class="sport-btn" data-sport="Бокс"><i class="fas fa-fist-raised"></i> Бокс</button>
-            <button class="sport-btn" data-sport="ММА"><i class="fas fa-shield-alt"></i> ММА</button>
-            <button class="sport-btn" data-sport="Борьба"><i class="fas fa-handshake"></i> Борьба</button>
+        <!-- ===== ФИЛЬТР ПО ВИДАМ СПОРТА — SEGMENTED ===== -->
+        <div class="segmented" id="sportFiltersTop" data-active="0" style="--seg-count:4;">
+            <button class="seg-btn active" data-sport="all" data-index="0"><i class="fas fa-globe"></i> Все</button>
+            <button class="seg-btn" data-sport="Бокс" data-index="1"><i class="fas fa-fist-raised"></i> Бокс</button>
+            <button class="seg-btn" data-sport="ММА" data-index="2"><i class="fas fa-shield-alt"></i> ММА</button>
+            <button class="seg-btn" data-sport="Борьба" data-index="3"><i class="fas fa-handshake"></i> Борьба</button>
         </div>
 
         <!-- ===== ПОИСК (ОБЩИЙ) ===== -->
@@ -1028,7 +998,6 @@
 
         <!-- ===== ВКЛАДКА: МОЯ ЛИГА ===== -->
         <div id="pane-my-league" class="main-tab-pane active">
-            <!-- Баннер твоей лиги -->
             <div class="my-league-banner" id="myLeagueBanner" style="display:none;">
                 <div class="info">
                     <img id="myLeagueIcon" src="" alt="Лига">
@@ -1086,12 +1055,12 @@
 
         <!-- ===== ВКЛАДКА: ТОПЫ ===== -->
         <div id="pane-tops" class="main-tab-pane">
-            <!-- Переключатель Сезон / Всё время -->
-            <div class="main-tabs" id="topsSwitcher" style="margin-bottom:16px;">
-                <button class="main-tab-btn active" data-tops-mode="season">
+            <!-- Переключатель Сезон / Всё время — SEGMENTED -->
+            <div class="segmented" id="topsSwitcher" data-active="0" style="--seg-count:2;">
+                <button class="seg-btn active" data-tops-mode="season" data-index="0">
                     <i class="fas fa-trophy"></i> Лучшие этого сезона
                 </button>
-                <button class="main-tab-btn" data-tops-mode="alltime">
+                <button class="seg-btn" data-tops-mode="alltime" data-index="1">
                     <i class="fas fa-infinity"></i> За всё время
                 </button>
             </div>
@@ -1199,8 +1168,38 @@
         let currentSeason = null;
         let currentUserData = null;
 
-        let activeMainTab = 'my-league';       // 'my-league' | 'tops'
-        let topsMode = 'season';               // 'season' | 'alltime'
+        let activeMainTab = 'my-league';
+        let topsMode = 'season';
+
+        // ===== МИКРО-ЗВУК (без писков) =====
+        let _audioCtx = null;
+        function getAudioCtx() {
+            if (!_audioCtx) {
+                try { _audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
+                catch(e) { return null; }
+            }
+            if (_audioCtx.state === 'suspended') _audioCtx.resume();
+            return _audioCtx;
+        }
+        function playTick() {
+            const ctx = getAudioCtx();
+            if (!ctx) return;
+            const t = ctx.currentTime;
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            // Мягкий "деревянный" клик — sine, короткий, без писка
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(880, t);
+            osc.frequency.exponentialRampToValueAtTime(440, t + 0.05);
+            gain.gain.setValueAtTime(0.0001, t);
+            gain.gain.exponentialRampToValueAtTime(0.035, t + 0.008);
+            gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.07);
+            osc.connect(gain); gain.connect(ctx.destination);
+            osc.start(t); osc.stop(t + 0.08);
+        }
+        function haptic(ms) {
+            try { if (navigator.vibrate) navigator.vibrate(ms || 10); } catch(e) {}
+        }
 
         // ===== ЛИГИ =====
         function getLeague(frs) {
@@ -1303,7 +1302,6 @@
 
         // ===== ГЛАВНАЯ ФУНКЦИЯ ПРИМЕНЕНИЯ ФИЛЬТРОВ =====
         function applyFiltersAndRender() {
-            // Применяем общий фильтр по спорту
             let filtered = [...allFighters];
             if (currentSport !== 'all') {
                 filtered = filtered.filter(f => f.sport === currentSport);
@@ -1332,7 +1330,6 @@
                 return;
             }
 
-            // Получаем данные текущего пользователя
             if (!currentUserData) {
                 const userDoc = await getDoc(doc(db, "fighters", user.uid));
                 currentUserData = userDoc.data();
@@ -1341,17 +1338,14 @@
             const myFrs = currentUserData?.frs || 0;
             const myLeague = getLeague(myFrs);
 
-            // Фильтруем бойцов ТОЛЬКО своей лиги
             let leagueFighters = fighters.filter(f => {
                 const frs = f.frs || 0;
                 const league = getLeague(frs);
                 return league.name === myLeague.name;
             });
 
-            // Сортировка по FRS desc
             leagueFighters.sort((a, b) => (b.frs || 0) - (a.frs || 0));
 
-            // Поиск
             if (currentSearch) {
                 const term = currentSearch.toLowerCase();
                 leagueFighters = leagueFighters.filter(f =>
@@ -1359,17 +1353,14 @@
                 );
             }
 
-            // Баннер с моей лигой
             banner.style.display = 'flex';
             document.getElementById('myLeagueName').textContent = myLeague.name;
             document.getElementById('myLeagueIcon').src = getLeagueIconPath(myLeague.name);
             document.getElementById('myLeagueFrs').textContent = myFrs.toLocaleString();
 
-            // Моё место в лиге
             const myRank = leagueFighters.findIndex(f => f.id === user.uid) + 1;
             document.getElementById('myLeagueRank').textContent = myRank > 0 ? myRank : '—';
 
-            // Счётчик
             countEl.textContent = `${leagueFighters.length} бойцов`;
 
             if (leagueFighters.length === 0) {
@@ -1387,25 +1378,20 @@
             const list = document.getElementById('topsList');
             const countEl = document.getElementById('topsCount');
 
-            // Выбираем поле сортировки
             const sortField = topsMode === 'alltime' ? 'allTimeFrs' : 'frs';
             const titleEl = document.getElementById('topsTitle');
             titleEl.textContent = topsMode === 'alltime' 
                 ? 'Лучшие за всё время' 
                 : (currentSeason?.name ? `Лучшие этого сезона · ${currentSeason.name}` : 'Лучшие этого сезона');
 
-            // Сортировка
             let sorted = [...fighters].sort((a, b) => (b[sortField] || 0) - (a[sortField] || 0));
 
-            // Поиск
             if (currentSearch) {
                 const term = currentSearch.toLowerCase();
                 sorted = sorted.filter(f => (f.name || '').toLowerCase().includes(term));
             }
 
-            // Берём только ТОП-100
             const top100 = sorted.slice(0, 100);
-
             countEl.textContent = `${top100.length} бойцов`;
 
             if (top100.length === 0) {
@@ -1423,7 +1409,6 @@
             const list = document.getElementById(listId);
             const currentUser = auth.currentUser;
 
-            // ===== ТАБЛИЦА =====
             let tableHtml = '';
             let rank = 1;
             fighters.forEach(f => {
@@ -1490,7 +1475,6 @@
             });
             tbody.innerHTML = tableHtml;
 
-            // ===== КАРТОЧКИ (мобильные) =====
             let cardsHtml = '';
             rank = 1;
             fighters.forEach(f => {
@@ -1550,7 +1534,6 @@
             });
             list.innerHTML = cardsHtml;
 
-            // ===== ОБРАБОТЧИКИ КЛИКОВ =====
             tbody.querySelectorAll('tr[data-user-id]').forEach(tr => {
                 tr.addEventListener('click', () => {
                     window.location.href = `profile.html?id=${tr.dataset.userId}`;
@@ -1563,48 +1546,72 @@
             });
         }
 
-        // ===== ПЕРЕКЛЮЧАТЕЛЬ ГЛАВНЫХ ТАБОВ =====
-        document.querySelectorAll('#mainTabs .main-tab-btn').forEach(btn => {
+        // ============================================================
+        // SEGMENTED — ПЕРЕКЛЮЧАТЕЛИ С АНИМАЦИЕЙ ПОДУШКИ
+        // ============================================================
+
+        // ===== ГЛАВНЫЕ ТАБЫ (Моя лига / Топы) =====
+        document.querySelectorAll('#mainTabs .seg-btn').forEach(btn => {
             btn.addEventListener('click', () => {
                 const tab = btn.dataset.mainTab;
                 if (tab === activeMainTab) return;
 
                 activeMainTab = tab;
 
-                document.querySelectorAll('#mainTabs .main-tab-btn').forEach(b => b.classList.remove('active'));
+                // Подушка
+                const idx = parseInt(btn.dataset.index, 10) || 0;
+                document.getElementById('mainTabs').dataset.active = idx;
+
+                document.querySelectorAll('#mainTabs .seg-btn').forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
 
                 document.querySelectorAll('.main-tab-pane').forEach(p => p.classList.remove('active'));
                 document.getElementById(`pane-${tab}`).classList.add('active');
+
+                playTick();
+                haptic(10);
 
                 applyFiltersAndRender();
             });
         });
 
         // ===== ПЕРЕКЛЮЧАТЕЛЬ СЕЗОН / ВСЁ ВРЕМЯ =====
-        document.querySelectorAll('#topsSwitcher .main-tab-btn').forEach(btn => {
+        document.querySelectorAll('#topsSwitcher .seg-btn').forEach(btn => {
             btn.addEventListener('click', () => {
                 const mode = btn.dataset.topsMode;
                 if (mode === topsMode) return;
 
                 topsMode = mode;
 
-                document.querySelectorAll('#topsSwitcher .main-tab-btn').forEach(b => b.classList.remove('active'));
+                const idx = parseInt(btn.dataset.index, 10) || 0;
+                document.getElementById('topsSwitcher').dataset.active = idx;
+
+                document.querySelectorAll('#topsSwitcher .seg-btn').forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
+
+                playTick();
+                haptic(10);
 
                 applyFiltersAndRender();
             });
         });
 
         // ===== ФИЛЬТР ПО СПОРТУ =====
-        document.querySelectorAll('#sportFiltersTop .sport-btn').forEach(btn => {
+        document.querySelectorAll('#sportFiltersTop .seg-btn').forEach(btn => {
             btn.addEventListener('click', () => {
                 const sport = btn.dataset.sport;
                 if (sport === currentSport) return;
 
                 currentSport = sport;
-                document.querySelectorAll('#sportFiltersTop .sport-btn').forEach(b => b.classList.remove('active'));
+
+                const idx = parseInt(btn.dataset.index, 10) || 0;
+                document.getElementById('sportFiltersTop').dataset.active = idx;
+
+                document.querySelectorAll('#sportFiltersTop .seg-btn').forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
+
+                playTick();
+                haptic(10);
 
                 applyFiltersAndRender();
             });
@@ -1625,6 +1632,8 @@
             if (user) {
                 const userDoc = await getDoc(doc(db, "fighters", user.uid));
                 currentUserData = userDoc.data();
+                // Сохраняем uid для level-up на profile.html
+                try { localStorage.setItem('prorank_my_uid', user.uid); } catch(e) {}
                 setTimeout(updateHeaderBalance, 1000);
             } else {
                 currentUserData = null;
@@ -1652,7 +1661,7 @@
             await loadFighters();
         })();
 
-        console.log('✅ rating.html загружен: Моя лига + Топы');
+        console.log('✅ rating.html: iOS Segmented на табах + фильтре спорта');
     </script>
 </body>
 </html>

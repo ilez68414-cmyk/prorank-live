@@ -3816,6 +3816,278 @@ body::before {
     .club-fighter-card { width: 170px; }
     .shop-rating-value { font-size: 2.4rem; }
 }
+/* ============================================================
+   FLIP CLOCK + STREAK (index.html)
+   ============================================================ */
+
+/* --- БЛОК: Таймер до конца сезона (Flip Clock) --- */
+.season-hero-block {
+    margin: 0 18px 18px;
+    padding: 16px 18px;
+    background:
+        radial-gradient(circle at 50% 0%, rgba(251,191,36,0.15), transparent 60%),
+        linear-gradient(160deg, rgba(28,24,16,0.85), rgba(14,14,18,0.95));
+    border: 1px solid rgba(251,191,36,0.25);
+    border-radius: 20px;
+    position: relative;
+    overflow: hidden;
+    animation: fadeInUp 0.5s ease;
+}
+.season-hero-block::before {
+    content: '';
+    position: absolute;
+    top: -1px; left: 50%;
+    transform: translateX(-50%);
+    width: 100px; height: 2px;
+    background: linear-gradient(90deg, transparent, #fbbf24, transparent);
+    box-shadow: 0 0 20px rgba(251,191,36,0.6);
+}
+.season-hero-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+}
+.season-hero-name {
+    font-family: 'Anton', sans-serif;
+    font-size: 0.95rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+}
+.season-hero-name i {
+    color: #fbbf24;
+    font-size: 0.85rem;
+}
+.season-hero-name em {
+    font-style: normal;
+    color: #fbbf24;
+}
+.season-hero-link {
+    font-size: 0.62rem;
+    color: #fbbf24;
+    text-decoration: none;
+    font-weight: 800;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer;
+    white-space: nowrap;
+}
+.season-hero-link i { font-size: 0.55rem; }
+
+.flip-clock {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    margin: 0 auto;
+}
+.flip-group {
+    display: flex;
+    gap: 2px;
+}
+.flip-digit {
+    width: 38px;
+    height: 52px;
+    border-radius: 8px;
+    background: linear-gradient(180deg, #1c1c22 50%, #0c0c12 50%);
+    border: 1px solid rgba(251,191,36,0.2);
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.05);
+}
+.flip-digit::before {
+    content: '';
+    position: absolute;
+    top: 50%; left: 0; right: 0;
+    height: 1px;
+    background: rgba(0,0,0,0.6);
+    z-index: 2;
+}
+.flip-digit-inner {
+    font-family: 'Anton', sans-serif;
+    font-size: 1.9rem;
+    line-height: 1;
+    color: #fbbf24;
+    letter-spacing: 1px;
+    text-shadow: 0 0 15px rgba(251,191,36,0.4);
+    transition: transform 0.28s ease, opacity 0.28s ease;
+    transform-origin: center center;
+    display: block;
+}
+.flip-digit-inner.flipping {
+    transform: rotateX(90deg);
+    opacity: 0;
+}
+.flip-sep {
+    font-family: 'Anton', sans-serif;
+    font-size: 1.4rem;
+    color: #fbbf24;
+    opacity: 0.6;
+    padding: 0 2px;
+}
+.flip-labels {
+    display: flex;
+    justify-content: center;
+    gap: 22px;
+    margin-top: 10px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.5rem;
+    letter-spacing: 2px;
+    color: #666;
+    text-transform: uppercase;
+    font-weight: 700;
+}
+.flip-labels span { min-width: 38px; text-align: center; }
+.season-hero-sub {
+    text-align: center;
+    margin-top: 10px;
+    font-size: 0.65rem;
+    color: #888;
+    font-weight: 600;
+}
+.season-hero-sub b { color: #fbbf24; }
+
+/* --- БЛОК: Streak (серия дней) --- */
+.streak-compact {
+    margin: 0 18px 18px;
+    padding: 14px 16px;
+    background: linear-gradient(145deg, rgba(22,20,26,0.9), rgba(12,12,16,0.95));
+    border: 1px solid rgba(251,191,36,0.15);
+    border-radius: 18px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    position: relative;
+    overflow: hidden;
+    animation: fadeInUp 0.5s ease;
+}
+.streak-compact.cold {
+    opacity: 0.85;
+    filter: saturate(0.7);
+}
+.streak-compact.hot {
+    border-color: rgba(251,146,60,0.4);
+    box-shadow: 0 0 24px rgba(251,146,60,0.12);
+}
+.streak-compact.blazing {
+    border-color: rgba(239,68,68,0.5);
+    background:
+        radial-gradient(circle at 0% 50%, rgba(239,68,68,0.15), transparent 60%),
+        linear-gradient(145deg, rgba(30,16,16,0.9), rgba(15,8,8,0.95));
+    box-shadow: 0 0 32px rgba(239,68,68,0.2);
+}
+.streak-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #f97316, #ef4444);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.15rem;
+    color: #fff;
+    flex-shrink: 0;
+    box-shadow: 0 0 20px rgba(249,115,22,0.4);
+    position: relative;
+}
+.streak-compact.cold .streak-icon {
+    background: linear-gradient(135deg, #4b5563, #374151);
+    box-shadow: 0 0 10px rgba(75,85,99,0.3);
+}
+.streak-compact.blazing .streak-icon {
+    box-shadow: 0 0 30px rgba(239,68,68,0.7), 0 0 15px rgba(249,115,22,0.5);
+}
+.streak-info {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+.streak-value-row {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+}
+.streak-value {
+    font-family: 'Anton', sans-serif;
+    font-size: 1.5rem;
+    line-height: 1;
+    background: linear-gradient(135deg, #fff, #f97316);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    letter-spacing: 0.5px;
+}
+.streak-compact.cold .streak-value {
+    background: linear-gradient(135deg, #ccc, #888);
+    -webkit-background-clip: text;
+    background-clip: text;
+}
+.streak-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.55rem;
+    color: #888;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+}
+.streak-days-row {
+    display: flex;
+    gap: 4px;
+    margin-top: 4px;
+}
+.streak-day {
+    width: 20px;
+    height: 24px;
+    border-radius: 6px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.06);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.5rem;
+    color: #555;
+    font-weight: 800;
+    transition: all 0.25s ease;
+}
+.streak-day.done {
+    background: linear-gradient(135deg, #f97316, #ef4444);
+    border-color: transparent;
+    color: #fff;
+    box-shadow: 0 0 8px rgba(249,115,22,0.4);
+}
+.streak-day.today {
+    border: 2px solid #fbbf24;
+    animation: streakTodayPulse 1.6s ease-in-out infinite;
+}
+@keyframes streakTodayPulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(251,191,36,0.4); }
+    50% { box-shadow: 0 0 0 5px rgba(251,191,36,0); }
+}
+@media (max-width: 480px) {
+    .flip-digit { width: 32px; height: 46px; }
+    .flip-digit-inner { font-size: 1.6rem; }
+    .flip-sep { font-size: 1.2rem; }
+    .flip-labels { gap: 18px; font-size: 0.45rem; }
+    .flip-labels span { min-width: 32px; }
+    .streak-day { width: 18px; height: 22px; font-size: 0.45rem; }
+    .streak-value { font-size: 1.3rem; }
+}
+
     </style>
 </head>
 <body data-ptr="true">
@@ -3871,6 +4143,75 @@ body::before {
     <div class="fighter-hero-section" id="fighterHero"></div>
 
     <div id="fighterCall"></div>
+
+    <!-- ===== FLIP CLOCK — Таймер до конца сезона ===== -->
+    <div class="season-hero-block" id="seasonHeroBlock" style="display:none;">
+        <div class="season-hero-head">
+            <div class="season-hero-name">
+                <i class="fas fa-hourglass-half"></i>
+                <span id="seasonHeroName">Сезон</span>
+                <em id="seasonHeroEm">активен</em>
+            </div>
+            <a class="season-hero-link" id="seasonHeroLink" href="season-details.html">
+                Подробнее <i class="fas fa-arrow-right"></i>
+            </a>
+        </div>
+
+        <div class="flip-clock" id="seasonFlipClock">
+            <div class="flip-group">
+                <div class="flip-digit"><div class="flip-digit-inner" data-flip="d1">0</div></div>
+                <div class="flip-digit"><div class="flip-digit-inner" data-flip="d2">0</div></div>
+            </div>
+            <div class="flip-sep">:</div>
+            <div class="flip-group">
+                <div class="flip-digit"><div class="flip-digit-inner" data-flip="h1">0</div></div>
+                <div class="flip-digit"><div class="flip-digit-inner" data-flip="h2">0</div></div>
+            </div>
+            <div class="flip-sep">:</div>
+            <div class="flip-group">
+                <div class="flip-digit"><div class="flip-digit-inner" data-flip="m1">0</div></div>
+                <div class="flip-digit"><div class="flip-digit-inner" data-flip="m2">0</div></div>
+            </div>
+            <div class="flip-sep">:</div>
+            <div class="flip-group">
+                <div class="flip-digit"><div class="flip-digit-inner" data-flip="s1">0</div></div>
+                <div class="flip-digit"><div class="flip-digit-inner" data-flip="s2">0</div></div>
+            </div>
+        </div>
+
+        <div class="flip-labels">
+            <span>Дни</span>
+            <span>Часы</span>
+            <span>Минуты</span>
+            <span>Секунды</span>
+        </div>
+
+        <div class="season-hero-sub" id="seasonHeroSub">
+            Призовой фонд: <b id="seasonHeroPrize">—</b>
+        </div>
+    </div>
+
+    <!-- ===== STREAK — Серия заходов ===== -->
+    <div class="streak-compact cold" id="streakBlock" style="display:none;">
+        <div class="streak-icon">
+            <i class="fas fa-fire"></i>
+        </div>
+        <div class="streak-info">
+            <div class="streak-value-row">
+                <span class="streak-value" id="streakValue">0</span>
+                <span class="streak-label" id="streakLabel">дней подряд</span>
+            </div>
+            <div class="streak-days-row" id="streakDaysRow">
+                <div class="streak-day" data-day="0">Пн</div>
+                <div class="streak-day" data-day="1">Вт</div>
+                <div class="streak-day" data-day="2">Ср</div>
+                <div class="streak-day" data-day="3">Чт</div>
+                <div class="streak-day" data-day="4">Пт</div>
+                <div class="streak-day" data-day="5">Сб</div>
+                <div class="streak-day" data-day="6">Вс</div>
+            </div>
+        </div>
+    </div>
 
     <div class="section-head" id="fighterSeasonHead" style="display:none;">
         <h2><i class="fas fa-trophy"></i> Призовой <em>сезона</em></h2>
@@ -5536,6 +5877,204 @@ else initPageControls();
 // ============================================================
 let authResolved = false;
 setTimeout(() => { if (!authResolved) renderGuest(); }, 1500);
+
+// ============================================================
+// FLIP CLOCK — Таймер до конца сезона
+// ============================================================
+let _flipInterval = null;
+let _flipEndTime = null;
+
+function renderFlipDigits(days, hours, mins, secs) {
+    const pad = (n) => String(n).padStart(2, '0');
+    const d = pad(Math.min(days, 99));
+    const h = pad(hours);
+    const m = pad(mins);
+    const s = pad(secs);
+
+    const setDigit = (key, val) => {
+        const el = document.querySelector(`[data-flip="${key}"]`);
+        if (!el) return;
+        if (el.textContent !== val) {
+            el.classList.add('flipping');
+            setTimeout(() => {
+                el.textContent = val;
+                el.classList.remove('flipping');
+            }, 140);
+        }
+    };
+
+    setDigit('d1', d[0]); setDigit('d2', d[1]);
+    setDigit('h1', h[0]); setDigit('h2', h[1]);
+    setDigit('m1', m[0]); setDigit('m2', m[1]);
+    setDigit('s1', s[0]); setDigit('s2', s[1]);
+}
+
+function startFlipClock(endDate) {
+    if (_flipInterval) clearInterval(_flipInterval);
+    if (!endDate) return;
+
+    _flipEndTime = endDate.getTime();
+
+    const tick = () => {
+        const now = Date.now();
+        const diff = _flipEndTime - now;
+
+        if (diff <= 0) {
+            renderFlipDigits(0, 0, 0, 0);
+            clearInterval(_flipInterval);
+            return;
+        }
+
+        const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+        const secs = Math.floor((diff % (1000 * 60)) / 1000);
+
+        renderFlipDigits(days, hours, mins, secs);
+    };
+
+    tick();
+    _flipInterval = setInterval(tick, 1000);
+}
+
+async function initFlipClockBlock() {
+    try {
+        const season = await getActiveSeason().catch(() => null);
+        const block = document.getElementById('seasonHeroBlock');
+        if (!block) return;
+
+        if (!season) {
+            block.style.display = 'none';
+            return;
+        }
+
+        block.style.display = 'block';
+
+        // Имя сезона
+        const nameEl = document.getElementById('seasonHeroName');
+        if (nameEl) nameEl.textContent = season.name || 'Сезон';
+
+        // Призовой фонд
+        const prizeEl = document.getElementById('seasonHeroPrize');
+        if (prizeEl) {
+            const fp = Array.isArray(season.fighterPrizes) ? season.fighterPrizes.reduce((s, p) => s + (Number(p?.amount) || 0), 0) : 0;
+            const cp = Array.isArray(season.clubPrizes) ? season.clubPrizes.reduce((s, p) => s + (Number(p?.amount) || 0), 0) : 0;
+            const total = Number(season.prizePool) || (fp + cp) || 0;
+            prizeEl.textContent = total ? total.toLocaleString('ru-RU') + ' ₽' : '—';
+        }
+
+        // Ссылка на сезон
+        const linkEl = document.getElementById('seasonHeroLink');
+        if (linkEl && season.id) {
+            linkEl.href = `season-details.html?id=${encodeURIComponent(season.id)}`;
+        }
+
+        // Дата окончания
+        const endRaw = season.endDate;
+        let endDate = null;
+        if (endRaw) {
+            if (typeof endRaw.toDate === 'function') endDate = endRaw.toDate();
+            else if (typeof endRaw.seconds === 'number') endDate = new Date(endRaw.seconds * 1000);
+            else { const dd = new Date(endRaw); if (!Number.isNaN(dd.getTime())) endDate = dd; }
+        }
+
+        if (endDate) {
+            startFlipClock(endDate);
+        }
+    } catch (e) {
+        console.warn('⚠️ Flip Clock:', e);
+    }
+}
+
+// ============================================================
+// STREAK — Серия заходов (localStorage)
+// ============================================================
+function todayKey() {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+function yesterdayKey() {
+    const d = new Date();
+    d.setDate(d.getDate() - 1);
+    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+
+function initStreakBlock() {
+    try {
+        const block = document.getElementById('streakBlock');
+        if (!block) return;
+
+        const today = todayKey();
+        const yesterday = yesterdayKey();
+        const lastDate = localStorage.getItem('prorank_streak_date');
+        let count = parseInt(localStorage.getItem('prorank_streak_count') || '0', 10) || 0;
+
+        if (lastDate === today) {
+            // уже заходил — ничего
+        } else if (lastDate === yesterday) {
+            count = count + 1;
+            localStorage.setItem('prorank_streak_count', String(count));
+            localStorage.setItem('prorank_streak_date', today);
+        } else {
+            count = 1;
+            localStorage.setItem('prorank_streak_count', '1');
+            localStorage.setItem('prorank_streak_date', today);
+        }
+
+        block.style.display = 'flex';
+
+        // Состояние: cold / hot / blazing
+        block.classList.remove('cold', 'hot', 'blazing');
+        if (count < 3) block.classList.add('cold');
+        else if (count < 7) block.classList.add('hot');
+        else block.classList.add('blazing');
+
+        // Значение
+        const valEl = document.getElementById('streakValue');
+        if (valEl) valEl.textContent = count;
+
+        // Текст
+        const labelEl = document.getElementById('streakLabel');
+        if (labelEl) {
+            const plural = (n) => {
+                const m10 = n % 10, m100 = n % 100;
+                if (m10 === 1 && m100 !== 11) return 'день подряд';
+                if (m10 >= 2 && m10 <= 4 && (m100 < 10 || m100 >= 20)) return 'дня подряд';
+                return 'дней подряд';
+            };
+            labelEl.textContent = plural(count);
+        }
+
+        // Дни недели
+        const jsDay = new Date().getDay();       // 0 = Вс
+        const todayIdx = (jsDay + 6) % 7;        // 0 = Пн … 6 = Вс
+        const dayEls = document.querySelectorAll('#streakDaysRow .streak-day');
+
+        dayEls.forEach((el, i) => {
+            el.classList.remove('done', 'today');
+
+            if (i === todayIdx) el.classList.add('today');
+
+            if (count > 0) {
+                const daysBack = todayIdx - i;
+                if (daysBack >= 0 && daysBack < count) {
+                    el.classList.add('done');
+                }
+                if (daysBack < 0 && (todayIdx - i + 7) < count) {
+                    el.classList.add('done');
+                }
+            }
+        });
+    } catch (e) {
+        console.warn('⚠️ Streak:', e);
+    }
+}
+
+// ============================================================
+// ЗАПУСК ОБЕИХ ФИШЕК
+// ============================================================
+initFlipClockBlock();
+initStreakBlock();
 
 onAuthStateChanged(auth, async (user) => {
     authResolved = true;

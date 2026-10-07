@@ -1988,7 +1988,7 @@ main { flex: 1; }
 </style>
     <script src="modals.js"></script>
 </head>
- <body data-ptr="true">
+<body data-ptr="true">
     <div class="gold-top"></div>
 
     <header class="navbar">
@@ -3056,14 +3056,71 @@ main { flex: 1; }
             document.addEventListener('mouseup', onEnd);
         })();
 
-        // ===== Запоминаем uid =====
-        try {
-            const params = new URLSearchParams(window.location.search);
-            const profileId = params.get('id');
-            if (profileId) {
+        // ============================================================
+        // ЗАПОМНИТЬ МОЙ UID для Level Up overlay
+        // ============================================================
+        // Level Up показывается только на СВОЁМ профиле.
+        // Сравниваем текущий uid (из auth) с profileId из URL.
+        // ============================================================
+        (async () => {
+            try {
+                // Ждём, пока profile.js завершит загрузку профиля
+                const waitAuth = () => new Promise((resolve) => {
+                    let tries = 0;
+                    const timer = setInterval(() => {
+                        tries++;
+                        // Пытаемся вытащить uid из разных источников
+                        const params = new URLSearchParams(window.location.search);
+                        const profileId = params.get('id');
+                        if (!profileId || tries > 20) {
+                            clearInterval(timer);
+                            resolve(profileId);
+                            return;
+                        }
+                        // Проверяем: если у бойца на странице уже отрисован какой-то контент
+                        const hasContent = document.getElementById('profileContent')?.style.display === 'block';
+                        if (hasContent || tries > 10) {
+                            clearInterval(timer);
+                            resolve(profileId);
+                        }
+                    }, 200);
+                });
+
+                const profileId = await waitAuth();
+                if (!profileId) return;
+
+                // Firestore-uid текущего пользователя берём из глобального auth (profile.js уже импортирует firebase)
+                // Fallback: используем localStorage.prorank_my_uid, куда пишем при заходе на index.html
+                let myUid = null;
+                try {
+                    // Пробуем несколько источников
+                    if (window.__prorankAuth?.currentUser?.uid) {
+                        myUid = window.__prorankAuth.currentUser.uid;
+                    }
+                } catch(e) {}
+
+                if (!myUid) {
+                    // Fallback — читаем из localStorage (его пишет header.js при логине, если есть)
+                    myUid = localStorage.getItem('prorank_my_uid') || null;
+                }
+
+                // Если не смогли определить uid — пропускаем
+                if (!myUid) {
+                    console.log('ℹ️ Level Up: не удалось определить uid — пропуск');
+                    return;
+                }
+
+                // Сохраняем "текущий просматриваемый профиль" и "мой uid"
                 localStorage.setItem('prorank_current_user_uid', profileId);
+
+                // Если смотрим ЧУЖОЙ профиль — не триггерим Level Up
+                if (profileId !== myUid) {
+                    console.log('ℹ️ Level Up: это чужой профиль — пропуск');
+                }
+            } catch (e) {
+                console.warn('Level Up: ошибка при определении uid', e);
             }
-        } catch(e) {}
+        })();
 
     });
     </script>
